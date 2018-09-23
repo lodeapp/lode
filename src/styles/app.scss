@@ -1,0 +1,16 @@
+@import 'functions';
+@import 'variables';
+
+.passed {
+    color: theme-color('success');
+}
+
+.failed,
+.error {
+    color: theme-color('danger');
+}
+
+.incomplete,
+.partial {
+    color: theme-color('warning');
+}

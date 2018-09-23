@@ -1,0 +1,91 @@
+// ========================================================================
+// Typography
+// ========================================================================
+
+$sans: 'Source Sans Pro', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji' !default;
+$serif: Georgia, 'Times New Roman', Times, serif, 'Apple Color Emoji', 'Segoe UI Emoji' !default;
+$monospace: Menlo, Monaco, Consolas, 'Courier New', monospace, 'Apple Color Emoji', 'Segoe UI Emoji' !default;
+
+$heading-margin: 1rem;
+
+// ========================================================================
+// Colors
+// ========================================================================
+
+$brand: #ff7676 !default;
+$brand-contrast: rgb(255, 255, 255) !default;
+
+$primary: rgb(255, 255, 255) !default;
+$primary-text: rgb(42, 45, 52) !default;
+$primary-discreet-text: #ccc !default;
+
+$secondary: rgb(248, 248, 248) !default;
+$secondary-text: rgb(108, 109, 111) !default;
+$secondary-discreet-text: rgb(170, 170, 170) !default;
+$secondary-discreet-contrast: rgb(255, 255, 255) !default;
+
+$tertiary: rgb(238, 238, 238) !default;
+$tertiary-text: #888 !default;
+$tertiary-highlight: rgb(186, 186, 186) !default;
+$tertiary-highlight-text: rgb(42, 45, 52) !default;
+$tertiary-discreet: #ccc !default;
+$tertiary-discreet-text: #888 !default;
+
+$contrast: rgb(42, 45, 52) !default;
+$contrast-text: rgb(175, 174, 176) !default;
+$contrast-highlight: rgb(101, 107, 128) !default;
+$contrast-highlight-text: rgb(255, 255, 255) !default;
+$contrast-discreet: rgb(65, 68, 74) !default;
+$contrast-discreet-text: rgb(127, 128, 132) !default;
+
+$fancy: rgb(64, 130, 193) !default;
+$fancy-hover: darken($fancy, 10%) !default;
+$fancy-text: rgb(255, 255, 255) !default;
+
+$link-color: $fancy !default;
+$link-hover-color: $fancy-hover !default;
+$focus-color: $fancy !default;
+
+$transition-time: .15s;
+
+$body-bg: $secondary !default;
+
+$blue:    #5e97ce !default;
+$indigo:  #6610f2 !default;
+$purple:  #6f42c1 !default;
+$pink:    #e83e8c !default;
+$red:     red !default;
+$orange:  #fd7e14 !default;
+$yellow:  yellow !default;
+$green:   green !default;
+$teal:    #20c997 !default;
+$cyan:    #94c0eb !default;
+
+$theme-colors: (
+    primary: $blue,
+    success: $green,
+    warning: $yellow,
+    danger: $red
+) !default;
+
+$theme-colors-light: (
+    primary: lighten(theme-color('primary'), 37%),
+    success: lighten(theme-color('success'), 27%),
+    warning: lighten(theme-color('warning'), 20%),
+    danger: lighten(theme-color('danger'), 30%)
+) !default;
+
+$theme-colors-dark: (
+    primary: darken(theme-color('primary'), 15%),
+    success: darken(theme-color('success'), 19%),
+    warning: darken(theme-color('warning'), 23%),
+    danger: darken(theme-color('danger'), 15%)
+) !default;
+
+$theme-color-interval: 8% !default;
+
+// ========================================================================
+// Grid
+// ========================================================================
+
+$grid-columns: 24 !default;
