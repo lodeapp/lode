@@ -81,9 +81,6 @@ class Reporter extends ResultPrinter
         $this->lastTestFailed = false;
     }
 
-    /**
-     * Success.
-     */
     public function addSuccess(Test $test, float $time): void
     {
         $this->writeProgress($this->transformTest($test, null, $time));
