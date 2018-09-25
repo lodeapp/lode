@@ -1,5 +1,6 @@
 import * as path from 'path'
 import { find } from 'lodash'
+import { v4 as uuid } from 'uuid'
 import { Test, ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
 
@@ -9,12 +10,17 @@ export type SuiteOptions = {
 }
 
 export interface ISuite {
+    readonly id: string
     readonly file: string
     readonly relative: string
     readonly root: string
     status: Status
     tests: Array<ITest>
+    selected: boolean
+    canToggleTests: boolean
 
+    toggleSelected (toggle?: boolean, cascade?: boolean): void
+    noTestsSelected (): boolean
     debrief (result: ISuiteResult): Promise<void>
     reset (): void
 }
@@ -25,6 +31,7 @@ export interface ISuiteResult {
 }
 
 export class Suite implements ISuite {
+    public readonly id: string
     public readonly file: string
     public readonly relative: string
     public readonly root: string
@@ -32,8 +39,12 @@ export class Suite implements ISuite {
     public tests: Array<ITest>
     public running: Array<Promise<void>>
     public status: Status
+    public selective: boolean = false
+    public selected: boolean = true
+    public canToggleTests: boolean = false
 
     constructor (file: string, options: SuiteOptions) {
+        this.id = uuid()
         this.file = file
         this.root = options.path
         this.vmPath = options.vmPath || null
@@ -41,6 +52,19 @@ export class Suite implements ISuite {
         this.tests = []
         this.running = []
         this.status = 'idle'
+    }
+
+    toggleSelected (toggle?: boolean, cascade?: boolean): void {
+        this.selected = typeof toggle === 'undefined' ? !this.selected : toggle
+        if (this.canToggleTests && cascade !== false) {
+            this.tests.forEach(test => {
+                test.toggleSelected(this.selected)
+            })
+        }
+    }
+
+    noTestsSelected (): boolean {
+        return this.tests.filter(test => test.selected).length === 0
     }
 
     debrief (suiteResult: ISuiteResult): Promise<void> {
@@ -51,6 +75,7 @@ export class Suite implements ISuite {
             })
 
             Promise.all(this.running).then(() => {
+                // @TODO: don't clean-up if running selectively
                 this.afterDebrief(true)
                 resolve()
             })

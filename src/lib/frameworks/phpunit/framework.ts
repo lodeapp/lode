@@ -1,6 +1,6 @@
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
 import { ISuite } from '@lib/frameworks/suite'
-import { ITest } from '@lib/frameworks/test'
+import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
 
 export class PHPUnit extends Framework {
     readonly name = 'PHPUnit'
@@ -11,15 +11,31 @@ export class PHPUnit extends Framework {
 
     refresh (): Promise<Array<ISuite>> {
         return new Promise((resolve, reject) => {
-            resolve([])
+            this.spawn(['--columns=42'].concat(this.runArgs()))
+                .on('report', ({ process, report }) => {
+                    console.log(report)
+                    resolve([])
+                })
+                .on('error', ({ message }) => {
+                    reject(message)
+                })
         })
     }
 
     runArgs (): Array<string> {
-        return ['--printer', '\\TestRunner\\PHPUnit\\Reporter']
+        return ['--printer', '\\LodeApp\\PHPUnit\\Reporter']
     }
 
-    runSelectiveArgs (suites: Array<ISuite>, tests: Array<ITest>): Array<string> {
+    runSelectiveArgs (): Array<string> {
+        console.log(this.suites.filter(suite => suite.selected))
+
         return ['tests/Unit/HelpersTest.php'].concat(this.runArgs())
+    }
+
+    newSuite (file: string): ISuite {
+        return new PHPUnitSuite(file, {
+            path: this.path,
+            vmPath: this.vmPath
+        })
     }
 }

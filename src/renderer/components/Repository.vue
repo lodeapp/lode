@@ -22,17 +22,22 @@ export default {
     },
     created () {
         // @TODO: Get parameters from config
-        this.frameworks.push(new Jest({
+        this.addFramework(new Jest({
             command: 'yarn tests',
             path: '/Users/tomasbuteler/Sites/Amiqus/aqid',
             runner: 'yarn'
         }))
 
-        this.frameworks.push(new PHPUnit({
+        this.addFramework(new PHPUnit({
             command: 'depot test',
             path: '/Users/tomasbuteler/Sites/Amiqus/aqid',
             vmPath: '/aml'
         }))
+    },
+    methods: {
+        addFramework (framework) {
+            this.frameworks.push(framework)
+        }
     }
 }
 </script>

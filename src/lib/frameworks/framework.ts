@@ -1,8 +1,8 @@
 import { find } from 'lodash'
+import { v4 as uuid } from 'uuid'
 import { IProcess } from '@lib/process/process'
 import { ProcessFactory } from '@lib/process/factory'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
-import { ITest } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
 
 export type FrameworkOptions = {
@@ -13,20 +13,23 @@ export type FrameworkOptions = {
 }
 
 export interface IFramework {
+    readonly id: string
     readonly command: string
     readonly path: string
     readonly runner: string | null
     process?: IProcess
     suites: Array<ISuite>
     status: Status
+    selective: boolean
+    selected: boolean
 
-    run (): Promise<void>
-    runSelective (suites: Array<ISuite>, tests: Array<ITest>): Promise<void>
+    start (): Promise<void>
     stop (): Promise<void>
     refresh (): Promise<Array<ISuite>>
 }
 
 export abstract class Framework implements IFramework {
+    public readonly id: string
     public readonly command: string
     public readonly path: string
     public readonly runner: string | null
@@ -35,8 +38,11 @@ export abstract class Framework implements IFramework {
     public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
     public status: Status = 'idle'
+    public selective: boolean = false
+    public selected: boolean = true
 
     constructor (options: FrameworkOptions) {
+        this.id = uuid()
         this.command = options.command
         this.path = options.path
         this.runner = options.runner || null
@@ -44,27 +50,30 @@ export abstract class Framework implements IFramework {
     }
 
     abstract runArgs (): Array<string>
-    abstract runSelectiveArgs (suites: Array<ISuite>, tests: Array<ITest>): Array<string>
+    abstract runSelectiveArgs (): Array<string>
     abstract refresh (): Promise<Array<ISuite>>
 
-    report (args: Array<string>, resolve: Function, reject: Function): IProcess {
-        return this.spawn(args)
-            .on('report', ({ process, report }) => {
-                console.log(report)
-                this.running.push(this.debriefSuite(report))
-            })
-            .on('success', ({ process }) => {
-                Promise.all(this.running).then(() => {
-                    this.afterRun(true)
+    start (): Promise<void> {
+        if (this.selective) {
+            return this.runSelective()
+        }
+        return this.runSelective()
+        // return this.run()
+    }
+
+    stop (): Promise<void> {
+        return new Promise((resolve, reject) => {
+            console.log('kill requested')
+            if (!this.process) {
+                console.log('no processs...')
+                resolve()
+            }
+            this.process!
+                .on('killed', () => {
                     resolve()
                 })
-            })
-            .on('killed', ({ process }) => {
-                resolve()
-            })
-            .on('error', ({ message }) => {
-                reject(message)
-            })
+                .stop()
+        })
     }
 
     run (): Promise<void> {
@@ -76,10 +85,31 @@ export abstract class Framework implements IFramework {
         })
     }
 
-    runSelective (suites: Array<ISuite>, tests: Array<ITest>): Promise<void> {
+    runSelective (): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.report(this.runSelectiveArgs(suites, tests), resolve, reject)
+            this.report(this.runSelectiveArgs(), resolve, reject)
         })
+    }
+
+    report (args: Array<string>, resolve: Function, reject: Function): IProcess {
+        return this.spawn(args)
+            .on('report', ({ process, report }) => {
+                console.log(report)
+                this.running.push(this.debriefSuite(report))
+            })
+            .on('success', ({ process }) => {
+                Promise.all(this.running).then(() => {
+                    // @TODO: don't clean-up if running selectively
+                    this.afterRun(true)
+                    resolve()
+                })
+            })
+            .on('killed', ({ process }) => {
+                resolve()
+            })
+            .on('error', ({ message }) => {
+                reject(message)
+            })
     }
 
     afterRun (cleanup: boolean = false) {
@@ -99,21 +129,6 @@ export abstract class Framework implements IFramework {
         )
 
         return this.process
-    }
-
-    stop (): Promise<void> {
-        return new Promise((resolve, reject) => {
-            console.log('kill requested')
-            if (!this.process) {
-                console.log('no processs...')
-                resolve()
-            }
-            this.process!
-                .on('killed', () => {
-                    resolve()
-                })
-                .stop()
-        })
     }
 
     newSuite (file: string): ISuite {

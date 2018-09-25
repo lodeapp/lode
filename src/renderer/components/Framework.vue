@@ -17,7 +17,7 @@
         <button @click="stop">Stop</button>
         <ul>
             <li v-for="suite in framework.suites" :key="suite.path">
-                <Suite :suite="suite" />
+                <Suite :suite="suite" :selective="framework.selective" @selective="onSuiteSelective" />
             </li>
         </ul>
     </div>
@@ -86,7 +86,7 @@ export default {
             this.running = true
             this.stopped = false
             this.error = false
-            this.framework.runSelective([], [])
+            this.framework.start()
                 .then(() => {
                     console.log('Framework finished run')
                 })
@@ -107,6 +107,10 @@ export default {
                 .catch(() => {
                     this.error = true
                 })
+        },
+        onSuiteSelective () {
+            this.framework.selective = true
+            this.$emit('selective')
         }
     }
 }

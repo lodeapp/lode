@@ -1,6 +1,9 @@
 <template>
     <div class="test" :class="[test.status]" @click.stop="show = !show">
-        <div>{{ test.displayName }}</div>
+        <div>
+            <input v-if="toggles" type="checkbox" v-model="selected" @click.stop>
+            {{ test.displayName }}
+        </div>
         <div v-if="result.feedback">
             <div v-show="show">
                 <pre v-html="result.feedback"></pre>
@@ -16,6 +19,10 @@ export default {
         test: {
             type: Object,
             required: true
+        },
+        toggles: {
+            type: Boolean,
+            default: false
         }
     },
     data () {
@@ -26,6 +33,15 @@ export default {
     computed: {
         result () {
             return this.test.result || {}
+        },
+        selected: {
+            get () {
+                return this.test.selected
+            },
+            set (checked) {
+                this.test.toggleSelected(checked)
+                this.$emit('selected', checked)
+            }
         }
     }
 }
