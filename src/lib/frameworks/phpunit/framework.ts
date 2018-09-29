@@ -1,5 +1,5 @@
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
-import { ISuite } from '@lib/frameworks/suite'
+import { ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
 
 export class PHPUnit extends Framework {
@@ -12,8 +12,10 @@ export class PHPUnit extends Framework {
     refresh (): Promise<Array<ISuite>> {
         return new Promise((resolve, reject) => {
             this.spawn(['--columns=42'].concat(this.runArgs()))
-                .on('report', ({ process, report }) => {
-                    console.log(report)
+                .on('report', ({ report }) => {
+                    report.forEach((result: ISuiteResult) => {
+                        this.makeSuite(result)
+                    })
                     resolve([])
                 })
                 .on('error', ({ message }) => {
@@ -32,10 +34,10 @@ export class PHPUnit extends Framework {
         return ['tests/Unit/HelpersTest.php'].concat(this.runArgs())
     }
 
-    newSuite (file: string): ISuite {
-        return new PHPUnitSuite(file, {
+    newSuite (result: ISuiteResult): ISuite {
+        return new PHPUnitSuite({
             path: this.path,
             vmPath: this.vmPath
-        })
+        }, result)
     }
 }

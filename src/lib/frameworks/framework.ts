@@ -131,21 +131,21 @@ export abstract class Framework implements IFramework {
         return this.process
     }
 
-    newSuite (file: string): ISuite {
-        return new Suite(file, {
+    newSuite (result: ISuiteResult): ISuite {
+        return new Suite({
             path: this.path,
             vmPath: this.vmPath
-        })
+        }, result)
     }
 
     findSuite (file: string): ISuite | undefined {
         return find(this.suites, { file })
     }
 
-    makeSuite (file: string): ISuite {
-        let suite: ISuite | undefined = this.findSuite(file)
+    makeSuite (result: ISuiteResult): ISuite {
+        let suite: ISuite | undefined = this.findSuite(result.file)
         if (!suite) {
-            suite = this.newSuite(file)
+            suite = this.newSuite(result)
             this.suites.push(suite)
         }
         return suite
@@ -169,7 +169,7 @@ export abstract class Framework implements IFramework {
      */
     debriefSuite (result: ISuiteResult): Promise<void> {
         result = this.decodeSuiteResult(result)
-        const suite: ISuite = this.makeSuite(result.file)
+        const suite: ISuite = this.makeSuite(result)
         return suite.debrief(result)
     }
 }

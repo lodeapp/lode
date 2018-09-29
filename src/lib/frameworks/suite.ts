@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { find } from 'lodash'
+import { cloneDeep, find, merge } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { Test, ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
@@ -32,24 +32,35 @@ export interface ISuiteResult {
 
 export class Suite implements ISuite {
     public readonly id: string
-    public readonly file: string
-    public readonly relative: string
     public readonly root: string
     public readonly vmPath: string | null
-    public tests: Array<ITest>
-    public running: Array<Promise<void>>
-    public status: Status
+    public readonly file: string
+    public relative!: string
+    public tests: Array<ITest> = []
+    public running: Array<Promise<void>> = []
+    public status!: Status
     public selective: boolean = false
     public selected: boolean = true
     public canToggleTests: boolean = false
 
-    constructor (file: string, options: SuiteOptions) {
+    constructor (options: SuiteOptions, result: ISuiteResult) {
         this.id = uuid()
-        this.file = file
         this.root = options.path
         this.vmPath = options.vmPath || null
+        this.file = result.file
+        this.build(result)
+    }
+
+    static buildResult (partial: object): ISuiteResult {
+        return merge({
+            file: '',
+            tests: []
+        }, cloneDeep(partial))
+    }
+
+    build (result: ISuiteResult): void {
         this.relative = path.relative(this.vmPath || this.root, this.file)
-        this.tests = []
+        this.tests = result.tests.map((result: ITestResult) => this.newTest(result))
         this.running = []
         this.status = 'idle'
     }
