@@ -17,13 +17,14 @@
         <button @click="stop">Stop</button>
         <ul>
             <li v-for="suite in framework.suites" :key="suite.path">
-                <Suite :suite="suite" :selective="framework.selective" @selective="onSuiteSelective" />
+                <Suite :suite="suite" />
             </li>
         </ul>
     </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Suite from '@/components/Suite'
 
 export default {
@@ -60,7 +61,10 @@ export default {
                 return 'error'
             }
             return this.framework.status
-        }
+        },
+        ...mapGetters({
+            selective: 'tree/selective'
+        })
     },
     methods: {
         refresh () {
@@ -86,7 +90,7 @@ export default {
             this.running = true
             this.stopped = false
             this.error = false
-            this.framework.start()
+            this.framework.start(this.selective)
                 .then(() => {
                     console.log('Framework finished run')
                 })
@@ -107,10 +111,6 @@ export default {
                 .catch(() => {
                     this.error = true
                 })
-        },
-        onSuiteSelective () {
-            this.framework.selective = true
-            this.$emit('selective')
         }
     }
 }

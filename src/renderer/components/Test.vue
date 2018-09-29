@@ -1,7 +1,9 @@
 <template>
     <div class="test" :class="[test.status]" @click.stop="show = !show">
         <div>
-            <input v-if="toggles" type="checkbox" v-model="selected" @click.stop>
+            <span style="display: inline-block; min-width: 18px; min-height: 19px; cursor: pointer;" @click.stop="onSelective">
+                <input v-if="toggles && selective" type="checkbox" v-model="selected" @click.stop>
+            </span>
             {{ test.displayName }}
         </div>
         <div v-if="result.feedback">
@@ -13,6 +15,7 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex'
 export default {
     name: 'Test',
     props: {
@@ -42,7 +45,19 @@ export default {
                 this.test.toggleSelected(checked)
                 this.$emit('selected', checked)
             }
-        }
+        },
+        ...mapGetters({
+            selective: 'tree/selective'
+        })
+    },
+    methods: {
+        onSelective () {
+            this.selected = true
+            this.enableSelective()
+        },
+        ...mapActions({
+            enableSelective: 'tree/enableSelective'
+        })
     }
 }
 </script>

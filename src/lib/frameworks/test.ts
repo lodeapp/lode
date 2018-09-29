@@ -28,7 +28,7 @@ export class Test implements ITest {
     public readonly displayName: string
     public status!: Status
     public result?: ITestResult
-    public selected: boolean = true
+    public selected: boolean = false
 
     constructor (result: ITestResult) {
         this.id = uuid()

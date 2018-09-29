@@ -39,8 +39,7 @@ export class Suite implements ISuite {
     public tests: Array<ITest> = []
     public running: Array<Promise<void>> = []
     public status!: Status
-    public selective: boolean = false
-    public selected: boolean = true
+    public selected: boolean = false
     public canToggleTests: boolean = false
 
     constructor (options: SuiteOptions, result: ISuiteResult) {

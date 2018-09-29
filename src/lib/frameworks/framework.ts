@@ -20,10 +20,9 @@ export interface IFramework {
     process?: IProcess
     suites: Array<ISuite>
     status: Status
-    selective: boolean
     selected: boolean
 
-    start (): Promise<void>
+    start (selective: boolean): Promise<void>
     stop (): Promise<void>
     refresh (): Promise<Array<ISuite>>
 }
@@ -38,7 +37,6 @@ export abstract class Framework implements IFramework {
     public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
     public status: Status = 'idle'
-    public selective: boolean = false
     public selected: boolean = true
 
     constructor (options: FrameworkOptions) {
@@ -53,8 +51,9 @@ export abstract class Framework implements IFramework {
     abstract runSelectiveArgs (): Array<string>
     abstract refresh (): Promise<Array<ISuite>>
 
-    start (): Promise<void> {
-        if (this.selective) {
+    start (selective: boolean = false): Promise<void> {
+        if (selective) {
+            console.log('Running selectively...')
             return this.runSelective()
         }
         return this.runSelective()

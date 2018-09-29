@@ -1,7 +1,7 @@
 <template>
     <div class="suite" :class="[suite.status]">
         <div>
-            <span style="display: inline-block; min-width: 18px; min-height: 19px; cursor: pointer;" @click="toggleSelective">
+            <span style="display: inline-block; min-width: 18px; min-height: 19px; cursor: pointer;" @click="onSelective">
                 <input v-if="selective" type="checkbox" v-model="selected">
             </span>
             <span @click="show = !show">{{ suite.relative }}</span>
@@ -15,6 +15,7 @@
 </template>
 
 <script>
+import { mapActions, mapGetters } from 'vuex'
 import Test from '@/components/Test'
 
 export default {
@@ -23,10 +24,6 @@ export default {
         Test
     },
     props: {
-        selective: {
-            type: Boolean,
-            default: false
-        },
         suite: {
             type: Object,
             required: true
@@ -45,11 +42,15 @@ export default {
             set (checked) {
                 this.suite.toggleSelected(checked)
             }
-        }
+        },
+        ...mapGetters({
+            selective: 'tree/selective'
+        })
     },
     methods: {
-        toggleSelective () {
-            this.$emit('selective')
+        onSelective () {
+            this.selected = true
+            this.enableSelective()
         },
         onTestSelected (checked) {
             if (checked) {
@@ -57,7 +58,10 @@ export default {
             } else if (this.suite.noTestsSelected()) {
                 this.suite.toggleSelected(false, false)
             }
-        }
+        },
+        ...mapActions({
+            enableSelective: 'tree/enableSelective'
+        })
     }
 }
 </script>
