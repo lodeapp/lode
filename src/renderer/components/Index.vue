@@ -1,18 +1,18 @@
 <template>
     <div id="wrapper">
         <main>
-            <Repository />
+            <Project />
         </main>
     </div>
 </template>
 
 <script>
-import Repository from '@/components/Repository'
+import Project from '@/components/Project'
 
 export default {
     name: 'Index',
     components: {
-        Repository
+        Project
     }
 }
 </script>

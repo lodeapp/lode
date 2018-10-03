@@ -21,13 +21,14 @@ export interface ISuite {
 
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     noTestsSelected (): boolean
-    debrief (result: ISuiteResult): Promise<void>
+    debrief (result: ISuiteResult, selective: boolean): Promise<void>
     reset (): void
 }
 
 export interface ISuiteResult {
     file: string
     tests: Array<ITestResult>
+    meta: Array<any>
 }
 
 export class Suite implements ISuite {
@@ -53,7 +54,8 @@ export class Suite implements ISuite {
     static buildResult (partial: object): ISuiteResult {
         return merge({
             file: '',
-            tests: []
+            tests: [],
+            meta: []
         }, cloneDeep(partial))
     }
 
@@ -77,7 +79,7 @@ export class Suite implements ISuite {
         return this.tests.filter(test => test.selected).length === 0
     }
 
-    debrief (suiteResult: ISuiteResult): Promise<void> {
+    debrief (suiteResult: ISuiteResult, selective: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
             suiteResult.tests.forEach((result: ITestResult) => {
                 let test: ITest = this.makeTest(result)
@@ -86,7 +88,7 @@ export class Suite implements ISuite {
 
             Promise.all(this.running).then(() => {
                 // @TODO: don't clean-up if running selectively
-                this.afterDebrief(true)
+                this.afterDebrief(selective)
                 resolve()
             })
         })
@@ -94,14 +96,14 @@ export class Suite implements ISuite {
 
     reset (): void {
         this.status = 'idle'
-        this.tests.forEach(test => {
+        this.tests.filter(test => test.selected).forEach(test => {
             test.reset()
         })
     }
 
-    afterDebrief (cleanup: boolean = false): void {
-        console.log('cleaning up suite')
-        if (cleanup) {
+    afterDebrief (selective: boolean): void {
+        if (!selective) {
+            console.log('Cleaning up suite')
             this.tests = this.tests.filter(test => test.status !== 'idle')
         }
         this.status = parseStatus(this.tests.map(test => test.status))

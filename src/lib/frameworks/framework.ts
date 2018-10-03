@@ -37,7 +37,8 @@ export abstract class Framework implements IFramework {
     public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
     public status: Status = 'idle'
-    public selected: boolean = true
+    public selected: boolean = false
+    public selective: boolean = false
 
     constructor (options: FrameworkOptions) {
         this.id = uuid()
@@ -54,6 +55,7 @@ export abstract class Framework implements IFramework {
     start (selective: boolean = false): Promise<void> {
         if (selective) {
             console.log('Running selectively...')
+            this.selective = true
             return this.runSelective()
         }
         return this.runSelective()
@@ -85,6 +87,9 @@ export abstract class Framework implements IFramework {
     }
 
     runSelective (): Promise<void> {
+        this.suites.filter(suite => suite.selected).forEach(suite => {
+            suite.reset()
+        })
         return new Promise((resolve, reject) => {
             this.report(this.runSelectiveArgs(), resolve, reject)
         })
@@ -93,13 +98,11 @@ export abstract class Framework implements IFramework {
     report (args: Array<string>, resolve: Function, reject: Function): IProcess {
         return this.spawn(args)
             .on('report', ({ process, report }) => {
-                console.log(report)
                 this.running.push(this.debriefSuite(report))
             })
             .on('success', ({ process }) => {
                 Promise.all(this.running).then(() => {
-                    // @TODO: don't clean-up if running selectively
-                    this.afterRun(true)
+                    this.afterRun()
                     resolve()
                 })
             })
@@ -111,12 +114,13 @@ export abstract class Framework implements IFramework {
             })
     }
 
-    afterRun (cleanup: boolean = false) {
-        console.log('cleaning up framework')
-        if (cleanup) {
+    afterRun () {
+        if (!this.selective) {
+            console.log('Cleaning up framework')
             this.suites = this.suites.filter(suite => suite.status !== 'idle')
         }
         this.status = parseStatus(this.suites.map(suite => suite.status))
+        this.selective = false
     }
 
     spawn (args: Array<string>): IProcess {
@@ -169,6 +173,6 @@ export abstract class Framework implements IFramework {
     debriefSuite (result: ISuiteResult): Promise<void> {
         result = this.decodeSuiteResult(result)
         const suite: ISuite = this.makeSuite(result)
-        return suite.debrief(result)
+        return suite.debrief(result, this.selective)
     }
 }

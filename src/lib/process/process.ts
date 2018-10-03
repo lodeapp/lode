@@ -2,7 +2,8 @@ import stripAnsi from 'strip-ansi'
 import { EventEmitter } from 'events'
 import { compact, flattenDeep } from 'lodash'
 import { spawn, ChildProcess } from 'child_process'
-import { ErrorWithCode } from './errors'
+import { Logger } from '@lib/logger'
+import { ErrorWithCode } from '@lib/process/errors'
 
 export interface IProcess extends EventEmitter {
     readonly process?: ChildProcess
@@ -55,7 +56,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         )
         this.spawnPath = this.args.shift()!
 
-        console.log('executing', this.spawnPath, this.args, this.path)
+        Logger.debug.log('Spawning command', { spawn: this.spawnPath, args: this.args, path: this.path })
+
         const spawnedProcess = spawn(this.spawnPath, this.args || [], {
             cwd: this.path,
             env: Object.assign({}, process.env, {
@@ -63,6 +65,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 FORCE_COLOR: 1
             })
         })
+
+        Logger.info.group(`Process ${spawnedProcess.pid}`)
 
         spawnedProcess.stdout.setEncoding('utf8')
         spawnedProcess.stderr.setEncoding('utf8')
@@ -99,7 +103,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     }
 
     private onError (err: ErrorWithCode): void {
-        console.log('error', err)
+
+        Logger.debug.log('Process error', err)
+
         // If the error's code is a string then it means the code isn't the
         // process's exit code but rather an error coming from Node's bowels,
         // e.g., ENOENT.
@@ -114,14 +120,18 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     }
 
     private onClose(code: number, signal: string | null) {
-        console.log('closing', code, signal)
+
+        Logger.debug.log('Process closing.', { code, signal })
+
         // If exit code was non-zero but we were running a report
         // that finished successfully, we should ignore the error,
         // assuming it relates to a failure in the tests for which
         // we'll give appropriate feedback on in the interface.
         if (code === 0 || (this.reports && this.reportClosed)) {
+            Logger.debug.log('Process successfully exited.')
             this.emit('success', { process: this })
         } else if (this.process && this.process.killed || this.killed) {
+            Logger.debug.log('Process killed.')
             this.emit('killed', { process: this })
         } else {
             // If process errored out, but did not emit an error
@@ -129,12 +139,17 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             if (!this.error) {
                 this.error = this.rawChunks.join('')
             }
+
+            Logger.debug.log('Process errored without throwing.', { error: this.error })
+
             this.emit('error', {
                 process: this,
                 message: this.error,
                 code
             })
         }
+
+        Logger.info.groupEnd()
     }
 
     private onData(chunk: string): void {
@@ -173,25 +188,16 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 chunk
             })
 
-            if (this.reports) {
-                let report: string | object = ''
+            if (this.reports && !this.reportClosed) {
                 const reportStarts: boolean = (/^{?\(/).test(filteredChunk)
                 const reportEnds: boolean = (/\)}?$/).test(filteredChunk)
                 if (reportStarts && reportEnds) {
-                    report = this.parseReport(filteredChunk)
-                    this.emit('report', {
-                        process: this,
-                        report
-                    })
+                    this.report(filteredChunk)
                 } else if (reportStarts || this.reportBuffer) {
                     this.reportBuffer += filteredChunk
                     if ((/\((?:(?!\)).)+\)/).test(this.reportBuffer)) {
                         this.reportBuffer = this.reportBuffer.replace(/({\s?)?\((?:(?!\)).)+\)\s?}?/, (match, offset, string) => {
-                            report = this.parseReport(match)
-                            this.emit('report', {
-                                process: this,
-                                report
-                            })
+                            this.report(match)
                             return ''
                         })
                     }
@@ -201,6 +207,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 if (lastLine === '}') {
                     this.reportClosed = true
                 }
+            } else {
+                Logger.info.log(chunk)
             }
         }
 
@@ -209,6 +217,16 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             process: this,
             chunk
         })
+    }
+
+    private report (encoded: string): void {
+        const report = this.parseReport(encoded)
+        this.emit('report', {
+            process: this,
+            report
+        })
+        Logger.info.log('[encoded]')
+        Logger.debug.dir(report)
     }
 
     private parseReport (chunk: string): object | string {

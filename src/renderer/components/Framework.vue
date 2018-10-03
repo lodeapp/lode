@@ -70,7 +70,7 @@ export default {
         refresh () {
             this.refreshing = true
             this.framework.refresh().then(suites => {
-                console.log('refreshed')
+                // console.log('refreshed')
                 this.refreshing = false
             })
             // const project = new Project()
@@ -92,7 +92,7 @@ export default {
             this.error = false
             this.framework.start(this.selective)
                 .then(() => {
-                    console.log('Framework finished run')
+                    // console.log('Framework finished run')
                 })
                 .catch((error) => {
                     console.log(error)
@@ -106,7 +106,7 @@ export default {
             this.framework.stop()
                 .then(() => {
                     this.stopped = true
-                    console.log('Framework was halted successfully')
+                    // console.log('Framework was halted successfully')
                 })
                 .catch(() => {
                     this.error = true

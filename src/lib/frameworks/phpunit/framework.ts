@@ -1,9 +1,11 @@
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
 import { ISuite, ISuiteResult } from '@lib/frameworks/suite'
+import { ITest } from '@lib/frameworks/test'
 import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
 
 export class PHPUnit extends Framework {
     readonly name = 'PHPUnit'
+    public suites: Array<PHPUnitSuite> = []
 
     constructor (options: FrameworkOptions) {
         super(options)
@@ -29,9 +31,25 @@ export class PHPUnit extends Framework {
     }
 
     runSelectiveArgs (): Array<string> {
-        console.log(this.suites.filter(suite => suite.selected))
+        const args: Array<string> = ['--filter']
+        const filters: Array<string> = []
 
-        return ['tests/Unit/HelpersTest.php'].concat(this.runArgs())
+        this.suites.filter(suite => suite.selected).forEach(suite => {
+            const suiteClass = PHPUnitSuite.escapeClassName(suite.class!)
+            const selected = suite.tests.filter((test: ITest) => test.selected)
+            if (selected.length !== suite.tests.length) {
+                // If not running all tests from suite, filter each one
+                selected.forEach((test: ITest) => {
+                    filters.push(`${suiteClass}::${test.name}$`)
+                })
+            } else {
+                filters.push(suiteClass)
+            }
+        })
+
+        args.push(`"${filters.join('|')}"`)
+
+        return args.concat(this.runArgs())
     }
 
     newSuite (result: ISuiteResult): ISuite {

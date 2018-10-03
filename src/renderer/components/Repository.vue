@@ -15,6 +15,12 @@ export default {
     components: {
         Framework
     },
+    props: {
+        repository: {
+            type: Object,
+            required: true
+        }
+    },
     data () {
         return {
             frameworks: []
@@ -24,13 +30,13 @@ export default {
         // @TODO: Get parameters from config
         this.addFramework(new Jest({
             command: 'yarn tests',
-            path: '/Users/tomasbuteler/Sites/Amiqus/aqid',
+            path: this.repository.path,
             runner: 'yarn'
         }))
 
         this.addFramework(new PHPUnit({
             command: 'depot test',
-            path: '/Users/tomasbuteler/Sites/Amiqus/aqid',
+            path: this.repository.path,
             vmPath: '/aml'
         }))
     },
