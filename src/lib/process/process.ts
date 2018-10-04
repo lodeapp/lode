@@ -60,6 +60,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
 
         const spawnedProcess = spawn(this.spawnPath, this.args || [], {
             cwd: this.path,
+            detached: true,
             env: Object.assign({}, process.env, {
                 // Ensure ANSI color is supported
                 FORCE_COLOR: 1
@@ -247,7 +248,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     }
 
     public stop (): void {
-        this.process.kill()
+        process.kill(-this.process.pid);
         this.killed = true
     }
 

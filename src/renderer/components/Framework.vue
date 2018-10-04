@@ -69,10 +69,17 @@ export default {
     methods: {
         refresh () {
             this.refreshing = true
-            this.framework.refresh().then(suites => {
-                // console.log('refreshed')
-                this.refreshing = false
-            })
+            this.framework.refresh()
+                .then(suites => {
+                    // console.log('refreshed')
+                })
+                .catch((error) => {
+                    console.log(error)
+                    this.error = true
+                })
+                .then(() => {
+                    this.refreshing = false
+                })
             // const project = new Project()
             // project.glob()
 
@@ -106,10 +113,13 @@ export default {
             this.framework.stop()
                 .then(() => {
                     this.stopped = true
-                    // console.log('Framework was halted successfully')
                 })
                 .catch(() => {
                     this.error = true
+                })
+                .then(() => {
+                    this.refreshing = false
+                    this.running = false
                 })
         }
     }

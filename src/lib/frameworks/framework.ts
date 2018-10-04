@@ -64,9 +64,7 @@ export abstract class Framework implements IFramework {
 
     stop (): Promise<void> {
         return new Promise((resolve, reject) => {
-            console.log('kill requested')
             if (!this.process) {
-                console.log('no processs...')
                 resolve()
             }
             this.process!
