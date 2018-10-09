@@ -1,21 +1,25 @@
 <template>
-    <div class="framework">
-        <h2 :class="[status]">
-            {{ framework.name }}
-            <span>
-                [
-                <span v-if="running">Running...</span>
-                <span v-else-if="refreshing">Refreshing...</span>
-                <span v-else-if="stopped">Stopped</span>
-                <span v-else-if="error">Error!</span>
-                <span v-else>{{ framework.status }}</span>
-                ]
-            </span>
-        </h2>
-        <button @click="refresh">Refresh</button>
-        <button @click="run">Run</button>
-        <button @click="stop">Stop</button>
-        <ul>
+    <div class="framework" :class="groupClasses">
+        <div class="header row">
+            <div class="col-18">
+                <h2 class="d-inline">{{ framework.name }}</h2>
+                <span>
+                    [
+                    <span v-if="running">Running...</span>
+                    <span v-else-if="refreshing">Refreshing...</span>
+                    <span v-else-if="stopped">Stopped</span>
+                    <span v-else-if="error">Error!</span>
+                    <span v-else>{{ framework.status }}</span>
+                    ]
+                </span>
+                <button @click="refresh">Refresh</button>
+            </div>
+            <div class="col-6 text-right">
+                <button @click="run">Run</button>
+                <button @click="stop">Stop</button>
+            </div>
+        </div>
+        <ul v-show="show">
             <li v-for="suite in framework.suites" :key="suite.path">
                 <Suite :suite="suite" />
             </li>
@@ -25,6 +29,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import group from '@/mixins/group'
 import Suite from '@/components/Suite'
 
 export default {
@@ -32,6 +37,7 @@ export default {
     components: {
         Suite
     },
+    mixins: [group],
     props: {
         framework: {
             type: Object,
@@ -40,6 +46,7 @@ export default {
     },
     data () {
         return {
+            show: true,
             refreshing: false,
             running: false,
             stopped: false,
@@ -47,6 +54,9 @@ export default {
         }
     },
     computed: {
+        model () {
+            return this.framework
+        },
         status () {
             if (this.running) {
                 return 'running'

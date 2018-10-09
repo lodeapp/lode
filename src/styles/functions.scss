@@ -1,7 +1,33 @@
-@function color($key: "blue") {
-  @return map-get($colors, $key);
+// ========================================================================
+// Functions
+// ========================================================================
+
+// Start with Bootstrap's functions
+@import 'node_modules/bootstrap/scss/functions';
+
+@function theme-color-light($key: 'primary') {
+    @return map-get($theme-colors-light, $key);
 }
 
-@function theme-color($key: "primary") {
-  @return map-get($theme-colors, $key);
+@function theme-color-dark($key: 'primary') {
+    @return map-get($theme-colors-dark, $key);
+}
+
+@function encodecolor($string) {
+    @if type-of($string) == 'color' {
+        $hex: str-slice(ie-hex-str($string), 4);
+        $string: unquote('#{$hex}');
+        $string: '%23' + $string;
+    }
+    @return $string;
+}
+
+@function svg-fill ($svg, $color) {
+    // Colors must be URL encoded to work in Firefox
+    @return str-replace($svg, '<svg', '<svg fill="#{encodecolor($color)}"');
+}
+
+@function svg-image($image, $fill: 'none') {
+    $svg: svg-fill($image, $fill);
+    @return 'data:image/svg+xml;utf8,#{$svg}';
 }

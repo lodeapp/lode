@@ -1,0 +1,12 @@
+.filename {
+    @include clearfix;
+
+    & > span {
+        display: inline-block;
+        float: left;
+    }
+
+    & > .dir {
+        color: $secondary-discreet-text;
+    }
+}

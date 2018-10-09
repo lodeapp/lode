@@ -2,8 +2,6 @@
 // Typography
 // ========================================================================
 
-$sans: 'Source Sans Pro', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji' !default;
-$serif: Georgia, 'Times New Roman', Times, serif, 'Apple Color Emoji', 'Segoe UI Emoji' !default;
 $monospace: Menlo, Monaco, Consolas, 'Courier New', monospace, 'Apple Color Emoji', 'Segoe UI Emoji' !default;
 
 $heading-margin: 1rem;
@@ -17,38 +15,12 @@ $brand-contrast: rgb(255, 255, 255) !default;
 
 $primary: rgb(255, 255, 255) !default;
 $primary-text: rgb(42, 45, 52) !default;
-$primary-discreet-text: #ccc !default;
+$primary-discreet-text: rgb(204, 204, 204) !default;
+$primary-border: rgb(209, 213, 218) !default;
 
-$secondary: rgb(248, 248, 248) !default;
+$secondary: rgb(247, 247, 247) !default;
 $secondary-text: rgb(108, 109, 111) !default;
-$secondary-discreet-text: rgb(170, 170, 170) !default;
-$secondary-discreet-contrast: rgb(255, 255, 255) !default;
-
-$tertiary: rgb(238, 238, 238) !default;
-$tertiary-text: #888 !default;
-$tertiary-highlight: rgb(186, 186, 186) !default;
-$tertiary-highlight-text: rgb(42, 45, 52) !default;
-$tertiary-discreet: #ccc !default;
-$tertiary-discreet-text: #888 !default;
-
-$contrast: rgb(42, 45, 52) !default;
-$contrast-text: rgb(175, 174, 176) !default;
-$contrast-highlight: rgb(101, 107, 128) !default;
-$contrast-highlight-text: rgb(255, 255, 255) !default;
-$contrast-discreet: rgb(65, 68, 74) !default;
-$contrast-discreet-text: rgb(127, 128, 132) !default;
-
-$fancy: rgb(64, 130, 193) !default;
-$fancy-hover: darken($fancy, 10%) !default;
-$fancy-text: rgb(255, 255, 255) !default;
-
-$link-color: $fancy !default;
-$link-hover-color: $fancy-hover !default;
-$focus-color: $fancy !default;
-
-$transition-time: .15s;
-
-$body-bg: $secondary !default;
+$secondary-discreet-text: rgb(153, 153, 153) !default;
 
 $blue:    #5e97ce !default;
 $indigo:  #6610f2 !default;
@@ -85,7 +57,21 @@ $theme-colors-dark: (
 $theme-color-interval: 8% !default;
 
 // ========================================================================
+// Bootstrap overrides
+// ========================================================================
+
+$border-radius: 3px !default;
+$border-radius-lg: 3px !default;
+$border-radius-sm: 3px !default;
+
+// ========================================================================
 // Grid
 // ========================================================================
 
 $grid-columns: 24 !default;
+
+// ========================================================================
+// Animations
+// ========================================================================
+
+$transition-time: .15s;

@@ -1,5 +1,18 @@
 @import 'functions';
 @import 'variables';
+@import 'bootstrap';
+@import 'blocks/main';
+@import 'blocks/framework';
+@import 'blocks/suite';
+@import 'blocks/test';
+@import 'blocks/filename';
+@import 'blocks/input';
+
+html,
+body {
+    font-size: 12px;
+    background-color: $secondary;
+}
 
 .passed {
     color: theme-color('success');

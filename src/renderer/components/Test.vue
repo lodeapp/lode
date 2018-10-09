@@ -1,12 +1,12 @@
 <template>
-    <div class="test" :class="[test.status]" @click.stop="show = !show">
-        <div>
-            <span style="display: inline-block; min-width: 18px; min-height: 19px; cursor: pointer;" @click.stop="onSelective">
-                <input v-if="toggles" type="checkbox" v-model="selected" @click.stop>
-            </span>
-            {{ test.displayName }}
+    <div class="test" :class="groupClasses" @click.stop="toggleChildren">
+        <div class="header">
+            <div v-if="toggles" class="input--select" @click.stop="onSelective">
+                <input type="checkbox" v-model="selected" @click.stop>
+            </div>
+            <div>{{ test.displayName }}</div>
         </div>
-        <div v-if="result.feedback">
+        <div v-if="hasChildren">
             <div v-show="show">
                 <pre v-html="result.feedback"></pre>
             </div>
@@ -16,8 +16,11 @@
 
 <script>
 import { mapActions } from 'vuex'
+import group from '@/mixins/group'
+
 export default {
     name: 'Test',
+    mixins: [group],
     props: {
         test: {
             type: Object,
@@ -34,6 +37,9 @@ export default {
         }
     },
     computed: {
+        model () {
+            return this.test
+        },
         result () {
             return this.test.result || {}
         },
@@ -45,6 +51,9 @@ export default {
                 this.test.toggleSelected(checked)
                 this.$emit('selected', checked)
             }
+        },
+        hasChildren () {
+            return this.result.feedback
         }
     },
     methods: {
