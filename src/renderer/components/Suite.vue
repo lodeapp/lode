@@ -1,10 +1,10 @@
 <template>
-    <div class="suite" :class="[suite.status]">
-        <div>
-            <span style="display: inline-block; min-width: 18px; min-height: 19px; cursor: pointer;" @click="onSelective">
+    <div class="suite" :class="groupClasses" @click="toggleChildren">
+        <div class="header">
+            <div class="input--select" @click.stop="onSelective">
                 <input type="checkbox" v-model="selected">
-            </span>
-            <span @click="show = !show">{{ suite.relative }}</span>
+            </div>
+            <Filename :path="suite.relative" />
         </div>
         <ul v-show="show">
             <li v-for="test in suite.tests" :key="test.name">
@@ -16,25 +16,27 @@
 
 <script>
 import { mapActions } from 'vuex'
+import group from '@/mixins/group'
+import Filename from '@/components/Filename'
 import Test from '@/components/Test'
 
 export default {
     name: 'Suite',
     components: {
+        Filename,
         Test
     },
+    mixins: [group],
     props: {
         suite: {
             type: Object,
             required: true
         }
     },
-    data () {
-        return {
-            show: false
-        }
-    },
     computed: {
+        model () {
+            return this.suite
+        },
         selected: {
             get () {
                 return this.suite.selected

@@ -1,0 +1,23 @@
+.framework {
+    color: $primary-text;
+    margin: ($grid-gutter-width / 2);
+
+    & > .header {
+        padding: 8px;
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+    }
+
+    & > ul {
+        list-style: none;
+        padding: 0;
+
+        &:empty {
+            margin-top: 8px;
+            border-bottom: 1px solid $primary-border;
+        }
+    }
+}

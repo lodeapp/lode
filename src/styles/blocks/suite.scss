@@ -1,0 +1,32 @@
+.suite {
+    @include clearfix;
+    border-radius: $border-radius;
+    border: 1px solid $primary-border;
+    font-weight: 600;
+    margin-top: 8px;
+
+    & > .header {
+        background-color: $primary;
+        border-radius: $border-radius;
+        cursor: pointer;
+        display: flex;
+        padding: 8px;
+    }
+
+    & > ul {
+        background-color: darken($secondary, 5%);
+        border-bottom-left-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
+        list-style: none;
+        padding: 8px 0;
+    }
+
+    &.is-expanded {
+
+        & > .header {
+            border-bottom: 1px solid darken($primary-border, 5%);
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+    }
+}
