@@ -1,6 +1,6 @@
 <template>
     <div class="project" :class="{ selective }">
-        <div v-for="repository in repositories" :key="repository.path">
+        <div v-for="repository in project.repositories" :key="repository.path">
             <Repository :repository="repository" />
         </div>
     </div>
@@ -15,9 +15,10 @@ export default {
     components: {
         Repository
     },
-    data () {
-        return {
-            repositories: []
+    props: {
+        project: {
+            type: Object,
+            required: true
         }
     },
     computed: {
@@ -26,26 +27,7 @@ export default {
         })
     },
     created () {
-        this.addRepository({
-            path: '/Users/tomasbuteler/Sites/Amiqus/aqid'
-        })
-    },
-    methods: {
-        addRepository (repository) {
-            this.repositories.push(repository)
-        }
+        this.project.addRepository('/Users/tomasbuteler/Sites/Amiqus/aqid')
     }
 }
 </script>
-
-<style lang="scss">
-    input {
-        visibility: hidden;
-    }
-
-    .selective {
-        input {
-            visibility: visible;
-        }
-    }
-</style>

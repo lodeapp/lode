@@ -1,21 +1,21 @@
 <template>
-    <div class="test" :class="groupClasses" @click.stop="toggleChildren">
+    <div
+        class="test"
+        :class="groupClasses.concat([activeTest && activeTest.id === test.id ? 'is-active' : ''])"
+        @click.stop="onClick"
+    >
         <div class="header">
+            <div class="indicator"></div>
             <div v-if="toggles" class="input--select" @click.stop="onSelective">
                 <input type="checkbox" v-model="selected" @click.stop>
             </div>
             <div>{{ test.displayName }}</div>
         </div>
-        <div v-if="hasChildren">
-            <div v-show="show">
-                <pre v-html="result.feedback"></pre>
-            </div>
-        </div>
     </div>
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import group from '@/mixins/group'
 
 export default {
@@ -40,8 +40,10 @@ export default {
         model () {
             return this.test
         },
-        result () {
-            return this.test.result || {}
+        hasChildren () {
+            // @TODO: nested tests should show children instead of
+            // toggling active test to show results
+            return false
         },
         selected: {
             get () {
@@ -52,17 +54,25 @@ export default {
                 this.$emit('selected', checked)
             }
         },
-        hasChildren () {
-            return this.result.feedback
-        }
+        ...mapGetters({
+            activeTest: 'tests/active'
+        })
     },
     methods: {
         onSelective () {
             this.selected = true
             this.enableSelective()
         },
+        onClick () {
+            if (this.hasChildren) {
+                this.toggleChildren()
+                return
+            }
+            this.showResults(this.test)
+        },
         ...mapActions({
-            enableSelective: 'tree/enableSelective'
+            enableSelective: 'tree/enableSelective',
+            showResults: 'tests/show'
         })
     }
 }

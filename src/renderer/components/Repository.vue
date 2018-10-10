@@ -1,7 +1,7 @@
 <template>
     <div class="repository">
-        <div v-for="framework in frameworks" :key="framework.id">
-            <Framework :framework="framework" />
+        <div v-for="framework in repository.frameworks" :key="framework.id">
+            <Framework :framework="framework" :parents="[repository.id]" />
         </div>
     </div>
 </template>
@@ -21,29 +21,19 @@ export default {
             required: true
         }
     },
-    data () {
-        return {
-            frameworks: []
-        }
-    },
     created () {
         // @TODO: Get parameters from config
-        this.addFramework(new Jest({
+        this.repository.addFramework(new Jest({
             command: 'yarn tests',
             path: this.repository.path,
             runner: 'yarn'
         }))
 
-        this.addFramework(new PHPUnit({
+        this.repository.addFramework(new PHPUnit({
             command: 'depot test',
             path: this.repository.path,
-            vmPath: '/aml'
+            vmPath: '/aml/tests'
         }))
-    },
-    methods: {
-        addFramework (framework) {
-            this.frameworks.push(framework)
-        }
     }
 }
 </script>

@@ -1,9 +1,12 @@
-.input {
+.input--select {
+    cursor: pointer;
+    height: 18px;
+    margin-left: $indicator-width;
+    text-align: center;
+    width: 20px;
+    visibility: hidden;
 
-    &--select {
-        cursor: pointer;
-        height: 18px;
-        text-align: center;
-        width: 20px;
+    .selective & {
+        visibility: visible;
     }
 }

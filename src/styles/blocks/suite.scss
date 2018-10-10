@@ -1,32 +1,75 @@
 .suite {
     @include clearfix;
-    border-radius: $border-radius;
-    border: 1px solid $primary-border;
-    font-weight: 600;
-    margin-top: 8px;
+    border-top: 1px solid $primary-border;
+    font-weight: 400;
+    position: relative;
 
     & > .header {
         background-color: $primary;
-        border-radius: $border-radius;
         cursor: pointer;
         display: flex;
-        padding: 8px;
+        padding: 5px;
     }
 
     & > ul {
-        background-color: darken($secondary, 5%);
-        border-bottom-left-radius: $border-radius;
-        border-bottom-right-radius: $border-radius;
+        border-top: 1px solid $primary-border;
+        background-color: pink;
         list-style: none;
-        padding: 8px 0;
+        padding: 0 0 0 $indicator-width;
+        position: relative;
+        z-index: 2;
+
+        & > :first-child .test {
+            border-top: 0 !important;
+        }
     }
 
-    &.is-expanded {
+    &.status--passed {
 
-        & > .header {
-            border-bottom: 1px solid darken($primary-border, 5%);
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
+        & > ul {
+            background-color: theme-color-light('success');
+        }
+    }
+
+    &.status--failed {
+
+        & > ul {
+            background-color: theme-color-light('danger');
+        }
+    }
+
+    &.status--incomplete {
+
+        & > ul {
+            background-color: theme-color-light('incomplete');
+        }
+    }
+
+    &.status--warning {
+
+        & > ul {
+            background-color: theme-color-light('warning');
+        }
+    }
+
+    &.status--partial {
+
+        & > ul {
+            background-color: theme-color-light('primary');
+        }
+    }
+
+    &.status--empty {
+
+        & > ul {
+            background-color: theme-color-light('primary');
+        }
+    }
+
+    &.status--idle {
+
+        & > ul {
+            background-color: theme-color-light('primary');
         }
     }
 }

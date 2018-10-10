@@ -36,13 +36,15 @@ $cyan:    #94c0eb !default;
 $theme-colors: (
     primary: $blue,
     success: $green,
-    warning: $yellow,
+    incomplete: $yellow,
+    warning: $orange,
     danger: $red
 ) !default;
 
 $theme-colors-light: (
     primary: lighten(theme-color('primary'), 37%),
     success: lighten(theme-color('success'), 27%),
+    incomplete: lighten(theme-color('incomplete'), 20%),
     warning: lighten(theme-color('warning'), 20%),
     danger: lighten(theme-color('danger'), 30%)
 ) !default;
@@ -50,6 +52,7 @@ $theme-colors-light: (
 $theme-colors-dark: (
     primary: darken(theme-color('primary'), 15%),
     success: darken(theme-color('success'), 19%),
+    incomplete: darken(theme-color('incomplete'), 23%),
     warning: darken(theme-color('warning'), 23%),
     danger: darken(theme-color('danger'), 15%)
 ) !default;
@@ -75,3 +78,9 @@ $grid-columns: 24 !default;
 // ========================================================================
 
 $transition-time: .15s;
+
+// ========================================================================
+// Lode-specific
+// ========================================================================
+
+$indicator-width: 25px;

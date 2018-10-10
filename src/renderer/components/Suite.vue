@@ -1,6 +1,7 @@
 <template>
     <div class="suite" :class="groupClasses" @click="toggleChildren">
         <div class="header">
+            <div class="indicator"></div>
             <div class="input--select" @click.stop="onSelective">
                 <input type="checkbox" v-model="selected">
             </div>
