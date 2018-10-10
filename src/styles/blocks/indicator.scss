@@ -1,0 +1,36 @@
+.indicator {
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: $indicator-width;
+    z-index: 1;
+
+    .status--passed > .header > & {
+        background-color: theme-color('success');
+    }
+
+    .status--failed > .header > & {
+        background-color: theme-color('danger');
+    }
+
+    .status--incomplete > .header > & {
+        background-color: theme-color('incomplete');
+    }
+
+    .status--warning > .header > & {
+        background-color: theme-color('warning');
+    }
+
+    .status--partial > .header > & {
+        background-color: theme-color('primary');
+    }
+
+    .status--empty > .header > & {
+        background-color: theme-color('primary');
+    }
+
+    .status--idle > .header > & {
+        background-color: theme-color('primary');
+    }
+}

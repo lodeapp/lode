@@ -1,6 +1,6 @@
 .framework {
     color: $primary-text;
-    margin: ($grid-gutter-width / 2);
+    position: relative;
 
     & > .header {
         padding: 8px;
@@ -12,6 +12,7 @@
     }
 
     & > ul {
+        border-bottom: 1px solid $primary-border;
         list-style: none;
         padding: 0;
 
