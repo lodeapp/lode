@@ -1,34 +1,31 @@
 <template>
-    <div>
-        <div class="framework">
-            <h3>{{ framework.name }}</h3>
-            <span v-if="running">Running...</span>
-            <span v-else-if="refreshing">Refreshing...</span>
-            <span v-else-if="stopped">Stopped</span>
-            <span v-else-if="error">Error!</span>
-            <span v-else>{{ framework.status }}</span>
-            | Progress | Toggle by status
-            <div>
-                Filter [select filtered]
+    <div class="framework" :class="[`status--${status}`]">
+        <div class="header">
+            <div class="title">
+                <span class="indicator"></span>
+                <h3>{{ framework.name }}</h3>
+                <div class="float-right">
+                    <button class="btn btn-sm btn-primary" @click="run" :disabled="running">Run</button>
+                    <button class="btn btn-sm btn-danger" @click="stop" :disabled="!running">Stop</button>
+                    <button class="btn btn-sm" @click="refresh"><Icon i="sync" /></button>
+                </div>
             </div>
-        </div>
-        <Group
-            :model="framework"
-            :expanded="true"
-            :toggles="false"
-        >
-            <template slot="header">
-                <div>
-                    <button @click="refresh">Refresh</button>
+            <div class="progress-bar">
+                <span class="status">
+                    {{ displayStatus(status) }}
+                </span>
+                <div class="float-right">
                     2555 tests, 0 selected
                 </div>
-                <span class="text-right">
-                    <button @click="run">Run</button>
-                    <button @click="stop">Stop</button>
-                </span>
-            </template>
-            <Suite v-for="suite in framework.suites" :suite="suite" :key="suite.path" />
-        </Group>
+                <!-- <br>Toggle by status -->
+            </div>
+            <transition>
+                <div class="filter-bar" v-if="framework.suites.length > 1">
+                    <input class="form-control input-block input-sm" placeholder="Filter tests">
+                </div>
+            </transition>
+        </div>
+        <Suite v-for="suite in framework.suites" :suite="suite" :key="suite.path" />
     </div>
 </template>
 
@@ -75,7 +72,8 @@ export default {
             return this.framework.status
         },
         ...mapGetters({
-            selective: 'tree/selective'
+            selective: 'tree/selective',
+            displayStatus: 'status/display'
         })
     },
     methods: {

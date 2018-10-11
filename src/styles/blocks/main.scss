@@ -1,6 +1,10 @@
 main {
     display: flex;
 
+    & > :first-child {
+        border-right: 1px solid $primary-border;
+    }
+
     .pane {
         flex-grow: 1;
         height: 100vh;

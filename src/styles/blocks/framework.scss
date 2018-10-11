@@ -1,7 +1,191 @@
 .framework {
+    background: $primary;
+    border-top: 1px solid $primary-border;
+    margin-bottom: 30px;
 
     & > .header {
-        padding: 8px;
-        font-weight: 800;
+
+        & > .title {
+            padding: 10px 5px 5px;
+            overflow: hidden;
+
+            h3 {
+                display: inline-block;
+                font-size: 1.5rem;
+                font-weight: 900;
+                margin: 0;
+            }
+
+            & > .indicator {
+                background-color: theme-color('idle');
+                border-radius: 100%;
+                box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                display: inline-block;
+                height: 10px;
+                margin: 2px 4px;
+                position: relative;
+                top: 0;
+                width: 10px;
+            }
+        }
+    }
+
+    .progress-bar {
+        padding: 5px;
+        overflow: hidden;
+
+        & > .status {
+            font-weight: 600;
+        }
+    }
+
+    .filter-bar {
+        background-color: $secondary;
+        border-top: 1px solid $primary-border;
+        padding: 5px;
+    }
+
+    & > :last-child:not(.is-expanded) {
+        border-bottom: 1px solid $primary-border;
+    }
+
+    &.status--passed {
+
+        & > .header {
+
+            & > .title {
+                & > .indicator {
+                    background-color: theme-color('success');
+                    box-shadow: 0 0 0 3px transparentize(theme-color('success'), .5);
+                }
+            }
+        }
+
+        .progress-bar {
+
+            & > .status {
+                color: theme-color-dark('success');
+            }
+        }
+    }
+
+    &.status--failed {
+
+        & > .header {
+
+            & > .title {
+                & > .indicator {
+                    background-color: theme-color('danger');
+                    box-shadow: 0 0 0 3px transparentize(theme-color('danger'), .5);
+                }
+            }
+        }
+
+        .progress-bar {
+
+            & > .status {
+                color: theme-color-dark('danger');
+            }
+        }
+    }
+
+    &.status--incomplete {
+
+        & > .header {
+
+            & > .title {
+                & > .indicator {
+                    background-color: theme-color('incomplete');
+                    box-shadow: 0 0 0 3px transparentize(theme-color('incomplete'), .5);
+                }
+            }
+        }
+
+        .progress-bar {
+
+            & > .status {
+                color: theme-color-dark('incomplete');
+            }
+        }
+    }
+
+    &.status--warning {
+
+        & > .header {
+
+            & > .title {
+                & > .indicator {
+                    background-color: theme-color('warning');
+                    box-shadow: 0 0 0 3px transparentize(theme-color('warning'), .5);
+                }
+            }
+        }
+
+        .progress-bar {
+
+            & > .status {
+                color: theme-color-dark('warning');
+            }
+        }
+    }
+
+    &.status--partial {
+
+        & > .header {
+
+            & > .title {
+                & > .indicator {
+                    background-color: theme-color('idle');
+                    box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                }
+            }
+        }
+
+        .progress-bar {
+
+            & > .status {
+                color: theme-color-dark('idle');
+            }
+        }
+    }
+
+    &.status--empty {
+
+        & > .header {
+
+            & > .title {
+                & > .indicator {
+                    background-color: theme-color('idle');
+                    box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                }
+            }
+        }
+
+        .progress-bar {
+
+            & > .status {
+                color: theme-color-dark('idle');
+            }
+        }
+    }
+
+    &.status--idle {
+
+        & > .header {
+
+            & > .title {
+                & > .indicator {
+                    background-color: theme-color('idle');
+                    box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                }
+            }
+        }
+
+        .progress-bar {
+
+            & > .status {
+                color: theme-color-dark('idle');
+            }
+        }
     }
 }
