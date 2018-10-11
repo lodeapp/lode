@@ -1,12 +1,16 @@
 .input--select {
     cursor: pointer;
     height: 18px;
-    margin-left: $indicator-width;
     text-align: center;
     width: 20px;
-    visibility: hidden;
+    opacity: .3;
+
+    input {
+        background-color: gray;
+        color: red;
+    }
 
     .selective & {
-        visibility: visible;
+        opacity: 1;
     }
 }

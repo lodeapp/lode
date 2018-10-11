@@ -1,43 +1,48 @@
 <template>
-    <div class="framework" :class="groupClasses">
-        <div class="header row">
-            <div class="col-18">
-                <h2 class="d-inline">{{ framework.name }}</h2>
-                <span>
-                    [
-                    <span v-if="running">Running...</span>
-                    <span v-else-if="refreshing">Refreshing...</span>
-                    <span v-else-if="stopped">Stopped</span>
-                    <span v-else-if="error">Error!</span>
-                    <span v-else>{{ framework.status }}</span>
-                    ]
-                </span>
-                <button @click="refresh">Refresh</button>
-            </div>
-            <div class="col-6 text-right">
-                <button @click="run">Run</button>
-                <button @click="stop">Stop</button>
+    <div>
+        <div class="framework">
+            <h3>{{ framework.name }}</h3>
+            <span v-if="running">Running...</span>
+            <span v-else-if="refreshing">Refreshing...</span>
+            <span v-else-if="stopped">Stopped</span>
+            <span v-else-if="error">Error!</span>
+            <span v-else>{{ framework.status }}</span>
+            | Progress | Toggle by status
+            <div>
+                Filter [select filtered]
             </div>
         </div>
-        <ul v-show="show">
-            <li v-for="suite in framework.suites" :key="suite.path">
-                <Suite :suite="suite" />
-            </li>
-        </ul>
+        <Group
+            :model="framework"
+            :expanded="true"
+            :toggles="false"
+        >
+            <template slot="header">
+                <div>
+                    <button @click="refresh">Refresh</button>
+                    2555 tests, 0 selected
+                </div>
+                <span class="text-right">
+                    <button @click="run">Run</button>
+                    <button @click="stop">Stop</button>
+                </span>
+            </template>
+            <Suite v-for="suite in framework.suites" :suite="suite" :key="suite.path" />
+        </Group>
     </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import group from '@/mixins/group'
+import Group from '@/components/Group'
 import Suite from '@/components/Suite'
 
 export default {
     name: 'Framework',
     components: {
+        Group,
         Suite
     },
-    mixins: [group],
     props: {
         framework: {
             type: Object,
@@ -54,9 +59,6 @@ export default {
         }
     },
     computed: {
-        model () {
-            return this.framework
-        },
         status () {
             if (this.running) {
                 return 'running'

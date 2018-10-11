@@ -1,7 +1,7 @@
 <template>
     <div class="repository">
         <div v-for="framework in repository.frameworks" :key="framework.id">
-            <Framework :framework="framework" :parents="[repository.id]" />
+            <Framework :framework="framework" />
         </div>
     </div>
 </template>

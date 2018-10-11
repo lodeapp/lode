@@ -1,13 +1,14 @@
 @import 'functions';
 @import 'variables';
 @import 'bootstrap';
-@import 'blocks/main';
+@import 'blocks/filename';
 @import 'blocks/framework';
+@import 'blocks/group';
+@import 'blocks/input';
+@import 'blocks/main';
+@import 'blocks/repository';
 @import 'blocks/suite';
 @import 'blocks/test';
-@import 'blocks/filename';
-@import 'blocks/input';
-@import 'blocks/indicator';
 
 html,
 body {

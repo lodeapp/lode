@@ -1,0 +1,84 @@
+<template>
+    <div
+        class="group"
+        :class="[
+            `status--${status}`,
+            `is-${selectStatus}`,
+            `is-${expandStatus}`
+        ]"
+        @click.stop="onClick"
+    >
+        <div class="seam"></div>
+        <div class="header">
+            <div class="indicator"></div>
+            <div class="header-inner">
+                <slot name="header"></slot>
+            </div>
+        </div>
+        <div v-if="hasChildren" v-show="show" class="group-items">
+            <slot></slot>
+        </div>
+    </div>
+</template>
+
+<script>
+export default {
+    name: 'Group',
+    props: {
+        model: {
+            type: Object,
+            required: true
+        },
+        hasChildren: {
+            type: Boolean,
+            default: true
+        },
+        toggles: {
+            type: Boolean,
+            default: true
+        },
+        expanded: {
+            type: Boolean,
+            default: false
+        },
+        handler: {
+            type: Function,
+            default: null
+        }
+    },
+    data () {
+        return {
+            show: this.expanded
+        }
+    },
+    computed: {
+        status () {
+            return this.model.status
+        },
+        selectStatus () {
+            return this.model.selected ? 'selected' : 'unselected'
+        },
+        expandStatus () {
+            return this.show ? 'expanded' : 'collapsed'
+        }
+    },
+    methods: {
+        onClick () {
+            if (this.handler) {
+                this.handler.call()
+                return
+            }
+            if (!this.toggles) {
+                return
+            }
+            this.toggleChildren()
+        },
+        toggleChildren () {
+            if (!this.hasChildren) {
+                return
+            }
+            this.show = !this.show
+        }
+    }
+}
+</script>

@@ -1,26 +1,29 @@
 <template>
-    <div
+    <Group
+        :model="test"
         class="test"
-        :class="groupClasses.concat([activeTest && activeTest.id === test.id ? 'is-active' : ''])"
-        @click.stop="onClick"
+        :class="[activeTest && activeTest.id === test.id ? 'is-active' : '']"
+        :has-children="hasChildren"
+        @click.native.stop="onClick"
     >
-        <div class="header">
-            <div class="indicator"></div>
+        <template slot="header">
             <div v-if="toggles" class="input--select" @click.stop="onSelective">
                 <input type="checkbox" v-model="selected" @click.stop>
             </div>
             <div>{{ test.displayName }}</div>
-        </div>
-    </div>
+        </template>
+    </Group>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
-import group from '@/mixins/group'
+import Group from '@/components/Group'
 
 export default {
     name: 'Test',
-    mixins: [group],
+    components: {
+        Group
+    },
     props: {
         test: {
             type: Object,
@@ -37,9 +40,6 @@ export default {
         }
     },
     computed: {
-        model () {
-            return this.test
-        },
         hasChildren () {
             // @TODO: nested tests should show children instead of
             // toggling active test to show results

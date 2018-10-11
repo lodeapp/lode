@@ -1,2 +1,15 @@
-.main {
+main {
+    display: flex;
+
+    .pane {
+        flex-grow: 1;
+        height: 100vh;
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    }
 }

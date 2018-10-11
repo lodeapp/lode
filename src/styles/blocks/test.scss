@@ -1,20 +1,3 @@
 .test {
-    @include clearfix;
-    background-color: $primary;
-    border-top: 1px solid darken($primary-border, 5%);
-    position: relative;
 
-    & > .header {
-        cursor: pointer;
-        display: flex;
-        padding: 5px;
-        border-bottom: 1px solid $primary-border;
-    }
-
-    &.is-collapsed {
-
-        & > .header {
-            border-bottom: 0;
-        }
-    }
 }

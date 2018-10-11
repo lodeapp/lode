@@ -1,0 +1,202 @@
+.group {
+    @include clearfix;
+    position: relative;
+
+    & > .seam {
+        display: none;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: $indicator-width;
+        z-index: 2;
+
+        &::before {
+            border-right-width: 2px;
+            border-right-style: solid;
+            content: '';
+            height: calc(100% - 16px);
+            left: 12px;
+            position: absolute;
+            top: 0;
+            width: 0px;
+        }
+
+        &::after {
+            background-color: $primary;
+            border-radius: 100%;
+            border-width: 4px;
+            border-style: double;
+            bottom: 12px;
+            content: '';
+            height: 10px;
+            left: 8px;
+            position: absolute;
+            width: 10px;
+        }
+    }
+
+    & > .header {
+        background-color: $primary-border;
+        cursor: pointer;
+        padding: 1px 0 0;
+        padding-left: $indicator-width;
+        position: relative;
+
+        .indicator {
+            height: 100%;
+            left: 0;
+            position: absolute;
+            top: 0;
+            width: $indicator-width;
+            z-index: 3;
+        }
+
+        .header-inner {
+            display: flex;
+            padding: 5px;
+            background-color: $primary;
+        }
+    }
+
+    & > .group-items {
+        background-color: $primary;
+        list-style: none;
+        padding: 0 0 8px $indicator-width;
+        position: relative;
+        z-index: 1;
+
+        & > :last-child {
+
+            .header-inner {
+                border-bottom: 1px solid $primary-border;
+            }
+        }
+    }
+
+    &.is-expanded {
+
+        & > .seam {
+            display: block;
+        }
+    }
+
+    &.status--passed {
+
+        & > .seam::before,
+        & > .seam::after {
+            border-color: theme-color('success');
+        }
+
+        & > .header {
+
+            .indicator {
+                background-color: theme-color('success');
+                border-right: 1px solid darken(theme-color('success'), 10%);
+                box-shadow: 3px 0px 0 0px transparentize(theme-color('success'), .5);
+            }
+        }
+    }
+
+    &.status--failed {
+
+        & > .seam::before,
+        & > .seam::after {
+            border-color: theme-color('danger');
+        }
+
+        & > .header {
+
+            .indicator {
+                background-color: theme-color('danger');
+                border-right: 1px solid darken(theme-color('danger'), 10%);
+                box-shadow: 3px 0px 0 0px transparentize(theme-color('danger'), .5);
+            }
+        }
+    }
+
+    &.status--incomplete {
+
+        & > .seam::before,
+        & > .seam::after {
+            border-color: theme-color('incomplete');
+        }
+
+        & > .header {
+
+            .indicator {
+                background-color: theme-color('incomplete');
+                border-right: 1px solid darken(theme-color('incomplete'), 10%);
+                box-shadow: 3px 0px 0 0px transparentize(theme-color('incomplete'), .5);
+            }
+        }
+    }
+
+    &.status--warning {
+
+        & > .seam::before,
+        & > .seam::after {
+            border-color: theme-color('warning');
+        }
+
+        & > .header {
+
+            .indicator {
+                background-color: theme-color('warning');
+                border-right: 1px solid darken(theme-color('warning'), 10%);
+                box-shadow: 3px 0px 0 0px transparentize(theme-color('warning'), .5);
+            }
+        }
+    }
+
+    &.status--partial {
+
+        & > .seam::before,
+        & > .seam::after {
+            border-color: theme-color('idle');
+        }
+
+        & > .header {
+
+            .indicator {
+                background-color: theme-color('idle');
+                border-right: 1px solid darken(theme-color('idle'), 10%);
+                box-shadow: 3px 0px 0 0px transparentize(theme-color('idle'), .5);
+            }
+        }
+    }
+
+    &.status--empty {
+
+        & > .seam::before,
+        & > .seam::after {
+            border-color: theme-color('idle');
+        }
+
+        & > .header {
+
+            .indicator {
+                background-color: theme-color('idle');
+                border-right: 1px solid darken(theme-color('idle'), 10%);
+                box-shadow: 3px 0px 0 0px transparentize(theme-color('idle'), .5);
+            }
+        }
+    }
+
+    &.status--idle {
+
+        & > .seam::before,
+        & > .seam::after {
+            border-color: theme-color('idle');
+        }
+
+        & > .header {
+
+            .indicator {
+                background-color: theme-color('idle');
+                border-right: 1px solid darken(theme-color('idle'), 10%);
+                box-shadow: 3px 0px 0 0px transparentize(theme-color('idle'), .5);
+            }
+        }
+    }
+}

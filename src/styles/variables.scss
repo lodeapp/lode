@@ -10,26 +10,50 @@ $heading-margin: 1rem;
 // Colors
 // ========================================================================
 
+//
+// Contextual
+//
+
 $brand: #ff7676 !default;
 $brand-contrast: rgb(255, 255, 255) !default;
 
 $primary: rgb(255, 255, 255) !default;
 $primary-text: rgb(42, 45, 52) !default;
 $primary-discreet-text: rgb(204, 204, 204) !default;
-$primary-border: rgb(209, 213, 218) !default;
+$primary-border: rgb(229, 233, 238) !default;
 
 $secondary: rgb(247, 247, 247) !default;
 $secondary-text: rgb(108, 109, 111) !default;
 $secondary-discreet-text: rgb(153, 153, 153) !default;
 
+//
+// Grayscale
+//
+
+$white:    #fff !default;
+$gray-100: #f8f9fa !default;
+$gray-200: #e9ecef !default;
+$gray-300: #dee2e6 !default;
+$gray-400: #ced4da !default;
+$gray-500: #adb5bd !default;
+$gray-600: #6c757d !default;
+$gray-700: #495057 !default;
+$gray-800: #343a40 !default;
+$gray-900: #212529 !default;
+$black:    #000 !default;
+
+//
+// Stateful
+//
+
 $blue:    #5e97ce !default;
 $indigo:  #6610f2 !default;
 $purple:  #6f42c1 !default;
 $pink:    #e83e8c !default;
-$red:     red !default;
+$red:     #f7434c !default;
 $orange:  #fd7e14 !default;
-$yellow:  yellow !default;
-$green:   green !default;
+$yellow:  #ffc66a !default;
+$green:   #58d39b !default;
 $teal:    #20c997 !default;
 $cyan:    #94c0eb !default;
 
@@ -38,23 +62,24 @@ $theme-colors: (
     success: $green,
     incomplete: $yellow,
     warning: $orange,
-    danger: $red
+    danger: $red,
+    idle: $gray-400,
 ) !default;
 
 $theme-colors-light: (
-    primary: lighten(theme-color('primary'), 37%),
-    success: lighten(theme-color('success'), 27%),
-    incomplete: lighten(theme-color('incomplete'), 20%),
-    warning: lighten(theme-color('warning'), 20%),
-    danger: lighten(theme-color('danger'), 30%)
+    primary: lighten(map-get($theme-colors, 'primary'), 37%),
+    success: lighten(map-get($theme-colors, 'success'), 27%),
+    incomplete: lighten(map-get($theme-colors, 'incomplete'), 20%),
+    warning: lighten(map-get($theme-colors, 'warning'), 20%),
+    danger: lighten(map-get($theme-colors, 'danger'), 30%)
 ) !default;
 
 $theme-colors-dark: (
-    primary: darken(theme-color('primary'), 15%),
-    success: darken(theme-color('success'), 19%),
-    incomplete: darken(theme-color('incomplete'), 23%),
-    warning: darken(theme-color('warning'), 23%),
-    danger: darken(theme-color('danger'), 15%)
+    primary: darken(map-get($theme-colors, 'primary'), 15%),
+    success: darken(map-get($theme-colors, 'success'), 19%),
+    incomplete: darken(map-get($theme-colors, 'incomplete'), 23%),
+    warning: darken(map-get($theme-colors, 'warning'), 23%),
+    danger: darken(map-get($theme-colors, 'danger'), 15%)
 ) !default;
 
 $theme-color-interval: 8% !default;
@@ -83,4 +108,4 @@ $transition-time: .15s;
 // Lode-specific
 // ========================================================================
 
-$indicator-width: 25px;
+$indicator-width: 26px;
