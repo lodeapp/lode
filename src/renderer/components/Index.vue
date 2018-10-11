@@ -1,38 +1,40 @@
 <template>
     <div id="wrapper">
         <main>
-            <div v-if="project">
+            <Pane>
                 <Project :project="project" />
-                <ResultsPane :test="activeTest" />
-            </div>
+            </Pane>
+            <Pane>
+                <Results :test="activeTest" />
+            </Pane>
         </main>
     </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import Project from '@/components/Project'
 import { Project as ProjectModel } from '@lib/frameworks/project'
-import ResultsPane from '@/components/ResultsPane'
+
+import { mapGetters } from 'vuex'
+import Pane from '@/components/Pane'
+import Project from '@/components/Project'
+import Results from '@/components/Results'
 
 export default {
     name: 'Index',
     components: {
+        Pane,
         Project,
-        ResultsPane
+        Results
     },
     data () {
         return {
-            project: null
+            project: new ProjectModel()
         }
     },
     computed: {
         ...mapGetters({
             activeTest: 'tests/active'
         })
-    },
-    created () {
-        this.project = new ProjectModel()
     }
 }
 </script>

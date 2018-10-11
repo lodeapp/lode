@@ -25,9 +25,6 @@ export default {
     created () {
         const dir = this.path.split('/')
         this.name = dir.pop() || ''
-        this.extension = this.name.split('.').pop()
-        this.name = this.name.replace(new RegExp(`\.${this.extension}$`, 'i'), '')
-        this.extension = this.extension ? `.${this.extension}` : ''
         this.dir = dir.join('/') + (this.name ? '/' : '')
     }
 }

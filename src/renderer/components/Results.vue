@@ -9,7 +9,7 @@
 
 <script>
 export default {
-    name: 'ResultsPane',
+    name: 'Results',
     props: {
         test: {
             type: Object,

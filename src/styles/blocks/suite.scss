@@ -1,75 +1,10 @@
 .suite {
-    @include clearfix;
-    border-top: 1px solid $primary-border;
     font-weight: 400;
-    position: relative;
-
-    & > .header {
-        background-color: $primary;
-        cursor: pointer;
-        display: flex;
-        padding: 5px;
-    }
 
     & > ul {
-        border-top: 1px solid $primary-border;
-        background-color: pink;
-        list-style: none;
-        padding: 0 0 0 $indicator-width;
-        position: relative;
-        z-index: 2;
 
         & > :first-child .test {
             border-top: 0 !important;
-        }
-    }
-
-    &.status--passed {
-
-        & > ul {
-            background-color: theme-color-light('success');
-        }
-    }
-
-    &.status--failed {
-
-        & > ul {
-            background-color: theme-color-light('danger');
-        }
-    }
-
-    &.status--incomplete {
-
-        & > ul {
-            background-color: theme-color-light('incomplete');
-        }
-    }
-
-    &.status--warning {
-
-        & > ul {
-            background-color: theme-color-light('warning');
-        }
-    }
-
-    &.status--partial {
-
-        & > ul {
-            background-color: theme-color-light('primary');
-        }
-    }
-
-    &.status--empty {
-
-        & > ul {
-            background-color: theme-color-light('primary');
-        }
-    }
-
-    &.status--idle {
-
-        & > ul {
-            background-color: theme-color-light('primary');
         }
     }
 }
