@@ -16,10 +16,10 @@
             border-right-style: solid;
             content: '';
             height: calc(100% - 16px);
-            left: 12px;
+            left: 13px;
             position: absolute;
             top: 0;
-            width: 0px;
+            width: 0;
         }
 
         &::after {
@@ -29,10 +29,10 @@
             border-style: double;
             bottom: 12px;
             content: '';
-            height: 10px;
-            left: 8px;
+            height: 2px;
+            left: 9px;
             position: absolute;
-            width: 10px;
+            width: 2px;
         }
     }
 
@@ -60,7 +60,7 @@
     }
 
     & > .group-items {
-        background-color: $primary;
+        background-color: $secondary;
         list-style: none;
         padding: 0 0 8px $indicator-width;
         position: relative;
@@ -93,7 +93,7 @@
             .indicator {
                 background-color: theme-color('success');
                 border-right: 1px solid darken(theme-color('success'), 10%);
-                box-shadow: 3px 0px 0 0px transparentize(theme-color('success'), .5);
+                box-shadow: 3px 0 0 0 transparentize(theme-color('success'), .5);
             }
         }
     }
@@ -110,7 +110,7 @@
             .indicator {
                 background-color: theme-color('danger');
                 border-right: 1px solid darken(theme-color('danger'), 10%);
-                box-shadow: 3px 0px 0 0px transparentize(theme-color('danger'), .5);
+                box-shadow: 3px 0 0 0 transparentize(theme-color('danger'), .5);
             }
         }
     }
@@ -127,7 +127,7 @@
             .indicator {
                 background-color: theme-color('incomplete');
                 border-right: 1px solid darken(theme-color('incomplete'), 10%);
-                box-shadow: 3px 0px 0 0px transparentize(theme-color('incomplete'), .5);
+                box-shadow: 3px 0 0 0 transparentize(theme-color('incomplete'), .5);
             }
         }
     }
@@ -144,7 +144,7 @@
             .indicator {
                 background-color: theme-color('warning');
                 border-right: 1px solid darken(theme-color('warning'), 10%);
-                box-shadow: 3px 0px 0 0px transparentize(theme-color('warning'), .5);
+                box-shadow: 3px 0 0 0 transparentize(theme-color('warning'), .5);
             }
         }
     }
@@ -161,7 +161,7 @@
             .indicator {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: 3px 0px 0 0px transparentize(theme-color('idle'), .5);
+                box-shadow: 3px 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }
@@ -178,7 +178,7 @@
             .indicator {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: 3px 0px 0 0px transparentize(theme-color('idle'), .5);
+                box-shadow: 3px 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }
@@ -195,7 +195,7 @@
             .indicator {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: 3px 0px 0 0px transparentize(theme-color('idle'), .5);
+                box-shadow: 3px 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }
