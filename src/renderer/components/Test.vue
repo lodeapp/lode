@@ -51,7 +51,6 @@ export default {
             },
             set (checked) {
                 this.test.toggleSelected(checked)
-                this.$emit('selected', checked)
             }
         },
         ...mapGetters({

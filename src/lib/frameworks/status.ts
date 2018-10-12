@@ -2,6 +2,8 @@ import { uniq } from 'lodash'
 
 export type Status = 'passed' | 'failed' | 'incomplete' | 'warning' | 'partial' | 'empty' | 'idle'
 
+export type FrameworkStatus = 'refreshing' | 'running' | 'stopped' | 'error' | Status
+
 export function parseStatus (components: Array<Status>): Status {
     if (!components.length) {
         return 'empty'
