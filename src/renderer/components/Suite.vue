@@ -2,7 +2,7 @@
     <Group :model="suite" class="suite">
         <template slot="header">
             <div class="input--select" @click.stop="onSelective">
-                <input type="checkbox" v-model="selected">
+                <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial">
             </div>
             <Filename :path="suite.relative" />
         </template>
@@ -11,7 +11,6 @@
             :key="test.name"
             :test="test"
             :toggles="suite.canToggleTests"
-            @selected="onTestSelected"
         />
     </Group>
 </template>
@@ -49,13 +48,6 @@ export default {
         onSelective () {
             this.selected = true
             this.enableSelective()
-        },
-        onTestSelected (checked) {
-            if (checked) {
-                this.suite.toggleSelected(true, false)
-            } else if (this.suite.noTestsSelected()) {
-                this.suite.toggleSelected(false, false)
-            }
         },
         ...mapActions({
             enableSelective: 'tree/enableSelective'

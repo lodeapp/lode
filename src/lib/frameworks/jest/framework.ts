@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
-import { ISuite, Suite } from '@lib/frameworks/suite'
+import { Suite } from '@lib/frameworks/suite'
 
 export class Jest extends Framework {
     readonly name = 'Jest'
@@ -9,12 +9,12 @@ export class Jest extends Framework {
         super(options)
     }
 
-    refresh (): Promise<Array<ISuite>> {
+    reload (): Promise<void> {
         return new Promise((resolve, reject) => {
             this.spawn(['--listTests'])
                 .on('success', ({ process }) => {
                     process.getLines().map((file: string) => this.makeSuite(Suite.buildResult({ file })))
-                    resolve(this.suites)
+                    resolve()
                 })
                 .on('error', ({ message }) => {
                     reject(message)

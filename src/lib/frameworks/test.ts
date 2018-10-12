@@ -1,7 +1,8 @@
 import { v4 as uuid } from 'uuid'
+import { EventEmitter } from 'events'
 import { Status } from '@lib/frameworks/status'
 
-export interface ITest {
+export interface ITest extends EventEmitter {
     readonly id: string
     readonly name: string
     status: Status
@@ -22,7 +23,7 @@ export interface ITestResult {
     console: Array<string>
 }
 
-export class Test implements ITest {
+export class Test extends EventEmitter implements ITest {
     public readonly id: string
     public readonly name: string
     public readonly displayName: string
@@ -31,6 +32,7 @@ export class Test implements ITest {
     public selected: boolean = false
 
     constructor (result: ITestResult) {
+        super()
         this.id = uuid()
         this.name = result.name
         this.displayName = result.displayName || result.name
@@ -44,6 +46,7 @@ export class Test implements ITest {
 
     toggleSelected (toggle?: boolean, cascade?: boolean): void {
         this.selected = typeof toggle === 'undefined' ? !this.selected : toggle
+        this.emit('selective')
     }
 
     debrief (result: ITestResult): Promise<void> {

@@ -11,14 +11,14 @@ export class PHPUnit extends Framework {
         super(options)
     }
 
-    refresh (): Promise<Array<ISuite>> {
+    reload (): Promise<void> {
         return new Promise((resolve, reject) => {
             this.spawn(['--columns=42'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
                     report.forEach((result: ISuiteResult) => {
                         this.makeSuite(result)
                     })
-                    resolve([])
+                    resolve()
                 })
                 .on('error', ({ message }) => {
                     reject(message)

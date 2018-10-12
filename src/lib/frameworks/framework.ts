@@ -1,9 +1,15 @@
-import { find } from 'lodash'
+import { debounce, find } from 'lodash'
 import { v4 as uuid } from 'uuid'
+import { EventEmitter } from 'events'
 import { IProcess } from '@lib/process/process'
 import { ProcessFactory } from '@lib/process/factory'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
-import { Status, parseStatus } from '@lib/frameworks/status'
+import { FrameworkStatus, parseStatus } from '@lib/frameworks/status'
+
+export type SelectedCount = {
+    suites: number
+    tests: number
+}
 
 export type FrameworkOptions = {
     command: string
@@ -12,22 +18,23 @@ export type FrameworkOptions = {
     vmPath?: string | null
 }
 
-export interface IFramework {
+export interface IFramework extends EventEmitter {
     readonly id: string
     readonly command: string
     readonly path: string
     readonly runner: string | null
     process?: IProcess
     suites: Array<ISuite>
-    status: Status
+    status: FrameworkStatus
     selected: boolean
+    selectedCount: SelectedCount
 
     start (selective: boolean): Promise<void>
     stop (): Promise<void>
-    refresh (): Promise<Array<ISuite>>
+    refresh (): Promise<void>
 }
 
-export abstract class Framework implements IFramework {
+export abstract class Framework extends EventEmitter implements IFramework {
     public readonly id: string
     public readonly command: string
     public readonly path: string
@@ -36,30 +43,44 @@ export abstract class Framework implements IFramework {
     public process?: IProcess
     public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
-    public status: Status = 'idle'
+    public status: FrameworkStatus = 'idle'
     public selected: boolean = false
     public selective: boolean = false
+    public selectedCount: SelectedCount = {
+        suites: 0,
+        tests: 0
+    }
+    public updateCountsListener: any
 
     constructor (options: FrameworkOptions) {
+        super()
         this.id = uuid()
         this.command = options.command
         this.path = options.path
         this.runner = options.runner || null
         this.vmPath = options.vmPath || null
+        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 100)
     }
 
     abstract runArgs (): Array<string>
     abstract runSelectiveArgs (): Array<string>
-    abstract refresh (): Promise<Array<ISuite>>
+    abstract reload (): Promise<void>
 
     start (selective: boolean = false): Promise<void> {
         if (selective) {
             console.log('Running selectively...')
             this.selective = true
             return this.runSelective()
+                .catch((error) => {
+                    console.log(error)
+                    this.status = 'error'
+                })
         }
-        return this.runSelective()
-        // return this.run()
+        return this.run()
+            .catch((error) => {
+                console.log(error)
+                this.status = 'error'
+            })
     }
 
     stop (): Promise<void> {
@@ -73,6 +94,12 @@ export abstract class Framework implements IFramework {
                 })
                 .stop()
         })
+        .then(() => {
+            this.status = 'stopped'
+        })
+        .catch(() => {
+            this.status = 'error'
+        })
     }
 
     run (): Promise<void> {
@@ -80,7 +107,13 @@ export abstract class Framework implements IFramework {
             suite.reset()
         })
         return new Promise((resolve, reject) => {
-            this.report(this.runArgs(), resolve, reject)
+            // @TODO: Framework configuration: always-refresh-before-running
+            this.status = 'running'
+            this.reload()
+                .then(() => {
+                    console.log('finished reloading from inside run', this)
+                    this.report(this.runArgs(), resolve, reject)
+                })
         })
     }
 
@@ -89,8 +122,21 @@ export abstract class Framework implements IFramework {
             suite.reset()
         })
         return new Promise((resolve, reject) => {
+            this.status = 'running'
             this.report(this.runSelectiveArgs(), resolve, reject)
         })
+    }
+
+    refresh (): Promise<void> {
+        this.status = 'refreshing'
+        return this.reload()
+            .then(suites => {
+                this.status = 'idle'
+            })
+            .catch((error) => {
+                console.log(error)
+                this.status = 'error'
+            })
     }
 
     report (args: Array<string>, resolve: Function, reject: Function): IProcess {
@@ -143,13 +189,25 @@ export abstract class Framework implements IFramework {
         return find(this.suites, { file })
     }
 
-    makeSuite (result: ISuiteResult): ISuite {
+    makeSuite (
+        result: ISuiteResult,
+        force: boolean = false
+    ): ISuite {
         let suite: ISuite | undefined = this.findSuite(result.file)
         if (!suite) {
             suite = this.newSuite(result)
+            suite.on('selective', this.updateCountsListener)
             this.suites.push(suite)
         }
         return suite
+    }
+
+    updateSelectedCounts (): void {
+        this.selectedCount.tests = 0
+        this.selectedCount.suites = this.suites.filter(suite => {
+            this.selectedCount.tests += suite.tests.filter(test => test.selected).length
+            return suite.selected
+        }).length
     }
 
     /**
