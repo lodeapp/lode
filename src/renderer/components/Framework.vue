@@ -2,14 +2,22 @@
     <div class="framework" :class="[`status--${framework.status}`]">
         <div class="header">
             <div class="title">
-                <span class="indicator"></span>
+                <div class="status">
+                    <span class="indicator"></span>
+                </div>
                 <h3>{{ framework.name }}</h3>
                 <div class="float-right">
-                    <button class="btn btn-sm btn-primary" @click="run" :disabled="running || noSuitesSelected">
+                    <button class="btn btn-sm" @click="refresh">
+                        <Icon i="sync" />
+                    </button>
+                    <button
+                        class="btn btn-sm btn-primary"
+                        :disabled="running || refreshing"
+                        @click="run"
+                    >
                         {{ selective ? 'Run selected' : 'Run' }}
                     </button>
-                    <button class="btn btn-sm btn-danger" @click="stop" :disabled="!running">Stop</button>
-                    <button class="btn btn-sm" @click="refresh"><Icon i="sync" /></button>
+                    <button class="btn btn-sm btn-danger" @click="stop" :disabled="!running && !refreshing">Stop</button>
                 </div>
             </div>
             <div class="progress-bar">
@@ -17,7 +25,7 @@
                     {{ displayStatus(framework.status) }}
                 </span>
                 <div class="float-right">
-                    {{ framework.selectedCount.suites }} | {{ framework.selectedCount.tests }}
+                    <TestCount :framework="framework" />
                 </div>
                 <!-- <br>Toggle by status -->
             </div>
@@ -32,15 +40,17 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import Group from '@/components/Group'
 import Suite from '@/components/Suite'
+import TestCount from '@/components/TestCount'
 
 export default {
     name: 'Framework',
     components: {
         Group,
-        Suite
+        Suite,
+        TestCount
     },
     props: {
         framework: {
@@ -48,33 +58,41 @@ export default {
             required: true
         }
     },
-    data () {
-        return {
-            show: true
-        }
-    },
     computed: {
         running () {
             return this.framework.status === 'running'
         },
-        noSuitesSelected () {
-            return !this.framework.selectedCount.suites
+        refreshing () {
+            return this.framework.status === 'refreshing'
+        },
+        selectedSuiteCount () {
+            return this.framework.selectedCount.suites
         },
         ...mapGetters({
             selective: 'tree/selective',
             displayStatus: 'status/display'
         })
     },
-    methods: {
-        refresh () {
-            this.framework.refresh()
-        },
-        run () {
-            this.framework.start(this.selective)
-        },
-        stop () {
-            this.framework.stop()
+    watch: {
+        selectedSuiteCount (count) {
+            if (!count) {
+                this.disableSelective()
+            }
         }
+    },
+    methods: {
+        async refresh () {
+            await this.framework.refresh()
+        },
+        async run () {
+            await this.framework.start(this.selective)
+        },
+        async stop () {
+            await this.framework.stop()
+        },
+        ...mapActions({
+            disableSelective: 'tree/disableSelective'
+        })
     }
 }
 </script>
