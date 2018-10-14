@@ -1,0 +1,22 @@
+// ========================================================================
+// Animations
+// ========================================================================
+
+a {
+    transition: color $transition-time, background-color $transition-time;
+}
+
+button,
+.btn {
+    transition: color $transition-time, background-color $transition-time, border-color $transition-time;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity .2s;
+}
+
+.fade-enter,
+.fade-leave-active {
+    opacity: 0;
+}

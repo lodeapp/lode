@@ -8,7 +8,7 @@
         left: 0;
         position: absolute;
         top: 0;
-        width: $indicator-width;
+        width: $status-width;
         z-index: 2;
 
         &::before {
@@ -40,15 +40,15 @@
         background-color: $primary-border;
         cursor: pointer;
         padding: 1px 0 0;
-        padding-left: $indicator-width;
+        padding-left: $status-width;
         position: relative;
 
-        .indicator {
+        .status {
             height: 100%;
             left: 0;
             position: absolute;
             top: 0;
-            width: $indicator-width;
+            width: $status-width;
             z-index: 3;
         }
 
@@ -62,7 +62,7 @@
     & > .group-items {
         background-color: $secondary;
         list-style: none;
-        padding: 0 0 8px $indicator-width;
+        padding: 0 0 8px $status-width;
         position: relative;
         z-index: 1;
 
@@ -90,10 +90,10 @@
 
         & > .header {
 
-            .indicator {
+            .status {
                 background-color: theme-color('success');
                 border-right: 1px solid darken(theme-color('success'), 10%);
-                box-shadow: 3px 0 0 0 transparentize(theme-color('success'), .5);
+                box-shadow: 4px 0 0 0 transparentize(theme-color('success'), .5);
             }
         }
     }
@@ -107,10 +107,10 @@
 
         & > .header {
 
-            .indicator {
+            .status {
                 background-color: theme-color('danger');
                 border-right: 1px solid darken(theme-color('danger'), 10%);
-                box-shadow: 3px 0 0 0 transparentize(theme-color('danger'), .5);
+                box-shadow: 4px 0 0 0 transparentize(theme-color('danger'), .5);
             }
         }
     }
@@ -124,10 +124,10 @@
 
         & > .header {
 
-            .indicator {
+            .status {
                 background-color: theme-color('incomplete');
                 border-right: 1px solid darken(theme-color('incomplete'), 10%);
-                box-shadow: 3px 0 0 0 transparentize(theme-color('incomplete'), .5);
+                box-shadow: 4px 0 0 0 transparentize(theme-color('incomplete'), .5);
             }
         }
     }
@@ -141,10 +141,10 @@
 
         & > .header {
 
-            .indicator {
+            .status {
                 background-color: theme-color('warning');
                 border-right: 1px solid darken(theme-color('warning'), 10%);
-                box-shadow: 3px 0 0 0 transparentize(theme-color('warning'), .5);
+                box-shadow: 4px 0 0 0 transparentize(theme-color('warning'), .5);
             }
         }
     }
@@ -158,10 +158,10 @@
 
         & > .header {
 
-            .indicator {
+            .status {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: 3px 0 0 0 transparentize(theme-color('idle'), .5);
+                box-shadow: 4px 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }
@@ -175,10 +175,10 @@
 
         & > .header {
 
-            .indicator {
+            .status {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: 3px 0 0 0 transparentize(theme-color('idle'), .5);
+                box-shadow: 4px 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }
@@ -192,10 +192,10 @@
 
         & > .header {
 
-            .indicator {
+            .status {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: 3px 0 0 0 transparentize(theme-color('idle'), .5);
+                box-shadow: 4px 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }

@@ -107,11 +107,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
             suite.reset()
         })
         return new Promise((resolve, reject) => {
-            // @TODO: Framework configuration: always-refresh-before-running
             this.status = 'running'
             this.reload()
                 .then(() => {
-                    console.log('finished reloading from inside run', this)
                     this.report(this.runArgs(), resolve, reject)
                 })
         })

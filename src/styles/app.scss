@@ -1,6 +1,7 @@
 @import 'functions';
 @import 'variables';
 @import 'bootstrap';
+@import 'animations';
 @import 'blocks/buttons';
 @import 'blocks/filename';
 @import 'blocks/framework';
@@ -8,6 +9,8 @@
 @import 'blocks/input';
 @import 'blocks/main';
 @import 'blocks/repository';
+@import 'blocks/results';
+@import 'blocks/spinner';
 @import 'blocks/suite';
 @import 'blocks/test';
 

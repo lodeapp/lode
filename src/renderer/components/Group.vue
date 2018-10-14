@@ -10,7 +10,7 @@
     >
         <div class="seam"></div>
         <div class="header">
-            <div class="indicator"></div>
+            <div class="status"></div>
             <div class="header-inner">
                 <slot name="header"></slot>
             </div>

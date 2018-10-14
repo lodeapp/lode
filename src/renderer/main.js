@@ -4,6 +4,8 @@ import App from './App'
 import router from './router'
 import store from './store'
 import icons from './plugins/icons'
+import Strings from './plugins/strings'
+import filters from './plugins/filters'
 
 import '../styles/app.scss'
 
@@ -12,6 +14,8 @@ Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 
 Vue.use(icons)
+Vue.use(new Strings('en-US'))
+Vue.use(filters)
 
 /* eslint-disable no-new */
 new Vue({

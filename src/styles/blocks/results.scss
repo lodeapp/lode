@@ -1,0 +1,28 @@
+.results-pane {
+
+    .header {
+        padding: 15px;
+    }
+
+    .tabnav {
+        padding: 0 15px;
+        margin-bottom: 0;
+
+        .tabnav-tabs {
+
+            .tabnav-tab {
+                border-width: 3px 1px 1px;
+                border-radius: 3px 3px 0 0;
+
+                &.selected {
+                    border-color: #e36209 #e1e4e8 transparent;
+                }
+            }
+        }
+    }
+}
+
+.results {
+    background-color: $primary;
+    padding: 15px;
+}
