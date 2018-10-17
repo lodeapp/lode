@@ -1,5 +1,7 @@
 const path = require('path')
 const _find = require('lodash/find')
+const _findIndex = require('lodash/findIndex')
+const _trimStart = require('lodash/trimStart')
 const stripAnsi = require('strip-ansi')
 const Ansi  = require('ansi-to-html')
 
@@ -50,7 +52,8 @@ class Base64TestReporter {
         const feedback = _find(feedbacks, { test: result.fullName })
 
         return {
-            name: result.title,
+            ancestors: result.ancestorTitles,
+            name: result.ancestorTitles.concat([result.title]).join('.'),
             displayName: result.title,
             status: result.status,
             feedback: feedback ? this.ansi.toHtml(feedback.message) : '',
@@ -60,10 +63,41 @@ class Base64TestReporter {
     }
 
     onTestResult (test, testResult, aggregatedResult) {
+        const tests = []
         const feedbacks = this.parseFeedback(testResult.failureMessage)
+        const ungrouped = testResult.testResults.map(result => this.transform(result, feedbacks))
+        ungrouped.forEach(result => {
+            if (result.ancestors.length) {
+                let ancestor = ''
+                while (result.ancestors.length) {
+                    const title = result.ancestors.pop()
+                    ancestor = _trimStart(`${ancestor}.${title}`, '.')
+                    const group = _findIndex(tests, { name: ancestor })
+                    if (group === -1) {
+                        tests.push({
+                            name: ancestor,
+                            displayName: title,
+                            status: result.status,
+                            assertions: 0,
+                            console: [],
+                            tests: [result]
+                        })
+                        return true
+                    }
+                    if (typeof tests[group].tests === 'undefined') {
+                        tests[group].tests = []
+                    }
+                    tests[group].tests.push(result)
+                }
+                return true
+            }
+            tests.push(result)
+        })
+
         const results = {
             file: test.path,
-            tests: testResult.testResults.map(result => this.transform(result, feedbacks)),
+            tests,
+            ungrouped,
             raw: {
                 test,
                 testResult,

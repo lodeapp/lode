@@ -19,6 +19,7 @@ export interface ISuite extends EventEmitter {
     tests: Array<ITest>
     selected: boolean
     canToggleTests: boolean
+    testsLoaded: boolean
 
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
@@ -29,6 +30,7 @@ export interface ISuiteResult {
     file: string
     tests: Array<ITestResult>
     meta: Array<any>
+    testsLoaded?: boolean
 }
 
 export class Suite extends EventEmitter implements ISuite {
@@ -43,6 +45,7 @@ export class Suite extends EventEmitter implements ISuite {
     public selected: boolean = false
     public partial: boolean = false
     public canToggleTests: boolean = false
+    public testsLoaded: boolean = true
     public updateCountsListener: any
 
     constructor (options: SuiteOptions, result: ISuiteResult) {
@@ -55,17 +58,22 @@ export class Suite extends EventEmitter implements ISuite {
         this.build(result)
     }
 
-    static buildResult (partial: object): ISuiteResult {
+    static buildResult (
+        partial: object,
+        testsLoaded: boolean = true
+    ): ISuiteResult {
         return merge({
             file: '',
             tests: [],
-            meta: []
+            meta: [],
+            testsLoaded
         }, cloneDeep(partial))
     }
 
     build (result: ISuiteResult): void {
         this.relative = path.relative(this.vmPath || this.root, this.file)
         this.tests = result.tests.map((result: ITestResult) => this.makeTest(result, true))
+        this.testsLoaded = typeof result.testsLoaded !== 'undefined' ? !!result.testsLoaded : true
         this.running = []
         this.status = 'idle'
     }
@@ -88,17 +96,12 @@ export class Suite extends EventEmitter implements ISuite {
             })
 
             Promise.all(this.running).then(() => {
+                this.testsLoaded = typeof suiteResult.testsLoaded !== 'undefined' ? !!suiteResult.testsLoaded : true
+
                 // @TODO: don't clean-up if running selectively
                 this.afterDebrief(selective)
                 resolve()
             })
-        })
-    }
-
-    reset (): void {
-        this.status = 'idle'
-        this.tests.filter(test => test.selected).forEach(test => {
-            test.reset()
         })
     }
 
@@ -108,6 +111,18 @@ export class Suite extends EventEmitter implements ISuite {
             this.tests = this.tests.filter(test => test.status !== 'idle')
         }
         this.status = parseStatus(this.tests.map(test => test.status))
+    }
+
+    reset (): void {
+        this.status = 'idle'
+        this.tests.filter(test => {
+            if (!this.canToggleTests) {
+                return true
+            }
+            return test.selected
+        }).forEach(test => {
+            test.reset()
+        })
     }
 
     newTest (result: ITestResult): ITest {

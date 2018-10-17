@@ -176,7 +176,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             // Look for report prefix in the first line
             // of this chunk. If found, start report mode.
             if (!this.reports && !this.reportClosed) {
-                const firstLine = filteredLines.shift()
+                const firstLine = filteredLines[0]
                 if (firstLine === '{') {
                     this.reports = true
                 }
@@ -240,7 +240,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     }
 
     public getLines (): Array<string> {
-        return this.chunks.join('').split('\n')
+        return this.chunks.join('\n').split('\n')
     }
 
     public getRawLines (): Array<string> {
