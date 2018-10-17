@@ -13,7 +13,9 @@ export class Jest extends Framework {
         return new Promise((resolve, reject) => {
             this.spawn(['--listTests'])
                 .on('success', ({ process }) => {
-                    process.getLines().map((file: string) => this.makeSuite(Suite.buildResult({ file })))
+                    process.getLines()
+                        .filter((file: string) => this.fileInPath(file))
+                        .map((file: string) => this.makeSuite(Suite.buildResult({ file }, false)))
                     resolve()
                 })
                 .on('error', ({ message }) => {

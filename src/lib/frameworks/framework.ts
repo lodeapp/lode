@@ -200,6 +200,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return suite
     }
 
+    fileInPath (file: string): boolean {
+        return file.startsWith(this.vmPath || this.path)
+    }
+
     updateSelectedCounts (): void {
         this.selectedCount.tests = 0
         this.selectedCount.suites = this.suites.filter(suite => {

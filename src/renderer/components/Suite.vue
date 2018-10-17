@@ -1,5 +1,5 @@
 <template>
-    <Group :model="suite" class="suite">
+    <Group :model="suite" :toggles="suite.testsLoaded" class="suite">
         <template slot="header">
             <div class="input--select" @click.stop="onSelective">
                 <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial">
@@ -8,7 +8,7 @@
         </template>
         <Test
             v-for="test in suite.tests"
-            :key="test.name"
+            :key="test.id"
             :test="test"
             :toggles="suite.canToggleTests"
         />
