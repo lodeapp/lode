@@ -14,8 +14,12 @@ export class Jest extends Framework {
             this.spawn(['--listTests'])
                 .on('success', ({ process }) => {
                     process.getLines()
+                        .sort()
                         .filter((file: string) => this.fileInPath(file))
-                        .map((file: string) => this.makeSuite(Suite.buildResult({ file }, false)))
+                        .map((file: string) => this.makeSuite(Suite.buildResult({
+                            file,
+                            testsLoaded: false
+                        })))
                     resolve()
                 })
                 .on('error', ({ message }) => {
@@ -29,6 +33,12 @@ export class Jest extends Framework {
     }
 
     runSelectiveArgs (): Array<string> {
-        return ['/Users/tomasbuteler/Sites/Amiqus/aqid/tests/assets/js/plugins/filters.spec.js'].concat(this.runArgs())
+        const args: Array<string> = []
+
+        this.suites.filter(suite => suite.selected).forEach(suite => {
+            args.push(suite.relative)
+        })
+
+        return args.concat(this.runArgs())
     }
 }

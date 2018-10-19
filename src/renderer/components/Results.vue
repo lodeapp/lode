@@ -1,13 +1,14 @@
 <template>
     <div class="results-pane">
-        <div v-if="!test">
-            No test selected.
+        <div v-if="!test" class="blankslate">
+            <h3>No test selected</h3>
         </div>
         <div v-else>
             <div class="header">
                 <h2>{{ test.displayName }}</h2>
                 <nav aria-label="Breadcrumb">
                     <ol>
+                        <li class="breadcrumb-item text-small">{{ 'Suite name' }}</li>
                         <li class="breadcrumb-item breadcrumb-item-selected text-small">{{ 'Suite name' }}</li>
                     </ol>
                 </nav>

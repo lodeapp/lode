@@ -1,7 +1,6 @@
 const path = require('path')
 const _find = require('lodash/find')
 const _findIndex = require('lodash/findIndex')
-const _trimStart = require('lodash/trimStart')
 const stripAnsi = require('strip-ansi')
 const Ansi  = require('ansi-to-html')
 
@@ -53,7 +52,7 @@ class Base64TestReporter {
 
         return {
             ancestors: result.ancestorTitles,
-            name: result.ancestorTitles.concat([result.title]).join('.'),
+            name: result.ancestorTitles.concat([result.title]).join('¦'),
             displayName: result.title,
             status: result.status,
             feedback: feedback ? this.ansi.toHtml(feedback.message) : '',
@@ -62,42 +61,44 @@ class Base64TestReporter {
         }
     }
 
-    onTestResult (test, testResult, aggregatedResult) {
-        const tests = []
-        const feedbacks = this.parseFeedback(testResult.failureMessage)
-        const ungrouped = testResult.testResults.map(result => this.transform(result, feedbacks))
+    group (ungrouped) {
+        let tests = []
         ungrouped.forEach(result => {
+            let group = tests
             if (result.ancestors.length) {
-                let ancestor = ''
-                while (result.ancestors.length) {
-                    const title = result.ancestors.pop()
-                    ancestor = _trimStart(`${ancestor}.${title}`, '.')
-                    const group = _findIndex(tests, { name: ancestor })
-                    if (group === -1) {
-                        tests.push({
-                            name: ancestor,
-                            displayName: title,
+                let prefix = ''
+                result.ancestors.forEach(ancestor => {
+                    const name = `${prefix}${ancestor}`
+                    let index = _findIndex(group, { name })
+                    prefix += `${ancestor}¦`
+                    if (index === -1) {
+                        const test = {
+                            name,
+                            displayName: ancestor,
                             status: result.status,
                             assertions: 0,
                             console: [],
-                            tests: [result]
-                        })
-                        return true
+                            tests: []
+                        }
+                        group.push(test)
+                        index = _findIndex(group, { name: test.name })
                     }
-                    if (typeof tests[group].tests === 'undefined') {
-                        tests[group].tests = []
-                    }
-                    tests[group].tests.push(result)
-                }
-                return true
+                    group = group[index].tests
+                })
             }
-            tests.push(result)
+            delete result.ancestors
+            group.push(result)
         })
+        return tests
+    }
+
+    onTestResult (test, testResult, aggregatedResult) {
+        const feedbacks = this.parseFeedback(testResult.failureMessage)
+        const tests = this.group(testResult.testResults.map(result => this.transform(result, feedbacks)))
 
         const results = {
             file: test.path,
             tests,
-            ungrouped,
             raw: {
                 test,
                 testResult,

@@ -1,9 +1,10 @@
 .input--select {
     cursor: pointer;
     height: 18px;
+    margin-right: 4px;
+    opacity: .3;
     text-align: center;
     width: 20px;
-    opacity: .3;
 
     input {
         background-color: gray;

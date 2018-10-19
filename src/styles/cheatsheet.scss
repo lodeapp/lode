@@ -1,0 +1,505 @@
+// ========================================================================
+// Design system cheat-sheet
+// ========================================================================
+
+//
+// Use the cheatsheet to tweak color system and other variables
+//
+
+/*
+<div class="color green">
+    <span class="c000"></span>
+    <span class="c100"></span>
+    <span class="c200"></span>
+    <span class="c300"></span>
+    <span class="c400"></span>
+    <span class="c500"></span>
+    <span class="c600"></span>
+    <span class="c700"></span>
+    <span class="c800"></span>
+    <span class="c900"></span>
+</div>
+*/
+
+.color {
+    margin: 10px auto;
+
+    & > * {
+        display: block;
+        width: 100%;
+        height: 40px;
+        padding: 5px;
+
+        &::after {
+            color: #000;
+        }
+    }
+}
+
+.green {
+
+    .c000 {
+        background-color: $green-000;
+        &::after {
+            content: '$green-000: #{$green-000}';
+        }
+    }
+
+    .c100 {
+        background-color: $green-100;
+        &::after {
+            content: '$green-100: #{$green-100}';
+        }
+    }
+
+    .c200 {
+        background-color: $green-200;
+        &::after {
+            content: '$green-200: #{$green-200}';
+        }
+    }
+
+    .c300 {
+        background-color: $green-300;
+        &::after {
+            content: '$green-300: #{$green-300}';
+        }
+    }
+
+    .c400 {
+        background-color: $green-400;
+        &::after {
+            content: '$green-400: #{$green-400}';
+        }
+    }
+
+    .c500 {
+        background-color: $green-500;
+        &::after {
+            content: '$green-500: #{$green-500}';
+            color: #fff;
+        }
+    }
+
+    .c600 {
+        background-color: $green-600;
+        &::after {
+            content: '$green-600: #{$green-600}';
+            color: #fff;
+        }
+    }
+
+    .c700 {
+        background-color: $green-700;
+        &::after {
+            content: '$green-700: #{$green-700}';
+            color: #fff;
+        }
+    }
+
+    .c800 {
+        background-color: $green-800;
+        &::after {
+            content: '$green-800: #{$green-800}';
+            color: #fff;
+        }
+    }
+
+    .c900 {
+        background-color: $green-900;
+        &::after {
+            content: '$green-900: #{$green-900}';
+            color: #fff;
+        }
+    }
+}
+
+.red {
+
+    .c000 {
+        background-color: $red-000;
+        &::after {
+            content: '$red-000: #{$red-000}';
+        }
+    }
+
+    .c100 {
+        background-color: $red-100;
+        &::after {
+            content: '$red-100: #{$red-100}';
+        }
+    }
+
+    .c200 {
+        background-color: $red-200;
+        &::after {
+            content: '$red-200: #{$red-200}';
+        }
+    }
+
+    .c300 {
+        background-color: $red-300;
+        &::after {
+            content: '$red-300: #{$red-300}';
+        }
+    }
+
+    .c400 {
+        background-color: $red-400;
+        &::after {
+            content: '$red-400: #{$red-400}';
+        }
+    }
+
+    .c500 {
+        background-color: $red-500;
+        &::after {
+            content: '$red-500: #{$red-500}';
+            color: #fff;
+        }
+    }
+
+    .c600 {
+        background-color: $red-600;
+        &::after {
+            content: '$red-600: #{$red-600}';
+            color: #fff;
+        }
+    }
+
+    .c700 {
+        background-color: $red-700;
+        &::after {
+            content: '$red-700: #{$red-700}';
+            color: #fff;
+        }
+    }
+
+    .c800 {
+        background-color: $red-800;
+        &::after {
+            content: '$red-800: #{$red-800}';
+            color: #fff;
+        }
+    }
+
+    .c900 {
+        background-color: $red-900;
+        &::after {
+            content: '$red-900: #{$red-900}';
+            color: #fff;
+        }
+    }
+}
+
+.yellow {
+
+    .c000 {
+        background-color: $yellow-000;
+        &::after {
+            content: '$yellow-000: #{$yellow-000}';
+        }
+    }
+
+    .c100 {
+        background-color: $yellow-100;
+        &::after {
+            content: '$yellow-100: #{$yellow-100}';
+        }
+    }
+
+    .c200 {
+        background-color: $yellow-200;
+        &::after {
+            content: '$yellow-200: #{$yellow-200}';
+        }
+    }
+
+    .c300 {
+        background-color: $yellow-300;
+        &::after {
+            content: '$yellow-300: #{$yellow-300}';
+        }
+    }
+
+    .c400 {
+        background-color: $yellow-400;
+        &::after {
+            content: '$yellow-400: #{$yellow-400}';
+        }
+    }
+
+    .c500 {
+        background-color: $yellow-500;
+        &::after {
+            content: '$yellow-500: #{$yellow-500}';
+            color: #fff;
+        }
+    }
+
+    .c600 {
+        background-color: $yellow-600;
+        &::after {
+            content: '$yellow-600: #{$yellow-600}';
+            color: #fff;
+        }
+    }
+
+    .c700 {
+        background-color: $yellow-700;
+        &::after {
+            content: '$yellow-700: #{$yellow-700}';
+            color: #fff;
+        }
+    }
+
+    .c800 {
+        background-color: $yellow-800;
+        &::after {
+            content: '$yellow-800: #{$yellow-800}';
+            color: #fff;
+        }
+    }
+
+    .c900 {
+        background-color: $yellow-900;
+        &::after {
+            content: '$yellow-900: #{$yellow-900}';
+            color: #fff;
+        }
+    }
+}
+
+.blue {
+
+    .c000 {
+        background-color: $blue-000;
+        &::after {
+            content: '$blue-000: #{$blue-000}';
+        }
+    }
+
+    .c100 {
+        background-color: $blue-100;
+        &::after {
+            content: '$blue-100: #{$blue-100}';
+        }
+    }
+
+    .c200 {
+        background-color: $blue-200;
+        &::after {
+            content: '$blue-200: #{$blue-200}';
+        }
+    }
+
+    .c300 {
+        background-color: $blue-300;
+        &::after {
+            content: '$blue-300: #{$blue-300}';
+        }
+    }
+
+    .c400 {
+        background-color: $blue-400;
+        &::after {
+            content: '$blue-400: #{$blue-400}';
+        }
+    }
+
+    .c500 {
+        background-color: $blue-500;
+        &::after {
+            content: '$blue-500: #{$blue-500}';
+            color: #fff;
+        }
+    }
+
+    .c600 {
+        background-color: $blue-600;
+        &::after {
+            content: '$blue-600: #{$blue-600}';
+            color: #fff;
+        }
+    }
+
+    .c700 {
+        background-color: $blue-700;
+        &::after {
+            content: '$blue-700: #{$blue-700}';
+            color: #fff;
+        }
+    }
+
+    .c800 {
+        background-color: $blue-800;
+        &::after {
+            content: '$blue-800: #{$blue-800}';
+            color: #fff;
+        }
+    }
+
+    .c900 {
+        background-color: $blue-900;
+        &::after {
+            content: '$blue-900: #{$blue-900}';
+            color: #fff;
+        }
+    }
+}
+
+.purple {
+
+    .c000 {
+        background-color: $purple-000;
+        &::after {
+            content: '$purple-000: #{$purple-000}';
+        }
+    }
+
+    .c100 {
+        background-color: $purple-100;
+        &::after {
+            content: '$purple-100: #{$purple-100}';
+        }
+    }
+
+    .c200 {
+        background-color: $purple-200;
+        &::after {
+            content: '$purple-200: #{$purple-200}';
+        }
+    }
+
+    .c300 {
+        background-color: $purple-300;
+        &::after {
+            content: '$purple-300: #{$purple-300}';
+        }
+    }
+
+    .c400 {
+        background-color: $purple-400;
+        &::after {
+            content: '$purple-400: #{$purple-400}';
+        }
+    }
+
+    .c500 {
+        background-color: $purple-500;
+        &::after {
+            content: '$purple-500: #{$purple-500}';
+            color: #fff;
+        }
+    }
+
+    .c600 {
+        background-color: $purple-600;
+        &::after {
+            content: '$purple-600: #{$purple-600}';
+            color: #fff;
+        }
+    }
+
+    .c700 {
+        background-color: $purple-700;
+        &::after {
+            content: '$purple-700: #{$purple-700}';
+            color: #fff;
+        }
+    }
+
+    .c800 {
+        background-color: $purple-800;
+        &::after {
+            content: '$purple-800: #{$purple-800}';
+            color: #fff;
+        }
+    }
+
+    .c900 {
+        background-color: $purple-900;
+        &::after {
+            content: '$purple-900: #{$purple-900}';
+            color: #fff;
+        }
+    }
+}
+
+.orange {
+
+    .c000 {
+        background-color: $orange-000;
+        &::after {
+            content: '$orange-000: #{$orange-000}';
+        }
+    }
+
+    .c100 {
+        background-color: $orange-100;
+        &::after {
+            content: '$orange-100: #{$orange-100}';
+        }
+    }
+
+    .c200 {
+        background-color: $orange-200;
+        &::after {
+            content: '$orange-200: #{$orange-200}';
+        }
+    }
+
+    .c300 {
+        background-color: $orange-300;
+        &::after {
+            content: '$orange-300: #{$orange-300}';
+        }
+    }
+
+    .c400 {
+        background-color: $orange-400;
+        &::after {
+            content: '$orange-400: #{$orange-400}';
+        }
+    }
+
+    .c500 {
+        background-color: $orange-500;
+        &::after {
+            content: '$orange-500: #{$orange-500}';
+            color: #fff;
+        }
+    }
+
+    .c600 {
+        background-color: $orange-600;
+        &::after {
+            content: '$orange-600: #{$orange-600}';
+            color: #fff;
+        }
+    }
+
+    .c700 {
+        background-color: $orange-700;
+        &::after {
+            content: '$orange-700: #{$orange-700}';
+            color: #fff;
+        }
+    }
+
+    .c800 {
+        background-color: $orange-800;
+        &::after {
+            content: '$orange-800: #{$orange-800}';
+            color: #fff;
+        }
+    }
+
+    .c900 {
+        background-color: $orange-900;
+        &::after {
+            content: '$orange-900: #{$orange-900}';
+            color: #fff;
+        }
+    }
+}

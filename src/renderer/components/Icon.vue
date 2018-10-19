@@ -6,14 +6,14 @@
 export default {
     name: 'Icon',
     props: {
-        i: {
+        slug: {
             type: String,
             required: true
         }
     },
     computed: {
         svg () {
-            return this.$icon[this.i].toSVG()
+            return this.$icon[this.slug].toSVG()
         }
     }
 }

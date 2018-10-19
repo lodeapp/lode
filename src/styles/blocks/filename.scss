@@ -8,5 +8,6 @@
 
     & > .dir {
         color: $secondary-discreet-text;
+        word-break: break-all;
     }
 }

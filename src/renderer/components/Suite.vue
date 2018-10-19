@@ -1,5 +1,5 @@
 <template>
-    <Group :model="suite" :toggles="suite.testsLoaded" class="suite">
+    <Group :model="suite" :has-children="suite.testsLoaded && suite.tests.length > 0" class="suite">
         <template slot="header">
             <div class="input--select" @click.stop="onSelective">
                 <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial">
@@ -10,7 +10,7 @@
             v-for="test in suite.tests"
             :key="test.id"
             :test="test"
-            :toggles="suite.canToggleTests"
+            :selectable="suite.canToggleTests"
         />
     </Group>
 </template>
@@ -19,14 +19,12 @@
 import { mapActions } from 'vuex'
 import Group from '@/components/Group'
 import Filename from '@/components/Filename'
-import Test from '@/components/Test'
 
 export default {
     name: 'Suite',
     components: {
         Group,
-        Filename,
-        Test
+        Filename
     },
     props: {
         suite: {

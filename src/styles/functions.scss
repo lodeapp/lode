@@ -2,8 +2,9 @@
 // Functions
 // ========================================================================
 
-// Start with Bootstrap's functions
-@import 'node_modules/bootstrap/scss/functions';
+@function theme-color($key: 'primary') {
+    @return map-get($theme-colors, $key);
+}
 
 @function theme-color-light($key: 'primary') {
     @return map-get($theme-colors-light, $key);

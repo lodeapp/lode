@@ -179,6 +179,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 const firstLine = filteredLines[0]
                 if (firstLine === '{') {
                     this.reports = true
+                    // Remove prefix, as it's not part of the actual report
+                    filteredLines.shift()
                 }
             }
 
