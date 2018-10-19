@@ -1,10 +1,9 @@
 .suite {
-    font-weight: 400;
 
-    & > ul {
+    & > .seam {
 
-        & > :first-child .test {
-            border-top: 0 !important;
+        &::after {
+            // bottom: 14px;
         }
     }
 }

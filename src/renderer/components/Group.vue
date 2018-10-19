@@ -4,7 +4,8 @@
         :class="[
             `status--${status}`,
             `is-${selectStatus}`,
-            `is-${expandStatus}`
+            `is-${expandStatus}`,
+            hasChildren ? 'has-children' : ''
         ]"
         @click.stop="onClick"
     >
@@ -13,6 +14,9 @@
             <div class="status"></div>
             <div class="header-inner">
                 <slot name="header"></slot>
+            </div>
+            <div v-if="hasChildren" class="toggle">
+                <Icon :slug="show ? 'chevron-down' : 'chevron-right'" />
             </div>
         </div>
         <div v-if="hasChildren" v-show="show" class="group-items">
@@ -30,10 +34,6 @@ export default {
             required: true
         },
         hasChildren: {
-            type: Boolean,
-            default: true
-        },
-        toggles: {
             type: Boolean,
             default: true
         },
@@ -65,11 +65,9 @@ export default {
     methods: {
         onClick () {
             if (this.handler) {
-                this.handler.call()
-                return
-            }
-            if (!this.toggles) {
-                return
+                if (this.handler.call() === false) {
+                    return
+                }
             }
             this.toggleChildren()
         },

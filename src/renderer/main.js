@@ -17,6 +17,10 @@ Vue.use(icons)
 Vue.use(new Strings('en-US'))
 Vue.use(filters)
 
+// Register global or recursive components
+import Test from '@/components/Test'
+Vue.component('Test', Test)
+
 /* eslint-disable no-new */
 new Vue({
     components: { App },

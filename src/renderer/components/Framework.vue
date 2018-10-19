@@ -8,7 +8,7 @@
                 <h3>{{ framework.name }}</h3>
                 <div class="float-right">
                     <button class="btn btn-sm" @click="refresh">
-                        <Icon i="sync" />
+                        <Icon slug="sync" />
                     </button>
                     <button
                         class="btn btn-sm btn-primary"

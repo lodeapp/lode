@@ -1,8 +1,9 @@
 import * as path from 'path'
-import { cloneDeep, debounce, find, merge } from 'lodash'
+import { cloneDeep, merge } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
-import { Test, ITest, ITestResult } from '@lib/frameworks/test'
+import { Container } from '@lib/frameworks/container'
+import { ITest, ITestResult, Test } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
 
 export type SuiteOptions = {
@@ -33,20 +34,15 @@ export interface ISuiteResult {
     testsLoaded?: boolean
 }
 
-export class Suite extends EventEmitter implements ISuite {
+export class Suite extends Container implements ISuite {
     public readonly id: string
     public readonly root: string
     public readonly vmPath: string | null
     public readonly file: string
     public relative!: string
-    public tests: Array<ITest> = []
     public running: Array<Promise<void>> = []
     public status!: Status
-    public selected: boolean = false
-    public partial: boolean = false
-    public canToggleTests: boolean = false
     public testsLoaded: boolean = true
-    public updateCountsListener: any
 
     constructor (options: SuiteOptions, result: ISuiteResult) {
         super()
@@ -54,19 +50,17 @@ export class Suite extends EventEmitter implements ISuite {
         this.root = options.path
         this.vmPath = options.vmPath || null
         this.file = result.file
-        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 100)
         this.build(result)
     }
 
     static buildResult (
-        partial: object,
-        testsLoaded: boolean = true
+        partial: object
     ): ISuiteResult {
         return merge({
             file: '',
             tests: [],
             meta: [],
-            testsLoaded
+            testsLoaded: true
         }, cloneDeep(partial))
     }
 
@@ -78,14 +72,8 @@ export class Suite extends EventEmitter implements ISuite {
         this.status = 'idle'
     }
 
-    toggleSelected (toggle?: boolean, cascade?: boolean): void {
-        this.selected = typeof toggle === 'undefined' ? !this.selected : toggle
-        this.emit('selective')
-        if (this.canToggleTests && cascade !== false) {
-            this.tests.forEach(test => {
-                test.toggleSelected(this.selected)
-            })
-        }
+    newTest (result: ITestResult): ITest {
+        return new Test(result)
     }
 
     debrief (suiteResult: ISuiteResult, selective: boolean): Promise<void> {
@@ -115,46 +103,6 @@ export class Suite extends EventEmitter implements ISuite {
 
     reset (): void {
         this.status = 'idle'
-        this.tests.filter(test => {
-            if (!this.canToggleTests) {
-                return true
-            }
-            return test.selected
-        }).forEach(test => {
-            test.reset()
-        })
-    }
-
-    newTest (result: ITestResult): ITest {
-        return new Test(result)
-    }
-
-    findTest (name: string): ITest | undefined {
-        return find(this.tests, { name })
-    }
-
-    makeTest (
-        result: ITestResult,
-        force: boolean = false
-    ): ITest {
-        let test: ITest | undefined | boolean = force ? false : this.findTest(result.name)
-        if (!test) {
-            test = this.newTest(result)
-            test.on('selective', this.updateCountsListener)
-            this.tests.push(test)
-        }
-        return test
-    }
-
-    updateSelectedCounts (): void {
-        const total = this.tests.length
-        const filtered = this.tests.filter(test => test.selected).length
-        if (filtered && !this.selected) {
-            this.toggleSelected(true, false)
-        } else if (!filtered && this.selected) {
-            this.toggleSelected(false, false)
-        }
-        this.partial = filtered > 0 && total > 0 && total > filtered
-        this.emit('selective')
+        super.reset()
     }
 }

@@ -27,7 +27,7 @@
             border-radius: 100%;
             border-width: 4px;
             border-style: double;
-            bottom: 12px;
+            bottom: 14px;
             content: '';
             height: 2px;
             left: 9px;
@@ -40,7 +40,7 @@
         background-color: $primary-border;
         cursor: pointer;
         padding: 1px 0 0;
-        padding-left: $status-width;
+        padding-left: ($status-width + $status-soft-border-width);
         position: relative;
 
         .status {
@@ -55,7 +55,21 @@
         .header-inner {
             display: flex;
             padding: 5px;
+            padding-right: 25px;
             background-color: $primary;
+        }
+
+        .toggle {
+            position: absolute;
+            right: 8px;
+            top: calc(50% - 8px);
+
+            i {
+
+                svg {
+                    fill: $secondary-discreet-text;
+                }
+            }
         }
     }
 
@@ -68,7 +82,7 @@
 
         & > :last-child {
 
-            .header-inner {
+            &.is-collapsed {
                 border-bottom: 1px solid $primary-border;
             }
         }
@@ -78,6 +92,40 @@
 
         & > .seam {
             display: block;
+        }
+
+        & > .group-items {
+
+            & > :nth-last-child(1) {
+
+                &.group.is-expanded {
+
+                    & > .seam {
+
+                        &::after {
+                            bottom: 6px;
+                        }
+                    }
+
+                    & > .group-items {
+                        padding-bottom: 0;
+                    }
+                }
+            }
+        }
+
+        &.has-children {
+            background: red;
+        }
+    }
+
+    &.is-active {
+
+        & > .header {
+
+            & > .header-inner {
+                background-color: $active-background;
+            }
         }
     }
 
@@ -93,7 +141,7 @@
             .status {
                 background-color: theme-color('success');
                 border-right: 1px solid darken(theme-color('success'), 10%);
-                box-shadow: 4px 0 0 0 transparentize(theme-color('success'), .5);
+                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('success'), .5);
             }
         }
     }
@@ -110,12 +158,13 @@
             .status {
                 background-color: theme-color('danger');
                 border-right: 1px solid darken(theme-color('danger'), 10%);
-                box-shadow: 4px 0 0 0 transparentize(theme-color('danger'), .5);
+                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('danger'), .5);
             }
         }
     }
 
-    &.status--incomplete {
+    &.status--incomplete,
+    &.status--skipped {
 
         & > .seam::before,
         & > .seam::after {
@@ -127,7 +176,7 @@
             .status {
                 background-color: theme-color('incomplete');
                 border-right: 1px solid darken(theme-color('incomplete'), 10%);
-                box-shadow: 4px 0 0 0 transparentize(theme-color('incomplete'), .5);
+                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('incomplete'), .5);
             }
         }
     }
@@ -144,7 +193,7 @@
             .status {
                 background-color: theme-color('warning');
                 border-right: 1px solid darken(theme-color('warning'), 10%);
-                box-shadow: 4px 0 0 0 transparentize(theme-color('warning'), .5);
+                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('warning'), .5);
             }
         }
     }
@@ -161,7 +210,7 @@
             .status {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: 4px 0 0 0 transparentize(theme-color('idle'), .5);
+                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }
@@ -178,7 +227,7 @@
             .status {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: 4px 0 0 0 transparentize(theme-color('idle'), .5);
+                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }
@@ -195,7 +244,7 @@
             .status {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: 4px 0 0 0 transparentize(theme-color('idle'), .5);
+                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }

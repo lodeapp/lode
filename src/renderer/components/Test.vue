@@ -4,13 +4,21 @@
         class="test"
         :class="[activeTest && activeTest.id === test.id ? 'is-active' : '']"
         :has-children="hasChildren"
-        @click.native.stop="onClick"
+        :handler="onClick"
     >
         <template slot="header">
-            <div v-if="toggles" class="input--select" @click.stop="onSelective">
+            <div v-if="selectable" class="input--select" @click.stop="onSelective">
                 <input type="checkbox" v-model="selected" @click.stop>
             </div>
-            <div>{{ test.displayName }}</div>
+            <div class="test-name">{{ test.displayName }}</div>
+        </template>
+        <template v-if="hasChildren">
+            <Test
+                v-for="test in test.tests"
+                :key="test.id"
+                :test="test"
+                :selectable="selectable"
+            />
         </template>
     </Group>
 </template>
@@ -29,7 +37,7 @@ export default {
             type: Object,
             required: true
         },
-        toggles: {
+        selectable: {
             type: Boolean,
             default: false
         }
@@ -41,9 +49,7 @@ export default {
     },
     computed: {
         hasChildren () {
-            // @TODO: nested tests should show children instead of
-            // toggling active test to show results
-            return false
+            return this.test.tests && this.test.tests.length > 0
         },
         selected: {
             get () {
@@ -63,11 +69,10 @@ export default {
             this.enableSelective()
         },
         onClick () {
-            if (this.hasChildren) {
-                this.toggleChildren()
-                return
+            if (!this.hasChildren) {
+                this.showResults(this.test)
+                return false
             }
-            this.showResults(this.test)
         },
         ...mapActions({
             enableSelective: 'tree/enableSelective',

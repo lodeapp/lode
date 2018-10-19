@@ -25,7 +25,7 @@ export default {
         // @TODO: Get parameters from config
         this.repository.addFramework(new Jest({
             command: 'yarn tests',
-            path: this.repository.path,
+            path: `${this.repository.path}/tests/assets/js`,
             runner: 'yarn'
         }))
 

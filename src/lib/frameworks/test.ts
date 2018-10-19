@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { Status } from '@lib/frameworks/status'
+import { Container } from '@lib/frameworks/container'
 
 export interface ITest extends EventEmitter {
     readonly id: string
@@ -9,7 +10,8 @@ export interface ITest extends EventEmitter {
     selected: boolean
 
     toggleSelected (toggle?: boolean, cascade?: boolean): void
-    debrief(result: ITestResult): Promise<void>
+    update (result: ITestResult): void
+    debrief (result: ITestResult): Promise<void>
     reset (): void
 }
 
@@ -21,15 +23,15 @@ export interface ITestResult {
     feedback: string
     assertions: number
     console: Array<string>
+    tests?: Array<ITestResult>
 }
 
-export class Test extends EventEmitter implements ITest {
+export class Test extends Container implements ITest {
     public readonly id: string
     public readonly name: string
     public readonly displayName: string
     public status!: Status
     public result?: ITestResult
-    public selected: boolean = false
 
     constructor (result: ITestResult) {
         super()
@@ -39,14 +41,24 @@ export class Test extends EventEmitter implements ITest {
         this.build(result)
     }
 
-    build (result: ITestResult): void {
-        this.status = result.status || 'idle'
-        this.result = result
+    newTest (result: ITestResult): ITest {
+        return new Test(result)
     }
 
-    toggleSelected (toggle?: boolean, cascade?: boolean): void {
-        this.selected = typeof toggle === 'undefined' ? !this.selected : toggle
-        this.emit('selective')
+    build (result: ITestResult): void {
+        this.update(result)
+        if (result.tests && result.tests.length) {
+            this.tests = result.tests.map((nested: ITestResult) => {
+                const test = this.makeTest(nested)
+                test.update(nested)
+                return test
+            })
+        }
+    }
+
+    update (result: ITestResult): void {
+        this.status = result.status || 'idle'
+        this.result = result
     }
 
     debrief (result: ITestResult): Promise<void> {
@@ -58,5 +70,6 @@ export class Test extends EventEmitter implements ITest {
 
     reset (): void {
         this.status = 'idle'
+        super.reset()
     }
 }
