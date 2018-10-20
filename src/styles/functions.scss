@@ -2,6 +2,10 @@
 // Functions
 // ========================================================================
 
+@function palette($color, $intensity: 500) {
+    @return map-get(map-get($palette, $color), $intensity);
+}
+
 @function theme-color($key: 'primary') {
     @return map-get($theme-colors, $key);
 }

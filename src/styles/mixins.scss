@@ -1,0 +1,13 @@
+// ========================================================================
+// Mixins
+// ========================================================================
+
+@mixin striped($status: 'partial') {
+    background: repeating-linear-gradient(
+        -55deg,
+        theme-color($status),
+        theme-color($status) 3px,
+        darken(theme-color($status), 12%) 3px,
+        darken(theme-color($status), 12%) 6px
+    );
+}

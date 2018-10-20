@@ -22,6 +22,7 @@ export interface ISuite extends EventEmitter {
     canToggleTests: boolean
     testsLoaded: boolean
 
+    getDisplayName (): string
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
     reset (): void
@@ -70,6 +71,10 @@ export class Suite extends Container implements ISuite {
         this.testsLoaded = typeof result.testsLoaded !== 'undefined' ? !!result.testsLoaded : true
         this.running = []
         this.status = 'idle'
+    }
+
+    getDisplayName (): string {
+        return this.relative
     }
 
     newTest (result: ITestResult): ITest {

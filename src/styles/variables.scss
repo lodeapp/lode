@@ -126,6 +126,96 @@ $gray-light:  $gray-400 !default;
 $gray:        $gray-500 !default;
 
 //
+// Palette map
+//
+$palette: (
+    "grays": (
+        "000": $gray-000,
+        "100": $gray-100,
+        "200": $gray-200,
+        "300": $gray-300,
+        "400": $gray-400,
+        "500": $gray-500,
+        "600": $gray-600,
+        "700": $gray-700,
+        "800": $gray-800,
+        "900": $gray-900,
+    ),
+    "blue": (
+        "000": $blue-000,
+        "100": $blue-100,
+        "200": $blue-200,
+        "300": $blue-300,
+        "400": $blue-400,
+        "500": $blue-500,
+        "600": $blue-600,
+        "700": $blue-700,
+        "800": $blue-800,
+        "900": $blue-900,
+    ),
+    "green": (
+        "000": $green-000,
+        "100": $green-100,
+        "200": $green-200,
+        "300": $green-300,
+        "400": $green-400,
+        "500": $green-500,
+        "600": $green-600,
+        "700": $green-700,
+        "800": $green-800,
+        "900": $green-900,
+    ),
+    "yellow": (
+        "000": $yellow-000,
+        "100": $yellow-100,
+        "200": $yellow-200,
+        "300": $yellow-300,
+        "400": $yellow-400,
+        "500": $yellow-500,
+        "600": $yellow-600,
+        "700": $yellow-700,
+        "800": $yellow-800,
+        "900": $yellow-900,
+    ),
+    "orange": (
+        "000": $orange-000,
+        "100": $orange-100,
+        "200": $orange-200,
+        "300": $orange-300,
+        "400": $orange-400,
+        "500": $orange-500,
+        "600": $orange-600,
+        "700": $orange-700,
+        "800": $orange-800,
+        "900": $orange-900,
+    ),
+    "red": (
+        "000": $red-000,
+        "100": $red-100,
+        "200": $red-200,
+        "300": $red-300,
+        "400": $red-400,
+        "500": $red-500,
+        "600": $red-600,
+        "700": $red-700,
+        "800": $red-800,
+        "900": $red-900,
+    ),
+    "purple": (
+        "000": $purple-000,
+        "100": $purple-100,
+        "200": $purple-200,
+        "300": $purple-300,
+        "400": $purple-400,
+        "500": $purple-500,
+        "600": $purple-600,
+        "700": $purple-700,
+        "800": $purple-800,
+        "900": $purple-900,
+    ),
+);
+
+//
 // Contextual
 //
 
@@ -152,6 +242,7 @@ $theme-colors: (
     warning: $orange,
     danger: $red,
     idle: $gray-light,
+    partial: $gray,
 ) !default;
 
 $theme-colors-light: (
@@ -161,6 +252,7 @@ $theme-colors-light: (
     warning: $orange-300,
     danger: $red-300,
     idle: $gray-200,
+    partial: $gray-300,
 ) !default;
 
 $theme-colors-dark: (
@@ -170,6 +262,7 @@ $theme-colors-dark: (
     warning: $orange-700,
     danger: $red-700,
     idle: $gray-dark,
+    partial: $gray-700,
 ) !default;
 
 // ========================================================================
@@ -182,6 +275,6 @@ $transition-time: .15s;
 // Lode-specific
 // ========================================================================
 
-$status-width: 26px;
+$status-width: 25px;
 $status-soft-border-width: 4px;
 $active-background: theme-color-light('primary');

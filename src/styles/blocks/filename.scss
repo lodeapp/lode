@@ -1,9 +1,9 @@
 .filename {
     @include clearfix;
+    font-size: 0;
 
     & > span {
-        display: inline-block;
-        float: left;
+        font-size: 1rem;
     }
 
     & > .dir {

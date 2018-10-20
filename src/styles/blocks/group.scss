@@ -119,16 +119,6 @@
         }
     }
 
-    &.is-active {
-
-        & > .header {
-
-            & > .header-inner {
-                background-color: $active-background;
-            }
-        }
-    }
-
     &.status--passed {
 
         & > .seam::before,
@@ -202,15 +192,15 @@
 
         & > .seam::before,
         & > .seam::after {
-            border-color: theme-color('idle');
+            border-color: theme-color('partial');
         }
 
         & > .header {
 
             .status {
-                background-color: theme-color('idle');
-                border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('idle'), .5);
+                @include striped('partial');
+                border-right: 1px solid darken(theme-color('partial'), 10%);
+                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('partial'), .5);
             }
         }
     }
@@ -243,8 +233,30 @@
 
             .status {
                 background-color: theme-color('idle');
-                border-right: 1px solid darken(theme-color('idle'), 10%);
+                border-right: 1px solid darken(theme-color('idle'), 3%);
                 box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('idle'), .5);
+            }
+        }
+    }
+
+    &.is-active {
+
+        & > .header {
+
+            & > .header-inner {
+                background-color: $active-background;
+            }
+        }
+    }
+
+    &.is-active,
+    &.is-child-active {
+
+        & > .header {
+
+            & > .status {
+                border-right-color: theme-color('primary');
+                box-shadow: 4px 0 0 0 rgba(theme-color('primary'), .5);
             }
         }
     }

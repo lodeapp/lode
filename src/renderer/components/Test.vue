@@ -2,7 +2,7 @@
     <Group
         :model="test"
         class="test"
-        :class="[activeTest && activeTest.id === test.id ? 'is-active' : '']"
+        :class="{ 'is-active': isActive, 'is-child-active': isChildActive }"
         :has-children="hasChildren"
         :handler="onClick"
     >
@@ -10,7 +10,7 @@
             <div v-if="selectable" class="input--select" @click.stop="onSelective">
                 <input type="checkbox" v-model="selected" @click.stop>
             </div>
-            <div class="test-name">{{ test.displayName }}</div>
+            <div class="test-name" :title="test.displayName">{{ test.displayName }}</div>
         </template>
         <template v-if="hasChildren">
             <Test
@@ -18,6 +18,8 @@
                 :key="test.id"
                 :test="test"
                 :selectable="selectable"
+                @activate="onChildActivation"
+                @deactivate="onChildDeactivation"
             />
         </template>
     </Group>
@@ -44,7 +46,9 @@ export default {
     },
     data () {
         return {
-            show: false
+            show: false,
+            isActive: false,
+            isChildActive: false
         }
     },
     computed: {
@@ -63,20 +67,48 @@ export default {
             activeTest: 'tests/active'
         })
     },
+    watch: {
+        activeTest () {
+            if (this.isActive) {
+                this.deactivate()
+            }
+        }
+    },
     methods: {
         onSelective () {
             this.selected = true
             this.enableSelective()
         },
         onClick () {
-            if (!this.hasChildren) {
-                this.showResults(this.test)
+            if (!this.hasChildren && !this.isActive) {
+                this.activate()
                 return false
             }
         },
+        activate () {
+            this.showResults(this.test)
+            this.$nextTick(() => {
+                this.isActive = true
+                this.$emit('activate')
+            })
+        },
+        deactivate () {
+            this.isActive = false
+            this.$emit('deactivate')
+        },
+        onChildActivation () {
+            this.isChildActive = true
+            this.breadcrumb(this.test)
+            this.$emit('activate')
+        },
+        onChildDeactivation () {
+            this.isChildActive = false
+            this.$emit('deactivate')
+        },
         ...mapActions({
             enableSelective: 'tree/enableSelective',
-            showResults: 'tests/show'
+            showResults: 'tests/show',
+            breadcrumb: 'tests/breadcrumb'
         })
     }
 }

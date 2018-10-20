@@ -1,5 +1,10 @@
 <template>
-    <Group :model="suite" :has-children="suite.testsLoaded && suite.tests.length > 0" class="suite">
+    <Group
+        :model="suite"
+        class="suite"
+        :class="{ 'is-child-active': isChildActive }"
+        :has-children="suite.testsLoaded && suite.tests.length > 0"
+    >
         <template slot="header">
             <div class="input--select" @click.stop="onSelective">
                 <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial">
@@ -11,6 +16,8 @@
             :key="test.id"
             :test="test"
             :selectable="suite.canToggleTests"
+            @activate="onChildActivation"
+            @deactivate="onChildDeactivation"
         />
     </Group>
 </template>
@@ -32,6 +39,11 @@ export default {
             required: true
         }
     },
+    data () {
+        return {
+            isChildActive: false
+        }
+    },
     computed: {
         selected: {
             get () {
@@ -47,8 +59,18 @@ export default {
             this.selected = true
             this.enableSelective()
         },
+        onChildActivation () {
+            this.isChildActive = true
+            this.breadcrumb(this.suite)
+            this.$emit('activate')
+        },
+        onChildDeactivation () {
+            this.isChildActive = false
+            this.$emit('deactivate')
+        },
         ...mapActions({
-            enableSelective: 'tree/enableSelective'
+            enableSelective: 'tree/enableSelective',
+            breadcrumb: 'tests/breadcrumb'
         })
     }
 }

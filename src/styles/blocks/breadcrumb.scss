@@ -1,0 +1,22 @@
+.breadcrumb {
+
+    .breadcrumb-item {
+        color: $secondary-text;
+        margin-left: 0;
+
+        &::after {
+            color: lighten($secondary-discreet-text, 20%);
+            content: '●';
+        }
+    }
+
+    ol {
+
+        & > :last-child {
+
+            &::after {
+                content: '';
+            }
+        }
+    }
+}
