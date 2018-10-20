@@ -1,18 +1,22 @@
 @import 'functions';
 @import 'variables';
+@import 'mixins';
 @import 'bootstrap';
 @import 'animations';
+@import 'blocks/breadcrumb';
 @import 'blocks/buttons';
 @import 'blocks/filename';
 @import 'blocks/framework';
 @import 'blocks/group';
 @import 'blocks/input';
 @import 'blocks/main';
+@import 'blocks/parent';
 @import 'blocks/repository';
 @import 'blocks/results';
 @import 'blocks/spinner';
 @import 'blocks/suite';
 @import 'blocks/test';
+@import 'blocks/test-result';
 
 html,
 body {

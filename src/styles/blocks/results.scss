@@ -1,50 +1,18 @@
-.results-pane {
+.results {
     background-color: $primary;
     height: 100%;
 
     .header {
         background-color: $secondary;
-        padding: 4px 15px 15px;
+        padding-bottom: 15px;
 
         h2 {
             font-size: 1.7rem;
-            margin-bottom: 6px;
+            line-height: 1.9rem;
         }
 
-        .breadcrumb-item {
-            color: $secondary-text;
-
-            &::after {
-                color: lighten($secondary-discreet-text, 20%);
-            }
+        .breadcrumb {
+            padding: 0 15px 0;
         }
-    }
-
-    .tabnav {
-        background-color: $secondary;
-        border-bottom-color: $primary-border;
-        padding: 0 15px;
-        margin-bottom: 0;
-
-        .tabnav-tabs {
-
-            .tabnav-tab {
-                border-width: 3px 1px 1px;
-                border-radius: 3px 3px 0 0;
-
-                &.selected {
-                    border-color: $orange $primary-border transparent;
-                }
-            }
-        }
-    }
-}
-
-.results {
-    padding: 15px;
-
-    pre {
-        white-space: pre-wrap;
-        word-break: break-all;
     }
 }

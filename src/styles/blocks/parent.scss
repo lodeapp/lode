@@ -1,0 +1,157 @@
+.parent {
+
+    & > .header {
+
+        & > .title {
+            padding: 10px 5px 5px;
+            position: relative;
+            overflow: hidden;
+
+            .heading {
+                display: inline-block;
+                margin: 0 0 0 28px;
+            }
+
+            & > .status {
+                display: inline-block;
+                height: 18px;
+                left: 8px;
+                margin: 2px 4px;
+                position: absolute;
+                top: 13px;
+                width: 18px;
+
+                & > .indicator {
+                    background-color: theme-color('idle');
+                    border-radius: 100%;
+                    box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                    display: inline-block;
+                    height: 13px;
+                    left: -1px;
+                    position: relative;
+                    top: 1px;
+                    width: 13px;
+                }
+            }
+        }
+    }
+
+    &.status--passed {
+
+        & > .header {
+
+            & > .title {
+
+                & > .status {
+
+                    & > .indicator {
+                        background-color: theme-color('success');
+                        box-shadow: 0 0 0 3px transparentize(theme-color('success'), .5);
+                    }
+                }
+            }
+        }
+    }
+
+    &.status--failed {
+
+        & > .header {
+
+            & > .title {
+
+                & > .status {
+
+                    & > .indicator {
+                        background-color: theme-color('danger');
+                        box-shadow: 0 0 0 3px transparentize(theme-color('danger'), .5);
+                    }
+                }
+            }
+        }
+    }
+
+    &.status--incomplete {
+
+        & > .header {
+
+            & > .title {
+
+                & > .status {
+
+                    & > .indicator {
+                        background-color: theme-color('incomplete');
+                        box-shadow: 0 0 0 3px transparentize(theme-color('incomplete'), .5);
+                    }
+                }
+            }
+        }
+    }
+
+    &.status--warning {
+
+        & > .header {
+
+            & > .title {
+
+                & > .status {
+
+                    & > .indicator {
+                        background-color: theme-color('warning');
+                        box-shadow: 0 0 0 3px transparentize(theme-color('warning'), .5);
+                    }
+                }
+            }
+        }
+    }
+
+    &.status--partial {
+
+        & > .header {
+
+            & > .title {
+
+                & > .status {
+
+                    & > .indicator {
+                        background-color: theme-color('idle');
+                        box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                    }
+                }
+            }
+        }
+    }
+
+    &.status--empty {
+
+        & > .header {
+
+            & > .title {
+
+                & > .status {
+
+                    & > .indicator {
+                        background-color: theme-color('idle');
+                        box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                    }
+                }
+            }
+        }
+    }
+
+    &.status--idle {
+
+        & > .header {
+
+            & > .title {
+
+                & > .status {
+
+                    & > .indicator {
+                        background-color: theme-color('idle');
+                        box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                    }
+                }
+            }
+        }
+    }
+}

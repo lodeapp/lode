@@ -1,11 +1,11 @@
 <template>
-    <div class="framework" :class="[`status--${framework.status}`]">
+    <div class="framework parent" :class="[`status--${framework.status}`]">
         <div class="header">
             <div class="title">
                 <div class="status">
                     <span class="indicator"></span>
                 </div>
-                <h3>{{ framework.name }}</h3>
+                <h3 class="heading">{{ framework.name }}</h3>
                 <div class="float-right">
                     <button class="btn btn-sm" @click="refresh">
                         <Icon slug="sync" />

@@ -1,42 +1,58 @@
 <template>
-    <div class="results-pane">
+    <div class="results">
         <div v-if="!test" class="blankslate">
             <h3>No test selected</h3>
         </div>
-        <div v-else>
+        <div v-else class="parent" :class="[`status--${test.status}`]">
             <div class="header">
-                <h2>{{ test.displayName }}</h2>
-                <nav aria-label="Breadcrumb">
+                <div class="title">
+                    <div class="status">
+                        <span class="indicator"></span>
+                    </div>
+                    <h2 class="heading">{{ test.displayName }}</h2>
+                </div>
+                <nav class="breadcrumb" aria-label="Breadcrumb">
                     <ol>
-                        <li class="breadcrumb-item text-small">{{ 'Suite name' }}</li>
-                        <li class="breadcrumb-item breadcrumb-item-selected text-small">{{ 'Suite name' }}</li>
+                        <li v-for="crumb in breadcrumb" :key="crumb.id" class="breadcrumb-item text-small">{{ crumb.getDisplayName() }}</li>
                     </ol>
                 </nav>
             </div>
-            <div class="tabnav">
-                <nav class="tabnav-tabs">
-                    <a href="#url" class="tabnav-tab selected" aria-current="page">Feedback</a>
-                </nav>
-            </div>
-            <div class="results">
-                <pre v-html="result.feedback"></pre>
-            </div>
+            <TestResult :result="result" />
         </div>
     </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import TestResult from '@/components/TestResult'
+
 export default {
     name: 'Results',
+    components: {
+        TestResult
+    },
     props: {
         test: {
             type: Object,
             default: null
         }
     },
+    data () {
+        return {
+            crumbs: []
+        }
+    },
     computed: {
         result () {
             return this.test && this.test.result || {}
+        },
+        ...mapGetters({
+            breadcrumb: 'tests/breadcrumb'
+        })
+    },
+    watch: {
+        breadcrumb () {
+            this.crumbs = this.breadcrumb.map(crumb => crumb.getDisplayName())
         }
     }
 }

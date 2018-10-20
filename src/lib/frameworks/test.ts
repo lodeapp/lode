@@ -9,6 +9,7 @@ export interface ITest extends EventEmitter {
     status: Status
     selected: boolean
 
+    getDisplayName (): string
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     update (result: ITestResult): void
     debrief (result: ITestResult): Promise<void>
@@ -39,6 +40,10 @@ export class Test extends Container implements ITest {
         this.name = result.name
         this.displayName = result.displayName || result.name
         this.build(result)
+    }
+
+    getDisplayName (): string {
+        return this.displayName
     }
 
     newTest (result: ITestResult): ITest {

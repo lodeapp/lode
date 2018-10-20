@@ -1,0 +1,30 @@
+.test-result {
+
+    .tabnav {
+        background-color: $secondary;
+        border-bottom-color: $primary-border;
+        padding: 0 15px;
+        margin-bottom: 0;
+
+        .tabnav-tabs {
+
+            .tabnav-tab {
+                border-width: 3px 1px 1px;
+                border-radius: 3px 3px 0 0;
+
+                &.selected {
+                    border-color: $orange $primary-border transparent;
+                }
+            }
+        }
+    }
+
+    .test-result-breakdown {
+        padding: 15px;
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    }
+}
