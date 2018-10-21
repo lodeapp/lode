@@ -11,9 +11,13 @@
                     </div>
                     <h2 class="heading">{{ test.displayName }}</h2>
                 </div>
-                <nav class="breadcrumb" aria-label="Breadcrumb">
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
                     <ol>
-                        <li v-for="crumb in breadcrumb" :key="crumb.id" class="breadcrumb-item text-small">{{ crumb.getDisplayName() }}</li>
+                        <li
+                            v-for="breadcrumb in breadcrumbs"
+                            :key="breadcrumb.id"
+                            class="breadcrumb-item text-small"
+                        >{{ breadcrumb.getDisplayName() }}</li>
                     </ol>
                 </nav>
             </div>
@@ -37,23 +41,13 @@ export default {
             default: null
         }
     },
-    data () {
-        return {
-            crumbs: []
-        }
-    },
     computed: {
         result () {
             return this.test && this.test.result || {}
         },
         ...mapGetters({
-            breadcrumb: 'tests/breadcrumb'
+            breadcrumbs: 'tests/breadcrumbs'
         })
-    },
-    watch: {
-        breadcrumb () {
-            this.crumbs = this.breadcrumb.map(crumb => crumb.getDisplayName())
-        }
     }
 }
 </script>

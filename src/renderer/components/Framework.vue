@@ -7,7 +7,7 @@
                 </div>
                 <h3 class="heading">{{ framework.name }}</h3>
                 <div class="float-right">
-                    <button class="btn btn-sm" @click="refresh">
+                    <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
                         <Icon slug="sync" />
                     </button>
                     <button

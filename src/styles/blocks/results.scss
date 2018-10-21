@@ -2,6 +2,12 @@
     background-color: $primary;
     height: 100%;
 
+    .blankslate {
+        border-radius: 0;
+        height: 100vh;
+        color: rgba($gray-600, .3);
+    }
+
     .header {
         background-color: $secondary;
         padding-bottom: 15px;
@@ -11,7 +17,7 @@
             line-height: 1.9rem;
         }
 
-        .breadcrumb {
+        .breadcrumbs {
             padding: 0 15px 0;
         }
     }
