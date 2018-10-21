@@ -6,7 +6,7 @@
         :has-children="suite.testsLoaded && suite.tests.length > 0"
     >
         <template slot="header">
-            <div class="input--select" @click.stop="onSelective">
+            <div class="input--select" @click.stop>
                 <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial">
             </div>
             <Filename :path="suite.relative" />
@@ -55,10 +55,6 @@ export default {
         }
     },
     methods: {
-        onSelective () {
-            this.selected = true
-            this.enableSelective()
-        },
         onChildActivation () {
             this.isChildActive = true
             this.breadcrumb(this.suite)
@@ -69,7 +65,6 @@ export default {
             this.$emit('deactivate')
         },
         ...mapActions({
-            enableSelective: 'tree/enableSelective',
             breadcrumb: 'tests/breadcrumb'
         })
     }

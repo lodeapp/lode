@@ -29,7 +29,7 @@ export interface IFramework extends EventEmitter {
     selected: boolean
     selectedCount: SelectedCount
 
-    start (selective: boolean): Promise<void>
+    start (): Promise<void>
     stop (): Promise<void>
     refresh (): Promise<void>
 }
@@ -59,17 +59,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.path = options.path
         this.runner = options.runner || null
         this.vmPath = options.vmPath || null
-        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 100)
+        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 60)
     }
 
     abstract runArgs (): Array<string>
     abstract runSelectiveArgs (): Array<string>
     abstract reload (): Promise<void>
 
-    start (selective: boolean = false): Promise<void> {
-        if (selective) {
+    start (): Promise<void> {
+        if (this.selective) {
             console.log('Running selectively...')
-            this.selective = true
             return this.runSelective()
                 .catch((error) => {
                     console.log(error)
@@ -162,7 +161,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
             this.suites = this.suites.filter(suite => suite.status !== 'idle')
         }
         this.status = parseStatus(this.suites.map(suite => suite.status))
-        this.selective = false
     }
 
     spawn (args: Array<string>): IProcess {
@@ -210,6 +208,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
             this.selectedCount.tests += suite.tests.filter(test => test.selected).length
             return suite.selected
         }).length
+
+        this.selective = this.selectedCount.suites > 0
     }
 
     /**

@@ -1,5 +1,5 @@
 <template>
-    <div class="framework parent" :class="[`status--${framework.status}`]">
+    <div class="framework parent" :class="[`status--${framework.status}`, framework.selective ? 'selective' : '']">
         <div class="header">
             <div class="title">
                 <div class="status">
@@ -15,7 +15,7 @@
                         :disabled="running || refreshing"
                         @click="run"
                     >
-                        {{ selective ? 'Run selected' : 'Run' }}
+                        {{ framework.selective ? 'Run selected' : 'Run' }}
                     </button>
                     <button class="btn btn-sm btn-danger" @click="stop" :disabled="!running && !refreshing">Stop</button>
                 </div>
@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters } from 'vuex'
 import Group from '@/components/Group'
 import Suite from '@/components/Suite'
 import TestCount from '@/components/TestCount'
@@ -65,34 +65,20 @@ export default {
         refreshing () {
             return this.framework.status === 'refreshing'
         },
-        selectedSuiteCount () {
-            return this.framework.selectedCount.suites
-        },
         ...mapGetters({
-            selective: 'tree/selective',
             displayStatus: 'status/display'
         })
-    },
-    watch: {
-        selectedSuiteCount (count) {
-            if (!count) {
-                this.disableSelective()
-            }
-        }
     },
     methods: {
         async refresh () {
             await this.framework.refresh()
         },
         async run () {
-            await this.framework.start(this.selective)
+            await this.framework.start()
         },
         async stop () {
             await this.framework.stop()
-        },
-        ...mapActions({
-            disableSelective: 'tree/disableSelective'
-        })
+        }
     }
 }
 </script>
