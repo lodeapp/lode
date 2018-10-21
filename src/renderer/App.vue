@@ -1,11 +1,21 @@
 <template>
-    <div id="app" class="main">
+    <div id="app" :class="[`platform--${platform}`]">
+        <TitleBar />
         <router-view />
     </div>
 </template>
 
 <script>
+import TitleBar from '@/components/TitleBar'
 export default {
-    name: 'TestRunner'
+    name: 'TestRunner',
+    components: {
+        TitleBar
+    },
+    computed: {
+        platform () {
+            return process.platform
+        }
+    }
 }
 </script>

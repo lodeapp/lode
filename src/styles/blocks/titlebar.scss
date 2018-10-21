@@ -1,0 +1,17 @@
+.titlebar {
+    -webkit-app-region: drag;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 100%;
+}
+
+.platform--darwin {
+
+    .titlebar {
+        height: var(--darwin-title-bar-height);
+        background: linear-gradient(to bottom, #3b3f46 0%, #2b2e33 100%);
+        border-bottom: 1px solid #000;
+    }
+}

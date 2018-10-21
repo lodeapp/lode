@@ -62,6 +62,7 @@
     "chokidar": "^2.0.4",
     "electron-log": "^2.2.17",
     "electron-store": "^2.0.0",
+    "electron-window-state": "^5.0.2",
     "escape-string-regexp": "^1.0.5",
     "fuzzaldrin": "^2.1.0",
     "glob": "^7.1.3",

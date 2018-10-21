@@ -1,6 +1,7 @@
 'use strict'
 
 import { app, BrowserWindow } from 'electron'
+import windowStateKeeper from 'electron-window-state'
 
 /**
  * Set `__static` path to static files in production
@@ -16,20 +17,42 @@ const winURL = process.env.NODE_ENV === 'development'
     : `file://${__dirname}/index.html`
 
 function createWindow () {
-    /**
-    * Initial window options
-    */
-    mainWindow = new BrowserWindow({
-        height: 563,
-        useContentSize: true,
-        width: 1000
+    // Load saved window state, if any
+    const savedWindowState = windowStateKeeper({
+        defaultHeight: 700,
+        defaultWidth: 1090
     })
+
+    // Initial window options
+    const windowOptions = {
+        x: savedWindowState.x,
+        y: savedWindowState.y,
+        width: savedWindowState.width,
+        height: savedWindowState.height,
+        minWidth: 900,
+        minHeight: 600,
+        useContentSize: true,
+        backgroundColor: '#fff'
+    }
+
+    if (__DARWIN__) {
+        windowOptions.titleBarStyle = 'hidden'
+    } else if (__WIN32__) {
+        windowOptions.frame = false
+    } else if (__LINUX__) {
+        // windowOptions.icon = path.join(__dirname, 'static', 'icon-logo.png')
+    }
+
+    mainWindow = new BrowserWindow(windowOptions)
 
     mainWindow.loadURL(winURL)
 
     mainWindow.on('closed', () => {
         mainWindow = null
     })
+
+    // Remember window state on change
+    savedWindowState.manage(mainWindow)
 }
 
 app.on('ready', createWindow)

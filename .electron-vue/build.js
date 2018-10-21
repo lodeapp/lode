@@ -9,10 +9,8 @@ const { spawn } = require('child_process')
 const webpack = require('webpack')
 const Multispinner = require('multispinner')
 
-
 const mainConfig = require('./webpack.main.config')
 const rendererConfig = require('./webpack.renderer.config')
-const webConfig = require('./webpack.web.config')
 
 const doneLog = chalk.bgGreen.white(' DONE ') + ' '
 const errorLog = chalk.bgRed.white(' ERROR ') + ' '
@@ -95,21 +93,6 @@ function pack (config) {
         }))
       }
     })
-  })
-}
-
-function web () {
-  del.sync(['dist/web/*', '!.gitkeep'])
-  webConfig.mode = 'production'
-  webpack(webConfig, (err, stats) => {
-    if (err || stats.hasErrors()) console.log(err)
-
-    console.log(stats.toString({
-      chunks: false,
-      colors: true
-    }))
-
-    process.exit()
   })
 }
 
