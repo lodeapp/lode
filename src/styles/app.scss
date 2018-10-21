@@ -1,15 +1,17 @@
 @import 'functions';
-@import 'variables';
+@import 'definitions';
 @import 'mixins';
 @import 'bootstrap';
 @import 'animations';
+@import 'variables';
+@import 'globals';
 @import 'blocks/breadcrumbs';
 @import 'blocks/buttons';
+@import 'blocks/contents';
 @import 'blocks/filename';
 @import 'blocks/framework';
 @import 'blocks/group';
 @import 'blocks/input';
-@import 'blocks/main';
 @import 'blocks/parent';
 @import 'blocks/repository';
 @import 'blocks/results';
@@ -17,23 +19,4 @@
 @import 'blocks/suite';
 @import 'blocks/test';
 @import 'blocks/test-result';
-
-html,
-body {
-    font-size: 12px;
-    background-color: $secondary;
-}
-
-.passed {
-    color: theme-color('success');
-}
-
-.failed,
-.error {
-    color: theme-color('danger');
-}
-
-.incomplete,
-.partial {
-    color: theme-color('warning');
-}
+@import 'blocks/titlebar';

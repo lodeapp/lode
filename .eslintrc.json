@@ -137,6 +137,10 @@
         "global": false,
         "__dirname": false,
         "require": false,
-        "process": false
+        "process": false,
+        "__DEV__": false,
+        "__DARWIN__": false,
+        "__WIN32__": false,
+        "__LINUX__": false
     }
 }

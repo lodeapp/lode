@@ -1,8 +1,6 @@
 <template>
-    <div class="results">
-        <div v-if="!test" class="blankslate">
-            <h3>No test selected</h3>
-        </div>
+    <div class="results" :class="{ blankslate: !test }">
+        <h3 v-if="!test">No test selected</h3>
         <div v-else class="parent" :class="[`status--${test.status}`]">
             <div class="header">
                 <div class="title">

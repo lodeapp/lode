@@ -1,5 +1,5 @@
 <template>
-    <div id="wrapper">
+    <div class="contents">
         <main>
             <Pane>
                 <Project :project="project" />

@@ -2,9 +2,13 @@
 
 process.env.BABEL_ENV = 'main'
 
+const { getReplacements } = require('./app-info')
+const replacements = getReplacements()
+
 const path = require('path')
 const { dependencies } = require('../package.json')
 const webpack = require('webpack')
+
 
 const BabiliWebpackPlugin = require('babili-webpack-plugin')
 
@@ -56,6 +60,10 @@ let mainConfig = {
   },
   target: 'electron-main'
 }
+
+mainConfig.plugins.push(
+  new webpack.DefinePlugin(replacements)
+)
 
 /**
  * Adjust mainConfig for development settings

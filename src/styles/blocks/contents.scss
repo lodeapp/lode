@@ -1,0 +1,24 @@
+.contents {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    main {
+        display: flex;
+        flex-grow: 1;
+
+        & > :first-child {
+            border-right: 1px solid $primary-border;
+        }
+
+        .pane {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            width: 50%;
+        }
+    }
+}

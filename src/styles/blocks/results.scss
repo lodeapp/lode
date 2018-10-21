@@ -1,10 +1,9 @@
 .results {
     background-color: $primary;
-    height: 100%;
+    flex-grow: 1;
 
-    .blankslate {
+    &.blankslate {
         border-radius: 0;
-        height: 100vh;
         color: rgba($gray-600, .3);
     }
 
