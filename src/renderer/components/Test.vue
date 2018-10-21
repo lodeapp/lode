@@ -7,7 +7,7 @@
         :handler="onClick"
     >
         <template slot="header">
-            <div v-if="selectable" class="input--select" @click.stop="onSelective">
+            <div v-if="selectable" class="input--select">
                 <input type="checkbox" v-model="selected" @click.stop>
             </div>
             <div class="test-name" :title="test.displayName">{{ test.displayName }}</div>
@@ -75,10 +75,6 @@ export default {
         }
     },
     methods: {
-        onSelective () {
-            this.selected = true
-            this.enableSelective()
-        },
         onClick () {
             if (!this.hasChildren && !this.isActive) {
                 this.activate()
@@ -106,7 +102,6 @@ export default {
             this.$emit('deactivate')
         },
         ...mapActions({
-            enableSelective: 'tree/enableSelective',
             showResults: 'tests/show',
             breadcrumb: 'tests/breadcrumb'
         })

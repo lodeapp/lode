@@ -57,6 +57,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.spawnPath = this.args.shift()!
 
         Logger.debug.log('Spawning command', { spawn: this.spawnPath, args: this.args, path: this.path })
+        Logger.debug.log(`Command: ${this.spawnPath} ${this.args.join(' ')}`)
 
         const spawnedProcess = spawn(this.spawnPath, this.args || [], {
             cwd: this.path,
@@ -199,7 +200,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 } else if (reportStarts || this.reportBuffer) {
                     this.reportBuffer += filteredChunk
                     if ((/\((?:(?!\)).)+\)/).test(this.reportBuffer)) {
-                        this.reportBuffer = this.reportBuffer.replace(/({\s?)?\((?:(?!\)).)+\)\s?}?/, (match, offset, string) => {
+                        this.reportBuffer = this.reportBuffer.replace(/({\s?)?\((?:(?!\)).)+\)\s?}?/g, (match, offset, string) => {
                             this.report(match)
                             return ''
                         })
