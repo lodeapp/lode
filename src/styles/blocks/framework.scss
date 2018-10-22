@@ -14,16 +14,23 @@
         }
     }
 
-    .progress-bar {
+    .progress {
         padding: 5px;
         overflow: hidden;
 
-        & > .status {
-            font-weight: 600;
+        .ellipsis-expander {
+            margin-left: 5px;
+            position: relative;
+            top: -1px;
+
+            &:focus {
+                outline: 0;
+            }
         }
     }
 
-    .filter-bar {
+    .filter-bar,
+    .progress-breakdown {
         background-color: $secondary;
         border-top: 1px solid $primary-border;
         padding: 5px;
@@ -35,7 +42,7 @@
 
     &.status--passed {
 
-        .progress-bar {
+        .progress {
 
             & > .status {
                 color: theme-color-dark('success');
@@ -45,7 +52,7 @@
 
     &.status--failed {
 
-        .progress-bar {
+        .progress {
 
             & > .status {
                 color: theme-color-dark('danger');
@@ -55,7 +62,7 @@
 
     &.status--incomplete {
 
-        .progress-bar {
+        .progress {
 
             & > .status {
                 color: theme-color-dark('incomplete');
@@ -65,7 +72,7 @@
 
     &.status--warning {
 
-        .progress-bar {
+        .progress {
 
             & > .status {
                 color: theme-color-dark('warning');
@@ -75,7 +82,7 @@
 
     &.status--partial {
 
-        .progress-bar {
+        .progress {
 
             & > .status {
                 color: theme-color-dark('idle');
@@ -85,7 +92,7 @@
 
     &.status--empty {
 
-        .progress-bar {
+        .progress {
 
             & > .status {
                 color: theme-color-dark('idle');
@@ -95,7 +102,7 @@
 
     &.status--idle {
 
-        .progress-bar {
+        .progress {
 
             & > .status {
                 color: theme-color-dark('idle');

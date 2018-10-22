@@ -24,13 +24,13 @@
                 & > .indicator {
                     background-color: theme-color('idle');
                     border-radius: 100%;
-                    box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                    box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .5);
                     display: inline-block;
-                    height: 13px;
-                    left: -1px;
+                    height: 15px;
+                    left: -2px;
                     position: relative;
-                    top: 1px;
-                    width: 13px;
+                    top: 0;
+                    width: 15px;
                 }
             }
         }
@@ -46,7 +46,7 @@
 
                     & > .indicator {
                         background-color: theme-color('success');
-                        box-shadow: 0 0 0 3px transparentize(theme-color('success'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('success'), .5);
                     }
                 }
             }
@@ -63,7 +63,7 @@
 
                     & > .indicator {
                         background-color: theme-color('danger');
-                        box-shadow: 0 0 0 3px transparentize(theme-color('danger'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('danger'), .5);
                     }
                 }
             }
@@ -80,7 +80,7 @@
 
                     & > .indicator {
                         background-color: theme-color('incomplete');
-                        box-shadow: 0 0 0 3px transparentize(theme-color('incomplete'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('incomplete'), .5);
                     }
                 }
             }
@@ -97,7 +97,7 @@
 
                     & > .indicator {
                         background-color: theme-color('warning');
-                        box-shadow: 0 0 0 3px transparentize(theme-color('warning'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('warning'), .5);
                     }
                 }
             }
@@ -114,7 +114,7 @@
 
                     & > .indicator {
                         background-color: theme-color('idle');
-                        box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .5);
                     }
                 }
             }
@@ -131,7 +131,7 @@
 
                     & > .indicator {
                         background-color: theme-color('idle');
-                        box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .5);
                     }
                 }
             }
@@ -148,7 +148,7 @@
 
                     & > .indicator {
                         background-color: theme-color('idle');
-                        box-shadow: 0 0 0 3px transparentize(theme-color('idle'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .5);
                     }
                 }
             }
