@@ -3,4 +3,12 @@
     i {
         line-height: 1.5em;
     }
+
+    // Cascade disabled state to .Counter inside buttons
+    &:disabled {
+
+        & > .Counter {
+            opacity: .5;
+        }
+    }
 }

@@ -16,7 +16,7 @@
                 <slot name="header"></slot>
             </div>
             <div v-if="hasChildren" class="toggle">
-                <Icon :slug="show ? 'chevron-down' : 'chevron-right'" />
+                <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
             </div>
         </div>
         <div v-if="hasChildren" v-show="show" class="group-items">
