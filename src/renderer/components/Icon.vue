@@ -1,20 +1,23 @@
-<template>
-    <i class="octicon" v-html="svg"></i>
-</template>
-
 <script>
+import Vue from 'vue'
 export default {
     name: 'Icon',
+    functional: true,
     props: {
-        slug: {
+        symbol: {
             type: String,
             required: true
         }
     },
-    computed: {
-        svg () {
-            return this.$icon[this.slug].toSVG()
-        }
+    render (createElement, context) {
+        return createElement('i', {
+            class: {
+                octicon: true
+            },
+            domProps: {
+                innerHTML: Vue.prototype.$icon[context.props.symbol].toSVG()
+            }
+        })
     }
 }
 </script>
