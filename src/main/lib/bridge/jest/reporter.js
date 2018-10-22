@@ -2,7 +2,7 @@ const path = require('path')
 const _find = require('lodash/find')
 const _findIndex = require('lodash/findIndex')
 const stripAnsi = require('strip-ansi')
-const Ansi  = require('ansi-to-html')
+const Ansi = require('ansi-to-html')
 
 class Base64TestReporter {
     constructor (globalConfig, options) {
@@ -30,7 +30,7 @@ class Base64TestReporter {
                 return message.replace(/\x1b/gi, '').length
             })
             .map(message => {
-                let match = stripAnsi(message).match(/^.+\b/)[0]
+                const match = stripAnsi(message).match(/^.+\b/)[0]
                 if (!match) {
                     return false
                 }
@@ -62,7 +62,7 @@ class Base64TestReporter {
     }
 
     group (ungrouped) {
-        let tests = []
+        const tests = []
         ungrouped.forEach(result => {
             let group = tests
             if (result.ancestors.length) {
