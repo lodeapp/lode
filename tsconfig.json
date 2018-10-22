@@ -22,7 +22,7 @@
         "build"
     ],
     "include": [
-        "src/lib/**/*.ts"
+        "src/main/**/*.ts"
     ],
     "compileOnSave": false
 }

@@ -2,6 +2,9 @@
 
 process.env.BABEL_ENV = 'renderer'
 
+const { getReplacements } = require('./app-info')
+const replacements = getReplacements()
+
 const path = require('path')
 const { dependencies } = require('../package.json')
 const webpack = require('webpack')
@@ -64,13 +67,16 @@ let rendererConfig = {
         use: 'vue-html-loader'
       },
       {
-        test: /\.js$/,
-        use: 'babel-loader',
-        exclude: /node_modules/
+        test: /\.tsx?$/,
+        loader: "ts-loader",
+        exclude: /node_modules/,
+        options: {
+          appendTsSuffixTo: [/\.vue$/]
+        }
       },
       {
-        test: /\.ts$/,
-        use: 'ts-loader',
+        test: /\.js$/,
+        use: 'babel-loader',
         exclude: /node_modules/
       },
       {
@@ -157,7 +163,7 @@ let rendererConfig = {
   resolve: {
     alias: {
       '@': path.join(__dirname, '../src/renderer'),
-      '@lib': path.join(__dirname, '../src/lib'),
+      '@lib': path.join(__dirname, '../src/main/lib'),
       'vue$': 'vue/dist/vue.esm.js'
     },
     extensions: ['.js', '.ts', '.vue', '.json', '.css', '.node']
@@ -175,6 +181,10 @@ if (process.env.NODE_ENV !== 'production') {
     })
   )
 }
+
+rendererConfig.plugins.push(
+  new webpack.DefinePlugin(replacements)
+)
 
 /**
  * Adjust rendererConfig for production settings

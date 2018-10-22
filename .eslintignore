@@ -1,1 +1,3 @@
-/src/lib/bridge/*
+/build/**
+/dist/**
+/src/main/lib/bridge/**

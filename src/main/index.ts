@@ -1,22 +1,33 @@
-'use strict'
+import * as fixPath from 'fix-path'
+import { app, BrowserWindow, Menu } from 'electron'
+import { buildDefaultMenu } from './menu/index'
 
-import { app, BrowserWindow } from 'electron'
-import windowStateKeeper from 'electron-window-state'
+fixPath()
+
+let windowStateKeeper: any | null = null
 
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
-if (process.env.NODE_ENV !== 'development') {
-    global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
-}
+// if (process.env.NODE_ENV !== 'development') {
+//     global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+// }
 
-let mainWindow
+let mainWindow: BrowserWindow | null
 const winURL = process.env.NODE_ENV === 'development'
     ? `http://localhost:9080`
     : `file://${__dirname}/index.html`
 
 function createWindow () {
+
+    if (!windowStateKeeper) {
+      // `electron-window-state` requires Electron's `screen` module, which can
+      // only be required after the app has emitted `ready`. So require it
+      // lazily.
+      windowStateKeeper = require('electron-window-state')
+    }
+
     // Load saved window state, if any
     const savedWindowState = windowStateKeeper({
         defaultHeight: 700,
@@ -24,7 +35,7 @@ function createWindow () {
     })
 
     // Initial window options
-    const windowOptions = {
+    const windowOptions: Electron.BrowserWindowConstructorOptions = {
         x: savedWindowState.x,
         y: savedWindowState.y,
         width: savedWindowState.width,
@@ -55,7 +66,12 @@ function createWindow () {
     savedWindowState.manage(mainWindow)
 }
 
-app.on('ready', createWindow)
+app.on('ready', () => {
+    createWindow()
+
+    const menu = buildDefaultMenu()
+    Menu.setApplicationMenu(menu)
+})
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
