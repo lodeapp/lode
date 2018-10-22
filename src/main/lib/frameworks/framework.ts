@@ -27,6 +27,8 @@ export interface IFramework extends EventEmitter {
     suites: Array<ISuite>
     status: FrameworkStatus
     selected: boolean
+    selective: boolean
+    expandResults: boolean
     selectedCount: SelectedCount
 
     start (): Promise<void>
@@ -46,6 +48,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public status: FrameworkStatus = 'idle'
     public selected: boolean = false
     public selective: boolean = false
+    public expandResults: boolean = false
     public selectedCount: SelectedCount = {
         suites: 0,
         tests: 0
