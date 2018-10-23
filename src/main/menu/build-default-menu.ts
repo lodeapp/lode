@@ -73,6 +73,18 @@ export function buildDefaultMenu (): Electron.Menu {
   template.push(fileMenu)
 
   template.push({
+    label: __DARWIN__ ? 'Edit' : '&Edit',
+    submenu: [
+      { role: 'undo', label: __DARWIN__ ? 'Undo' : '&Undo' },
+      { role: 'redo', label: __DARWIN__ ? 'Redo' : '&Redo' },
+      separator,
+      { role: 'cut', label: __DARWIN__ ? 'Cut' : 'Cu&t' },
+      { role: 'copy', label: __DARWIN__ ? 'Copy' : '&Copy' },
+      { role: 'paste', label: __DARWIN__ ? 'Paste' : '&Paste' }
+    ],
+  })
+
+  template.push({
     label: __DARWIN__ ? 'View' : '&View',
     submenu: [
       {

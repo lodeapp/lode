@@ -37,9 +37,7 @@
                 </template>
             </div>
             <transition>
-                <div class="progress-breakdown" v-if="framework.expandResults">
-                    <span v-if="framework.selective">{{ '1 selected|:n selected' | plural(framework.selectedCount.suites) }}</span>
-                </div>
+                <Ledger v-if="framework.expandResults" :framework="framework" />
             </transition>
             <transition>
                 <div class="filter-bar" v-if="framework.suites.length > 1">
@@ -55,12 +53,14 @@
 import { mapGetters } from 'vuex'
 import Group from '@/components/Group'
 import Suite from '@/components/Suite'
+import Ledger from '@/components/Ledger'
 
 export default {
     name: 'Framework',
     components: {
         Group,
-        Suite
+        Suite,
+        Ledger
     },
     props: {
         framework: {

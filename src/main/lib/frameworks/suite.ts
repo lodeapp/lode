@@ -81,6 +81,12 @@ export class Suite extends Container implements ISuite {
         return new Test(result)
     }
 
+    updateStatus (to: Status): void {
+        const from = this.status
+        this.status = to
+        this.emit('status', to, from)
+    }
+
     debrief (suiteResult: ISuiteResult, selective: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
             suiteResult.tests.forEach((result: ITestResult) => {
@@ -103,11 +109,11 @@ export class Suite extends Container implements ISuite {
             console.log('Cleaning up suite')
             this.tests = this.tests.filter(test => test.status !== 'idle')
         }
-        this.status = parseStatus(this.tests.map(test => test.status))
+        this.updateStatus(parseStatus(this.tests.map(test => test.status)))
     }
 
     reset (): void {
-        this.status = 'idle'
+        this.updateStatus('idle')
         super.reset()
     }
 }

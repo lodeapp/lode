@@ -192,10 +192,13 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 chunk
             })
 
+
             if (this.reports && !this.reportClosed) {
                 const reportStarts: boolean = (/^{?\(/).test(filteredChunk)
                 const reportEnds: boolean = (/\)}?$/).test(filteredChunk)
                 if (reportStarts && reportEnds) {
+                    // @TODO: If two reports perfectly coincide,
+                    // will we be able to parse them separately?
                     this.report(filteredChunk)
                 } else if (reportStarts || this.reportBuffer) {
                     this.reportBuffer += filteredChunk
@@ -238,6 +241,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         try {
             return JSON.parse(chunk)
         } catch (SyntaxError) {
+            Logger.info.log('Failed to decode report.')
             return chunk
         }
     }
@@ -247,7 +251,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     }
 
     public getRawLines (): Array<string> {
-        return this.rawChunks.join('').split('\n')
+        return this.rawChunks.join('\n').split('\n')
     }
 
     public stop (): void {
