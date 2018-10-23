@@ -43,7 +43,15 @@ function createWindow () {
         minWidth: 900,
         minHeight: 600,
         useContentSize: true,
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
+        webPreferences: {
+            // Disable auxclick event
+            // See https://developers.google.com/web/updates/2016/10/auxclick
+            disableBlinkFeatures: 'Auxclick',
+            // Enable, among other things, the ResizeObserver
+            experimentalFeatures: true,
+        },
+        acceptFirstMouse: true
     }
 
     if (__DARWIN__) {

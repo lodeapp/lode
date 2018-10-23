@@ -4,7 +4,7 @@ import { EventEmitter } from 'events'
 import { IProcess } from '@lib/process/process'
 import { ProcessFactory } from '@lib/process/factory'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
-import { FrameworkStatus, parseStatus } from '@lib/frameworks/status'
+import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
 
 export type SelectedCount = {
     suites: number
@@ -30,6 +30,7 @@ export interface IFramework extends EventEmitter {
     selective: boolean
     expandResults: boolean
     selectedCount: SelectedCount
+    ledger: { [key in Status]: number }
 
     start (): Promise<void>
     stop (): Promise<void>
@@ -54,6 +55,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
         tests: 0
     }
     public updateCountsListener: any
+    public ledger: { [key in Status]: number } = {
+        passed: 0,
+        failed: 0,
+        incomplete: 0,
+        skipped: 0,
+        warning: 0,
+        partial: 0,
+        empty: 0,
+        idle: 0
+    }
 
     constructor (options: FrameworkOptions) {
         super()
@@ -130,7 +141,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     refresh (): Promise<void> {
         this.status = 'refreshing'
         return this.reload()
-            .then(suites => {
+            .then(() => {
                 this.status = 'idle'
             })
             .catch((error) => {
@@ -196,6 +207,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
         if (!suite) {
             suite = this.newSuite(result)
             suite.on('selective', this.updateCountsListener)
+            suite.on('status', this.updateLedger.bind(this))
+            this.updateLedger(suite.status)
             this.suites.push(suite)
         }
         return suite
@@ -213,6 +226,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }).length
 
         this.selective = this.selectedCount.suites > 0
+    }
+
+    updateLedger (to: Status | null, from?: Status): void {
+        console.log('updating ledger...', this.ledger, { to, from })
+        if (to) {
+            this.ledger[to]!++
+        }
+        if (from) {
+            this.ledger[from]!--
+        }
     }
 
     /**
