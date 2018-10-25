@@ -1,5 +1,5 @@
 Arguments: 
-  /Users/tomasbuteler/.nvm/versions/node/v8.9.4/bin/node /usr/local/Cellar/yarn/1.10.1/libexec/bin/yarn.js add --dev @types/fix-path
+  /Users/tomasbuteler/.nvm/versions/node/v8.9.4/bin/node /usr/local/Cellar/yarn/1.10.1/libexec/bin/yarn.js add --dev @types/is-base64
 
 PATH: 
   /Users/tomasbuteler/.nvm/versions/node/v8.9.4/bin:/Users/tomasbuteler/.yarn/bin:/Users/tomasbuteler/.yarn/bin:/usr/local/php5/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/mysql/bin:~/.composer/vendor/bin:~/Sites/spark-installer
@@ -14,7 +14,7 @@ Platform:
   darwin x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@types%2ffix-path: Not found
+  Error: https://registry.yarnpkg.com/@types%2fis-base64: Not found
       at Request.params.callback [as _callback] (/usr/local/Cellar/yarn/1.10.1/libexec/lib/cli.js:61073:18)
       at Request.self.callback (/usr/local/Cellar/yarn/1.10.1/libexec/lib/cli.js:120166:22)
       at emitTwo (events.js:126:13)
@@ -94,8 +94,10 @@ npm manifest:
       "electron-window-state": "^5.0.2",
       "escape-string-regexp": "^1.0.5",
       "fix-path": "^2.1.0",
+      "fs-extra": "^7.0.0",
       "fuzzaldrin": "^2.1.0",
       "glob": "^7.1.3",
+      "is-base64": "^0.0.6",
       "latinize": "^0.4.0",
       "lodash": "^4.17.10",
       "markdown-it": "^8.4.2",
@@ -111,6 +113,7 @@ npm manifest:
       "winston-daily-rotate-file": "^3.3.3"
     },
     "devDependencies": {
+      "@types/fs-extra": "^5.0.4",
       "@types/uuid": "^3.4.4",
       "@types/winston": "^2.4.4",
       "ajv": "^6.5.0",
@@ -287,6 +290,13 @@ Lockfile:
       esutils "^2.0.2"
       lodash "^4.17.10"
       to-fast-properties "^2.0.0"
+  
+  "@types/fs-extra@^5.0.4":
+    version "5.0.4"
+    resolved "https://registry.yarnpkg.com/@types/fs-extra/-/fs-extra-5.0.4.tgz#b971134d162cc0497d221adde3dbb67502225599"
+    integrity sha512-DsknoBvD8s+RFfSGjmERJ7ZOP1HI0UZRA3FSI+Zakhrc/Gy26YQsLI+m5V5DHxroHRJqCDLKJp7Hixn8zyaF7g==
+    dependencies:
+      "@types/node" "*"
   
   "@types/lodash@^4.14.116":
     version "4.14.116"
@@ -4352,6 +4362,15 @@ Lockfile:
       jsonfile "^4.0.0"
       universalify "^0.1.0"
   
+  fs-extra@^7.0.0:
+    version "7.0.0"
+    resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-7.0.0.tgz#8cc3f47ce07ef7b3593a11b9fb245f7e34c041d6"
+    integrity sha512-EglNDLRpmaTWiD/qraZn6HREAEAHJcJOmxNEYwq6xeMKnVMAy3GUcFB+wXt2C6k4CNvB/mP1y/U3dzvKKj5OtQ==
+    dependencies:
+      graceful-fs "^4.1.2"
+      jsonfile "^4.0.0"
+      universalify "^0.1.0"
+  
   fs-minipass@^1.2.5:
     version "1.2.5"
     resolved "https://registry.yarnpkg.com/fs-minipass/-/fs-minipass-1.2.5.tgz#06c277218454ec288df77ada54a03b8702aacb9d"
@@ -5111,6 +5130,11 @@ Lockfile:
     version "0.3.2"
     resolved "https://registry.yarnpkg.com/is-arrayish/-/is-arrayish-0.3.2.tgz#4574a2ae56f7ab206896fb431eaeed066fdf8f03"
     integrity sha512-eVRqCvVlZbuw3GrM63ovNSNAeA1K16kaR/LRY/92w0zxQ5/1YzwblUX652i4Xs9RwAGjW9d9y6X88t8OaAJfWQ==
+  
+  is-base64@^0.0.6:
+    version "0.0.6"
+    resolved "https://registry.yarnpkg.com/is-base64/-/is-base64-0.0.6.tgz#8ee4a3e1f4cbec2a643385705be5c81885347114"
+    integrity sha512-u1cuGk5DbKVfoKvqtF+nV4a4VWN+0npvTuOzyEcScqriIJbQrExdEr2lVkqt3pCIgW5aS7hI1Us9qYaK4FXrZQ==
   
   is-binary-path@^1.0.0:
     version "1.0.1"

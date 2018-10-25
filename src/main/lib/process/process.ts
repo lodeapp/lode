@@ -1,5 +1,7 @@
 import stripAnsi from 'strip-ansi'
 import { EventEmitter } from 'events'
+import * as Path from 'path'
+import * as fs from 'fs-extra'
 import { compact, flattenDeep } from 'lodash'
 import { spawn, ChildProcess } from 'child_process'
 import { Logger } from '@lib/logger'
@@ -24,7 +26,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     reports: boolean
     reportBuffer: string
     reportClosed: boolean
-    process: ChildProcess
+    writeToFile: boolean = false
+    fromFile?: string
+    process?: ChildProcess
 
     constructor (
        command: string,
@@ -55,6 +59,25 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             }))
         )
         this.spawnPath = this.args.shift()!
+
+        // We can re-process stored streams with the `fromFile` property,
+        // being that of a JSON file stored in the debug folder (i.e. previously
+        // recorded using the `writeToFile` property).
+        if (this.fromFile) {
+            process.nextTick(() => {
+                Logger.debug.log(`Re-running process from file ${this.fromFile}.json`)
+                const file = Path.join(__dirname, `./debug/${this.fromFile}.json`)
+                if (!fs.existsSync(file)) {
+                    Logger.debug.log(`File ${this.fromFile}.json does not exist in the debug folder`)
+                }
+                const stored = fs.readJsonSync(file, { throws: false }) || []
+                stored.forEach((chunk: string) => {
+                    this.onData(chunk)
+                })
+                this.onClose(0, null)
+            }, 0)
+            return
+        }
 
         Logger.debug.log('Spawning command', { spawn: this.spawnPath, args: this.args, path: this.path })
         Logger.debug.log(`Command: ${this.spawnPath} ${this.args.join(' ')}`)
@@ -136,6 +159,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             Logger.debug.log('Process killed.')
             this.emit('killed', { process: this })
         } else {
+            Logger.debug.log('Process errored.', this)
             // If process errored out, but did not emit an error
             // event, we'll compose it from the chunks we received.
             if (!this.error) {
@@ -155,6 +179,18 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     }
 
     private onData(chunk: string): void {
+
+        // When debugging a stream, we can write all chunks
+        // to a file then repeat them as needed.
+        if (!this.fromFile && this.writeToFile) {
+            const file = Path.join(__dirname, `./debug/${this.process!.pid}.json`)
+            if (!fs.existsSync(file)) {
+                fs.writeFileSync(file, JSON.stringify([], null, 4))
+            }
+            const stored = fs.readJsonSync(file, { throws: false }) || []
+            stored.push(chunk)
+            fs.writeFileSync(file, JSON.stringify(stored, null, 4))
+        }
 
         // Ignore chunks made of only ANSI codes or escape characters
         chunk = stripAnsi(chunk)
@@ -177,11 +213,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             // Look for report prefix in the first line
             // of this chunk. If found, start report mode.
             if (!this.reports && !this.reportClosed) {
-                const firstLine = filteredLines[0]
-                if (firstLine === '{') {
+                if (filteredLines.includes('{')) {
                     this.reports = true
-                    // Remove prefix, as it's not part of the actual report
-                    filteredLines.shift()
                 }
             }
 
@@ -192,15 +225,10 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 chunk
             })
 
-
             if (this.reports && !this.reportClosed) {
-                const reportStarts: boolean = (/^{?\(/).test(filteredChunk)
-                const reportEnds: boolean = (/\)}?$/).test(filteredChunk)
-                if (reportStarts && reportEnds) {
-                    // @TODO: If two reports perfectly coincide,
-                    // will we be able to parse them separately?
-                    this.report(filteredChunk)
-                } else if (reportStarts || this.reportBuffer) {
+                // Only add to buffer if it's full or partial base64 string,
+                // as some reporters might occasionally output stray content.
+                if ((/^[A-Za-z0-9\/\+=\(\)]+$/im).test(filteredChunk)) {
                     this.reportBuffer += filteredChunk
                     if ((/\((?:(?!\)).)+\)/).test(this.reportBuffer)) {
                         this.reportBuffer = this.reportBuffer.replace(/({\s?)?\((?:(?!\)).)+\)\s?}?/g, (match, offset, string) => {
@@ -210,8 +238,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                     }
                 }
 
-                const lastLine = filteredLines.pop()
-                if (lastLine === '}') {
+                if (filteredLines.includes('}')) {
                     this.reportClosed = true
                 }
             } else {
@@ -255,7 +282,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     }
 
     public stop (): void {
-        process.kill(-this.process.pid);
+        process.kill(-this.process!.pid);
         this.killed = true
     }
 

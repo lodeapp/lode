@@ -29,11 +29,22 @@
         }
     }
 
-    .filter-bar,
-    .progress-breakdown {
+    .filters {
         background-color: $secondary;
         border-top: 1px solid $primary-border;
-        padding: 5px;
+        padding: 8px 5px;
+
+        .progress-breakdown {
+            @include clearfix;
+            margin-bottom: 7px;
+
+            .Label {
+                display: block;
+                float: left;
+                padding: 3px 6px;
+                margin-right: 6px;
+            }
+        }
     }
 
     & > :last-child:not(.is-expanded) {

@@ -28,22 +28,20 @@
                     <button
                         type="button"
                         class="ellipsis-expander"
-                        :aria-expanded="framework.expandResults"
-                        @click="framework.expandResults = !framework.expandResults"
+                        :aria-expanded="framework.expandFilters"
+                        @click="framework.expandFilters = !framework.expandFilters"
                     >&hellip;</button>
                 </template>
                 <template v-else>
                     No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
                 </template>
             </div>
-            <transition>
-                <Ledger v-if="framework.expandResults" :framework="framework" />
-            </transition>
-            <transition>
-                <div class="filter-bar" v-if="framework.suites.length > 1">
-                    <input class="form-control input-block input-sm" placeholder="Filter tests">
+            <div v-if="framework.expandFilters" class="filters">
+                <Ledger :framework="framework" />
+                <div class="search" v-if="framework.suites.length > 1">
+                    <input class="form-control input-block input-sm" placeholder="Filter suites">
                 </div>
-            </transition>
+            </div>
         </div>
         <Suite v-for="suite in framework.suites" :suite="suite" :key="suite.path" />
     </div>

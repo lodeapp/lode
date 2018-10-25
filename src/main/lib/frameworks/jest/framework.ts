@@ -1,4 +1,4 @@
-import * as path from 'path'
+import * as Path from 'path'
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
 import { Suite } from '@lib/frameworks/suite'
 
@@ -11,7 +11,7 @@ export class Jest extends Framework {
 
     reload (): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.spawn(['--listTests'])
+            this.spawn(['--listTests', '--forceExit'])
                 .on('success', ({ process }) => {
                     const lines = process.getLines()
                     lines.sort()
@@ -29,7 +29,13 @@ export class Jest extends Framework {
     }
 
     runArgs (): Array<string> {
-        return ['--reporters', path.resolve(__dirname, '../../bridge/jest/reporter.js')]
+        return [
+            '--forceExit',
+            '--expand',
+            '--colors',
+            '--reporters',
+            Path.resolve(__dirname, '../../bridge/jest/reporter.js')
+        ]
     }
 
     runSelectiveArgs (): Array<string> {

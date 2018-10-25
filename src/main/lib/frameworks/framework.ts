@@ -28,7 +28,7 @@ export interface IFramework extends EventEmitter {
     status: FrameworkStatus
     selected: boolean
     selective: boolean
-    expandResults: boolean
+    expandFilters: boolean
     selectedCount: SelectedCount
     ledger: { [key in Status]: number }
 
@@ -49,7 +49,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public status: FrameworkStatus = 'idle'
     public selected: boolean = false
     public selective: boolean = false
-    public expandResults: boolean = false
+    public expandFilters: boolean = false
     public selectedCount: SelectedCount = {
         suites: 0,
         tests: 0
@@ -85,13 +85,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
             console.log('Running selectively...')
             return this.runSelective()
                 .catch((error) => {
-                    console.log(error)
                     this.status = 'error'
                 })
         }
         return this.run()
             .catch((error) => {
-                console.log(error)
                 this.status = 'error'
             })
     }
@@ -229,7 +227,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     updateLedger (to: Status | null, from?: Status): void {
-        console.log('updating ledger...', this.ledger, { to, from })
         if (to) {
             this.ledger[to]!++
         }
