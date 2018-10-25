@@ -1,6 +1,7 @@
 const path = require('path')
 const _find = require('lodash/find')
 const _findIndex = require('lodash/findIndex')
+const _trim = require('lodash/trim')
 const stripAnsi = require('strip-ansi')
 const Ansi = require('ansi-to-html')
 
@@ -21,23 +22,25 @@ class Base64TestReporter {
         }
 
         const prefix = '[1m[31m  [1m● '
+        const hasPrefix = feedback.includes(prefix)
 
         // Map the feedback messages to their respective tests, preserving
         // the ANSI codes, which we'll later use to format our reports
         return feedback
             .split(prefix)
             .filter(message => {
-                return message.replace(/\x1b/gi, '').length
+                return message.replace(/\x1b/g, '').length
             })
             .map(message => {
-                const match = stripAnsi(message).match(/^.+\b/)[0]
+                const match = _trim(stripAnsi(message).match(/^.+\b/)[0])
                 if (!match) {
                     return false
                 }
                 return {
                     feedback,
-                    test: match.replace(/(\x1b|›\s)/gi, ''),
-                    message: `${prefix}${message}`
+                    hasPrefix,
+                    test: match.replace(/(\x1b|›\s|●\s)/g, ''),
+                    message: hasPrefix ? `${prefix}${message}` : message
                 }
             })
             .filter(Boolean)
@@ -48,7 +51,7 @@ class Base64TestReporter {
             result.status = 'incomplete'
         }
 
-        const feedback = _find(feedbacks, { test: result.fullName })
+        const feedback = _find(feedbacks, { test: result.fullName || result.title })
 
         return {
             ancestors: result.ancestorTitles,
@@ -59,6 +62,14 @@ class Base64TestReporter {
             assertions: 0,
             console: []
         }
+    }
+
+    failedSuiteTest (result, feedbacks) {
+        return this.transform({
+            ancestorTitles: [result.testFilePath],
+            title: 'Test suite failed to run',
+            status: 'failed'
+        }, feedbacks)
     }
 
     group (ungrouped) {
@@ -95,6 +106,11 @@ class Base64TestReporter {
     onTestResult (test, testResult, aggregatedResult) {
         const feedbacks = this.parseFeedback(testResult.failureMessage)
         const tests = this.group(testResult.testResults.map(result => this.transform(result, feedbacks)))
+
+        // If test suite failed to run, add a test inside it for feedback
+        if (!tests.length && testResult.failureMessage) {
+            tests.push(this.failedSuiteTest(testResult, feedbacks))
+        }
 
         const results = {
             file: test.path,

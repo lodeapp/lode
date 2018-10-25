@@ -1,0 +1,37 @@
+.Label {
+
+    &--selected {
+        border-color: theme-color('primary');
+        color: theme-color('primary');
+    }
+
+    &--passed {
+        border-color: darken(theme-color('success'), 8%);
+        color: darken(theme-color('success'), 8%);
+    }
+
+    &--incomplete {
+        border-color: theme-color('incomplete');
+        color: theme-color('incomplete');
+    }
+
+    &--warning {
+        border-color: theme-color('warning');
+        color: theme-color('warning');
+    }
+
+    &--failed {
+        border-color: theme-color('danger');
+        color: theme-color('danger');
+    }
+
+    &--idle {
+        border-color: theme-color('idle');
+        color: theme-color('idle');
+    }
+
+    &--partial {
+        border-color: theme-color('partial');
+        color: theme-color('partial');
+    }
+}

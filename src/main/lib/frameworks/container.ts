@@ -1,9 +1,11 @@
 import { debounce, find } from 'lodash'
 import { EventEmitter } from 'events'
 import { ITest, ITestResult } from '@lib/frameworks/test'
+import { Status, parseStatus } from '@lib/frameworks/status'
 
 export abstract class Container extends EventEmitter {
     public tests: Array<ITest> = []
+    public status: Status = 'idle'
     public selected: boolean = false
     public partial: boolean = false
     public canToggleTests: boolean = false
@@ -24,17 +26,6 @@ export abstract class Container extends EventEmitter {
                 test.toggleSelected(this.selected)
             })
         }
-    }
-
-    reset (): void {
-        this.tests.filter(test => {
-            if (!this.canToggleTests) {
-                return true
-            }
-            return test.selected
-        }).forEach(test => {
-            test.reset()
-        })
     }
 
     findTest (name: string): ITest | undefined {
@@ -64,5 +55,43 @@ export abstract class Container extends EventEmitter {
         }
         this.partial = filtered > 0 && total > 0 && total > filtered
         this.emit('selective')
+    }
+
+    debriefTests (tests: Array<ITestResult>, selective: boolean) {
+        return new Promise((resolve, reject) => {
+            const running: Array<Promise<void>> = []
+            tests.forEach((result: ITestResult) => {
+                let test: ITest = this.makeTest(result)
+                running.push(test.debrief(result, selective))
+            })
+
+            Promise.all(running).then(() => {
+                // @TODO: don't clean-up if running selectively
+                this.afterDebrief(selective)
+                resolve()
+            })
+        })
+    }
+
+    afterDebrief (selective: boolean): void {
+        if (!selective) {
+            console.log('Cleaning up container')
+            this.tests = this.tests.filter(test => test.status !== 'idle')
+        }
+        this.updateStatus(parseStatus(this.tests.map(test => test.status)))
+    }
+
+    updateStatus (to: Status): void {
+        const from = this.status
+        this.status = to
+        this.emit('status', to, from)
+    }
+
+    reset (): void {
+        this.updateStatus('idle')
+        this.tests.filter(test => this.canToggleTests ? test.selected : true)
+            .forEach(test => {
+                test.updateStatus('idle')
+            })
     }
 }
