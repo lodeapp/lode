@@ -74,6 +74,13 @@ export default {
             }
         }
     },
+    mounted () {
+        this.test.on('debriefed', () => {
+            if (this.isActive) {
+                this.refresh()
+            }
+        })
+    },
     methods: {
         onClick () {
             if (!this.hasChildren && !this.isActive) {
@@ -91,6 +98,9 @@ export default {
         deactivate () {
             this.isActive = false
             this.$emit('deactivate')
+        },
+        refresh () {
+            this.activate()
         },
         onChildActivation () {
             this.isChildActive = true

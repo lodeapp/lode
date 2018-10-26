@@ -5,6 +5,7 @@ import { IProcess } from '@lib/process/process'
 import { ProcessFactory } from '@lib/process/factory'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
+import { Logger } from '@lib/logger'
 
 export type SelectedCount = {
     suites: number
@@ -151,7 +152,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
     report (args: Array<string>, resolve: Function, reject: Function): IProcess {
         return this.spawn(args)
             .on('report', ({ process, report }) => {
-                this.running.push(this.debriefSuite(report))
+                try {
+                    const suite = this.debriefSuite(report)
+                    this.running.push(suite)
+                } catch (error) {
+                    Logger.info.log('Failed to debrief suite results.', { report })
+                }
             })
             .on('success', ({ process }) => {
                 Promise.all(this.running).then(() => {

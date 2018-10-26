@@ -59,6 +59,7 @@ export class Test extends Container implements ITest {
     debrief (result: ITestResult, selective: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
             this.build(result, selective)
+            this.emit('debriefed')
             resolve()
         })
     }
