@@ -1,7 +1,7 @@
 .framework {
     background: $primary;
     border-top: 1px solid $primary-border;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
 
     & > .header {
 
@@ -32,7 +32,7 @@
     .filters {
         background-color: $secondary;
         border-top: 1px solid $primary-border;
-        padding: 8px 5px;
+        padding: 8px 5px 2px;
 
         .progress-breakdown {
             @include clearfix;
@@ -45,11 +45,15 @@
             }
         }
 
-        input {
-            color: var(--input-text-color);
+        .search {
+            margin-bottom: 6px;
 
-            &::-webkit-input-placeholder {
-                color: var(--input-placeholder-text-color);
+            input {
+                color: var(--input-text-color);
+
+                &::-webkit-input-placeholder {
+                    color: var(--input-placeholder-text-color);
+                }
             }
         }
     }

@@ -38,9 +38,9 @@
             </div>
             <div v-if="framework.expandFilters" class="filters">
                 <Ledger :framework="framework" />
-                <div class="search" v-if="framework.suites.length > 1">
+                <!-- <div class="search" v-if="framework.suites.length > 1">
                     <input class="form-control input-block input-sm" placeholder="Filter suites">
-                </div>
+                </div> -->
             </div>
         </div>
         <Suite v-for="suite in framework.suites" :suite="suite" :key="suite.path" />

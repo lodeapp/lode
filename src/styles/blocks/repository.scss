@@ -1,3 +1,48 @@
 .repository {
     position: relative;
+
+    & > .header {
+        background-color: $secondary;
+
+        & > .title {
+
+            & > .status {
+                top: 15px;
+            }
+
+            .heading {
+                line-height: 1em;
+                font-weight: 300;
+
+                i {
+                    line-height: 0;
+                    vertical-align: middle;
+                }
+
+                .toggle {
+                    cursor: pointer;
+                    display: inline-block;
+                    margin: 0 0 0 4px;
+                    width: 1.3rem;
+
+                    &:hover,
+                    &:focus,
+                    &:active {
+                        color: var(--link-color);
+                    }
+                }
+
+                .repository-name {
+
+                    i {
+                        margin-right: 5px;
+                    }
+                }
+            }
+        }
+    }
+
+    &.is-collapsed {
+        border-bottom: 1px solid $primary-border;
+    }
 }
