@@ -113,23 +113,11 @@ $white-fade-50:      rgba($white, 0.5) !default;
 $white-fade-70:      rgba($white, 0.7) !default;
 $white-fade-85:      rgba($white, 0.85) !default;
 
-// -------- Color defaults --------
-$red:         $red-500 !default;
-$purple:      $purple-500 !default;
-$blue:        $blue-500 !default;
-$green:       $green-400 !default;
-$yellow:      $yellow-500 !default;
-$orange:      $orange-500 !default;
-
-$gray-dark:   $gray-900 !default;
-$gray-light:  $gray-400 !default;
-$gray:        $gray-500 !default;
-
 //
 // Palette map
 //
 $palette: (
-    "grays": (
+    "gray": (
         "000": $gray-000,
         "100": $gray-100,
         "200": $gray-200,
@@ -219,12 +207,7 @@ $palette: (
 // Contextual
 //
 
-$brand: #ff7676 !default;
-$brand-contrast: rgb(255, 255, 255) !default;
-
 $primary: rgb(255, 255, 255) !default;
-$primary-text: rgb(42, 45, 52) !default;
-$primary-discreet-text: rgb(204, 204, 204) !default;
 $primary-border: rgb(229, 233, 238) !default;
 
 $secondary: rgb(247, 247, 247) !default;
@@ -235,34 +218,35 @@ $secondary-discreet-text: rgb(153, 153, 153) !default;
 // Stateful
 //
 
-$theme-colors: (
-    primary: $blue-400,
-    success: $green,
-    incomplete: $yellow,
-    warning: $orange,
-    danger: $red,
-    idle: $gray-light,
-    partial: $gray,
-) !default;
-
-$theme-colors-light: (
-    primary: $blue-200,
-    success: $green-300,
-    incomplete: $yellow-300,
-    warning: $orange-300,
-    danger: $red-300,
-    idle: $gray-200,
-    partial: $gray-300,
-) !default;
-
-$theme-colors-dark: (
-    primary: $blue-700,
-    success: $green-700,
-    incomplete: $yellow-700,
-    warning: $orange-700,
-    danger: $red-700,
-    idle: $gray-dark,
-    partial: $gray-700,
+$status-colors: (
+    "selected": (
+        "color": "blue",
+        "default": "400",
+    ),
+    "passed": (
+        "color": "green",
+        "default": "400",
+    ),
+    "incomplete": (
+        "color": "yellow",
+        "default": "500",
+    ),
+    "warning": (
+        "color": "orange",
+        "default": "500",
+    ),
+    "failed": (
+        "color": "red",
+        "default": "500",
+    ),
+    "idle": (
+        "color": "gray",
+        "default": "400",
+    ),
+    "partial": (
+        "color": "gray",
+        "default": "500",
+    ),
 ) !default;
 
 // ========================================================================
@@ -277,7 +261,7 @@ $transition-time: .15s;
 
 $status-width: 25px;
 $status-soft-border-width: 4px;
-$active-background: theme-color-light('primary');
+$active-background: theme-color('selected', 200);
 
 
 // ========================================================================

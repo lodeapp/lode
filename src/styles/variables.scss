@@ -4,4 +4,7 @@
 
 :root {
     --darwin-title-bar-height: #{$darwin-title-bar-height};
+
+    --input-text-color: #{$black};
+    --input-placeholder-text-color: #{palette('gray', 700)};
 }

@@ -2,37 +2,74 @@
 // Functions
 // ========================================================================
 
-@function palette($color, $intensity: 500) {
-    @return map-get(map-get($palette, $color), $intensity);
+@function palette($color, $intensity: '500') {
+    @return map-get(map-get($palette, $color), to-string($intensity));
 }
 
-@function theme-color($key: 'primary') {
-    @return map-get($theme-colors, $key);
-}
-
-@function theme-color-light($key: 'primary') {
-    @return map-get($theme-colors-light, $key);
-}
-
-@function theme-color-dark($key: 'primary') {
-    @return map-get($theme-colors-dark, $key);
-}
-
-@function encodecolor($string) {
-    @if type-of($string) == 'color' {
-        $hex: str-slice(ie-hex-str($string), 4);
-        $string: unquote('#{$hex}');
-        $string: '%23' + $string;
+@function theme-color($key: 'selected', $intensity: 'default', $step: 0) {
+    @if $intensity == 'default' {
+        $intensity: map-get(map-get($status-colors, $key), 'default');
     }
-    @return $string;
+    @if $intensity == 'step' {
+        $intensity: to-number(map-get(map-get($status-colors, $key), 'default')) + to-number($step);
+        @if $intensity > 900 {
+            $intensity: 900;
+        }
+        @if $intensity < 0 {
+            $intensity: '000';
+        }
+        $intensity: to-string($intensity);
+    }
+    $color: map-get(map-get($status-colors, $key), 'color');
+    @return palette($color, $intensity);
 }
 
-@function svg-fill ($svg, $color) {
-    // Colors must be URL encoded to work in Firefox
-    @return str-replace($svg, '<svg', '<svg fill="#{encodecolor($color)}"');
+///
+/// Casts a number into a string
+///
+/// @param {String | Number} $value - Value to be parsed
+///
+/// @return {String}
+///
+@function to-string($value) {
+  @return inspect($value);
 }
 
-@function svg-image($image, $fill: 'none') {
-    $svg: svg-fill($image, $fill);
-    @return 'data:image/svg+xml;utf8,#{$svg}';
+///
+/// Casts a string into a number
+///
+/// @param {String | Number} $value - Value to be parsed
+///
+/// @return {Number}
+///
+@function to-number($value) {
+  @if type-of($value) == 'number' {
+    @return $value;
+  } @else if type-of($value) != 'string' {
+    $_: log('Value for `to-number` should be a number or a string.');
+  }
+
+  $result: 0;
+  $digits: 0;
+  $minus: str-slice($value, 1, 1) == '-';
+  $numbers: ('0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9);
+
+  @for $i from if($minus, 2, 1) through str-length($value) {
+    $character: str-slice($value, $i, $i);
+
+    @if not (index(map-keys($numbers), $character) or $character == '.') {
+      @return to-length(if($minus, -$result, $result), str-slice($value, $i))
+    }
+
+    @if $character == '.' {
+      $digits: 1;
+    } @else if $digits == 0 {
+      $result: $result * 10 + map-get($numbers, $character);
+    } @else {
+      $digits: $digits * 10;
+      $result: $result + map-get($numbers, $character) / $digits;
+    }
+  }
+
+  @return if($minus, -$result, $result);;
 }

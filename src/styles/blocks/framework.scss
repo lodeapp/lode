@@ -36,88 +36,25 @@
 
         .progress-breakdown {
             @include clearfix;
-            margin-bottom: 7px;
 
             .Label {
                 display: block;
                 float: left;
                 padding: 3px 6px;
-                margin-right: 6px;
+                margin: 0 6px 6px 0;
+            }
+        }
+
+        input {
+            color: var(--input-text-color);
+
+            &::-webkit-input-placeholder {
+                color: var(--input-placeholder-text-color);
             }
         }
     }
 
     & > :last-child:not(.is-expanded) {
         border-bottom: 1px solid $primary-border;
-    }
-
-    &.status--passed {
-
-        .progress {
-
-            & > .status {
-                color: theme-color-dark('success');
-            }
-        }
-    }
-
-    &.status--failed {
-
-        .progress {
-
-            & > .status {
-                color: theme-color-dark('danger');
-            }
-        }
-    }
-
-    &.status--incomplete {
-
-        .progress {
-
-            & > .status {
-                color: theme-color-dark('incomplete');
-            }
-        }
-    }
-
-    &.status--warning {
-
-        .progress {
-
-            & > .status {
-                color: theme-color-dark('warning');
-            }
-        }
-    }
-
-    &.status--partial {
-
-        .progress {
-
-            & > .status {
-                color: theme-color-dark('idle');
-            }
-        }
-    }
-
-    &.status--empty {
-
-        .progress {
-
-            & > .status {
-                color: theme-color-dark('idle');
-            }
-        }
-    }
-
-    &.status--idle {
-
-        .progress {
-
-            & > .status {
-                color: theme-color-dark('idle');
-            }
-        }
     }
 }

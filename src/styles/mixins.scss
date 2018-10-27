@@ -7,7 +7,7 @@
         -55deg,
         theme-color($status),
         theme-color($status) 3px,
-        darken(theme-color($status), 12%) 3px,
-        darken(theme-color($status), 12%) 6px
+        theme-color($status, 'step', 100) 3px,
+        theme-color($status, 'step', 100) 6px
     );
 }

@@ -3,7 +3,9 @@
     flex-grow: 1;
 
     &.blankslate {
+        background-color: $secondary;
         border-radius: 0;
+        box-shadow: none;
         color: rgba($gray-600, .3);
     }
 

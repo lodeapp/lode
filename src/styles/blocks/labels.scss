@@ -1,0 +1,177 @@
+.Label {
+    position: relative;
+    cursor: pointer;
+
+    &.is-active {
+
+        &::before {
+            border-left: 1px solid;
+            content: '';
+            display: block;
+            height: 100%;
+            position: absolute;
+            right: 2px;
+            top: 0;
+            width: 15px;
+        }
+
+        &::after {
+            border-left: 1px solid;
+            content: '\00d7';
+            display: inline-block;
+            font-size: 1.4rem;
+            line-height: 0;
+            position: relative;
+            right: -3px;
+            top: 1px;
+        }
+    }
+
+    &--selected {
+        border-color: theme-color('selected');
+        color: theme-color('selected');
+
+        &.is-active {
+            background-color: theme-color('selected');
+            border-color: theme-color('selected', 'step', 100);
+            color: theme-color('selected', '000');
+
+            &::before {
+                border-color: theme-color('selected', 'step', 100);
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: darken(theme-color('selected'), 3%);
+            }
+        }
+    }
+
+    &--passed {
+        border-color: theme-color('passed', 'step', 100);
+        color: theme-color('passed', 'step', 100);
+
+        &.is-active {
+            background-color: theme-color('passed', 'step', 100);
+            border-color: theme-color('passed', 'step', 200);
+            color: theme-color('passed', '000');
+
+            &::before {
+                border-color: theme-color('passed', 'step', 200);
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: darken(theme-color('passed', 'step', 100), 2%);
+            }
+        }
+    }
+
+    &--incomplete,
+    &--skipped {
+        border-color: theme-color('incomplete');
+        color: theme-color('incomplete');
+
+        &.is-active {
+            background-color: theme-color('incomplete');
+            border-color: theme-color('incomplete', 'step', 100);
+            color: theme-color('incomplete', '000');
+
+            &::before {
+                border-color: theme-color('incomplete', 'step', 100);
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: darken(theme-color('incomplete'), 3%);
+            }
+        }
+    }
+
+    &--warning {
+        border-color: theme-color('warning');
+        color: theme-color('warning');
+
+        &.is-active {
+            background-color: theme-color('warning');
+            border-color: theme-color('warning', 'step', 100);
+            color: theme-color('warning', '000');
+
+            &::before {
+                border-color: theme-color('warning', 'step', 100);
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: darken(theme-color('warning'), 3%);
+            }
+        }
+    }
+
+    &--failed {
+        border-color: theme-color('failed');
+        color: theme-color('failed');
+
+        &.is-active {
+            background-color: theme-color('failed');
+            border-color: theme-color('failed', 'step', 100);
+            color: theme-color('failed', '000');
+
+            &::before {
+                border-color: theme-color('failed', 'step', 100);
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: darken(theme-color('failed'), 3%);
+            }
+        }
+    }
+
+    &--idle {
+        border-color: theme-color('idle', 'step', 200);
+        color: theme-color('idle', 'step', 200);
+
+        &.is-active {
+            background-color: theme-color('idle', 'step', 200);
+            border-color: theme-color('idle', 'step', 300);
+            color: theme-color('idle', '000');
+
+            &::before {
+                border-color: theme-color('idle', 'step', 300);
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: darken(theme-color('idle', 'step', 200), 3%);
+            }
+        }
+    }
+
+    &--partial {
+        border-color: theme-color('partial');
+        color: theme-color('partial');
+
+        &.is-active {
+            background-color: theme-color('partial');
+            border-color: theme-color('partial', 'step', 100);
+            color: theme-color('partial', '000');
+
+            &::before {
+                border-color: theme-color('partial', 'step', 100);
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: darken(theme-color('partial'), 3%);
+            }
+        }
+    }
+}

@@ -45,8 +45,8 @@
                 & > .status {
 
                     & > .indicator {
-                        background-color: theme-color('success');
-                        box-shadow: 0 0 0 4px transparentize(theme-color('success'), .5);
+                        background-color: theme-color('passed');
+                        box-shadow: 0 0 0 4px transparentize(theme-color('passed'), .5);
                     }
                 }
             }
@@ -62,8 +62,8 @@
                 & > .status {
 
                     & > .indicator {
-                        background-color: theme-color('danger');
-                        box-shadow: 0 0 0 4px transparentize(theme-color('danger'), .5);
+                        background-color: theme-color('failed');
+                        box-shadow: 0 0 0 4px transparentize(theme-color('failed'), .5);
                     }
                 }
             }
