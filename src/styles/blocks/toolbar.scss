@@ -1,0 +1,92 @@
+.toolbar {
+    height: var(--toolbar-height);
+    border-bottom: 1px solid var(--toolbar-border-color);
+    display: flex;
+    flex-direction: row;
+    flex-grow: 0;
+    flex-shrink: 0;
+    min-width: 0;
+    color: var(--toolbar-text-color);
+    background-color: var(--toolbar-background-color);
+
+
+    .toolbar-section {
+        display: flex;
+        flex-direction: row;
+        flex-shrink: 0;
+        width: 50%;
+
+        .toolbar-dropdown {
+            flex-grow: 1;
+            min-width: 0;
+
+            .toolbar-button {
+                height: 100%;
+                width: 100%;
+
+                & > button {
+                    -webkit-appearance: none;
+                    align-items: center;
+                    background-color: var(--toolbar-button-background-color);
+                    background: transparent;
+                    border-radius: 0;
+                    border: 0;
+                    border-right: 1px solid var(--toolbar-button-border-color);
+                    box-shadow: none;
+                    color: var(--toolbar-button-color);
+                    display: flex;
+                    flex-direction: row;
+                    height: 100%;
+                    margin: 0;
+                    overflow: hidden;
+                    padding: var(--spacing);
+                    position: relative;
+                    text-align: left;
+                    width: 100%;
+
+                    &:focus,
+                    &:hover,
+                    &:active {
+                        outline: 0;
+                    }
+
+                    i {
+                        flex-shrink: 0;
+                        margin-right: var(--spacing);
+                        position: relative;
+                    }
+
+                    .text {
+                        display: flex;
+                        flex-direction: column;
+                        flex-grow: 1;
+                        margin-right: var(--spacing);
+                        min-width: 0;
+                        position: relative;
+
+                        .description {
+                            color: var(--toolbar-button-secondary-color);
+                            font-size: var(--font-size-sm);
+                            overflow: hidden;
+                            position: relative;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+
+                        .title {
+                            font-weight: var(--font-weight-semibold);
+                            position: relative;
+                        }
+                    }
+
+                    .dropdown-arrow {
+                        flex-shrink: 0;
+                        height: 13px;
+                        position: relative;
+                        width: 9px;
+                    }
+                }
+            }
+        }
+    }
+}

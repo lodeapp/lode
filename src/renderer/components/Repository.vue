@@ -20,9 +20,9 @@
                     </span>
                 </h2>
                 <div class="float-right">
-                    <button class="btn btn-sm">
+                    <!-- <button class="btn btn-sm">
                         <Icon symbol="sync" />
-                    </button>
+                    </button> -->
                     <button class="btn btn-sm btn-primary">
                         Run
                         <span class="Counter">2</span>

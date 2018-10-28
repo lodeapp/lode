@@ -7,8 +7,9 @@
         :handler="onClick"
     >
         <template slot="header">
-            <div v-if="selectable" class="input--select">
-                <input type="checkbox" v-model="selected" @click.stop>
+            <div v-if="selectable" class="selective-toggle" @click.stop="selected = true">
+                <button type="button"></button>
+                <input type="checkbox" v-model="selected">
             </div>
             <div class="test-name" :title="test.displayName">{{ test.displayName }}</div>
         </template>

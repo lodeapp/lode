@@ -6,7 +6,8 @@
         :has-children="suite.testsLoaded && suite.tests.length > 0"
     >
         <template slot="header">
-            <div class="input--select" @click.stop>
+            <div class="selective-toggle" @click.stop="selected = true">
+                <button type="button"></button>
                 <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial">
             </div>
             <Filename :path="suite.relative" />

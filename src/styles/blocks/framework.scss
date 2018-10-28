@@ -9,7 +9,7 @@
 
             .heading {
                 font-size: 1.5rem;
-                font-weight: 900;
+                font-weight: var(--font-weight-bold);
             }
         }
     }
@@ -30,9 +30,7 @@
     }
 
     .filters {
-        background-color: $secondary;
-        border-top: 1px solid $primary-border;
-        padding: 8px 5px 2px;
+        padding: 2px 5px 2px;
 
         .progress-breakdown {
             @include clearfix;

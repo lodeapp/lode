@@ -8,7 +8,7 @@
         left: 0;
         position: absolute;
         top: 0;
-        width: $status-width;
+        width: var(--status-block-width);
         z-index: 2;
 
         &::before {
@@ -25,8 +25,8 @@
         &::after {
             background-color: $primary;
             border-radius: 100%;
-            border-width: 4px;
             border-style: double;
+            border-width: 4px;
             bottom: 14px;
             content: '';
             height: 2px;
@@ -40,7 +40,7 @@
         background-color: $primary-border;
         cursor: pointer;
         padding: 1px 0 0;
-        padding-left: ($status-width + $status-soft-border-width);
+        padding-left: calc(var(--status-block-width) + var(--status-soft-border-width));
         position: relative;
 
         .status {
@@ -48,7 +48,7 @@
             left: 0;
             position: absolute;
             top: 0;
-            width: $status-width;
+            width: var(--status-block-width);
             z-index: 3;
         }
 
@@ -76,7 +76,7 @@
     & > .group-items {
         background-color: $secondary;
         list-style: none;
-        padding: 0 0 8px $status-width;
+        padding: 0 0 8px var(--status-block-width);
         position: relative;
         z-index: 1;
 
@@ -131,7 +131,7 @@
             .status {
                 background-color: theme-color('passed');
                 border-right: 1px solid darken(theme-color('passed'), 10%);
-                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('passed'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('passed'), .5);
             }
         }
     }
@@ -148,7 +148,7 @@
             .status {
                 background-color: theme-color('failed');
                 border-right: 1px solid darken(theme-color('failed'), 10%);
-                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('failed'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('failed'), .5);
             }
         }
     }
@@ -166,7 +166,7 @@
             .status {
                 background-color: theme-color('incomplete');
                 border-right: 1px solid darken(theme-color('incomplete'), 10%);
-                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('incomplete'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('incomplete'), .5);
             }
         }
     }
@@ -183,7 +183,7 @@
             .status {
                 background-color: theme-color('warning');
                 border-right: 1px solid darken(theme-color('warning'), 10%);
-                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('warning'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('warning'), .5);
             }
         }
     }
@@ -200,7 +200,7 @@
             .status {
                 @include striped('partial');
                 border-right: 1px solid darken(theme-color('partial'), 10%);
-                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('partial'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('partial'), .5);
             }
         }
     }
@@ -217,7 +217,7 @@
             .status {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('idle'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }
@@ -234,7 +234,7 @@
             .status {
                 background-color: theme-color('idle');
                 border-right: 1px solid darken(theme-color('idle'), 3%);
-                box-shadow: $status-soft-border-width 0 0 0 transparentize(theme-color('idle'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }

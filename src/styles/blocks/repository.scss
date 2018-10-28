@@ -12,7 +12,7 @@
 
             .heading {
                 line-height: 1em;
-                font-weight: 300;
+                font-weight: var(--font-weight-light);
 
                 i {
                     line-height: 0;
@@ -35,7 +35,7 @@
                 .repository-name {
 
                     i {
-                        margin-right: 5px;
+                        margin-right: 6px;
                     }
                 }
             }
