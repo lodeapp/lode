@@ -30,6 +30,7 @@
                     left: -2px;
                     position: relative;
                     top: 0;
+                    transition: background-color 100ms ease-in-out, border-color 100ms ease-in-out, box-shadow 100ms ease-in-out;
                     width: 15px;
                 }
             }

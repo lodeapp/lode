@@ -1,6 +1,5 @@
 <template>
     <div id="app" :class="[`platform--${platform}`]">
-        <TitleBar />
         <router-view />
     </div>
 </template>

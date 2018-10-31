@@ -11,7 +11,7 @@
 
     .titlebar {
         height: var(--darwin-title-bar-height);
-        background: linear-gradient(to bottom, #3b3f46 0%, #2b2e33 100%);
-        border-bottom: 1px solid #000;
+        background: var(--darwin-title-bar-color);
+        border-bottom: 1px solid var(--darwin-title-bar-border-color);
     }
 }

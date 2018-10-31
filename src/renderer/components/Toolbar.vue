@@ -1,5 +1,5 @@
 <template>
-    <div class="toolbar">
+    <div class="toolbar" :class="[`status--${project.status}`]">
         <div class="toolbar-section">
             <div class="toolbar-dropdown closed" aria-expanded="false">
                 <div class="toolbar-button">
@@ -16,3 +16,15 @@
         </div>
     </div>
 </template>
+
+<script>
+export default {
+    name: 'Toolbar',
+    props: {
+        project: {
+            type: Object,
+            required: true
+        }
+    }
+}
+</script>

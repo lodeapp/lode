@@ -24,7 +24,7 @@
         padding: 0;
         position: absolute;
         top: 2px;
-        transition: transform 240ms cubic-bezier(.18, 1.4, .4, 1), border-color 240ms;
+        transition: transform 240ms cubic-bezier(.18, 1.4, .4, 1), border-color 240ms cubic-bezier(.18, 1.4, .4, 1);
         width: 12px;
 
         &:hover,

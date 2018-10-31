@@ -16,18 +16,26 @@
                         <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
                     </span>
                     <span class="repository-name">
-                        <Icon symbol="repo" />aqid
+                        <Icon symbol="repo" />{{ repository.name }}
                     </span>
                 </h2>
                 <div class="float-right">
                     <!-- <button class="btn btn-sm">
                         <Icon symbol="sync" />
                     </button> -->
-                    <button class="btn btn-sm btn-primary">
+                    <button
+                        class="btn btn-sm btn-primary"
+                        :disabled="!repository.frameworks.length || running || refreshing"
+                    >
                         Run
-                        <span class="Counter">2</span>
+                        <span v-if="repository.frameworks.length > 1" class="Counter">{{ repository.frameworks.length }}</span>
                     </button>
-                    <button class="btn btn-sm btn-danger">Stop</button>
+                    <button
+                        class="btn btn-sm btn-danger"
+                        :disabled="!repository.frameworks.length || !running && !refreshing"
+                    >
+                        Stop
+                    </button>
                 </div>
             </div>
         </div>
@@ -41,7 +49,8 @@
 </template>
 
 <script>
-import { Jest, PHPUnit } from '@lib/frameworks'
+// import { Jest, PHPUnit } from '@lib/frameworks'
+import { Jest } from '@lib/frameworks'
 import Framework from '@/components/Framework'
 
 export default {
@@ -61,6 +70,12 @@ export default {
         }
     },
     computed: {
+        running () {
+            return this.repository.status === 'running'
+        },
+        refreshing () {
+            return this.repository.status === 'refreshing'
+        },
         status () {
             return this.repository.status
         },
@@ -76,11 +91,11 @@ export default {
             runner: 'yarn'
         }))
 
-        this.repository.addFramework(new PHPUnit({
-            command: 'depot test',
-            path: this.repository.path,
-            vmPath: '/aml/tests'
-        }))
+        // this.repository.addFramework(new PHPUnit({
+        //     command: 'depot test',
+        //     path: this.repository.path,
+        //     vmPath: '/aml/tests'
+        // }))
     },
     methods: {
         toggle () {

@@ -15,7 +15,7 @@
     }
 
     .progress {
-        padding: 5px;
+        padding: var(--spacing-half) var(--spacing);
         overflow: hidden;
 
         .ellipsis-expander {
@@ -30,7 +30,7 @@
     }
 
     .filters {
-        padding: 2px 5px 2px;
+        padding: var(--spacing-third) var(--spacing);
 
         .progress-breakdown {
             @include clearfix;

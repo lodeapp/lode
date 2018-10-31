@@ -202,7 +202,7 @@ $palette: (
 $primary: rgb(255, 255, 255) !default;
 $primary-border: rgb(229, 233, 238) !default;
 
-$secondary: rgb(247, 247, 247) !default;
+$secondary: $gray-100;
 $secondary-text: rgb(108, 109, 111) !default;
 $secondary-discreet-text: rgb(153, 153, 153) !default;
 

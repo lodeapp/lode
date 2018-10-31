@@ -81,17 +81,23 @@ export abstract class Framework extends EventEmitter implements IFramework {
     abstract runSelectiveArgs (): Array<string>
     abstract reload (): Promise<void>
 
+    updateStatus (to: FrameworkStatus): void {
+        const from = this.status
+        this.status = to
+        this.emit('status', to, from)
+    }
+
     start (): Promise<void> {
         if (this.selective) {
             console.log('Running selectively...')
             return this.runSelective()
                 .catch((error) => {
-                    this.status = 'error'
+                    this.updateStatus('error')
                 })
         }
         return this.run()
             .catch((error) => {
-                this.status = 'error'
+                this.updateStatus('error')
             })
     }
 
@@ -107,10 +113,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 .stop()
         })
         .then(() => {
-            this.status = 'stopped'
+            this.updateStatus('stopped')
         })
         .catch(() => {
-            this.status = 'error'
+            this.updateStatus('error')
         })
     }
 
@@ -119,7 +125,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             suite.reset()
         })
         return new Promise((resolve, reject) => {
-            this.status = 'running'
+            this.updateStatus('running')
             this.reload()
                 .then(() => {
                     this.report(this.runArgs(), resolve, reject)
@@ -132,20 +138,20 @@ export abstract class Framework extends EventEmitter implements IFramework {
             suite.reset()
         })
         return new Promise((resolve, reject) => {
-            this.status = 'running'
+            this.updateStatus('running')
             this.report(this.runSelectiveArgs(), resolve, reject)
         })
     }
 
     refresh (): Promise<void> {
-        this.status = 'refreshing'
+        this.updateStatus('refreshing')
         return this.reload()
             .then(() => {
-                this.status = 'idle'
+                this.updateStatus('idle')
             })
             .catch((error) => {
                 console.log(error)
-                this.status = 'error'
+                this.updateStatus('error')
             })
     }
 
@@ -178,7 +184,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             console.log('Cleaning up framework')
             this.suites = this.suites.filter(suite => suite.status !== 'idle')
         }
-        this.status = parseStatus(this.suites.map(suite => suite.status))
+        this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
     }
 
     spawn (args: Array<string>): IProcess {

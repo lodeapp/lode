@@ -19,6 +19,7 @@
             left: 13px;
             position: absolute;
             top: 0;
+            transition: border-color 100ms ease-in-out;
             width: 0;
         }
 
@@ -32,6 +33,7 @@
             height: 2px;
             left: 9px;
             position: absolute;
+            transition: border-color 100ms ease-in-out;
             width: 2px;
         }
     }
@@ -48,6 +50,7 @@
             left: 0;
             position: absolute;
             top: 0;
+            transition: background-color 100ms ease-in-out, border-color 100ms ease-in-out, box-shadow 100ms ease-in-out;
             width: var(--status-block-width);
             z-index: 3;
         }

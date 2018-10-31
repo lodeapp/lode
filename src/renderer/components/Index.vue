@@ -1,6 +1,6 @@
 <template>
     <div class="contents">
-        <Toolbar />
+        <Toolbar :project="project" />
         <main>
             <Pane>
                 <Project :project="project" />

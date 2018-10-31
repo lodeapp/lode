@@ -12,4 +12,9 @@
             opacity: .5;
         }
     }
+
+    // Our primary button is blue, not green
+    &.btn-primary {
+        @include btn-solid($text-white, lighten($blue-400, 8%), darken($blue-400, 2%));
+    }
 }

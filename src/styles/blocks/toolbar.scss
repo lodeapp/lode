@@ -1,39 +1,46 @@
 .toolbar {
-    height: var(--toolbar-height);
-    border-bottom: 1px solid var(--toolbar-border-color);
+    background-color: theme-color('idle', 100);
+    border-bottom: 1px solid;
+    border-color: theme-color('idle', 'step', 100);
+    border-top: 1px solid;
+    box-shadow: inset 0 var(--status-soft-border-width) 0 0 transparentize(theme-color('idle'), .5);
+    color: var(--toolbar-text-color);
     display: flex;
     flex-direction: row;
     flex-grow: 0;
     flex-shrink: 0;
+    height: var(--toolbar-height);
     min-width: 0;
-    color: var(--toolbar-text-color);
-    background-color: var(--toolbar-background-color);
-
+    transition: background-color 100ms ease-in-out, border-color 100ms ease-in-out, box-shadow 100ms ease-in-out;
 
     .toolbar-section {
+        border-color: inherit;
         display: flex;
         flex-direction: row;
         flex-shrink: 0;
         width: 50%;
 
         .toolbar-dropdown {
+            border-color: inherit;
             flex-grow: 1;
             min-width: 0;
 
             .toolbar-button {
+                border-color: inherit;
                 height: 100%;
                 width: 100%;
 
                 & > button {
                     -webkit-appearance: none;
                     align-items: center;
-                    background-color: var(--toolbar-button-background-color);
-                    background: transparent;
-                    border-radius: 0;
+                    background-color: transparent;
                     border: 0;
-                    border-right: 1px solid var(--toolbar-button-border-color);
+                    border-radius: 0;
+                    border-right-color: inherit;
+                    border-right-style: solid;
+                    border-right-width: 1px;
                     box-shadow: none;
-                    color: var(--toolbar-button-color);
+                    color: inherit;
                     display: flex;
                     flex-direction: row;
                     height: 100%;
@@ -88,5 +95,36 @@
                 }
             }
         }
+    }
+
+    &.status--passed {
+        background-color: theme-color('passed', 100);
+        border-color: theme-color('passed', 'step', 100);
+        box-shadow: inset 0 var(--status-soft-border-width) 0 0 transparentize(theme-color('passed'), .5);
+    }
+
+    &.status--failed {
+        background-color: theme-color('failed', 100);
+        border-color: theme-color('failed', 'step', 100);
+        box-shadow: inset 0 var(--status-soft-border-width) 0 0 transparentize(theme-color('failed'), .5);
+    }
+
+    &.status--incomplete,
+    &.status--skipped {
+        background-color: theme-color('incomplete', 100);
+        border-color: theme-color('incomplete', 'step', 100);
+        box-shadow: inset 0 var(--status-soft-border-width) 0 0 transparentize(theme-color('incomplete'), .5);
+    }
+
+    &.status--warning {
+        background-color: theme-color('warning', 100);
+        border-color: theme-color('warning', 'step', 100);
+        box-shadow: inset 0 var(--status-soft-border-width) 0 0 transparentize(theme-color('warning'), .5);
+    }
+
+    &.status--partial {
+        background-color: theme-color('partial', 100);
+        border-color: theme-color('partial', 'step', 100);
+        box-shadow: inset 0 var(--status-soft-border-width) 0 0 transparentize(theme-color('partial'), .5);
     }
 }
