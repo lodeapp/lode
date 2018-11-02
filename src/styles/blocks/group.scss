@@ -40,7 +40,6 @@
 
     & > .header {
         background-color: $primary-border;
-        cursor: pointer;
         padding: 1px 0 0;
         padding-left: calc(var(--status-block-width) + var(--status-soft-border-width));
         position: relative;

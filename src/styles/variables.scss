@@ -3,17 +3,19 @@
 // This files contains CSS variables accessible to all selectors
 
 :root {
-    --darwin-title-bar-height: #{$darwin-title-bar-height};
-    --darwin-title-bar-color: linear-gradient(to bottom, #3b3f46 0%, #2b2e33 100%);
-    --darwin-title-bar-border-color: black;
+    --title-bar-height: 38px;
+    --title-bar-color: linear-gradient(to bottom, rgb(237, 237, 237) 0%, rgb(223, 223, 223) 100%);
+    --title-bar-secondary-color: linear-gradient(to bottom, rgb(217, 217, 217) 0%, rgb(203, 203, 203) 100%);
+    --title-bar-border-color: rgb(190, 190, 190);
+    --title-bar-text-color: #{$gray-700};
+    --title-bar-text-secondary-color: #{$gray-600};
 
-    //
-    // Toolbar
-    //
-
-    --toolbar-height: 52px;
-    --toolbar-text-color: #{$gray-800};
-    --toolbar-text-secondary-color: #{$gray-700};
+    // @TODO: Dark mode?
+    // --title-bar-color: linear-gradient(to bottom, #3b3f46 0%, #2b2e33 100%);
+    // --title-bar-secondary-color: #{$gray-700};
+    // --title-bar-border-color: black;
+    // --title-bar-text-color: #{$gray-000};
+    // --title-bar-text-secondary-color: #{$gray-100};
 
     //
     // Typography

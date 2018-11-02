@@ -1,15 +1,13 @@
 <template>
-    <div class="toolbar" :class="[`status--${project.status}`]">
-        <div class="toolbar-section">
-            <div class="toolbar-dropdown closed" aria-expanded="false">
-                <div class="toolbar-button">
+    <div class="titlebar" :class="[`status--${project.status}`]">
+        <div class="titlebar-section">
+            <div class="titlebar-dropdown closed" aria-expanded="false">
+                <div class="titlebar-button">
                     <button class="button-component" type="button">
-                        <Icon symbol="code" />
                         <div class="text">
-                            <div class="description">Current Project</div>
                             <div class="title">Amiqus ID</div>
                         </div>
-                        <Icon symbol="triangle-down" class="dropdown-arrow" />
+                        <Icon symbol="code" class="rotate-90" />
                     </button>
                 </div>
             </div>

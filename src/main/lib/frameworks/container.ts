@@ -91,7 +91,7 @@ export abstract class Container extends EventEmitter {
         this.updateStatus('idle')
         this.tests.filter(test => this.canToggleTests ? test.selected : true)
             .forEach(test => {
-                test.updateStatus('idle')
+                test.reset()
             })
     }
 }

@@ -1,17 +1,103 @@
 .titlebar {
     -webkit-app-region: drag;
+    align-items: center;
+    background: var(--title-bar-color);
+    border-bottom: 1px solid;
+    border-color: var(--title-bar-border-color);
+    color: var(--title-bar-text-color);
     display: flex;
     flex-direction: row;
     flex-grow: 0;
     flex-shrink: 0;
-    width: 100%;
-}
+    height: var(--title-bar-height);
+    justify-content: center;
+    min-width: 0;
 
-.platform--darwin {
+    .titlebar-section {
+        -webkit-app-region: no-drag;
+        align-items: center;
+        border-color: inherit;
+        display: flex;
+        flex-direction: row;
+        flex-shrink: 0;
+        justify-content: center;
 
-    .titlebar {
-        height: var(--darwin-title-bar-height);
-        background: var(--darwin-title-bar-color);
-        border-bottom: 1px solid var(--darwin-title-bar-border-color);
+        .titlebar-dropdown {
+            flex-grow: 1;
+            min-width: 0;
+
+            .titlebar-button {
+                height: 100%;
+                width: 100%;
+
+                &:hover,
+                &:focus,
+                &:active {
+
+                }
+
+                & > button {
+                    -webkit-appearance: none;
+                    align-items: center;
+                    background-color: transparent;
+                    border: 0;
+                    border-radius: 3px;
+                    box-shadow: none;
+                    color: inherit;
+                    display: flex;
+                    flex-direction: row;
+                    margin: 0;
+                    overflow: hidden;
+                    padding: 3px 8px;
+                    position: relative;
+                    text-align: left;
+                    width: 100%;
+
+                    &:focus,
+                    &:hover,
+                    &:active {
+                        background: var(--title-bar-secondary-color);
+                        outline: 0;
+                    }
+
+                    i {
+                        color: var(--title-bar-text-secondary-color);
+                        flex-shrink: 0;
+                        margin-right: var(--spacing);
+                        position: relative;
+                    }
+
+                    .text {
+                        display: flex;
+                        flex-direction: column;
+                        flex-grow: 1;
+                        margin-right: var(--spacing);
+                        min-width: 0;
+                        position: relative;
+
+                        .description {
+                            color: var(--title-bar-text-secondary-color);
+                            font-size: var(--font-size-sm);
+                            overflow: hidden;
+                            position: relative;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+
+                        .title {
+                            font-size: 1.1rem;
+                            position: relative;
+                        }
+                    }
+
+                    .dropdown-arrow {
+                        flex-shrink: 0;
+                        height: 13px;
+                        position: relative;
+                        width: 9px;
+                    }
+                }
+            }
+        }
     }
 }

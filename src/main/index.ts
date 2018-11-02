@@ -54,7 +54,9 @@ function createWindow () {
         acceptFirstMouse: true
     }
 
-    if (__WIN32__) {
+    if (__DARWIN__) {
+        windowOptions.titleBarStyle = 'hiddenInset'
+    } else if (__WIN32__) {
         windowOptions.frame = false
     } else if (__LINUX__) {
         // windowOptions.icon = path.join(__dirname, 'static', 'icon-logo.png')

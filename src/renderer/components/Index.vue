@@ -1,6 +1,6 @@
 <template>
     <div class="contents">
-        <Toolbar :project="project" />
+        <Titlebar :project="project" />
         <main>
             <Pane>
                 <Project :project="project" />
@@ -16,7 +16,7 @@
 import { Project as ProjectModel } from '@lib/frameworks/project'
 
 import { mapGetters } from 'vuex'
-import Toolbar from '@/components/Toolbar'
+import Titlebar from '@/components/Titlebar'
 import Pane from '@/components/Pane'
 import Project from '@/components/Project'
 import Results from '@/components/Results'
@@ -24,7 +24,7 @@ import Results from '@/components/Results'
 export default {
     name: 'Index',
     components: {
-        Toolbar,
+        Titlebar,
         Pane,
         Project,
         Results

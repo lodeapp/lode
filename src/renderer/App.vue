@@ -5,12 +5,8 @@
 </template>
 
 <script>
-import TitleBar from '@/components/TitleBar'
 export default {
-    name: 'TestRunner',
-    components: {
-        TitleBar
-    },
+    name: 'Lode',
     computed: {
         platform () {
             return process.platform
