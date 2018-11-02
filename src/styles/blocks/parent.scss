@@ -24,7 +24,7 @@
                 & > .indicator {
                     background-color: theme-color('idle');
                     border-radius: 100%;
-                    box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .5);
+                    box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .6);
                     display: inline-block;
                     height: 15px;
                     left: -2px;
@@ -47,7 +47,7 @@
 
                     & > .indicator {
                         background-color: theme-color('passed');
-                        box-shadow: 0 0 0 4px transparentize(theme-color('passed'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('passed'), .6);
                     }
                 }
             }
@@ -64,7 +64,7 @@
 
                     & > .indicator {
                         background-color: theme-color('failed');
-                        box-shadow: 0 0 0 4px transparentize(theme-color('failed'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('failed'), .6);
                     }
                 }
             }
@@ -81,7 +81,7 @@
 
                     & > .indicator {
                         background-color: theme-color('incomplete');
-                        box-shadow: 0 0 0 4px transparentize(theme-color('incomplete'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('incomplete'), .6);
                     }
                 }
             }
@@ -98,7 +98,7 @@
 
                     & > .indicator {
                         background-color: theme-color('warning');
-                        box-shadow: 0 0 0 4px transparentize(theme-color('warning'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('warning'), .6);
                     }
                 }
             }
@@ -115,7 +115,7 @@
 
                     & > .indicator {
                         background-color: theme-color('idle');
-                        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .6);
                     }
                 }
             }
@@ -132,7 +132,7 @@
 
                     & > .indicator {
                         background-color: theme-color('idle');
-                        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .6);
                     }
                 }
             }
@@ -149,7 +149,7 @@
 
                     & > .indicator {
                         background-color: theme-color('idle');
-                        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .5);
+                        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .6);
                     }
                 }
             }
