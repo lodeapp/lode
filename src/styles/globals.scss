@@ -1,5 +1,6 @@
 html,
 body {
+    -webkit-user-select: none;
     background-color: $secondary;
     font-size: 12px;
     height: 100%;
@@ -18,4 +19,8 @@ body {
 
 a {
     color: var(--link-color);
+}
+
+* {
+    cursor: default !important;
 }

@@ -49,8 +49,7 @@
 </template>
 
 <script>
-// import { Jest, PHPUnit } from '@lib/frameworks'
-import { Jest } from '@lib/frameworks'
+import { Jest, PHPUnit } from '@lib/frameworks'
 import Framework from '@/components/Framework'
 
 export default {
@@ -91,11 +90,11 @@ export default {
             runner: 'yarn'
         }))
 
-        // this.repository.addFramework(new PHPUnit({
-        //     command: 'depot test',
-        //     path: this.repository.path,
-        //     vmPath: '/aml/tests'
-        // }))
+        this.repository.addFramework(new PHPUnit({
+            command: 'depot test',
+            path: this.repository.path,
+            vmPath: '/aml/tests'
+        }))
     },
     methods: {
         toggle () {

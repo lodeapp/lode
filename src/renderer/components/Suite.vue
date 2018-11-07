@@ -2,11 +2,11 @@
     <Group
         :model="suite"
         class="suite"
-        :class="{ 'is-child-active': isChildActive }"
+        :class="{ 'is-child-active': isChildActive, 'is-debriefing': suite.debriefing }"
         :has-children="suite.testsLoaded && suite.tests.length > 0"
     >
         <template slot="header">
-            <div class="selective-toggle" @click.stop="selected = true">
+            <div class="selective-toggle" @click.stop="onSelectiveClick">
                 <button type="button"></button>
                 <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial">
             </div>
@@ -56,6 +56,12 @@ export default {
         }
     },
     methods: {
+        onSelectiveClick (event) {
+            const input = this.$el.querySelector('.selective-toggle input')
+            if (event.target !== input && !this.suite.selected) {
+                input.click()
+            }
+        },
         onChildActivation () {
             this.isChildActive = true
             this.breadcrumb(this.suite)

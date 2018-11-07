@@ -19,7 +19,6 @@
             left: 13px;
             position: absolute;
             top: 0;
-            transition: border-color 100ms ease-in-out;
             width: 0;
         }
 
@@ -33,7 +32,6 @@
             height: 2px;
             left: 9px;
             position: absolute;
-            transition: border-color 100ms ease-in-out;
             width: 2px;
         }
     }
@@ -45,13 +43,24 @@
         position: relative;
 
         .status {
+            border: 1px solid;
             height: 100%;
             left: 0;
             position: absolute;
+            text-align: center;
             top: 0;
-            transition: background-color 100ms ease-in-out, border-color 100ms ease-in-out, box-shadow 100ms ease-in-out;
             width: var(--status-block-width);
             z-index: 3;
+
+            &::after {
+                color: theme-color('selected', 600);
+                content: '●';
+                display: block;
+                position: relative;
+                top: calc(50% - .7rem);
+                transform: scale(0);
+                transition: transform 340ms cubic-bezier(.18, 1.4, .4, 1);
+            }
         }
 
         .header-inner {
@@ -90,6 +99,16 @@
         }
     }
 
+    &.is-collapsed {
+
+        & > .header {
+
+            .status {
+                border-bottom: 0;
+            }
+        }
+    }
+
     &.is-expanded {
 
         & > .seam {
@@ -115,9 +134,18 @@
                 }
             }
         }
+    }
 
-        &.has-children {
-            background: red;
+    &.is-debriefing {
+
+        & > .header {
+
+            .status {
+
+                &::after {
+                    transform: scale(1);
+                }
+            }
         }
     }
 
@@ -132,8 +160,8 @@
 
             .status {
                 background-color: theme-color('passed');
-                border-right: 1px solid darken(theme-color('passed'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('passed'), .6);
+                border-color: darken(theme-color('passed'), 10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('passed'), .5);
             }
         }
     }
@@ -149,8 +177,8 @@
 
             .status {
                 background-color: theme-color('failed');
-                border-right: 1px solid darken(theme-color('failed'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('failed'), .6);
+                border-color: darken(theme-color('failed'), 10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('failed'), .5);
             }
         }
     }
@@ -167,8 +195,8 @@
 
             .status {
                 background-color: theme-color('incomplete');
-                border-right: 1px solid darken(theme-color('incomplete'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('incomplete'), .6);
+                border-color: darken(theme-color('incomplete'), 10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('incomplete'), .5);
             }
         }
     }
@@ -184,8 +212,8 @@
 
             .status {
                 background-color: theme-color('warning');
-                border-right: 1px solid darken(theme-color('warning'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('warning'), .6);
+                border-color: darken(theme-color('warning'), 10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('warning'), .5);
             }
         }
     }
@@ -201,8 +229,8 @@
 
             .status {
                 @include striped('partial');
-                border-right: 1px solid darken(theme-color('partial'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('partial'), .6);
+                border-color: darken(theme-color('partial'), 10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('partial'), .5);
             }
         }
     }
@@ -218,8 +246,25 @@
 
             .status {
                 background-color: theme-color('idle');
-                border-right: 1px solid darken(theme-color('idle'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('idle'), .6);
+                border-color: darken(theme-color('idle'), 10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('idle'), .5);
+            }
+        }
+    }
+
+    &.status--queued {
+
+        & > .seam::before,
+        & > .seam::after {
+            border-color: theme-color('queued');
+        }
+
+        & > .header {
+
+            .status {
+                background-color: theme-color('queued');
+                border-color: darken(theme-color('queued'), 3%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('queued'), .5);
             }
         }
     }
@@ -235,8 +280,8 @@
 
             .status {
                 background-color: theme-color('idle');
-                border-right: 1px solid darken(theme-color('idle'), 3%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('idle'), .6);
+                border-color: darken(theme-color('idle'), 3%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('idle'), .5);
             }
         }
     }
@@ -258,7 +303,7 @@
 
             & > .status {
                 border-right-color: theme-color('selected');
-                box-shadow: 4px 0 0 0 rgba(theme-color('selected'), .6);
+                box-shadow: 4px 0 0 0 rgba(theme-color('selected'), .5);
             }
         }
     }

@@ -1,6 +1,6 @@
 import { uniq } from 'lodash'
 
-export type Status = 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle'
+export type Status = 'queued' | 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle'
 
 export type FrameworkStatus = Status | 'refreshing' | 'running' | 'stopped' | 'error'
 
@@ -24,6 +24,10 @@ export function parseStatus (components: Array<Status>): Status {
 
     if (components.includes('incomplete')) {
         return 'incomplete'
+    }
+
+    if (components.includes('queued')) {
+        return 'queued'
     }
 
     return 'partial'

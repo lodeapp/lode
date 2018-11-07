@@ -22,13 +22,17 @@
         padding: 0;
         position: absolute;
         top: 2px;
-        transition: transform 240ms cubic-bezier(.18, 1.4, .4, 1), border-color 240ms cubic-bezier(.18, 1.4, .4, 1);
+        transition: transform 240ms cubic-bezier(.18, 1.4, .4, 1);
         width: 12px;
 
         &:hover,
         &:focus,
         &:active {
             outline: 0;
+        }
+
+        &[disabled] {
+            opacity: .5;
         }
     }
 
@@ -37,9 +41,12 @@
     &:active {
 
         button {
-            background-color: var(--link-color);
-            border-color: $white;
-            transform: scale(1.5);
+
+            &:not([disabled]) {
+                background-color: var(--link-color);
+                border-color: $white;
+                transform: scale(1.4);
+            }
         }
     }
 
@@ -47,14 +54,12 @@
         opacity: 0;
         position: relative;
         top: -1px;
-        transition: opacity 240ms;
     }
 
     .selective & {
 
         button {
             opacity: 0;
-            transition: opacity 240ms;
         }
 
         input {

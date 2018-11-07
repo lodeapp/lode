@@ -132,6 +132,27 @@
         }
     }
 
+    &--queued {
+        border-color: theme-color('queued', 'step', 200);
+        color: theme-color('queued', 'step', 200);
+
+        &.is-active {
+            background-color: theme-color('queued', 'step', 200);
+            border-color: theme-color('queued', 'step', 300);
+            color: theme-color('queued', '000');
+
+            &::before {
+                border-color: theme-color('queued', 'step', 300);
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: darken(theme-color('queued', 'step', 200), 3%);
+            }
+        }
+    }
+
     &--idle {
         border-color: theme-color('idle', 'step', 200);
         color: theme-color('idle', 'step', 200);

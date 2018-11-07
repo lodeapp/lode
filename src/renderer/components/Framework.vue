@@ -16,13 +16,14 @@
                         @click="run"
                     >
                         {{ framework.selective ? 'Run selected' : 'Run' }}
-                        <span v-if="framework.selective" class="Counter">{{ framework.selectedCount.suites }}</span>
+                        <span v-if="framework.selective" class="Counter">{{ framework.selected.suites.length }}</span>
                     </button>
                     <button class="btn btn-sm btn-danger" @click="stop" :disabled="!running && !refreshing">Stop</button>
                 </div>
             </div>
             <div class="progress">
                 <template v-if="refreshing">Refreshing...</template>
+                <template v-else-if="!framework.suites.length && running">Preparing run...</template>
                 <template v-else-if="framework.suites.length">
                     {{ '1 suite|:n suites' | plural(framework.suites.length) }}
                     <button

@@ -1,4 +1,4 @@
-import { debounce, find } from 'lodash'
+import { find, findIndex } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { IProcess } from '@lib/process/process'
@@ -7,9 +7,8 @@ import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
 import { Logger } from '@lib/logger'
 
-export type SelectedCount = {
-    suites: number
-    tests: number
+export type SelectedCache = {
+    suites: Array<ISuite>
 }
 
 export type FrameworkOptions = {
@@ -27,10 +26,9 @@ export interface IFramework extends EventEmitter {
     process?: IProcess
     suites: Array<ISuite>
     status: FrameworkStatus
-    selected: boolean
     selective: boolean
+    selected: SelectedCache
     expandFilters: boolean
-    selectedCount: SelectedCount
     ledger: { [key in Status]: number }
 
     start (): Promise<void>
@@ -48,15 +46,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
     public status: FrameworkStatus = 'idle'
-    public selected: boolean = false
     public selective: boolean = false
-    public expandFilters: boolean = false
-    public selectedCount: SelectedCount = {
-        suites: 0,
-        tests: 0
+    public selected: SelectedCache = {
+        suites: []
     }
-    public updateCountsListener: any
+    public expandFilters: boolean = false
     public ledger: { [key in Status]: number } = {
+        queued: 0,
         passed: 0,
         failed: 0,
         incomplete: 0,
@@ -74,7 +70,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.path = options.path
         this.runner = options.runner || null
         this.vmPath = options.vmPath || null
-        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 60)
     }
 
     abstract runArgs (): Array<string>
@@ -89,7 +84,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
     start (): Promise<void> {
         if (this.selective) {
-            console.log('Running selectively...')
             return this.runSelective()
                 .catch((error) => {
                     this.updateStatus('error')
@@ -114,6 +108,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
         })
         .then(() => {
             this.updateStatus('stopped')
+            this.suites.forEach(suite => {
+                if (suite.status === 'queued') {
+                    suite.reset(false)
+                }
+            })
         })
         .catch(() => {
             this.updateStatus('error')
@@ -122,24 +121,34 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
     run (): Promise<void> {
         this.suites.forEach(suite => {
-            suite.reset()
+            suite.queue(false)
         })
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
-            this.reload()
-                .then(() => {
-                    this.report(this.runArgs(), resolve, reject)
-                })
+            // Only start the actual running process on next tick. This allows
+            // the renderer to redraw the app state, thus appearing snappier.
+            process.nextTick(() => {
+                this.reload()
+                    .then(() => {
+                        this.suites.forEach(suite => {
+                            suite.queue(false)
+                        })
+                        this.report(this.runArgs(), resolve, reject)
+                    })
+            })
         })
     }
 
     runSelective (): Promise<void> {
-        this.suites.filter(suite => suite.selected).forEach(suite => {
-            suite.reset()
+        this.selected.suites.forEach(suite => {
+            suite.queue(true)
         })
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
-            this.report(this.runSelectiveArgs(), resolve, reject)
+            // See @run
+            process.nextTick(() => {
+                this.report(this.runSelectiveArgs(), resolve, reject)
+            })
         })
     }
 
@@ -216,7 +225,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         let suite: ISuite | undefined = this.findSuite(result.file)
         if (!suite) {
             suite = this.newSuite(result)
-            suite.on('selective', this.updateCountsListener)
+            suite.on('selective', this.updateSelected.bind(this))
             suite.on('status', this.updateLedger.bind(this))
             this.updateLedger(suite.status)
             this.suites.push(suite)
@@ -228,14 +237,15 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return file.startsWith(this.vmPath || this.path)
     }
 
-    updateSelectedCounts (): void {
-        this.selectedCount.tests = 0
-        this.selectedCount.suites = this.suites.filter(suite => {
-            this.selectedCount.tests += suite.tests.filter(test => test.selected).length
-            return suite.selected
-        }).length
+    updateSelected (suite: ISuite): void {
+        const index = findIndex(this.selected.suites, { 'id': suite.id })
+        if (suite.selected && index === -1) {
+            this.selected.suites.push(suite)
+        } else if (index > -1) {
+            this.selected.suites.splice(index, 1)
+        }
 
-        this.selective = this.selectedCount.suites > 0
+        this.selective = this.selected.suites.length > 0
     }
 
     updateLedger (to: Status | null, from?: Status): void {
@@ -266,6 +276,14 @@ export abstract class Framework extends EventEmitter implements IFramework {
     debriefSuite (result: ISuiteResult): Promise<void> {
         result = this.decodeSuiteResult(result)
         const suite: ISuite = this.makeSuite(result)
-        return suite.debrief(result, this.selective)
+        return suite.debrief(result, this.shouldCleanup(suite))
+    }
+
+    shouldCleanup(suite: ISuite): boolean {
+        if (!this.selective) {
+            return true
+        }
+
+        return suite.selected && !suite.partial
     }
 }

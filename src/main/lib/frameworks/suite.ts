@@ -22,7 +22,8 @@ export interface ISuite extends Container {
     getDisplayName (): string
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
-    reset (): void
+    reset (selective: boolean): void
+    queue (selective: boolean): void
 }
 
 export interface ISuiteResult {
@@ -77,9 +78,9 @@ export class Suite extends Container implements ISuite {
         return new Test(result)
     }
 
-    debrief (suiteResult: ISuiteResult, selective: boolean): Promise<void> {
+    debrief (suiteResult: ISuiteResult, cleanup: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.debriefTests(suiteResult.tests, selective)
+            this.debriefTests(suiteResult.tests, cleanup)
                 .then(() => {
                     this.testsLoaded = typeof suiteResult.testsLoaded !== 'undefined' ? !!suiteResult.testsLoaded : true
                     resolve()

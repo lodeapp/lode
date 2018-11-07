@@ -27,7 +27,6 @@ export class Project extends EventEmitter implements IProject {
     }
 
     statusListener () {
-        console.log('updating project status', parseFrameworkStatus(this.repositories.map(repository => repository.status)))
         this.updateStatus(parseFrameworkStatus(this.repositories.map(repository => repository.status)))
     }
 }

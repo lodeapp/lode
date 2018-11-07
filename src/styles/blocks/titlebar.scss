@@ -12,6 +12,7 @@
     height: var(--title-bar-height);
     justify-content: center;
     min-width: 0;
+    opacity: .4;
 
     .titlebar-section {
         -webkit-app-region: no-drag;
@@ -100,5 +101,12 @@
                 }
             }
         }
+    }
+}
+
+body.is-focused {
+
+    .titlebar {
+        opacity: 1;
     }
 }

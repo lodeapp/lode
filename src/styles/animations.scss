@@ -2,10 +2,6 @@
 // Animations
 // ========================================================================
 
-a {
-    transition: color $transition-time, background-color $transition-time;
-}
-
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity .2s;

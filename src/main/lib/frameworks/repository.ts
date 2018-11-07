@@ -39,7 +39,6 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     statusListener () {
-        console.log('updating repository status', parseFrameworkStatus(this.frameworks.map(framework => framework.status)))
         this.updateStatus(parseFrameworkStatus(this.frameworks.map(framework => framework.status)))
     }
 }

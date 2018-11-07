@@ -6,12 +6,14 @@ export interface ITest extends Container {
     readonly id: string
     readonly name: string
     status: Status
+    result?: ITestResult
     selected: boolean
 
     getDisplayName (): string
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     debrief (result: ITestResult, selective: boolean): Promise<void>
-    reset (): void
+    reset (selective: boolean): void
+    queue (selective: boolean): void
 }
 
 export interface ITestResult {
@@ -22,6 +24,7 @@ export interface ITestResult {
     feedback: string
     assertions: number
     console: Array<string>
+    isLast?: boolean
     tests?: Array<ITestResult>
 }
 
@@ -48,17 +51,17 @@ export class Test extends Container implements ITest {
         return new Test(result)
     }
 
-    build (result: ITestResult, selective: boolean): void {
+    build (result: ITestResult, cleanup: boolean): void {
         this.updateStatus(result.status || 'idle')
         this.result = result
         if (result.tests && result.tests.length) {
-            this.debriefTests(result.tests, selective)
+            this.debriefTests(result.tests, cleanup)
         }
     }
 
-    debrief (result: ITestResult, selective: boolean): Promise<void> {
+    debrief (result: ITestResult, cleanup: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.build(result, selective)
+            this.build(result, cleanup)
             this.emit('debriefed')
             resolve()
         })

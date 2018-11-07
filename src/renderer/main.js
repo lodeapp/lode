@@ -6,6 +6,7 @@ import store from './store'
 import icons from './plugins/icons'
 import Strings from './plugins/strings'
 import filters from './plugins/filters'
+import { ipcRenderer } from 'electron'
 
 import '../styles/app.scss'
 
@@ -16,6 +17,14 @@ Vue.config.productionTip = false
 Vue.use(icons)
 Vue.use(new Strings('en-US'))
 Vue.use(filters)
+
+ipcRenderer.on('blur', () => {
+    document.body.classList.remove('is-focused')
+})
+
+ipcRenderer.on('focus', () => {
+    document.body.classList.add('is-focused')
+})
 
 // Register global or recursive components
 import Test from '@/components/Test'

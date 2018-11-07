@@ -70,6 +70,9 @@ function createWindow () {
         mainWindow = null
     })
 
+    mainWindow.on('focus', () => mainWindow!.webContents.send('focus'))
+    mainWindow.on('blur', () => mainWindow!.webContents.send('blur'))
+
     // Remember window state on change
     savedWindowState.manage(mainWindow)
 }
@@ -82,7 +85,7 @@ app.on('ready', () => {
 })
 
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    if (__DARWIN__) {
         app.quit()
     }
 })

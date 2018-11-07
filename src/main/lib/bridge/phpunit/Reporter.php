@@ -7,13 +7,17 @@ use PHPUnit\Framework\Test;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\TestResult;
 use PHPUnit\Framework\TestSuite;
+use PHPUnit\Framework\TestSuiteIterator;
 use PHPUnit\Framework\Warning;
 use PHPUnit\Runner\PhptTestCase;
+use PHPUnit\Runner\Filter\NameFilterIterator;
+use PHPUnit\Runner\Filter\Factory;
 use PHPUnit\TextUI\Command;
 use PHPUnit\TextUI\ResultPrinter;
 use PHPUnit\Util\TestDox\NamePrettifier;
 use RecursiveIteratorIterator;
 use ReflectionClass;
+use ReflectionMethod;
 use Throwable;
 
 class Reporter extends ResultPrinter
@@ -46,6 +50,13 @@ class Reporter extends ResultPrinter
      * @var bool
      */
     protected $listTests = false;
+
+    /**
+     * The complete test list array
+     *
+     * @var array
+     */
+    protected $all = [];
 
     /**
      * Name prettifier, for consistent transformations.
@@ -98,34 +109,37 @@ class Reporter extends ResultPrinter
      */
     public function startTestSuite(TestSuite $suite): void
     {
-        if ($this->listTests) {
-            $tests = [];
-            foreach (new RecursiveIteratorIterator($suite->getIterator()) as $test) {
-                $reflector = new ReflectionClass(get_class($test));
-                $filename = $reflector->getFileName();
+        // Before starting, compile a detailed list of all the tests we'll run.
+        // This helps us output pointers regarding the progress of each test group.
+        foreach (new RecursiveIteratorIterator(new TestSuiteIterator($suite)) as $test) {
+            $reflector = new ReflectionClass(get_class($test));
+            $filename = $reflector->getFileName();
 
-                if (!isset($tests[$filename])) {
-                    $tests[$filename] = [
-                        'file' => $reflector->getFileName(),
-                        'tests' => [],
-                        'meta' => [
-                            'class' => get_class($test),
-                            'groups' => $test->getGroups(),
-                        ],
-                    ];
-                }
-
-                $tests[$filename]['tests'][] = [
-                    'name' => $test->getName(),
-                    'displayName' => $this->transformName($test->getName()),
-                    'status' => 'idle',
-                    'feedback' => [],
-                    'assertions' => 0,
-                    'console' => [],
+            if (!isset($this->all[$filename])) {
+                $this->all[$filename] = [
+                    'file' => $reflector->getFileName(),
+                    'tests' => [],
+                    'meta' => [
+                        'class' => get_class($test),
+                        'groups' => $test->getGroups(),
+                    ],
                 ];
             }
 
-            $this->writeProgress(array_values($tests));
+            $this->all[$filename]['tests'][] = [
+                'name' => $test->getName(),
+                'displayName' => $this->transformName($test->getName()),
+                'status' => 'idle',
+                'feedback' => [],
+                'assertions' => 0,
+                'console' => [],
+            ];
+        }
+
+        // If command was meant to list all tests, output the detailed
+        // list instead of running through them.
+        if ($this->listTests) {
+            $this->writeProgress(array_values($this->all));
             $this->printEndDelimiter();
             exit;
         }
@@ -255,18 +269,26 @@ class Reporter extends ResultPrinter
     {
         $reflector = new ReflectionClass(get_class($test));
 
+        $current = [
+            'name' => $test->getName(),
+            'displayName' => $this->transformName($test->getName()),
+            'status' => $this->transformStatus($test->getStatus()),
+            'feedback' => $t ? $this->transformException($t) : $t,
+            'assertions' => $test->getNumAssertions(),
+            'console' => [],
+            'isLast' => false,
+        ];
+
+        if (isset($this->all[$reflector->getFileName()]) && isset($this->all[$reflector->getFileName()]['tests'])) {
+            $last = array_values(array_slice($this->all[$reflector->getFileName()]['tests'], -1))[0];
+            if (isset($last['name']) && $last['name'] === $test->getName()) {
+                $current['isLast'] = true;
+            }
+        }
+
         return [
             'file' => $reflector->getFileName(),
-            'tests' => [
-                [
-                    'name' => $test->getName(),
-                    'displayName' => $this->transformName($test->getName()),
-                    'status' => $this->transformStatus($test->getStatus()),
-                    'feedback' => $t ? $this->transformException($t) : $t,
-                    'assertions' => $test->getNumAssertions(),
-                    'console' => [],
-                ]
-            ],
+            'tests' => [$current],
             'meta' => [
                 'class' => get_class($test),
                 'groups' => $test->getGroups(),
