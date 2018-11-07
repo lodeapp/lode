@@ -126,14 +126,17 @@ class Reporter extends ResultPrinter
                 ];
             }
 
-            $this->all[$filename]['tests'][] = [
-                'name' => $test->getName(),
-                'displayName' => $this->transformName($test->getName()),
-                'status' => 'idle',
-                'feedback' => [],
-                'assertions' => 0,
-                'console' => [],
-            ];
+            // Only add if it test doesn't already exist.
+            if (array_search($test->getName(), array_column($this->all[$filename]['tests'], 'name')) === false) {
+                $this->all[$filename]['tests'][] = [
+                    'name' => $test->getName(),
+                    'displayName' => $this->transformName($test->getName()),
+                    'status' => 'idle',
+                    'feedback' => [],
+                    'assertions' => 0,
+                    'console' => [],
+                ];
+            }
         }
 
         // If command was meant to list all tests, output the detailed
