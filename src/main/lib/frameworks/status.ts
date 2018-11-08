@@ -2,7 +2,7 @@ import { uniq } from 'lodash'
 
 export type Status = 'queued' | 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle'
 
-export type FrameworkStatus = Status | 'refreshing' | 'running' | 'stopped' | 'error'
+export type FrameworkStatus = Status | 'refreshing' | 'running' | 'error'
 
 export function parseStatus (components: Array<Status>): Status {
     if (!components.length) {
@@ -49,10 +49,6 @@ export function parseFrameworkStatus (components: Array<FrameworkStatus>): Frame
 
     if (components.includes('error')) {
         return 'error'
-    }
-
-    if (components.includes('stopped')) {
-        return 'stopped'
     }
 
     if (components.includes('refreshing')) {

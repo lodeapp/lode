@@ -26,6 +26,7 @@
                     <button
                         class="btn btn-sm btn-primary"
                         :disabled="!repository.frameworks.length || running || refreshing"
+                        @click="run"
                     >
                         Run
                         <span v-if="repository.frameworks.length > 1" class="Counter">{{ repository.frameworks.length }}</span>
@@ -33,6 +34,7 @@
                     <button
                         class="btn btn-sm btn-danger"
                         :disabled="!repository.frameworks.length || !running && !refreshing"
+                        @click="stop"
                     >
                         Stop
                     </button>
@@ -99,6 +101,16 @@ export default {
     methods: {
         toggle () {
             this.show = !this.show
+        },
+        run () {
+            this.repository.frameworks.forEach(framework => {
+                this.$queue.add(framework.queueStart())
+            })
+        },
+        stop () {
+            this.repository.frameworks.forEach(framework => {
+                framework.stop()
+            })
         }
     }
 }

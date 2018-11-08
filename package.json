@@ -57,6 +57,7 @@
     "@types/node": "^10.9.4",
     "ansi-to-html": "^0.6.6",
     "axios": "^0.18.0",
+    "bottleneck": "^2.13.0",
     "chalk": "^2.4.1",
     "child_process": "^1.0.2",
     "chokidar": "^2.0.4",

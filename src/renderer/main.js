@@ -4,6 +4,7 @@ import App from './App'
 import router from './router'
 import store from './store'
 import icons from './plugins/icons'
+import Queue from './plugins/queue'
 import Strings from './plugins/strings'
 import filters from './plugins/filters'
 import { ipcRenderer } from 'electron'
@@ -15,6 +16,7 @@ Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 
 Vue.use(icons)
+Vue.use(new Queue())
 Vue.use(new Strings('en-US'))
 Vue.use(filters)
 

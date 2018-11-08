@@ -7,10 +7,16 @@ import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
 import { Logger } from '@lib/logger'
 
-export type SelectedCache = {
+/**
+ * A list of test suites.
+ */
+export type SuiteList = {
     suites: Array<ISuite>
 }
 
+/**
+ * Options to instantiate a Framework with.
+ */
 export type FrameworkOptions = {
     command: string
     path: string
@@ -18,6 +24,9 @@ export type FrameworkOptions = {
     vmPath?: string | null
 }
 
+/**
+ * The Framework interface.
+ */
 export interface IFramework extends EventEmitter {
     readonly id: string
     readonly command: string
@@ -27,8 +36,9 @@ export interface IFramework extends EventEmitter {
     suites: Array<ISuite>
     status: FrameworkStatus
     selective: boolean
-    selected: SelectedCache
+    selected: SuiteList
     expandFilters: boolean
+    queue: { [index: string]: Function }
     ledger: { [key in Status]: number }
 
     start (): Promise<void>
@@ -36,6 +46,10 @@ export interface IFramework extends EventEmitter {
     refresh (): Promise<void>
 }
 
+/**
+ * The Framework class represents a testing framework (e.g. Jest, PHPUnit)
+ * and contains a set of test suites (files).
+ */
 export abstract class Framework extends EventEmitter implements IFramework {
     public readonly id: string
     public readonly command: string
@@ -47,10 +61,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public running: Array<Promise<void>> = []
     public status: FrameworkStatus = 'idle'
     public selective: boolean = false
-    public selected: SelectedCache = {
+    public selected: SuiteList = {
         suites: []
     }
     public expandFilters: boolean = false
+    public queue: { [index: string]: Function } = {}
     public ledger: { [key in Status]: number } = {
         queued: 0,
         passed: 0,
@@ -76,12 +91,18 @@ export abstract class Framework extends EventEmitter implements IFramework {
     abstract runSelectiveArgs (): Array<string>
     abstract reload (): Promise<void>
 
+    /**
+     * Update this framework's status.
+     */
     updateStatus (to: FrameworkStatus): void {
         const from = this.status
         this.status = to
         this.emit('status', to, from)
     }
 
+    /**
+     * Run this framework's test suites, either fully or selectively.
+     */
     start (): Promise<void> {
         if (this.selective) {
             return this.runSelective()
@@ -95,8 +116,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
             })
     }
 
+    /**
+     * Stop any processes that apply to this framework. This can include
+     * running, refreshing or cancelling any queued jobs.
+     */
     stop (): Promise<void> {
         return new Promise((resolve, reject) => {
+            // Before checking the actual process, clear the queue
+            this.queue = {}
+
+            // If process exists, kill it, otherwise resolve directly
             if (!this.process) {
                 resolve()
             }
@@ -107,18 +136,21 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 .stop()
         })
         .then(() => {
-            this.updateStatus('stopped')
             this.suites.forEach(suite => {
                 if (suite.status === 'queued') {
                     suite.reset(false)
                 }
             })
+            this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
         })
         .catch(() => {
             this.updateStatus('error')
         })
     }
 
+    /**
+     * Run all suites inside this framework.
+     */
     run (): Promise<void> {
         this.suites.forEach(suite => {
             suite.queue(false)
@@ -139,6 +171,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
         })
     }
 
+    /**
+     * Run this framework selectively (i.e. only run suites that have been
+     * selected by the user).
+     */
     runSelective (): Promise<void> {
         this.selected.suites.forEach(suite => {
             suite.queue(true)
@@ -152,6 +188,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
         })
     }
 
+    /**
+     * Refresh the list of suites inside this framework.
+     */
     refresh (): Promise<void> {
         this.updateStatus('refreshing')
         return this.reload()
@@ -164,7 +203,24 @@ export abstract class Framework extends EventEmitter implements IFramework {
             })
     }
 
-    report (args: Array<string>, resolve: Function, reject: Function): IProcess {
+    /**
+     * Run a report process. Reports are standardised processes that contain
+     * encoded output that can be parsed by Lode in real-time. Report processes
+     * will emit a `report` event every time a chunk has been successfully
+     * parsed and is ready for debriefing.
+     *
+     * Report commands are wrapped in Promise calls and must receive `resolve`
+     * and `reject` functions to standardise outcome resolution.
+     *
+     * @param args The arguments to run the report process with.
+     * @param resolve The wrapper Promise's resolve function
+     * @param reject The wrapper Promise's reject function
+     */
+    report (
+        args: Array<string>,
+        resolve: Function,
+        reject: Function
+    ): IProcess {
         return this.spawn(args)
             .on('report', ({ process, report }) => {
                 try {
@@ -188,14 +244,24 @@ export abstract class Framework extends EventEmitter implements IFramework {
             })
     }
 
+    /**
+     * A function that runs after a framework has been run, either fully or
+     * selectively.
+     */
     afterRun () {
         if (!this.selective) {
-            console.log('Cleaning up framework')
             this.suites = this.suites.filter(suite => suite.status !== 'idle')
         }
         this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
     }
 
+    /**
+     * Spawn a new process. This will not spawn an arbitrary process; the
+     * command with which to spawn the process with is fixed in the framework's
+     * configurations and cannot be changed.
+     *
+     * @param args The arguments to spawn the process with.
+     */
     spawn (args: Array<string>): IProcess {
         this.process = ProcessFactory.make(
             this.command,
@@ -207,6 +273,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return this.process
     }
 
+    /**
+     * Instantiates a new suite using a result object.
+     *
+     * @param result The standardised suite results.
+     */
     newSuite (result: ISuiteResult): ISuite {
         return new Suite({
             path: this.path,
@@ -214,14 +285,23 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }, result)
     }
 
+    /**
+     * Looks for a suite in the framework's already instantiated list of suites
+     * using the filename for disambiguation and returns it.
+     *
+     * @param file The filename of the suite being searched.
+     */
     findSuite (file: string): ISuite | undefined {
         return find(this.suites, { file })
     }
 
-    makeSuite (
-        result: ISuiteResult,
-        force: boolean = false
-    ): ISuite {
+    /**
+     * Returns an existing suite from this framework given a set of results,
+     * or creates one and adds it to the framework.
+     *
+     * @param result An object representing a suite's test results.
+     */
+    makeSuite (result: ISuiteResult): ISuite {
         let suite: ISuite | undefined = this.findSuite(result.file)
         if (!suite) {
             suite = this.newSuite(result)
@@ -233,10 +313,20 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return suite
     }
 
+    /**
+     * Whether a given file is contained inside this framework's path.
+     *
+     * @param file The path of the file being checked.
+     */
     fileInPath (file: string): boolean {
         return file.startsWith(this.vmPath || this.path)
     }
 
+    /**
+     * Update the framework's array of selected suites.
+     *
+     * @param suite The suite which triggered this update.
+     */
     updateSelected (suite: ISuite): void {
         const index = findIndex(this.selected.suites, { 'id': suite.id })
         if (suite.selected && index === -1) {
@@ -248,6 +338,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.selective = this.selected.suites.length > 0
     }
 
+    /**
+     * Update the framework's ledger of suite statuses.
+     *
+     * @param to The new status of a suite inside this framework.
+     * @param from The old status of a suite inside this framework, if any.
+     */
     updateLedger (to: Status | null, from?: Status): void {
         if (to) {
             this.ledger[to]!++
@@ -279,11 +375,55 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return suite.debrief(result, this.shouldCleanup(suite))
     }
 
+    /**
+     * Whether the framework should clean the suite of obsolete tests
+     * after debriefing.
+     *
+     * @param suite The test suite being checked for needing clean-up.
+     */
     shouldCleanup(suite: ISuite): boolean {
         if (!this.selective) {
             return true
         }
 
         return suite.selected && !suite.partial
+    }
+
+    /**
+     * Queue a `start` job with a unique id. This let's us cancel the job
+     * if it's not yet executed simply by clearing the internal queue object.
+     */
+    queueStart (): Function {
+        this.updateStatus('queued')
+        const id = uuid()
+        this.queue[id] = () => this.start()
+        return () => this.runQueued(id)
+    }
+
+    /**
+     * Queue a `refresh` job with a unique id.
+     * See @queueStart for more info.
+     */
+    queueRefresh (): Function {
+        this.updateStatus('queued')
+        const id = uuid()
+        this.queue[id] = () => this.refresh()
+        return () => this.runQueued(id)
+    }
+
+    /**
+     * Execute a queued job. This function is what actually gets pushed
+     * to our global limiter and will only execute when concurrency allows.
+     * If queue was cleared in the meantime, this function will still execute,
+     * but will be empty of any logic and should be transparent to the user.
+     *
+     * @param id The unique id of the job to run.
+     */
+    runQueued (id: string): Function {
+        if (typeof this.queue[id] === 'undefined') {
+            Logger.debug.log(`Queued job with id ${id} was cancelled before execution.`)
+            return () => Promise.resolve()
+        }
+        return this.queue[id]()
     }
 }

@@ -109,6 +109,7 @@ export abstract class Container extends EventEmitter {
     }
 
     reset (selective: boolean): void {
+        this.debriefing = false
         this.updateStatus('idle')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
             .forEach(test => {
@@ -117,6 +118,7 @@ export abstract class Container extends EventEmitter {
     }
 
     queue (selective: boolean): void {
+        this.debriefing = false
         this.updateStatus('queued')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
             .forEach(test => {

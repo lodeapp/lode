@@ -18,11 +18,18 @@
                         {{ framework.selective ? 'Run selected' : 'Run' }}
                         <span v-if="framework.selective" class="Counter">{{ framework.selected.suites.length }}</span>
                     </button>
-                    <button class="btn btn-sm btn-danger" @click="stop" :disabled="!running && !refreshing">Stop</button>
+                    <button
+                        class="btn btn-sm btn-danger"
+                        :disabled="!running && !refreshing && !queued"
+                        @click="stop"
+                    >
+                        Stop
+                    </button>
                 </div>
             </div>
             <div class="progress">
                 <template v-if="refreshing">Refreshing...</template>
+                <template v-if="queued">Queued...</template>
                 <template v-else-if="!framework.suites.length && running">Preparing run...</template>
                 <template v-else-if="framework.suites.length">
                     {{ '1 suite|:n suites' | plural(framework.suites.length) }}
@@ -74,16 +81,19 @@ export default {
         refreshing () {
             return this.framework.status === 'refreshing'
         },
+        queued () {
+            return this.framework.status === 'queued'
+        },
         ...mapGetters({
             displayStatus: 'status/display'
         })
     },
     methods: {
-        async refresh () {
-            await this.framework.refresh()
+        refresh () {
+            this.$queue.add(this.framework.queueRefresh())
         },
-        async run () {
-            await this.framework.start()
+        run () {
+            this.$queue.add(this.framework.queueStart())
         },
         async stop () {
             await this.framework.stop()
