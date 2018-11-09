@@ -9,6 +9,7 @@
                 <Results :test="activeTest" />
             </Pane>
         </main>
+        <ModalController />
     </div>
 </template>
 
@@ -17,6 +18,7 @@ import { Project as ProjectModel } from '@lib/frameworks/project'
 
 import { mapGetters } from 'vuex'
 import Titlebar from '@/components/Titlebar'
+import ModalController from '@/components/ModalController'
 import Pane from '@/components/Pane'
 import Project from '@/components/Project'
 import Results from '@/components/Results'
@@ -25,6 +27,7 @@ export default {
     name: 'Index',
     components: {
         Titlebar,
+        ModalController,
         Pane,
         Project,
         Results

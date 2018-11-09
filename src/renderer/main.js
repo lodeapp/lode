@@ -5,8 +5,10 @@ import router from './router'
 import store from './store'
 import icons from './plugins/icons'
 import Queue from './plugins/queue'
+import Modals from './plugins/modals'
 import Strings from './plugins/strings'
 import filters from './plugins/filters'
+import markdown from './directives/markdown'
 import { ipcRenderer } from 'electron'
 
 import '../styles/app.scss'
@@ -17,8 +19,11 @@ Vue.config.productionTip = false
 
 Vue.use(icons)
 Vue.use(new Queue())
+Vue.use(new Modals(store))
 Vue.use(new Strings('en-US'))
 Vue.use(filters)
+
+Vue.directive('markdown', markdown(Vue))
 
 ipcRenderer.on('blur', () => {
     document.body.classList.remove('is-focused')

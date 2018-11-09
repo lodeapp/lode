@@ -1,0 +1,213 @@
+// ========================================================================
+// Modals
+// ========================================================================
+
+.modal-open {
+    overflow: hidden;
+
+    .modal {
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+}
+
+.modal {
+    align-items: center;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    left: 0;
+    outline: 0;
+    overflow: hidden;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 1039;
+
+    .modal-dialog {
+        flex-grow: 1;
+        margin: var(--spacing);
+        pointer-events: none;
+        position: relative;
+        transition: transform .3s ease, opacity .3s ease;
+        width: auto;
+    }
+
+    .modal-content {
+        @include drop-shadow;
+        background-clip: padding-box;
+        background-color: $primary;
+        border: 1px solid $primary-border;
+        border-radius: 3px;
+        display: flex;
+        flex-direction: column;
+        outline: 0;
+        pointer-events: auto;
+        position: relative;
+    }
+
+    .modal-header {
+        align-items: center;
+        border-bottom: 0;
+        border-right: 1px solid $primary;
+        border-bottom: 1px solid $primary-border;
+        display: flex;
+        justify-content: left;
+        padding: var(--spacing-and-half);
+
+        i {
+            margin-right: var(--spacing);
+
+            svg {
+                height: 25px;
+                width: 25px;
+            }
+
+            &.type--error {
+                color: theme-color('failed');
+            }
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: $black;
+            line-height: 1;
+        }
+
+        .close {
+            font-size: 2.5rem;
+            font-weight: 300;
+            line-height: .7em;
+            margin-left: auto; // Force icon to the right even when there's no .modal-title
+            opacity: .3;
+
+            &:hover,
+            &:focus {
+                opacity: .6;
+            }
+        }
+    }
+
+    .modal-title {
+        margin-bottom: 0;
+    }
+
+    .modal-body {
+        border-right: 1px solid $primary;
+        flex: 1 1 auto;
+        padding: var(--spacing-double);
+        position: relative;
+
+        p {
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        pre {
+            background-color: $secondary;
+            border: 1px solid $primary-border;
+            border-radius: 3px;
+            padding: var(--spacing);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+    }
+
+    .modal-footer {
+        align-items: center;
+        border-top: 1px solid $primary-border;
+        display: flex;
+        justify-content: flex-end;
+        padding: var(--spacing-double);
+        text-align: right;
+
+        .container-fluid {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .btn + .btn {
+            margin-bottom: 0;
+            margin-left: 5px;
+        }
+    }
+
+    &.modal--page {
+
+        .modal-content {
+            background-color: $secondary;
+
+            .modal-body {
+                margin-bottom: -2px; // Compensate 2px section border-bottom
+                margin-top: -15px;
+                padding-bottom: 0;
+
+                .spinner {
+                    margin-bottom: 18px;
+                }
+            }
+        }
+    }
+}
+
+.modal-backdrop {
+    background-color: $black;
+    bottom: 0;
+    left: 0;
+    opacity: .4;
+    position: fixed;
+    right: 0;
+    top: 0;
+    transition: opacity .3s ease;
+    z-index: 1040;
+}
+
+.modal-enter,
+.modal-leave-to {
+
+    &.modal-backdrop {
+        opacity: 0;
+    }
+
+    .modal-dialog {
+        opacity: 0;
+        transform: scale(1.1);
+    }
+}
+
+
+// ========================================================================
+// Larger screens
+// ========================================================================
+
+@include media-breakpoint-up(sm) {
+
+    .modal {
+
+        .modal-dialog {
+            margin: var(--spacing-triple) auto;
+            max-width: var(--modal-medium);
+        }
+
+        &.modal-sm {
+            max-width: var(--modal-small);
+        }
+    }
+}
+
+@include media-breakpoint-up(lg) {
+
+    .modal {
+
+        .modal-lg {
+            max-width: var(--modal-large);
+        }
+    }
+}
+

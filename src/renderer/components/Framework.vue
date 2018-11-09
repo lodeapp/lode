@@ -29,7 +29,7 @@
             </div>
             <div class="progress">
                 <template v-if="refreshing">Refreshing...</template>
-                <template v-if="queued">Queued...</template>
+                <template v-else-if="queued">Queued...</template>
                 <template v-else-if="!framework.suites.length && running">Preparing run...</template>
                 <template v-else-if="framework.suites.length">
                     {{ '1 suite|:n suites' | plural(framework.suites.length) }}
@@ -86,6 +86,11 @@ export default {
         },
         ...mapGetters({
             displayStatus: 'status/display'
+        })
+    },
+    created () {
+        this.framework.on('error', message => {
+            this.$modal.confirm('FrameworkError', { framework: this.framework, message })
         })
     },
     methods: {

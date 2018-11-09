@@ -163,7 +163,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             // If process errored out, but did not emit an error
             // event, we'll compose it from the chunks we received.
             if (!this.error) {
-                this.error = this.rawChunks.join('')
+                console.log(this.rawChunks)
+                this.error = this.rawChunks.join('\n')
             }
 
             Logger.debug.log('Process errored without throwing.', { error: this.error })

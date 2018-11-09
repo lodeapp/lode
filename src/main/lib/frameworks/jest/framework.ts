@@ -9,7 +9,7 @@ export class Jest extends Framework {
         super(options)
     }
 
-    reload (): Promise<void> {
+    reload (): Promise<string> {
         return new Promise((resolve, reject) => {
             this.spawn(['--listTests', '--forceExit'])
                 .on('success', ({ process }) => {
@@ -20,7 +20,10 @@ export class Jest extends Framework {
                             file,
                             testsLoaded: false
                         })))
-                    resolve()
+                    resolve('success')
+                })
+                .on('killed', ({ process }) => {
+                    resolve('killed')
                 })
                 .on('error', ({ message }) => {
                     reject(message)

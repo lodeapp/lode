@@ -45,6 +45,7 @@
     //
 
     --spacing: 10px;
+    --spacing-and-half: calc(var(--spacing) * 1.5);
     --spacing-double: calc(var(--spacing) * 2);
     --spacing-triple: calc(var(--spacing) * 3);
     --spacing-quad: calc(var(--spacing) * 4);
@@ -57,4 +58,13 @@
 
     --status-block-width: 25px;
     --status-soft-border-width: 4px;
+
+
+    //
+    // Modals
+    //
+
+    --modal-large: 840px;
+    --modal-medium: 560px;
+    --modal-small: 300px;
 }

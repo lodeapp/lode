@@ -89,7 +89,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
     abstract runArgs (): Array<string>
     abstract runSelectiveArgs (): Array<string>
-    abstract reload (): Promise<void>
+    abstract reload (): Promise<string>
 
     /**
      * Update this framework's status.
@@ -106,13 +106,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
     start (): Promise<void> {
         if (this.selective) {
             return this.runSelective()
-                .catch((error) => {
-                    this.updateStatus('error')
+                .catch(error => {
+                    this.onError(error)
                 })
         }
         return this.run()
-            .catch((error) => {
-                this.updateStatus('error')
+            .catch(error => {
+                this.onError(error)
             })
     }
 
@@ -143,8 +143,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
             })
             this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
         })
-        .catch(() => {
-            this.updateStatus('error')
+        .catch(error => {
+            this.onError(error)
         })
     }
 
@@ -161,11 +161,23 @@ export abstract class Framework extends EventEmitter implements IFramework {
             // the renderer to redraw the app state, thus appearing snappier.
             process.nextTick(() => {
                 this.reload()
-                    .then(() => {
+                    .then((outcome: string) => {
+                        // Killed processes resolve the promise, so if user
+                        // interrupted the run while reloading, make sure the
+                        // run does not go ahead.
+                        if (outcome === 'killed') {
+                            Logger.debug.log(`Process was killed while reloading before run.`)
+                            resolve()
+                            return
+                        }
+
                         this.suites.forEach(suite => {
                             suite.queue(false)
                         })
                         this.report(this.runArgs(), resolve, reject)
+                    })
+                    .catch(error => {
+                        this.onError(error)
                     })
             })
         })
@@ -197,9 +209,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
             .then(() => {
                 this.updateStatus('idle')
             })
-            .catch((error) => {
-                console.log(error)
-                this.updateStatus('error')
+            .catch(error => {
+                this.onError(error)
             })
     }
 
@@ -253,6 +264,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
             this.suites = this.suites.filter(suite => suite.status !== 'idle')
         }
         this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
+    }
+
+    /**
+     * Handle errors in processing of framework.
+     *
+     * @param message The error message
+     */
+    onError (message: string) {
+        this.updateStatus('error')
+        this.emit('error', message)
     }
 
     /**
@@ -424,6 +445,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             Logger.debug.log(`Queued job with id ${id} was cancelled before execution.`)
             return () => Promise.resolve()
         }
+        Logger.debug.log(`Running queued job with id ${id}.`)
         return this.queue[id]()
     }
 }

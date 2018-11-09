@@ -11,3 +11,12 @@
         theme-color($status, 'step', 100) 6px
     );
 }
+
+@mixin drop-shadow($opacity: .175) {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, $opacity);
+}
+
+@mixin no-shadow {
+    background-clip: padding-box;
+    box-shadow: none;
+}
