@@ -6,6 +6,7 @@ import store from './store'
 import icons from './plugins/icons'
 import Queue from './plugins/queue'
 import Modals from './plugins/modals'
+import Alerts from './plugins/alerts'
 import Strings from './plugins/strings'
 import filters from './plugins/filters'
 import markdown from './directives/markdown'
@@ -20,6 +21,7 @@ Vue.config.productionTip = false
 Vue.use(icons)
 Vue.use(new Queue())
 Vue.use(new Modals(store))
+Vue.use(new Alerts(store))
 Vue.use(new Strings('en-US'))
 Vue.use(filters)
 

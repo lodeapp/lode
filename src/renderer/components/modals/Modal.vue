@@ -4,7 +4,6 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <slot name="header">
-                        <Icon v-if="type === 'error'" class="type--error" symbol="stop" />
                         <h3 class="modal-title" v-html="title"></h3>
                     </slot>
                     <button type="button" class="close" aria-label="::.Close.::" @click="$modal.close()" v-if="dismissable">
@@ -17,6 +16,13 @@
                         <div v-if="body" v-html="body"></div>
                     </slot>
                 </div>
+
+                <slot name="troubleshoot">
+                    <div v-if="troubleshoot" class="modal-troubleshoot">
+                        <Icon symbol="info" />
+                        <div v-markdown>{{ troubleshoot }}</div>
+                    </div>
+                </slot>
 
                 <slot name="footer">
                     <div v-if="footer" v-html="footer" class="modal-footer tertiary"></div>
@@ -52,13 +58,13 @@ export default {
             type: String,
             default: ''
         },
+        troubleshoot: {
+            type: String,
+            default: ''
+        },
         size: {
             type: String,
             default: 'md'
-        },
-        type: {
-            type: String,
-            default: ''
         }
     },
     data () {

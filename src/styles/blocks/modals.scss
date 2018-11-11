@@ -49,7 +49,6 @@
     .modal-header {
         align-items: center;
         border-bottom: 0;
-        border-right: 1px solid $primary;
         border-bottom: 1px solid $primary-border;
         display: flex;
         justify-content: left;
@@ -97,8 +96,9 @@
     }
 
     .modal-body {
-        border-right: 1px solid $primary;
         flex: 1 1 auto;
+        max-height: 300px;
+        overflow: auto;
         padding: var(--spacing-double);
         position: relative;
 
@@ -107,15 +107,6 @@
             &:last-child {
                 margin-bottom: 0;
             }
-        }
-
-        pre {
-            background-color: $secondary;
-            border: 1px solid $primary-border;
-            border-radius: 3px;
-            padding: var(--spacing);
-            white-space: pre-wrap;
-            word-break: break-word;
         }
     }
 
@@ -138,18 +129,44 @@
         }
     }
 
-    &.modal--page {
+    .modal-troubleshoot {
+        background-color: $blue-100;
+        border-top: 1px solid $blue-300;
+        box-shadow: inset 0 -4px 0 transparentize($blue-300, .8);
+        display: flex;
+        padding: var(--spacing-double);
+        user-select: text;
 
-        .modal-content {
-            background-color: $secondary;
+        i {
+            color: $blue-600;
+            margin-right: 10px;
+        }
 
-            .modal-body {
-                margin-bottom: -2px; // Compensate 2px section border-bottom
-                margin-top: -15px;
-                padding-bottom: 0;
+        p {
 
-                .spinner {
-                    margin-bottom: 18px;
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        code {
+            background-color: transparentize($blue-300, .6);
+            padding: 2px 4px;
+        }
+    }
+
+    &.modal--paged {
+
+        .modal-footer {
+            justify-content: space-between;
+
+            .modal-pages {
+                color: $gray-500;
+                font-size: 0;
+
+                & > span {
+                    font-size: 1.5rem;
+                    margin-right: 3px;
                 }
             }
         }
@@ -201,7 +218,7 @@
     }
 }
 
-@include media-breakpoint-up(lg) {
+@include media-breakpoint-up(xl) {
 
     .modal {
 

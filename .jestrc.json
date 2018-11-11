@@ -1,0 +1,22 @@
+{
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "vue"
+  ],
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/renderer/$1",
+    "^@fixtures/(.*)$": "<rootDir>/tests/fixtures/$1"
+  },
+  "transform": {
+    ".*\\.(vue)$": "vue-jest",
+    "^.+\\.js$": "<rootDir>/node_modules/babel-jest"
+  },
+  "collectCoverage": false,
+  "collectCoverageFrom": [
+    "src/**",
+    "!src/styles/**"
+  ],
+  "coverageDirectory": "tests/coverage",
+  "coverageReporters": ["json", "html"]
+}

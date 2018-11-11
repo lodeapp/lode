@@ -3,17 +3,11 @@ const _find = require('lodash/find')
 const _findIndex = require('lodash/findIndex')
 const _trim = require('lodash/trim')
 const stripAnsi = require('strip-ansi')
-const Ansi = require('ansi-to-html')
 
 class Base64TestReporter {
     constructor (globalConfig, options) {
         this._globalConfig = globalConfig
         this._options = options
-        this.ansi = new Ansi({
-            fg: '#ccc',
-            bg: '#000',
-            newline: true
-        })
     }
 
     parseFeedback (feedback) {
@@ -58,7 +52,10 @@ class Base64TestReporter {
             name: result.ancestorTitles.concat([result.title]).join('¦'),
             displayName: result.title,
             status: result.status,
-            feedback: feedback ? this.ansi.toHtml(feedback.message) : '',
+            feedback: {
+                message: feedback ? feedback.message : '',
+                type: 'ansi'
+            },
             assertions: 0,
             console: []
         }

@@ -1,6 +1,4 @@
 import _has from 'lodash/has'
-import _get from 'lodash/get'
-import _last from 'lodash/last'
 
 export default {
     namespaced: true,
@@ -23,10 +21,8 @@ export default {
     },
     actions: {
         open: ({ state, commit, dispatch, getters }, payload) => {
-            if (!getters['isOpen'](payload.name)) {
-                commit('ADD', payload)
-                dispatch('change')
-            }
+            commit('ADD', payload)
+            dispatch('change')
         },
         close: ({ state, commit, dispatch }) => {
             commit('REMOVE')
@@ -45,9 +41,6 @@ export default {
         }
     },
     getters: {
-        isOpen: (state) => name => {
-            return _get(_last(state.modals), 'name') === name
-        },
         hasModals: (state) => {
             return state.modals.length > 0
         },

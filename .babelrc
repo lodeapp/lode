@@ -17,13 +17,14 @@
         "stage-0"
       ]
     },
-    "web": {
+    "test": {
       "presets": [
         ["env", {
           "modules": false
         }],
         "stage-0"
-      ]
+      ],
+      "plugins": ["transform-es2015-modules-commonjs"]
     }
   },
   "plugins": ["lodash", "transform-runtime"]

@@ -1,5 +1,4 @@
 import sha1 from 'sha1-es'
-import _startsWith from 'lodash/startsWith'
 import _truncate from 'lodash/truncate'
 import markdown from 'markdown-it'
 import latinize from 'latinize'
@@ -13,7 +12,6 @@ export default class Strings {
 
     constructor (locale) {
         this.locale = locale
-        this.temperatureRegExp = /(\d+)\s?(°|º)?\s?(c|f|celsius|farenheit)(?=[^a-z]|$)/gmi
         this.urlRegExp = /((?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?|(((http|ftp|https):\/{2})?(([0-9a-z_-]+\.)+(aero|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cx|cy|cz|cz|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mn|mn|mo|mp|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|nom|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ra|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw|arpa)(:[0-9]+)?((\/([~0-9a-zA-Z\#\+\%@\.\/_-]+))?(\?[0-9a-zA-Z\+\%@\/&\[\];=_-]+)?)?))\b)/gi
 
         this.translator = new Translation(this.locale)
@@ -101,33 +99,33 @@ export default class Strings {
         }
         return string.toUpperCase() === otherString.toUpperCase()
     }
+
     hasUrl (string) {
         return Boolean(string.match(this.urlRegExp))
     }
+
     isUrl (string) {
         return string.replace(this.urlRegExp, '') === ''
     }
+
     pluckUrl (string) {
         return this.hasUrl(string) ? string.match(this.urlRegExp, '')[0] : null
     }
+
     padProtocol (string, protocol = 'http') {
         return string.match(/^(https?|ftp):\/\//i) ? string : `${protocol}://${string}`
     }
+
     asDomain (string) {
         const anchor = document.createElement('a')
         anchor.href = this.padProtocol(this.pluckUrl(string))
         return anchor.hostname.replace(/^www./, '')
     }
+
     tagUrls (string) {
         return string.replace(this.urlRegExp, (match) => {
             const href = this.padProtocol(match)
             return `<a rel="nofollow noopener" target="_blank" href="${href}">${match}</a>`
-        })
-    }
-    tagTemperatures (string) {
-        return string.replace(this.temperatureRegExp, (string, value, sign, unit) => {
-            unit = _startsWith(unit.toUpperCase(), 'C') ? 'celsius' : 'farenheit'
-            return '<temperature value="' + value + '" unit="' + unit + '" />'
         })
     }
 

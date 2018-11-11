@@ -89,8 +89,13 @@ export default {
         })
     },
     created () {
-        this.framework.on('error', message => {
-            this.$modal.confirm('FrameworkError', { framework: this.framework, message })
+        this.framework.on('error', error => {
+            this.$alert.show({
+                message: this.$string.set('The process for **:0** terminated unexpectedly.', this.framework.name),
+                troubleshoot: this.framework.troubleshoot(error),
+                type: 'error',
+                pre: error
+            })
         })
     },
     methods: {

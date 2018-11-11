@@ -177,7 +177,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
                         this.report(this.runArgs(), resolve, reject)
                     })
                     .catch(error => {
-                        this.onError(error)
+                        // Rejecting the Promise is enough to bubble up the
+                        // error chain, as we're already catching it on @start
+                        reject(error)
                     })
             })
         })
@@ -447,5 +449,18 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
         Logger.debug.log(`Running queued job with id ${id}.`)
         return this.queue[id]()
+    }
+
+    /**
+     * Give the opportunity for frameworks to troubleshoot certain errors in
+     * processing, returning a helpful message for additional context. This will
+     * be shown inside the alert, alongside the errors themselves.
+     *
+     * Supports markdown.
+     *
+     * @param error The error to be parsed for troubleshooting.
+     */
+    troubleshoot (error: Error | string): string {
+        return ''
     }
 }

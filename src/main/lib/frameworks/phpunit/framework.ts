@@ -30,7 +30,11 @@ export class PHPUnit extends Framework {
     }
 
     runArgs (): Array<string> {
-        return ['--printer', '\\LodeApp\\PHPUnit\\Reporter']
+        return [
+            '--color=always',
+            '--printer',
+            '\\LodeApp\\PHPUnit\\Reporter'
+        ]
     }
 
     runSelectiveArgs (): Array<string> {
@@ -60,5 +64,17 @@ export class PHPUnit extends Framework {
             path: this.path,
             vmPath: this.vmPath
         }, result)
+    }
+
+    troubleshoot (error: Error | string): string {
+        if (error instanceof Error) {
+            error = error.toString()
+        }
+
+        if (error.includes('Could not use "\\LodeApp\\PHPUnit\\Reporter" as printer: class does not exist')) {
+            return 'Make sure to include the Lode PHPUnit reporter package as a dependency in your repository. If you already have, try running `composer dump-autoload`.'
+        }
+
+        return ''
     }
 }

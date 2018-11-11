@@ -1,10 +1,6 @@
-import FrameworkError from '@/components/modals/FrameworkError'
-
 export default class Modals {
     install (Vue) {
         Vue.prototype.$modal = this
-
-        Vue.component('FrameworkError', FrameworkError)
     }
 
     constructor (store) {
@@ -15,7 +11,7 @@ export default class Modals {
         this.store.dispatch('modal/open', { name, properties, callback })
     }
 
-    confirm (name, properties = {}, callback = null) {
+    confirm (name, properties = {}) {
         return new Promise((resolve, reject) => {
             this.store.dispatch('modal/open', {
                 name,

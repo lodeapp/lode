@@ -163,8 +163,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             // If process errored out, but did not emit an error
             // event, we'll compose it from the chunks we received.
             if (!this.error) {
-                console.log(this.rawChunks)
-                this.error = this.rawChunks.join('\n')
+                this.error = this.rawChunks.join('')
             }
 
             Logger.debug.log('Process errored without throwing.', { error: this.error })
@@ -193,6 +192,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             fs.writeFileSync(file, JSON.stringify(stored, null, 4))
         }
 
+        // Update raw output
+        this.rawChunks.push(chunk)
+
         // Ignore chunks made of only ANSI codes or escape characters
         chunk = stripAnsi(chunk)
         if (!chunk.replace(/\x1b/gi, '')) {
@@ -205,9 +207,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         // depending on the runner. If all content is
         // filtered out, we won't emit the event.
         const filteredLines = this.filterLines(compact(lines))
-
-        // Update raw output
-        this.rawChunks.push(chunk)
 
         if (filteredLines.length) {
 

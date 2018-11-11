@@ -16,9 +16,13 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import AlertStack from '@/components/modals/AlertStack'
 
 export default {
     name: 'ModalController',
+    components: {
+        AlertStack
+    },
     computed: {
         ...mapGetters({
             hasModals: 'modal/hasModals',

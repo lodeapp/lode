@@ -141,6 +141,12 @@
         "__DEV__": false,
         "__DARWIN__": false,
         "__WIN32__": false,
-        "__LINUX__": false
+        "__LINUX__": false,
+        "describe": false,
+        "it": false,
+        "expect": false,
+        "beforeEach": false,
+        "beforeAll": false,
+        "afterAll": false
     }
 }
