@@ -41,6 +41,5 @@ export default {
 pre div {
     // Force line wrapping of terminal content
     white-space: normal !important;
-    word-break: break-word;
 }
 </style>
