@@ -1,16 +1,6 @@
 .ansi {
     position: relative;
 
-    pre {
-        background-color: $secondary;
-        border: 1px solid $primary-border;
-        border-radius: 3px;
-        padding: var(--spacing);
-        user-select: text;
-        white-space: pre-wrap;
-        word-break: break-word;
-    }
-
     button {
         -webkit-appearance: none;
         background-color: transparent;

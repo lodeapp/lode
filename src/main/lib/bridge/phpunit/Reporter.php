@@ -276,7 +276,10 @@ class Reporter extends ResultPrinter
             'name' => $test->getName(),
             'displayName' => $this->transformName($test->getName()),
             'status' => $this->transformStatus($test->getStatus()),
-            'feedback' => $t ? $this->transformException($t) : $t,
+            'feedback' => [
+                'message' => $t ? $this->transformException($t) : $t,
+                'type' => 'object',
+            ],
             'assertions' => $test->getNumAssertions(),
             'console' => [],
             'isLast' => false,

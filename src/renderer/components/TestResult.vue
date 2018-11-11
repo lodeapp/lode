@@ -6,8 +6,11 @@
             </nav>
         </div>
         <div class="test-result-breakdown">
-            <pre v-if="typeof result.feedback !== 'object'">{{ result.feedback }}</pre>
-            <Ansi v-else-if="result.feedback.type === 'ansi'" :content="result.feedback.message" />
+            <template v-if="result.feedback">
+                <pre v-if="typeof result.feedback !== 'object'">{{ result.feedback }}</pre>
+                <pre v-else-if="result.feedback.type === 'object'">{{ result.feedback.message }}</pre>
+                <Ansi v-else-if="result.feedback.type === 'ansi'" :content="result.feedback.message" />
+            </template>
         </div>
     </div>
 </template>
