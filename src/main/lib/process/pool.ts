@@ -1,6 +1,6 @@
 import { IProcess } from './process'
 
-class ProcessContainer {
+class ProcessPool {
     public readonly processes: { [index: number]: IProcess } = {}
 
     public add (process: IProcess): void {
@@ -23,6 +23,6 @@ class ProcessContainer {
     }
 }
 
-const container = new ProcessContainer()
+const pool = new ProcessPool()
 
-export default container
+export default pool

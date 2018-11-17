@@ -6,7 +6,7 @@ import { ProcessFactory } from '@lib/process/factory'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
 import { Logger } from '@lib/logger'
-import container from '@lib/process/container'
+import pool from '@lib/process/pool'
 
 /**
  * A list of test suites.
@@ -133,8 +133,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 resolve()
             }
 
-            // Get the running process from the active process container
-            const running = container.findProcess(this.process!)
+            // Get the running process from the active process pool
+            const running = pool.findProcess(this.process!)
             if (!running) {
                 resolve()
             }
