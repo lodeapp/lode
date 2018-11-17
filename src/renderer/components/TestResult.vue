@@ -6,11 +6,11 @@
             </nav>
         </div>
         <div class="test-result-breakdown">
-            <template v-if="result.feedback">
+            <div v-if="result.feedback" :key="$string.from(test)">
                 <pre v-if="typeof result.feedback !== 'object'">{{ result.feedback }}</pre>
                 <pre v-else-if="result.feedback.type === 'object'">{{ result.feedback.message }}</pre>
                 <Ansi v-else-if="result.feedback.type === 'ansi'" :content="result.feedback.message" />
-            </template>
+            </div>
         </div>
     </div>
 </template>
@@ -24,9 +24,14 @@ export default {
         Ansi
     },
     props: {
-        result: {
+        test: {
             type: Object,
             required: true
+        }
+    },
+    computed: {
+        result () {
+            return this.test.result || {}
         }
     }
 }

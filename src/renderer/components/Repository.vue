@@ -90,6 +90,7 @@ export default {
             command: 'yarn tests',
             path: `${this.repository.path}/tests/assets/js`,
             runner: 'yarn'
+            // vmPath: '/aml/tests/assets/js'
         }))
 
         this.repository.addFramework(new PHPUnit({

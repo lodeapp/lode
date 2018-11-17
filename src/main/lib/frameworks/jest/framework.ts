@@ -37,7 +37,7 @@ export class Jest extends Framework {
             '--expand',
             '--colors',
             '--reporters',
-            Path.resolve(__dirname, '../../bridge/jest/reporter.js')
+            this.runsInVm ? 'jest-lode' : Path.resolve(__dirname, '../../bridge/jest/reporter.js')
         ]
     }
 

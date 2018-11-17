@@ -19,7 +19,7 @@
                     </ol>
                 </nav>
             </div>
-            <TestResult :result="result" />
+            <TestResult :test="test" />
         </div>
     </div>
 </template>
@@ -40,9 +40,6 @@ export default {
         }
     },
     computed: {
-        result () {
-            return this.test && this.test.result || {}
-        },
         ...mapGetters({
             breadcrumbs: 'tests/breadcrumbs'
         })

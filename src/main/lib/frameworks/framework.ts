@@ -6,6 +6,7 @@ import { ProcessFactory } from '@lib/process/factory'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
 import { Logger } from '@lib/logger'
+import container from '@lib/process/container'
 
 /**
  * A list of test suites.
@@ -32,7 +33,7 @@ export interface IFramework extends EventEmitter {
     readonly command: string
     readonly path: string
     readonly runner: string | null
-    process?: IProcess
+    process?: number
     suites: Array<ISuite>
     status: FrameworkStatus
     selective: boolean
@@ -56,7 +57,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public readonly path: string
     public readonly runner: string | null
     public readonly vmPath: string | null
-    public process?: IProcess
+    public readonly runsInVm: boolean
+    public process?: number
     public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
     public status: FrameworkStatus = 'idle'
@@ -85,6 +87,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.path = options.path
         this.runner = options.runner || null
         this.vmPath = options.vmPath || null
+        this.runsInVm = !!this.vmPath
     }
 
     abstract runArgs (): Array<string>
@@ -129,7 +132,14 @@ export abstract class Framework extends EventEmitter implements IFramework {
             if (!this.process) {
                 resolve()
             }
-            this.process!
+
+            // Get the running process from the active process container
+            const running = container.findProcess(this.process!)
+            if (!running) {
+                resolve()
+            }
+
+            running!
                 .on('killed', () => {
                     resolve()
                 })
@@ -286,14 +296,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param args The arguments to spawn the process with.
      */
     spawn (args: Array<string>): IProcess {
-        this.process = ProcessFactory.make(
+        const process = ProcessFactory.make(
             this.command,
             args,
             this.path,
             this.runner
         )
 
-        return this.process
+        this.process = process.getId()
+
+        return process
     }
 
     /**

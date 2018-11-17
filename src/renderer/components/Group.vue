@@ -19,7 +19,7 @@
                 <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
             </div>
         </div>
-        <div v-if="hasChildren" v-show="show" class="group-items">
+        <div v-if="hasChildren && show" class="group-items">
             <slot></slot>
         </div>
     </div>

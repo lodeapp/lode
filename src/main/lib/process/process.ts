@@ -9,6 +9,7 @@ import { ErrorWithCode } from '@lib/process/errors'
 
 export interface IProcess extends EventEmitter {
     readonly process?: ChildProcess
+    getId (): number
     stop (): void
     owns (command: string): boolean
 }
@@ -123,6 +124,10 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         process.stderr.on('data', (...args) => this.onData(...args))
     }
 
+    public getId (): number {
+        return this.process!.pid
+    }
+
     public filterLines (lines: Array<string>): Array<string> {
         return lines
     }
@@ -176,6 +181,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         }
 
         Logger.info.groupEnd()
+
+        this.emit('close', { process: this })
     }
 
     private onData(chunk: string): void {
@@ -282,8 +289,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     }
 
     public stop (): void {
-        process.kill(-this.process!.pid);
         this.killed = true
+        process.kill(-this.process!.pid);
     }
 
     owns (command: string): boolean {
