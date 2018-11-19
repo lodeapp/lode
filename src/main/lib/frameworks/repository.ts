@@ -27,18 +27,31 @@ export class Repository extends EventEmitter implements IRepository {
         this.name = this.path.split('/').pop() || 'untitled'
     }
 
+    /**
+     * Add a child framework to this repository.
+     *
+     * @param framework The framework object to add.
+     */
     addFramework (framework: IFramework): void {
         framework.on('status', this.statusListener.bind(this))
         this.frameworks.push(framework)
     }
 
+    /**
+     * A function to run when a child framwork changes its status.
+     */
+    statusListener (): void {
+        this.updateStatus(parseFrameworkStatus(this.frameworks.map(framework => framework.status)))
+    }
+
+    /**
+     * Update this repository's status.
+     *
+     * @param to The status we're updating to.
+     */
     updateStatus (to: FrameworkStatus): void {
         const from = this.status
         this.status = to
         this.emit('status', to, from)
-    }
-
-    statusListener () {
-        this.updateStatus(parseFrameworkStatus(this.frameworks.map(framework => framework.status)))
     }
 }

@@ -4,6 +4,11 @@ export type Status = 'queued' | 'passed' | 'failed' | 'incomplete' | 'skipped' |
 
 export type FrameworkStatus = Status | 'refreshing' | 'running' | 'error'
 
+/**
+ * Compute an overarching generic status based on a set of statuses.
+ *
+ * @param components An array of statuses with which to compute the final one.
+ */
 export function parseStatus (components: Array<Status>): Status {
     if (!components.length) {
         return 'empty'
@@ -26,13 +31,16 @@ export function parseStatus (components: Array<Status>): Status {
         return 'incomplete'
     }
 
-    if (components.includes('queued')) {
-        return 'queued'
-    }
-
     return 'partial'
 }
 
+/**
+ * Compute an overarching framework status based on a set of statuses. This
+ * differs slightly from @parseStatus only because frameworks support a few
+ * additional statuses.
+ *
+ * @param components An array of statuses with which to compute the final one.
+ */
 export function parseFrameworkStatus (components: Array<FrameworkStatus>): FrameworkStatus {
     if (!components.length) {
         return 'empty'

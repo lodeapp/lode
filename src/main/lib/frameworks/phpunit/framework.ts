@@ -11,6 +11,9 @@ export class PHPUnit extends Framework {
         super(options)
     }
 
+    /**
+     * Reload this framework's suites and tests.
+     */
     reload (): Promise<string> {
         return new Promise((resolve, reject) => {
             this.spawn(['--columns=42'].concat(this.runArgs()))
@@ -29,6 +32,9 @@ export class PHPUnit extends Framework {
         })
     }
 
+    /**
+     * The command arguments for running this framework.
+     */
     runArgs (): Array<string> {
         return [
             '--color=always',
@@ -37,6 +43,9 @@ export class PHPUnit extends Framework {
         ]
     }
 
+    /**
+     * The command arguments for running this framework selectively.
+     */
     runSelectiveArgs (): Array<string> {
         const args: Array<string> = ['--filter']
         const filters: Array<string> = []
@@ -59,6 +68,11 @@ export class PHPUnit extends Framework {
         return args.concat(this.runArgs())
     }
 
+    /**
+     * Instantiates a new PHPUnit suite using a result object.
+     *
+     * @param result The standardised suite results.
+     */
     newSuite (result: ISuiteResult): ISuite {
         return new PHPUnitSuite({
             path: this.path,
@@ -66,6 +80,11 @@ export class PHPUnit extends Framework {
         }, result)
     }
 
+    /**
+     * Troubleshoot a PHPUnit error.
+     *
+     * @param error The error to be parsed for troubleshooting.
+     */
     troubleshoot (error: Error | string): string {
         if (error instanceof Error) {
             error = error.toString()

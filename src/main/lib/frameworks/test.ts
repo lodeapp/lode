@@ -43,14 +43,12 @@ export class Test extends Container implements ITest {
         this.build(result, false)
     }
 
-    getDisplayName (): string {
-        return this.displayName
-    }
-
-    newTest (result: ITestResult): ITest {
-        return new Test(result)
-    }
-
+    /**
+     * Build this test from a result object.
+     *
+     * @param result The result object with which to build this test.
+     * @param cleanup Whether to clean obsolete children after building.
+     */
     build (result: ITestResult, cleanup: boolean): void {
         this.updateStatus(result.status || 'idle')
         this.result = result
@@ -59,6 +57,28 @@ export class Test extends Container implements ITest {
         }
     }
 
+    /**
+     * Instantiate a new test.
+     *
+     * @param result The test result with which to instantiate a new test.
+     */
+    newTest (result: ITestResult): ITest {
+        return new Test(result)
+    }
+
+    /**
+     * Get this test's display name.
+     */
+    getDisplayName (): string {
+        return this.displayName
+    }
+
+    /**
+     * Debrief this test.
+     *
+     * @param result The result object with which to debrief this test.
+     * @param cleanup Whether to clean obsolete children after debriefing.
+     */
     debrief (result: ITestResult, cleanup: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
             this.build(result, cleanup)

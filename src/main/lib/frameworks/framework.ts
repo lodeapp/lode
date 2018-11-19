@@ -90,12 +90,25 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.runsInVm = !!this.vmPath
     }
 
+    /**
+     * The command arguments for running this framework.
+     */
     abstract runArgs (): Array<string>
+
+    /**
+     * The command arguments for running this framework selectively.
+     */
     abstract runSelectiveArgs (): Array<string>
+
+    /**
+     * Reload this framework's suites and tests.
+     */
     abstract reload (): Promise<string>
 
     /**
      * Update this framework's status.
+     *
+     * @param to The status we're updating to.
      */
     updateStatus (to: FrameworkStatus): void {
         const from = this.status
@@ -146,12 +159,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 .stop()
         })
         .then(() => {
-            this.suites.forEach(suite => {
-                if (suite.status === 'queued') {
-                    suite.reset(false)
-                }
-            })
             this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
+            this.resetQueued()
         })
         .catch(error => {
             this.onError(error)
@@ -250,6 +259,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                     const suite = this.debriefSuite(report)
                     this.running.push(suite)
                 } catch (error) {
+                    // @TODO: Notify user of error (i.e. add to alert stack)
                     Logger.info.log('Failed to debrief suite results.', { report })
                 }
             })
@@ -273,9 +283,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     afterRun () {
         if (!this.selective) {
+            // Clean up obsolete suites.
             this.suites = this.suites.filter(suite => suite.status !== 'idle')
         }
         this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
+        this.resetDebriefing()
     }
 
     /**
@@ -283,9 +295,36 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param message The error message
      */
-    onError (message: string) {
+    onError (message: string): void {
         this.updateStatus('error')
+        this.resetQueued()
+        this.resetDebriefing()
         this.emit('error', message)
+    }
+
+    /**
+     * Reset all previously queued suites.
+     */
+    resetQueued (): void {
+        this.suites.forEach(suite => {
+            suite.resetQueued()
+        })
+    }
+
+    /**
+     * Reset suites that could potentially still be stuck in "debriefing"
+     * state, because of quirks in reporter data feed.
+     */
+    resetDebriefing (): void {
+        if (!this.selective) {
+            this.suites.forEach(suite => {
+                suite.resetDebriefing()
+            })
+        } else {
+            this.selected.suites.forEach(suite => {
+                suite.resetDebriefing()
+            })
+        }
     }
 
     /**

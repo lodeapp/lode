@@ -51,6 +51,11 @@ export class Suite extends Container implements ISuite {
         this.build(result)
     }
 
+    /**
+     * Create a full result object from a potentially incomplete one.
+     *
+     * @param partial The potentially incomplete result object.
+     */
     static buildResult (
         partial: object
     ): ISuiteResult {
@@ -62,6 +67,11 @@ export class Suite extends Container implements ISuite {
         }, cloneDeep(partial))
     }
 
+    /**
+     * Build this suite from a result object.
+     *
+     * @param result The result object with which to build this suite.
+     */
     build (result: ISuiteResult): void {
         this.relative = Path.relative(this.vmPath || this.root, this.file)
         this.tests = result.tests.map((result: ITestResult) => this.makeTest(result, true))
@@ -70,14 +80,28 @@ export class Suite extends Container implements ISuite {
         this.status = 'idle'
     }
 
-    getDisplayName (): string {
-        return this.relative
-    }
-
+    /**
+     * Instantiate a new test.
+     *
+     * @param result The test result with which to instantiate a new test.
+     */
     newTest (result: ITestResult): ITest {
         return new Test(result)
     }
 
+    /**
+     * Get this suite's display name.
+     */
+    getDisplayName (): string {
+        return this.relative
+    }
+
+    /**
+     * Debrief this suite.
+     *
+     * @param suiteResult The result object with which to debrief this suite.
+     * @param cleanup Whether to clean obsolete children after debriefing.
+     */
     debrief (suiteResult: ISuiteResult, cleanup: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
             this.debriefTests(suiteResult.tests, cleanup)

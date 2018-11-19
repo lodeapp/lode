@@ -9,6 +9,9 @@ export class Jest extends Framework {
         super(options)
     }
 
+    /**
+     * Reload this framework's suites and tests.
+     */
     reload (): Promise<string> {
         return new Promise((resolve, reject) => {
             this.spawn(['--listTests', '--forceExit'])
@@ -31,6 +34,9 @@ export class Jest extends Framework {
         })
     }
 
+    /**
+     * The command arguments for running this framework.
+     */
     runArgs (): Array<string> {
         return [
             '--forceExit',
@@ -41,6 +47,9 @@ export class Jest extends Framework {
         ]
     }
 
+    /**
+     * The command arguments for running this framework selectively.
+     */
     runSelectiveArgs (): Array<string> {
         const args: Array<string> = []
 
