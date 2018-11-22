@@ -2,6 +2,9 @@
 /** Is the app running in dev mode? */
 declare const __DEV__: boolean
 
+/** Is the app running in silent mode? (i.e. no console output from logger) */
+declare const __SILENT__: boolean
+
 /** Is the app being built to run on Darwin? */
 declare const __DARWIN__: boolean
 

@@ -19,19 +19,19 @@ export class ProcessFactory {
         runner?: string | null
     ): IProcess {
 
-        let proc: IProcess | null
+        let spawned: IProcess | null
 
         switch (runner) {
             case 'yarn':
-                proc = new YarnProcess(command, args, path)
+                spawned = new YarnProcess(command, args, path)
                 break
 
             default:
-                proc = new DefaultProcess(command, args, path)
+                spawned = new DefaultProcess(command, args, path)
         }
 
-        pool.add(proc)
+        pool.add(spawned)
 
-        return proc
+        return spawned
     }
 }

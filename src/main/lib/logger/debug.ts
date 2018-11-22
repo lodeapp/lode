@@ -1,4 +1,4 @@
-import { Console } from '@lib/logger/console'
+import { Console } from './console'
 
 export class Debug extends Console {
 

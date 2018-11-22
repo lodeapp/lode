@@ -1,5 +1,5 @@
-import { Debug } from '@lib/logger/debug'
-import { Console } from '@lib/logger/console'
+import { Debug } from './debug'
+import { Console } from './console'
 
 const debug = new Debug()
 const info = new Console()

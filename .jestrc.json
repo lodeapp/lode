@@ -16,6 +16,8 @@
     "^.+\\.js$": "babel-jest"
   },
   "globals": {
+    "__DEV__": true,
+    "__SILENT__": true,
     "ts-jest": {
       "babelConfig": true,
       "tsConfig": "tsconfig.json"

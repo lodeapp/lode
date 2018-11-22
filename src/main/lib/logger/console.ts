@@ -25,6 +25,10 @@ export class Console {
     }
 
     public commit (method: string, ...data: Array<any>): void {
+        if (__SILENT__) {
+            return
+        }
+
         (console as any)[method].apply(console, data)
 
         // @TODO: log this to a toggleable pseudo-console

@@ -4,8 +4,8 @@ import * as Path from 'path'
 import * as fs from 'fs-extra'
 import { compact, flattenDeep } from 'lodash'
 import { spawn, ChildProcess } from 'child_process'
-import { Logger } from '@lib/logger'
-import { ErrorWithCode } from '@lib/process/errors'
+import { Logger } from '../logger'
+import { ErrorWithCode } from './errors'
 
 export interface IProcess extends EventEmitter {
     readonly process?: ChildProcess
@@ -19,7 +19,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     spawnPath: string = ''
     args: Array<string> = []
     path?: string
-    pristine: boolean
     rawChunks: Array<string>
     error: string
     killed: boolean
@@ -27,12 +26,12 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     reportBuffer: string
     reportClosed: boolean
     writeToFile: boolean = false
-    fromFile?: number
+    fromFile?: string
     process?: ChildProcess
 
     constructor (
        command: string,
-       args?: Array<string>,
+       args: Array<string> = [],
        path?: string
     ) {
         super()
@@ -42,7 +41,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.path = path
 
         // Set process control defaults
-        this.pristine = true
         this.rawChunks = []
         this.error = ''
         this.killed = false
@@ -50,15 +48,19 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.reportBuffer = ''
         this.reportClosed = false
 
+        if (Path.isAbsolute(command)) {
+            this.fromFile = command
+        }
+
         // We can re-process stored streams with the `fromFile` property,
         // being that of a JSON file stored in the debug folder (i.e. previously
         // recorded using the `writeToFile` property).
         if (this.fromFile) {
             process.nextTick(() => {
-                Logger.debug.log(`Re-running process from file ${this.fromFile}.json`)
-                const file = Path.join(__dirname, `./debug/${this.fromFile}.json`)
+                const file = Path.isAbsolute(this.fromFile!) ? this.fromFile! : Path.join(__dirname, `./debug/${this.fromFile}.json`)
+                Logger.debug.log(`Re-running process from file ${file}.`)
                 if (!fs.existsSync(file)) {
-                    Logger.debug.log(`File ${this.fromFile}.json does not exist in the debug folder`)
+                    Logger.debug.log(`File ${file} does not exist.`)
                 }
                 const stored = fs.readJsonSync(file, { throws: false }) || []
                 stored.forEach((chunk: string) => {
@@ -94,27 +96,16 @@ export class DefaultProcess extends EventEmitter implements IProcess {
 
         spawnedProcess.stdout.setEncoding('utf8')
         spawnedProcess.stderr.setEncoding('utf8')
-        this.ignoreClosedInputStream(spawnedProcess)
         this.addListeners(spawnedProcess)
 
         this.process = spawnedProcess
     }
 
-    // https://github.com/desktop/dugite/blob/b30c78cd41d53052357412993b857779ec8aaa5f/lib/git-process.ts#L282
-    private ignoreClosedInputStream (process: ChildProcess) {
-        process.stdin.on('error', err => {
-            const code = (err as ErrorWithCode).code
-
-            if (code === 'EPIPE' || code === 'EOF' || code === 'ECONNRESET') {
-              return
-            }
-
-            if (process.stdin.listeners('error').length <= 1) {
-              throw err
-            }
-        })
-    }
-
+    /**
+     * Add class listeners to a newly spawned child process.
+     *
+     * @param process The child process to add listeners to.
+     */
     private addListeners (process: ChildProcess) {
         process.on('close', (...args) => this.onClose(...args))
         process.on('error', (err) => this.onError(err as ErrorWithCode))
@@ -122,14 +113,18 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         process.stderr.on('data', (...args) => this.onData(...args))
     }
 
+    /**
+     * Get this process's unique id.
+     */
     public getId (): number {
-        return this.fromFile || this.process!.pid
+        return this.fromFile ? parseInt(Path.basename(this.fromFile)) : this.process!.pid
     }
 
-    public filterLines (lines: Array<string>): Array<string> {
-        return lines
-    }
-
+    /**
+     * Handle an error during processing.
+     *
+     * @param err The error we're attempting to handle.
+     */
     private onError (err: ErrorWithCode): void {
 
         Logger.debug.log('Process error', err)
@@ -147,6 +142,12 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.error = err.message
     }
 
+    /**
+     * Handle the closing of the process.
+     *
+     * @param code The exit code that triggered the process closing.
+     * @param signal The signal string that triggered the process closing.
+     */
     private onClose(code: number, signal: string | null) {
 
         Logger.debug.log('Process closing.', { code, signal })
@@ -190,6 +191,11 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.emit('close', { process: this })
     }
 
+    /**
+     * Handle output data from the process.
+     *
+     * @param rawChunk The chunk of data we're about to process.
+     */
     private onData(rawChunk: string): void {
 
         // When debugging a stream, we can write all chunks
@@ -209,8 +215,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             chunk: rawChunk
         })
 
-        let storeChunk = true
-        const lines = rawChunk.split('\n')
+        let storeChunk: boolean = true
+        const lines: Array<string> = rawChunk.split('\n')
 
         if (lines.length) {
 
@@ -244,7 +250,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                     this.reportClosed = true
 
                     // Remove delimiter from raw chunk, in case need to we store it.
-                    rawChunk = rawChunk.replace(/\n\}/m, '')
+                    rawChunk = rawChunk.replace(/\n?\}/m, '')
                 }
             }
         }
@@ -257,8 +263,13 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         }
     }
 
+    /**
+     * Emit a test report that was extracted from the output stream.
+     *
+     * @param encoded The base64 encoded string that the process identified as a report.
+     */
     private report (encoded: string): void {
-        const report = this.parseReport(encoded)
+        const report: object | string = this.parseReport(encoded)
         this.emit('report', {
             process: this,
             report
@@ -267,6 +278,11 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         Logger.debug.dir(report)
     }
 
+    /**
+     * Parse an encoded report extracted from the output stream.
+     *
+     * @param chunk The data chunk to parse as a report.
+     */
     private parseReport (chunk: string): object | string {
         chunk = Buffer.from(chunk.match(/\((.+)\)/)![1], 'base64').toString('utf8')
         try {
@@ -277,19 +293,44 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         }
     }
 
+    /**
+     * Get all lines received from the output stream, clear of Ansi escape codes.
+     */
     public getLines (): Array<string> {
         return this.rawChunks.join('\n').split('\n').map(chunk => stripAnsi(chunk))
     }
 
+    /**
+     * Get all lines received from the output stream, unprocessed
+     */
     public getRawLines (): Array<string> {
         return this.rawChunks.join('\n').split('\n')
     }
 
+    /**
+     * Kill this process.
+     */
     public stop (): void {
         this.killed = true
         process.kill(-this.process!.pid);
     }
 
+    /**
+     * Force closing of the process. For testing purposes only.
+     *
+     * @param code The exit code with which to close the process.
+     * @param signal The signal string with which to close the process.
+     */
+    public close (code: number, signal: string | null): void {
+        this.onClose(code, signal)
+    }
+
+    /**
+     * Whether this process owns a given command. Specific process runners (e.g
+     * Yarn, NPM, etc) should override this method.
+     *
+     * @param command The command that could match a given runner.
+     */
     owns (command: string): boolean {
         return true
     }
