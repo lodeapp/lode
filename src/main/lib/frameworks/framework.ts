@@ -161,6 +161,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         .then(() => {
             this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
             this.resetQueued()
+            this.resetDebriefing()
         })
         .catch(error => {
             this.onError(error)
@@ -190,6 +191,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                             return
                         }
 
+                        this.cleanStaleSuites()
                         this.suites.forEach(suite => {
                             suite.queue(false)
                         })
@@ -228,6 +230,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.updateStatus('refreshing')
         return this.reload()
             .then(() => {
+                this.cleanStaleSuites()
                 this.updateStatus('idle')
             })
             .catch(error => {
@@ -283,11 +286,43 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     afterRun () {
         if (!this.selective) {
-            // Clean up obsolete suites.
-            this.suites = this.suites.filter(suite => suite.status !== 'idle')
+            // Suites which remain queued after a full run are stale
+            // and should be removed.
+            this.cleanSuitesByStatus('queued')
         }
         this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
         this.resetDebriefing()
+    }
+
+    /**
+     * Clean currently loaded suites by a given status.
+     *
+     * @param status The status by which to clean the suites.
+     */
+    cleanSuitesByStatus (status: Status): void {
+        this.suites = this.suites.filter(suite => {
+            if (suite.status === 'queued') {
+                this.updateLedger(null, 'queued')
+                return false
+            }
+            return true
+        })
+    }
+
+    /**
+     * Clean currently loaded suites that are not marked as "fresh".
+     */
+    cleanStaleSuites (): void {
+        this.suites = this.suites.filter(suite => {
+            if (!suite.fresh) {
+                console.log('not fresh', { suite })
+                this.updateLedger(null, suite.status)
+                return false
+            }
+            // After checking, reset "freshness" marker
+            suite.fresh = false
+            return true
+        })
     }
 
     /**
@@ -384,6 +419,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
             this.updateLedger(suite.status)
             this.suites.push(suite)
         }
+        // Mark suite as freshly made before returning,
+        // in case we need to clear out stale ones.
+        suite.fresh = true
         return suite
     }
 

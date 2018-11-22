@@ -10,6 +10,7 @@ export abstract class Container extends EventEmitter {
     public partial: boolean = false
     public debriefing: boolean = false
     public canToggleTests: boolean = false
+    public fresh: boolean = false
     public updateCountsListener: any
 
     constructor () {
@@ -170,6 +171,7 @@ export abstract class Container extends EventEmitter {
      */
     reset (selective: boolean): void {
         this.debriefing = false
+        this.fresh = false
         this.updateStatus('idle')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
             .forEach(test => {
@@ -184,6 +186,7 @@ export abstract class Container extends EventEmitter {
      */
     queue (selective: boolean): void {
         this.debriefing = false
+        this.fresh = false
         this.updateStatus('queued')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
             .forEach(test => {
