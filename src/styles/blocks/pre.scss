@@ -2,6 +2,7 @@ pre {
     background-color: $secondary;
     border: 1px solid $primary-border;
     border-radius: 3px;
+    font-family: var(--font-family-monospace);
     padding: var(--spacing);
     user-select: text;
     white-space: pre-wrap;

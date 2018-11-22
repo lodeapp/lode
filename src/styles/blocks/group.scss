@@ -302,7 +302,7 @@
         & > .header {
 
             & > .header-inner {
-                background-color: $active-background;
+                background-color: theme-color('selected', 200);
             }
         }
     }

@@ -1,16 +1,25 @@
 {
   "moduleFileExtensions": [
     "js",
+    "ts",
     "json",
     "vue"
   ],
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/src/renderer/$1",
+    "^@lib/(.*)$": "<rootDir>/src/main/lib/$1",
     "^@fixtures/(.*)$": "<rootDir>/tests/fixtures/$1"
   },
   "transform": {
     ".*\\.(vue)$": "vue-jest",
-    "^.+\\.js$": "<rootDir>/node_modules/babel-jest"
+    "^.+\\.(ts|tsx)$": "ts-jest",
+    "^.+\\.js$": "babel-jest"
+  },
+  "globals": {
+    "ts-jest": {
+      "babelConfig": true,
+      "tsConfig": "tsconfig.json"
+    }
   },
   "collectCoverage": false,
   "collectCoverageFrom": [

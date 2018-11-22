@@ -133,6 +133,7 @@
     "primer": "^10.8.1",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.21.0",
+    "ts-jest": "^23.10.5",
     "ts-loader": "^5.1.0",
     "typescript": "^3.0.3",
     "url-loader": "^1.0.1",

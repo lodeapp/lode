@@ -199,12 +199,12 @@ $palette: (
 // Contextual
 //
 
-$primary: rgb(255, 255, 255) !default;
-$primary-border: rgb(229, 233, 238) !default;
+$primary: $white;
+$primary-border: $gray-300;
 
 $secondary: $gray-100;
-$secondary-text: rgb(108, 109, 111) !default;
-$secondary-discreet-text: rgb(153, 153, 153) !default;
+$secondary-text: $gray-600;
+$secondary-discreet-text: lighten($gray-600, 15%);
 
 //
 // Stateful
@@ -244,9 +244,3 @@ $status-colors: (
         "default": "700",
     ),
 ) !default;
-
-// ========================================================================
-// Lode-specific
-// ========================================================================
-
-$active-background: theme-color('selected', 200);

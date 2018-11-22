@@ -16,8 +16,8 @@ export interface IProcess extends EventEmitter {
 
 export class DefaultProcess extends EventEmitter implements IProcess {
     command: string
-    spawnPath: string
-    args: Array<string>
+    spawnPath: string = ''
+    args: Array<string> = []
     path?: string
     pristine: boolean
     rawChunks: Array<string>
@@ -27,13 +27,13 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     reportBuffer: string
     reportClosed: boolean
     writeToFile: boolean = false
-    fromFile?: string
+    fromFile?: number
     process?: ChildProcess
 
     constructor (
        command: string,
-       args: Array<string>,
-       path: string
+       args?: Array<string>,
+       path?: string
     ) {
         super()
 
@@ -49,15 +49,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.reports = false
         this.reportBuffer = ''
         this.reportClosed = false
-
-        // Parse command and arguments into something we
-        // can use for spawning a process.
-        this.args = compact(
-            flattenDeep([command].concat(args).map((arg: string) => {
-                return arg.split(' ')
-            }))
-        )
-        this.spawnPath = this.args.shift()!
 
         // We can re-process stored streams with the `fromFile` property,
         // being that of a JSON file stored in the debug folder (i.e. previously
@@ -77,6 +68,15 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             }, 0)
             return
         }
+
+        // Parse command and arguments into something we
+        // can use for spawning a process.
+        this.args = compact(
+            flattenDeep([command].concat(args!).map((arg: string) => {
+                return arg.split(' ')
+            }))
+        )
+        this.spawnPath = this.args.shift()!
 
         Logger.debug.log('Spawning command', { spawn: this.spawnPath, args: this.args, path: this.path })
         Logger.debug.log(`Command: ${this.spawnPath} ${this.args.join(' ')}`)
@@ -123,7 +123,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     }
 
     public getId (): number {
-        return this.process!.pid
+        return this.fromFile || this.process!.pid
     }
 
     public filterLines (lines: Array<string>): Array<string> {
@@ -163,9 +163,16 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             this.emit('killed', { process: this })
         } else {
             Logger.debug.log('Process errored.', this)
-            // If process errored out, but did not emit an error
-            // event, we'll compose it from the chunks we received.
+
+            // If process errored out but did not emit an error event, we'll
+            // compose it from the chunks we received. If error occurred while
+            // we were building a report buffer, output that, too, as it could
+            // contain a partial report, but it could also contain crucial
+            // information about the error itself.
             if (!this.error) {
+                if (this.reportBuffer) {
+                    this.rawChunks.push(this.reportBuffer)
+                }
                 this.error = this.rawChunks.join('')
             }
 
@@ -183,7 +190,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.emit('close', { process: this })
     }
 
-    private onData(rawhChunk: string): void {
+    private onData(rawChunk: string): void {
 
         // When debugging a stream, we can write all chunks
         // to a file then repeat them as needed.
@@ -193,24 +200,17 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 fs.writeFileSync(file, JSON.stringify([], null, 4))
             }
             const stored = fs.readJsonSync(file, { throws: false }) || []
-            stored.push(rawhChunk)
+            stored.push(rawChunk)
             fs.writeFileSync(file, JSON.stringify(stored, null, 4))
         }
 
         this.emit('data', {
             process: this,
-            chunk: rawhChunk
+            chunk: rawChunk
         })
 
-        // Don't process chunks made of only ANSI codes or escape characters
-        const chunk = stripAnsi(rawhChunk)
-        if (!chunk.replace(/\x1b/gi, '')) {
-            this.rawChunks.push(rawhChunk)
-            return
-        }
-
         let storeChunk = true
-        const lines = chunk.split('\n')
+        const lines = rawChunk.split('\n')
 
         if (lines.length) {
 
@@ -221,19 +221,18 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                     this.reports = true
 
                     // Remove delimiter from raw chunk, in case need to we store it.
-                    rawhChunk = rawhChunk.split('\n').filter(line => line !== '{').join('\n')
+                    rawChunk = rawChunk.replace(/\n\{\n?/m, '')
                 }
             }
-
-            const filteredChunk = compact(lines).join('\n')
 
             if (this.reports && !this.reportClosed) {
                 // Only add to buffer if it's full or partial base64 string,
                 // as some reporters might occasionally output stray content.
-                if ((/^[A-Za-z0-9\/\+=\(\)]+$/im).test(filteredChunk)) {
-                    this.reportBuffer += filteredChunk
+                if ((/^[A-Za-z0-9\/\+=\(\)]+$/im).test(rawChunk)) {
+                    this.reportBuffer += rawChunk
+                    // Test if buffer is now a complete report and, if so, extract it
                     if ((/\((?:(?!\)).)+\)/).test(this.reportBuffer)) {
-                        this.reportBuffer = this.reportBuffer.replace(/({\s?)?\((?:(?!\)).)+\)\s?}?/g, (match, offset, string) => {
+                        this.reportBuffer = this.reportBuffer.replace(/\s?({\s?)?\((?:(?!\)).)+\)\s?}?/g, (match, offset, string) => {
                             this.report(match)
                             return ''
                         })
@@ -245,16 +244,16 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                     this.reportClosed = true
 
                     // Remove delimiter from raw chunk, in case need to we store it.
-                    rawhChunk = rawhChunk.split('\n').filter(line => line !== '}').join('\n')
+                    rawChunk = rawChunk.replace(/\n\}/m, '')
                 }
             }
         }
 
         // If reporting hasn't overridden store directive and if there's still
         // chunk left to store, add it to our output array.
-        if (storeChunk && rawhChunk) {
-            this.rawChunks.push(rawhChunk)
-            Logger.info.log(rawhChunk)
+        if (storeChunk && rawChunk) {
+            this.rawChunks.push(rawChunk)
+            Logger.info.log(rawChunk)
         }
     }
 

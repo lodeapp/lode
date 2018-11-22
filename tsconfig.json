@@ -2,6 +2,7 @@
     "compilerOptions": {
       "module": "es6",
       "moduleResolution": "node",
+      "esModuleInterop": true,
       "target": "es6",
       "noImplicitReturns": true,
       "noFallthroughCasesInSwitch": true,
