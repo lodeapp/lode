@@ -241,8 +241,8 @@ describe('main/lib/process/DefaultProcess', () => {
                 'Ended!'
             ])
             expect(spawned.getRawLines()).toEqual([
-                '\u001b[2mStarting...\u001b[0m',
-                '\u001b[2mEnded!\u001b[0m'
+                '\u001b[1mStarting...\u001b[0m',
+                '\u001b[1mEnded!\u001b[0m'
             ])
         })
     })
