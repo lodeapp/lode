@@ -70,6 +70,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public queue: { [index: string]: Function } = {}
     public ledger: { [key in Status]: number } = {
         queued: 0,
+        running: 0,
         passed: 0,
         failed: 0,
         incomplete: 0,
@@ -164,7 +165,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
         .then(() => {
             this.updateStatus()
             this.resetQueued()
-            this.resetDebriefing()
         })
         .catch(error => {
             this.onError(error)
@@ -292,7 +292,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
         // and should be removed.
         this.cleanSuitesByStatus('queued')
         this.updateStatus()
-        this.resetDebriefing()
     }
 
     /**
@@ -333,7 +332,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
     onError (message: string): void {
         this.updateStatus('error')
         this.resetQueued()
-        this.resetDebriefing()
         this.emit('error', message)
     }
 
@@ -344,22 +342,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.suites.forEach(suite => {
             suite.resetQueued()
         })
-    }
-
-    /**
-     * Reset suites that could potentially still be stuck in "debriefing"
-     * state, because of quirks in reporter data feed.
-     */
-    resetDebriefing (): void {
-        if (!this.selective) {
-            this.suites.forEach(suite => {
-                suite.resetDebriefing()
-            })
-        } else {
-            this.selected.suites.forEach(suite => {
-                suite.resetDebriefing()
-            })
-        }
     }
 
     /**

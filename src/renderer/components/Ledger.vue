@@ -4,7 +4,7 @@
             <span>{{ framework.selected.suites.length }}</span>
             {{ 'selected|selected' | plural(framework.selected.suites.length) }}
         </span>
-        <template v-for="(count, status) in framework.ledger">
+        <template v-for="(count, status) in ledger">
             <span class="Label Label--outline" :class="[`Label--${status}`]" v-if="count > 0" :key="status">
                 <span>{{ count }}</span>
                 {{ statusString[status] | plural(count) }}
@@ -14,6 +14,8 @@
 </template>
 
 <script>
+import _cloneDeep from 'lodash/cloneDeep'
+
 export default {
     name: 'Ledger',
     props: {
@@ -35,6 +37,15 @@ export default {
                 empty: 'empty|empty',
                 idle: 'idle|idle'
             }
+        }
+    },
+    computed: {
+        ledger () {
+            // Modify ledger to consolidate running and queued states.
+            const ledger = _cloneDeep(this.framework.ledger)
+            ledger['queued'] += ledger['running']
+            delete ledger['running']
+            return ledger
         }
     }
 }

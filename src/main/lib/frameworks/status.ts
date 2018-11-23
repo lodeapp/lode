@@ -1,8 +1,8 @@
 import { uniq } from 'lodash'
 
-export type Status = 'queued' | 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle'
+export type Status = 'queued' | 'running' | 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle'
 
-export type FrameworkStatus = Status | 'refreshing' | 'running' | 'error'
+export type FrameworkStatus = Status | 'refreshing' | 'error'
 
 /**
  * Compute an overarching generic status based on a set of statuses.
@@ -29,6 +29,14 @@ export function parseStatus (components: Array<Status>): Status {
 
     if (components.includes('incomplete')) {
         return 'incomplete'
+    }
+
+    // If there are mixed queued and non-queued components, we'll consider the
+    // final status as running, assuming this is transient because the status
+    // will update again until queued components are run or process is stopped,
+    // in which case we'll manually change from running to something else.
+    if (components.includes('queued')) {
+        return 'running'
     }
 
     return 'partial'

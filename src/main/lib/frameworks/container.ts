@@ -8,7 +8,6 @@ export abstract class Container extends EventEmitter {
     public status: Status = 'idle'
     public selected: boolean = false
     public partial: boolean = false
-    public debriefing: boolean = false
     public canToggleTests: boolean = false
     public fresh: boolean = false
     public updateCountsListener: any
@@ -92,7 +91,6 @@ export abstract class Container extends EventEmitter {
      * @param cleanup Whether to clean obsolete tests after debriefing. Can be overridden by the method's logic.
      */
     debriefTests (tests: Array<ITestResult>, cleanup: boolean) {
-        this.debriefing = true
         return new Promise((resolve, reject) => {
             const running: Array<Promise<void>> = []
 
@@ -100,12 +98,12 @@ export abstract class Container extends EventEmitter {
             //
             // 1) isLast === -1 : No `isLast` key is found on result object,
             //    which means the framework producing the results does not
-            //    support `debriefing` state.
+            //    support debriefing state.
             //
-            // 2) isLast === 0 : Framework supports `debriefing` state, but
+            // 2) isLast === 0 : Framework supports debriefing state, but
             //    the result object is stating this is not the last test.
             //
-            // 3) isLast > 0 : Framework supports `debriefing` state and
+            // 3) isLast > 0 : Framework supports debriefing state and
             //    result object is stating this is the last test.
             //
             const isLast = tests
@@ -146,13 +144,6 @@ export abstract class Container extends EventEmitter {
             this.cleanTestsByStatus('queued')
         }
         this.updateStatus()
-
-        // If tests do not support last markings, or this is the actual
-        // last test, set debrifing to false, otherwise let the flag stay
-        // for this iteration.
-        if (isLast >= 1 || isLast < 0) {
-            this.debriefing = false
-        }
     }
 
     /**
@@ -186,7 +177,6 @@ export abstract class Container extends EventEmitter {
      * @param selective Whether we're currently in selective mode or not.
      */
     reset (selective: boolean): void {
-        this.debriefing = false
         this.fresh = false
         this.updateStatus('idle')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
@@ -201,7 +191,6 @@ export abstract class Container extends EventEmitter {
      * @param selective Whether we're currently in selective mode or not.
      */
     queue (selective: boolean): void {
-        this.debriefing = false
         this.fresh = false
         this.updateStatus('queued')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
@@ -218,17 +207,11 @@ export abstract class Container extends EventEmitter {
         if (this.status === 'queued') {
             this.reset(false)
             return
-        } else if (this.status === 'partial') {
+        } else if (this.status === 'running') {
             this.tests.forEach(test => {
                 test.resetQueued()
             })
+            this.updateStatus()
         }
-    }
-
-    /**
-     * Reset this container's debriefing state.
-     */
-    resetDebriefing (): void {
-        this.debriefing = false
     }
 }

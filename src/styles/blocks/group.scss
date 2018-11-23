@@ -136,7 +136,7 @@
         }
     }
 
-    &.is-debriefing {
+    &.status--running {
 
         & > .header {
 
@@ -220,26 +220,17 @@
 
     &.status--partial {
 
-        // If a suite is debriefed test-by-test, we'll update its status
-        // immediately after the first child test is debriefed (this is because
-        // our queued state only makes sense for pending suites, which will
-        // become idle, along with all its children, if anything interrupts
-        // processing), but we don't want to show it as partial until all
-        // children have been debriefed, so we'll style it like a queued suite.
-        &:not(.is-debriefing) {
+        & > .seam::before,
+        & > .seam::after {
+            border-color: theme-color('partial');
+        }
 
-            & > .seam::before,
-            & > .seam::after {
-                border-color: theme-color('partial');
-            }
+        & > .header {
 
-            & > .header {
-
-                .status {
-                    @include striped('partial');
-                    border-color: darken(theme-color('partial'), 10%);
-                    box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('partial'), .5);
-                }
+            .status {
+                @include striped('partial');
+                border-color: darken(theme-color('partial'), 10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('partial'), .5);
             }
         }
     }
@@ -261,9 +252,8 @@
         }
     }
 
-    // Queued or partial being debriefed. See comment above.
     &.status--queued,
-    &.status--partial.is-debriefing {
+    &.status--running {
 
         & > .seam::before,
         & > .seam::after {

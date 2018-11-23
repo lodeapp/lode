@@ -2,7 +2,7 @@
     <Group
         :model="suite"
         class="suite"
-        :class="{ 'is-child-active': isChildActive, 'is-debriefing': suite.debriefing }"
+        :class="{ 'is-child-active': isChildActive }"
         :has-children="suite.testsLoaded && suite.tests.length > 0"
     >
         <template slot="header">
