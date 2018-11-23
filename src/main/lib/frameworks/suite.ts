@@ -21,6 +21,7 @@ export interface ISuite extends Container {
 
     getDisplayName (): string
     toggleSelected (toggle?: boolean, cascade?: boolean): void
+    buildTests (result: ISuiteResult, force: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
     reset (selective: boolean): void
     queue (selective: boolean): void
@@ -74,10 +75,23 @@ export class Suite extends Container implements ISuite {
      */
     build (result: ISuiteResult): void {
         this.relative = Path.relative(this.vmPath || this.root, this.file)
-        this.tests = result.tests.map((result: ITestResult) => this.makeTest(result, true))
         this.testsLoaded = typeof result.testsLoaded !== 'undefined' ? !!result.testsLoaded : true
         this.running = []
-        this.status = 'idle'
+        this.buildTests(result, true)
+    }
+
+    /**
+     * Build this suite's tests from a result object.
+     *
+     * @param result The result object with which to build this suite's tests.
+     * @param force Whether to bypass looking for the tests in the container's current children.
+     */
+    buildTests (
+        result: ISuiteResult,
+        force: boolean = false
+    ): void {
+        this.tests = result.tests.map((result: ITestResult) => this.makeTest(result, force))
+        this.updateStatus()
     }
 
     /**

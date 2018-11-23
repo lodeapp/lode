@@ -19,7 +19,7 @@ export class PHPUnit extends Framework {
             this.spawn(['--columns=42'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
                     report.forEach((result: ISuiteResult) => {
-                        this.makeSuite(result)
+                        this.makeSuite(result, true)
                     })
                     resolve('success')
                 })

@@ -149,6 +149,7 @@
         "expect": false,
         "beforeEach": false,
         "beforeAll": false,
-        "afterAll": false
+        "afterAll": false,
+        "afterEach": false
     }
 }

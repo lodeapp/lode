@@ -64,6 +64,8 @@ export abstract class Container extends EventEmitter {
         if (!test) {
             test = this.newTest(result)
             test.on('selective', this.updateCountsListener)
+            // If container is selected, newly created test should be, too.
+            test.selected = this.selected
             this.tests.push(test)
         }
         return test
@@ -141,9 +143,9 @@ export abstract class Container extends EventEmitter {
      */
     afterDebrief (cleanup: boolean, isLast: number): void {
         if (cleanup) {
-            this.tests = this.tests.filter(test => test.status !== 'idle')
+            this.cleanTestsByStatus('queued')
         }
-        this.updateStatus(parseStatus(this.tests.map(test => test.status)))
+        this.updateStatus()
 
         // If tests do not support last markings, or this is the actual
         // last test, set debrifing to false, otherwise let the flag stay
@@ -154,11 +156,25 @@ export abstract class Container extends EventEmitter {
     }
 
     /**
+     * Clean currently loaded tests by a given status.
+     *
+     * @param status The status by which to clean the tests.
+     */
+    cleanTestsByStatus (status: Status): void {
+        this.tests = this.tests.filter(test => {
+            return test.status !== status
+        })
+    }
+
+    /**
      * Update this container's status.
      *
      * @param to The status we're updating to.
      */
-    updateStatus (to: Status): void {
+    updateStatus (to?: Status): void {
+        if (typeof to === 'undefined') {
+            to = parseStatus(this.tests.map(test => test.status))
+        }
         const from = this.status
         this.status = to
         this.emit('status', to, from)

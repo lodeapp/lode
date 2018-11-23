@@ -110,7 +110,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param to The status we're updating to.
      */
-    updateStatus (to: FrameworkStatus): void {
+    updateStatus (to?: FrameworkStatus): void {
+        if (typeof to === 'undefined') {
+            to = parseStatus(this.suites.map(suite => suite.status))
+        }
         const from = this.status
         this.status = to
         this.emit('status', to, from)
@@ -159,7 +162,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 .stop()
         })
         .then(() => {
-            this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
+            this.updateStatus()
             this.resetQueued()
             this.resetDebriefing()
         })
@@ -216,7 +219,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         })
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
-            // See @run
+            // See @run for reasoning behind `nextTick`
             process.nextTick(() => {
                 this.report(this.runSelectiveArgs(), resolve, reject)
             })
@@ -231,7 +234,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return this.reload()
             .then(() => {
                 this.cleanStaleSuites()
-                this.updateStatus('idle')
+                this.updateStatus()
             })
             .catch(error => {
                 this.onError(error)
@@ -285,12 +288,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * selectively.
      */
     afterRun () {
-        if (!this.selective) {
-            // Suites which remain queued after a full run are stale
-            // and should be removed.
-            this.cleanSuitesByStatus('queued')
-        }
-        this.updateStatus(parseStatus(this.suites.map(suite => suite.status)))
+        // Suites which remain queued after a run are stale
+        // and should be removed.
+        this.cleanSuitesByStatus('queued')
+        this.updateStatus()
         this.resetDebriefing()
     }
 
@@ -301,8 +302,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     cleanSuitesByStatus (status: Status): void {
         this.suites = this.suites.filter(suite => {
-            if (suite.status === 'queued') {
-                this.updateLedger(null, 'queued')
+            if (suite.status === status) {
+                this.updateLedger(null, status)
                 return false
             }
             return true
@@ -315,11 +316,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
     cleanStaleSuites (): void {
         this.suites = this.suites.filter(suite => {
             if (!suite.fresh) {
-                console.log('not fresh', { suite })
                 this.updateLedger(null, suite.status)
                 return false
             }
-            // After checking, reset "freshness" marker
+            // After checking, reset "freshness" marker.
             suite.fresh = false
             return true
         })
@@ -409,8 +409,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * or creates one and adds it to the framework.
      *
      * @param result An object representing a suite's test results.
+     * @param rebuild Whether to rebuild the tests inside the suite, regardless of them being built already.
      */
-    makeSuite (result: ISuiteResult): ISuite {
+    makeSuite (
+        result: ISuiteResult,
+        rebuild: boolean = false
+    ): ISuite {
         let suite: ISuite | undefined = this.findSuite(result.file)
         if (!suite) {
             suite = this.newSuite(result)
@@ -422,6 +426,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
         // Mark suite as freshly made before returning,
         // in case we need to clear out stale ones.
         suite.fresh = true
+        if (rebuild) {
+            suite.buildTests(result, false)
+        }
         return suite
     }
 
