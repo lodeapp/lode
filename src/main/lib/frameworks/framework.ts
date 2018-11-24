@@ -94,24 +94,24 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * The command arguments for running this framework.
      */
-    abstract runArgs (): Array<string>
+    protected abstract runArgs (): Array<string>
 
     /**
      * The command arguments for running this framework selectively.
      */
-    abstract runSelectiveArgs (): Array<string>
+    protected abstract runSelectiveArgs (): Array<string>
 
     /**
      * Reload this framework's suites and tests.
      */
-    abstract reload (): Promise<string>
+    protected abstract reload (): Promise<string>
 
     /**
      * Update this framework's status.
      *
      * @param to The status we're updating to.
      */
-    updateStatus (to?: FrameworkStatus): void {
+    protected updateStatus (to?: FrameworkStatus): void {
         if (typeof to === 'undefined') {
             to = parseStatus(this.suites.map(suite => suite.status))
         }
@@ -123,7 +123,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Run this framework's test suites, either fully or selectively.
      */
-    start (): Promise<void> {
+    public start (): Promise<void> {
         if (this.selective) {
             return this.runSelective()
                 .catch(error => {
@@ -140,7 +140,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Stop any processes that apply to this framework. This can include
      * running, refreshing or cancelling any queued jobs.
      */
-    stop (): Promise<void> {
+    public stop (): Promise<void> {
         return new Promise((resolve, reject) => {
             // Before checking the actual process, clear the queue
             this.queue = {}
@@ -174,7 +174,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Run all suites inside this framework.
      */
-    run (): Promise<void> {
+    protected run (): Promise<void> {
         this.suites.forEach(suite => {
             suite.queue(false)
         })
@@ -213,7 +213,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Run this framework selectively (i.e. only run suites that have been
      * selected by the user).
      */
-    runSelective (): Promise<void> {
+    protected runSelective (): Promise<void> {
         this.selected.suites.forEach(suite => {
             suite.queue(true)
         })
@@ -229,7 +229,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Refresh the list of suites inside this framework.
      */
-    refresh (): Promise<void> {
+    public refresh (): Promise<void> {
         this.updateStatus('refreshing')
         return this.reload()
             .then(() => {
@@ -254,7 +254,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param resolve The wrapper Promise's resolve function
      * @param reject The wrapper Promise's reject function
      */
-    report (
+    protected report (
         args: Array<string>,
         resolve: Function,
         reject: Function
@@ -287,7 +287,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * A function that runs after a framework has been run, either fully or
      * selectively.
      */
-    afterRun () {
+    protected afterRun () {
         // Suites which remain queued after a run are stale
         // and should be removed.
         this.cleanSuitesByStatus('queued')
@@ -299,7 +299,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param status The status by which to clean the suites.
      */
-    cleanSuitesByStatus (status: Status): void {
+    protected cleanSuitesByStatus (status: Status): void {
         this.suites = this.suites.filter(suite => {
             if (suite.status === status) {
                 this.updateLedger(null, status)
@@ -312,7 +312,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Clean currently loaded suites that are not marked as "fresh".
      */
-    cleanStaleSuites (): void {
+    protected cleanStaleSuites (): void {
         this.suites = this.suites.filter(suite => {
             if (!suite.fresh) {
                 this.updateLedger(null, suite.status)
@@ -329,7 +329,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param message The error message
      */
-    onError (message: string): void {
+    protected onError (message: string): void {
         this.updateStatus('error')
         this.resetQueued()
         this.emit('error', message)
@@ -338,7 +338,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Reset all previously queued suites.
      */
-    resetQueued (): void {
+    protected resetQueued (): void {
         this.suites.forEach(suite => {
             suite.resetQueued()
         })
@@ -351,7 +351,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param args The arguments to spawn the process with.
      */
-    spawn (args: Array<string>): IProcess {
+    protected spawn (args: Array<string>): IProcess {
         const process = ProcessFactory.make(
             this.command,
             args,
@@ -369,7 +369,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param result The standardised suite results.
      */
-    newSuite (result: ISuiteResult): ISuite {
+    protected newSuite (result: ISuiteResult): ISuite {
         return new Suite({
             path: this.path,
             vmPath: this.vmPath
@@ -382,7 +382,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param file The filename of the suite being searched.
      */
-    findSuite (file: string): ISuite | undefined {
+    protected findSuite (file: string): ISuite | undefined {
         return find(this.suites, { file })
     }
 
@@ -393,7 +393,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param result An object representing a suite's test results.
      * @param rebuild Whether to rebuild the tests inside the suite, regardless of them being built already.
      */
-    makeSuite (
+    protected makeSuite (
         result: ISuiteResult,
         rebuild: boolean = false
     ): ISuite {
@@ -419,7 +419,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param file The path of the file being checked.
      */
-    fileInPath (file: string): boolean {
+    protected fileInPath (file: string): boolean {
         return file.startsWith(this.vmPath || this.path)
     }
 
@@ -428,7 +428,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param suite The suite which triggered this update.
      */
-    updateSelected (suite: ISuite): void {
+    protected updateSelected (suite: ISuite): void {
         const index = findIndex(this.selected.suites, { 'id': suite.id })
         if (suite.selected && index === -1) {
             this.selected.suites.push(suite)
@@ -445,7 +445,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param to The new status of a suite inside this framework.
      * @param from The old status of a suite inside this framework, if any.
      */
-    updateLedger (to: Status | null, from?: Status): void {
+    protected updateLedger (to: Status | null, from?: Status): void {
         if (to) {
             this.ledger[to]!++
         }
@@ -461,7 +461,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param result The suite's run results
      */
-    decodeSuiteResult (result: ISuiteResult): ISuiteResult {
+    protected decodeSuiteResult (result: ISuiteResult): ISuiteResult {
         return result
     }
 
@@ -470,7 +470,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param result The suite's run results
      */
-    debriefSuite (result: ISuiteResult): Promise<void> {
+    protected debriefSuite (result: ISuiteResult): Promise<void> {
         result = this.decodeSuiteResult(result)
         const suite: ISuite = this.makeSuite(result)
         return suite.debrief(result, this.shouldCleanup(suite))
@@ -482,7 +482,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param suite The test suite being checked for needing clean-up.
      */
-    shouldCleanup(suite: ISuite): boolean {
+    protected shouldCleanup(suite: ISuite): boolean {
         if (!this.selective) {
             return true
         }
@@ -494,7 +494,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Queue a `start` job with a unique id. This let's us cancel the job
      * if it's not yet executed simply by clearing the internal queue object.
      */
-    queueStart (): Function {
+    protected queueStart (): Function {
         this.updateStatus('queued')
         const id = uuid()
         this.queue[id] = () => this.start()
@@ -505,7 +505,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Queue a `refresh` job with a unique id.
      * See @queueStart for more info.
      */
-    queueRefresh (): Function {
+    protected queueRefresh (): Function {
         this.updateStatus('queued')
         const id = uuid()
         this.queue[id] = () => this.refresh()
@@ -520,7 +520,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param id The unique id of the job to run.
      */
-    runQueued (id: string): Function {
+    protected runQueued (id: string): Function {
         if (typeof this.queue[id] === 'undefined') {
             Logger.debug.log(`Queued job with id ${id} was cancelled before execution.`)
             return () => Promise.resolve()
@@ -538,7 +538,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param error The error to be parsed for troubleshooting.
      */
-    troubleshoot (error: Error | string): string {
+    protected troubleshoot (error: Error | string): string {
         return ''
     }
 }

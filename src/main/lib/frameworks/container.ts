@@ -22,30 +22,14 @@ export abstract class Container extends EventEmitter {
      *
      * @param result The test result with which to instantiate a new test.
      */
-    abstract newTest (result: ITestResult): ITest
-
-    /**
-     * Toggle this container's selected state.
-     *
-     * @param toggle Whether it should be toggled on or off. Leave blank for inverting toggle.
-     * @param cascade Whether toggling should apply to container's children.
-     */
-    toggleSelected (toggle?: boolean, cascade?: boolean): void {
-        this.selected = typeof toggle === 'undefined' ? !this.selected : toggle
-        this.emit('selective', this)
-        if (this.canToggleTests && cascade !== false) {
-            this.tests.forEach(test => {
-                test.toggleSelected(this.selected)
-            })
-        }
-    }
+    protected abstract newTest (result: ITestResult): ITest
 
     /**
      * Find the test by a given name in the container's current children.
      *
      * @param name The name of the test to try to find.
      */
-    findTest (name: string): ITest | undefined {
+    protected findTest (name: string): ITest | undefined {
         return find(this.tests, { name })
     }
 
@@ -55,7 +39,7 @@ export abstract class Container extends EventEmitter {
      * @param result The test result with which to instantiate a new test.
      * @param force Whether to bypass looking for the test in the container's current children.
      */
-    makeTest (
+    protected makeTest (
         result: ITestResult,
         force: boolean = false
     ): ITest {
@@ -73,7 +57,7 @@ export abstract class Container extends EventEmitter {
     /**
      * Trigger an update of this container's selected count.
      */
-    updateSelectedCounts (): void {
+    protected updateSelectedCounts (): void {
         const total = this.tests.length
         const filtered = this.tests.filter(test => test.selected).length
         if (filtered && !this.selected) {
@@ -90,7 +74,7 @@ export abstract class Container extends EventEmitter {
      * @param tests An array of test results.
      * @param cleanup Whether to clean obsolete tests after debriefing. Can be overridden by the method's logic.
      */
-    debriefTests (tests: Array<ITestResult>, cleanup: boolean) {
+    protected debriefTests (tests: Array<ITestResult>, cleanup: boolean) {
         return new Promise((resolve, reject) => {
             const running: Array<Promise<void>> = []
 
@@ -139,7 +123,7 @@ export abstract class Container extends EventEmitter {
      * @param cleanup Whether we should clean-up idle children (i.e. obsolete)
      * @param isLast Last child indicator. See @debriefTests
      */
-    afterDebrief (cleanup: boolean, isLast: number): void {
+    protected afterDebrief (cleanup: boolean, isLast: number): void {
         if (cleanup) {
             this.cleanTestsByStatus('queued')
         }
@@ -151,7 +135,7 @@ export abstract class Container extends EventEmitter {
      *
      * @param status The status by which to clean the tests.
      */
-    cleanTestsByStatus (status: Status): void {
+    protected cleanTestsByStatus (status: Status): void {
         this.tests = this.tests.filter(test => {
             return test.status !== status
         })
@@ -162,7 +146,7 @@ export abstract class Container extends EventEmitter {
      *
      * @param to The status we're updating to.
      */
-    updateStatus (to?: Status): void {
+    protected updateStatus (to?: Status): void {
         if (typeof to === 'undefined') {
             to = parseStatus(this.tests.map(test => test.status))
         }
@@ -172,11 +156,27 @@ export abstract class Container extends EventEmitter {
     }
 
     /**
+     * Toggle this container's selected state.
+     *
+     * @param toggle Whether it should be toggled on or off. Leave blank for inverting toggle.
+     * @param cascade Whether toggling should apply to container's children.
+     */
+    public toggleSelected (toggle?: boolean, cascade?: boolean): void {
+        this.selected = typeof toggle === 'undefined' ? !this.selected : toggle
+        this.emit('selective', this)
+        if (this.canToggleTests && cascade !== false) {
+            this.tests.forEach(test => {
+                test.toggleSelected(this.selected)
+            })
+        }
+    }
+
+    /**
      * Reset this container to its initial state.
      *
      * @param selective Whether we're currently in selective mode or not.
      */
-    reset (selective: boolean): void {
+    public reset (selective: boolean): void {
         this.fresh = false
         this.updateStatus('idle')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
@@ -190,7 +190,7 @@ export abstract class Container extends EventEmitter {
      *
      * @param selective Whether we're currently in selective mode or not.
      */
-    queue (selective: boolean): void {
+    public queue (selective: boolean): void {
         this.fresh = false
         this.updateStatus('queued')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
@@ -203,7 +203,7 @@ export abstract class Container extends EventEmitter {
      * Reset this container or any of its children if they are
      * on a queued status.
      */
-    resetQueued (): void {
+    public resetQueued (): void {
         if (this.status === 'queued') {
             this.reset(false)
             return

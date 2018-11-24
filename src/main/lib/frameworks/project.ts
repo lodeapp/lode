@@ -14,21 +14,9 @@ export class Project extends EventEmitter implements IProject {
     public selected: boolean = false
 
     /**
-     * Add a child repository to this project.
-     *
-     * @param path The path of the repository we're adding.
-     */
-    addRepository (path: string): IRepository {
-        const repository = new Repository(path)
-        repository.on('status', this.statusListener.bind(this))
-        this.repositories.push(repository)
-        return repository
-    }
-
-    /**
      * A function to run when a child repository changes its status.
      */
-    statusListener () {
+    protected statusListener () {
         this.updateStatus(parseFrameworkStatus(this.repositories.map(repository => repository.status)))
     }
 
@@ -37,9 +25,21 @@ export class Project extends EventEmitter implements IProject {
      *
      * @param to The status we're updating to.
      */
-    updateStatus (to: FrameworkStatus): void {
+    protected updateStatus (to: FrameworkStatus): void {
         const from = this.status
         this.status = to
         this.emit('status', to, from)
+    }
+
+    /**
+     * Add a child repository to this project.
+     *
+     * @param path The path of the repository we're adding.
+     */
+    public addRepository (path: string): IRepository {
+        const repository = new Repository(path)
+        repository.on('status', this.statusListener.bind(this))
+        this.repositories.push(repository)
+        return repository
     }
 }

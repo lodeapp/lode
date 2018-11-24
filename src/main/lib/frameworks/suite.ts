@@ -20,11 +20,12 @@ export interface ISuite extends Container {
     testsLoaded: boolean
 
     getDisplayName (): string
-    toggleSelected (toggle?: boolean, cascade?: boolean): void
     buildTests (result: ISuiteResult, force: boolean): void
-    debrief (result: ISuiteResult, selective: boolean): Promise<void>
+    toggleSelected (toggle?: boolean, cascade?: boolean): void
     reset (selective: boolean): void
     queue (selective: boolean): void
+    resetQueued (): void
+    debrief (result: ISuiteResult, selective: boolean): Promise<void>
 }
 
 export interface ISuiteResult {
@@ -57,7 +58,7 @@ export class Suite extends Container implements ISuite {
      *
      * @param partial The potentially incomplete result object.
      */
-    static buildResult (
+    public static buildResult (
         partial: object
     ): ISuiteResult {
         return merge({
@@ -73,7 +74,7 @@ export class Suite extends Container implements ISuite {
      *
      * @param result The result object with which to build this suite.
      */
-    build (result: ISuiteResult): void {
+    protected build (result: ISuiteResult): void {
         this.relative = Path.relative(this.vmPath || this.root, this.file)
         this.testsLoaded = typeof result.testsLoaded !== 'undefined' ? !!result.testsLoaded : true
         this.running = []
@@ -86,7 +87,7 @@ export class Suite extends Container implements ISuite {
      * @param result The result object with which to build this suite's tests.
      * @param force Whether to bypass looking for the tests in the container's current children.
      */
-    buildTests (
+    public buildTests (
         result: ISuiteResult,
         force: boolean = false
     ): void {
@@ -99,14 +100,14 @@ export class Suite extends Container implements ISuite {
      *
      * @param result The test result with which to instantiate a new test.
      */
-    newTest (result: ITestResult): ITest {
+    protected newTest (result: ITestResult): ITest {
         return new Test(result)
     }
 
     /**
      * Get this suite's display name.
      */
-    getDisplayName (): string {
+    public getDisplayName (): string {
         return this.relative
     }
 
@@ -116,7 +117,7 @@ export class Suite extends Container implements ISuite {
      * @param suiteResult The result object with which to debrief this suite.
      * @param cleanup Whether to clean obsolete children after debriefing.
      */
-    debrief (suiteResult: ISuiteResult, cleanup: boolean): Promise<void> {
+    public debrief (suiteResult: ISuiteResult, cleanup: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
             this.debriefTests(suiteResult.tests, cleanup)
                 .then(() => {

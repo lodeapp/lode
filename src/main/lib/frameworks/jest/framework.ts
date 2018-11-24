@@ -12,7 +12,7 @@ export class Jest extends Framework {
     /**
      * Reload this framework's suites and tests.
      */
-    reload (): Promise<string> {
+    protected reload (): Promise<string> {
         return new Promise((resolve, reject) => {
             this.spawn(['--listTests', '--forceExit'])
                 .on('success', ({ process }) => {
@@ -37,7 +37,7 @@ export class Jest extends Framework {
     /**
      * The command arguments for running this framework.
      */
-    runArgs (): Array<string> {
+    protected runArgs (): Array<string> {
         return [
             '--forceExit',
             '--expand',
@@ -50,7 +50,7 @@ export class Jest extends Framework {
     /**
      * The command arguments for running this framework selectively.
      */
-    runSelectiveArgs (): Array<string> {
+    protected runSelectiveArgs (): Array<string> {
         const args: Array<string> = []
 
         this.suites.filter(suite => suite.selected).forEach(suite => {

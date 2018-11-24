@@ -28,19 +28,9 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
-     * Add a child framework to this repository.
-     *
-     * @param framework The framework object to add.
-     */
-    addFramework (framework: IFramework): void {
-        framework.on('status', this.statusListener.bind(this))
-        this.frameworks.push(framework)
-    }
-
-    /**
      * A function to run when a child framwork changes its status.
      */
-    statusListener (): void {
+    protected statusListener (): void {
         this.updateStatus(parseFrameworkStatus(this.frameworks.map(framework => framework.status)))
     }
 
@@ -49,9 +39,19 @@ export class Repository extends EventEmitter implements IRepository {
      *
      * @param to The status we're updating to.
      */
-    updateStatus (to: FrameworkStatus): void {
+    protected updateStatus (to: FrameworkStatus): void {
         const from = this.status
         this.status = to
         this.emit('status', to, from)
+    }
+
+    /**
+     * Add a child framework to this repository.
+     *
+     * @param framework The framework object to add.
+     */
+    public addFramework (framework: IFramework): void {
+        framework.on('status', this.statusListener.bind(this))
+        this.frameworks.push(framework)
     }
 }

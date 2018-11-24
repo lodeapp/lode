@@ -106,7 +106,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param process The child process to add listeners to.
      */
-    private addListeners (process: ChildProcess) {
+    protected addListeners (process: ChildProcess) {
         process.on('close', (...args) => this.onClose(...args))
         process.on('error', (err) => this.onError(err as ErrorWithCode))
         process.stdout.on('data', (...args) => this.onData(...args))
@@ -125,7 +125,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param err The error we're attempting to handle.
      */
-    private onError (err: ErrorWithCode): void {
+    protected onError (err: ErrorWithCode): void {
 
         Logger.debug.log('Process error', err)
 
@@ -148,7 +148,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * @param code The exit code that triggered the process closing.
      * @param signal The signal string that triggered the process closing.
      */
-    private onClose(code: number, signal: string | null) {
+    protected onClose(code: number, signal: string | null) {
 
         Logger.debug.log('Process closing.', { code, signal })
 
@@ -196,7 +196,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param rawChunk The chunk of data we're about to process.
      */
-    private onData(rawChunk: string): void {
+    protected onData(rawChunk: string): void {
 
         // When debugging a stream, we can write all chunks
         // to a file then repeat them as needed.
@@ -268,7 +268,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param encoded The base64 encoded string that the process identified as a report.
      */
-    private report (encoded: string): void {
+    protected report (encoded: string): void {
         const report: object | string = this.parseReport(encoded)
         this.emit('report', {
             process: this,
@@ -283,7 +283,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param chunk The data chunk to parse as a report.
      */
-    private parseReport (chunk: string): object | string {
+    protected parseReport (chunk: string): object | string {
         chunk = Buffer.from(chunk.match(/\((.+)\)/)![1], 'base64').toString('utf8')
         try {
             return JSON.parse(chunk)
@@ -331,7 +331,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param command The command that could match a given runner.
      */
-    owns (command: string): boolean {
+    public owns (command: string): boolean {
         return true
     }
 }

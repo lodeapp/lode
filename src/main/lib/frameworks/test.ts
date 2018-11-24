@@ -14,6 +14,8 @@ export interface ITest extends Container {
     debrief (result: ITestResult, selective: boolean): Promise<void>
     reset (selective: boolean): void
     queue (selective: boolean): void
+    resetQueued (): void
+    debrief (result: ITestResult, cleanup: boolean): Promise<void>
 }
 
 export interface ITestResult {
@@ -49,7 +51,7 @@ export class Test extends Container implements ITest {
      * @param result The result object with which to build this test.
      * @param cleanup Whether to clean obsolete children after building.
      */
-    build (result: ITestResult, cleanup: boolean): void {
+    protected build (result: ITestResult, cleanup: boolean): void {
         this.updateStatus(result.status || 'idle')
         this.result = result
         if (result.tests && result.tests.length) {
@@ -62,14 +64,14 @@ export class Test extends Container implements ITest {
      *
      * @param result The test result with which to instantiate a new test.
      */
-    newTest (result: ITestResult): ITest {
+    protected newTest (result: ITestResult): ITest {
         return new Test(result)
     }
 
     /**
      * Get this test's display name.
      */
-    getDisplayName (): string {
+    public getDisplayName (): string {
         return this.displayName
     }
 
@@ -79,7 +81,7 @@ export class Test extends Container implements ITest {
      * @param result The result object with which to debrief this test.
      * @param cleanup Whether to clean obsolete children after debriefing.
      */
-    debrief (result: ITestResult, cleanup: boolean): Promise<void> {
+    public debrief (result: ITestResult, cleanup: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
             this.build(result, cleanup)
             this.emit('debriefed')

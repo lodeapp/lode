@@ -14,7 +14,7 @@ export class PHPUnit extends Framework {
     /**
      * Reload this framework's suites and tests.
      */
-    reload (): Promise<string> {
+    protected reload (): Promise<string> {
         return new Promise((resolve, reject) => {
             this.spawn(['--columns=42'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
@@ -35,7 +35,7 @@ export class PHPUnit extends Framework {
     /**
      * The command arguments for running this framework.
      */
-    runArgs (): Array<string> {
+    protected runArgs (): Array<string> {
         return [
             '--color=always',
             '--printer',
@@ -46,7 +46,7 @@ export class PHPUnit extends Framework {
     /**
      * The command arguments for running this framework selectively.
      */
-    runSelectiveArgs (): Array<string> {
+    protected runSelectiveArgs (): Array<string> {
         const args: Array<string> = ['--filter']
         const filters: Array<string> = []
 
@@ -73,7 +73,7 @@ export class PHPUnit extends Framework {
      *
      * @param result The standardised suite results.
      */
-    newSuite (result: ISuiteResult): ISuite {
+    protected newSuite (result: ISuiteResult): ISuite {
         return new PHPUnitSuite({
             path: this.path,
             vmPath: this.vmPath
@@ -85,7 +85,7 @@ export class PHPUnit extends Framework {
      *
      * @param error The error to be parsed for troubleshooting.
      */
-    troubleshoot (error: Error | string): string {
+    protected troubleshoot (error: Error | string): string {
         if (error instanceof Error) {
             error = error.toString()
         }

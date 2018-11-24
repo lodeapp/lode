@@ -24,7 +24,7 @@ export class Console {
         this.commit('countReset', label)
     }
 
-    public commit (method: string, ...data: Array<any>): void {
+    protected commit (method: string, ...data: Array<any>): void {
         if (__SILENT__) {
             return
         }
