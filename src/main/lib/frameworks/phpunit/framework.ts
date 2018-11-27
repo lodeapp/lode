@@ -36,11 +36,17 @@ export class PHPUnit extends Framework {
      * The command arguments for running this framework.
      */
     protected runArgs (): Array<string> {
-        return [
+        const args = [
             '--color=always',
             '--printer',
             '\\LodeApp\\PHPUnit\\Reporter'
         ]
+
+        if (__DEV__) {
+            args.push('--verbose')
+        }
+
+        return args
     }
 
     /**

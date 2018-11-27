@@ -38,13 +38,19 @@ export class Jest extends Framework {
      * The command arguments for running this framework.
      */
     protected runArgs (): Array<string> {
-        return [
+        const args = [
             '--forceExit',
             '--expand',
             '--colors',
             '--reporters',
             this.runsInVm ? 'jest-lode' : Path.resolve(__dirname, '../../bridge/jest/reporter.js')
         ]
+
+        if (__DEV__) {
+            args.push('--verbose')
+        }
+
+        return args
     }
 
     /**

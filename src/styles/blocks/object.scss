@@ -1,0 +1,16 @@
+.object {
+
+    & > .key-value {
+        margin-bottom: var(--spacing);
+
+        & > .key {
+            color: $secondary-discreet-text;
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+        }
+    }
+
+    & > :last-child {
+        margin-bottom: 0;
+    }
+}

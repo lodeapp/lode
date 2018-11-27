@@ -4,7 +4,7 @@
 
         & > .title {
             display: flex;
-            padding: 10px 5px 5px;
+            padding: var(--spacing) var(--spacing) var(--spacing-half) var(--spacing-half);
             position: relative;
 
             .heading {

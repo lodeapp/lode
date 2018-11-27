@@ -280,7 +280,10 @@ class Reporter extends ResultPrinter
                 'message' => $t ? $this->transformException($t) : $t,
                 'type' => 'object',
             ],
-            'assertions' => $test->getNumAssertions(),
+            'stats' => [
+                'duration' => round($time * 1000), // In milliseconds
+                'assertions' => $test->getNumAssertions(),
+            ],
             'console' => [],
             'isLast' => false,
         ];

@@ -4,7 +4,7 @@
         <div v-else class="parent" :class="[`status--${test.status}`]">
             <div class="header">
                 <div class="title">
-                    <div class="status">
+                    <div class="status tooltipped tooltipped-se tooltipped-align-left-1" :aria-label="displayStatus(test.status)">
                         <span class="indicator"></span>
                     </div>
                     <h2 class="heading">{{ test.displayName }}</h2>
@@ -19,7 +19,7 @@
                     </ol>
                 </nav>
             </div>
-            <TestResult :test="test" />
+            <TestResult :test="test" :key="$string.from(test)" />
         </div>
     </div>
 </template>
@@ -41,7 +41,8 @@ export default {
     },
     computed: {
         ...mapGetters({
-            breadcrumbs: 'tests/breadcrumbs'
+            breadcrumbs: 'tests/breadcrumbs',
+            displayStatus: 'status/display'
         })
     }
 }

@@ -38,8 +38,17 @@ export default {
 </script>
 
 <style lang="scss">
-pre div {
-    // Force line wrapping of terminal content
-    white-space: normal !important;
+pre {
+
+    & > div {
+
+        div,
+        span {
+            // Force line wrapping of terminal content
+            display: inline;
+            white-space: normal !important;
+            word-break: break-all;
+        }
+    }
 }
 </style>

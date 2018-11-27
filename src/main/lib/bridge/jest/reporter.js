@@ -56,7 +56,13 @@ class Base64TestReporter {
                 message: feedback ? feedback.message : '',
                 type: 'ansi'
             },
-            assertions: 0,
+            stats: {
+                duration: result.duration
+                // @TODO: Assertions don't seem to be properly counted. Let's hold this
+                // off until we can make sure it represents the actual test.
+                // assertions: 0,
+            },
+            // @TODO: Gather console output.
             console: []
         }
     }
@@ -84,7 +90,6 @@ class Base64TestReporter {
                             name,
                             displayName: ancestor,
                             status: result.status,
-                            assertions: 0,
                             console: [],
                             tests: []
                         }
@@ -111,8 +116,11 @@ class Base64TestReporter {
 
         const results = {
             file: test.path,
-            tests,
-            raw: {
+            tests
+        }
+
+        if (this._globalConfig.verbose) {
+            results['raw'] = {
                 test,
                 testResult,
                 aggregatedResult
