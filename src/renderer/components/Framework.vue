@@ -2,11 +2,11 @@
     <div class="framework parent" :class="[`status--${framework.status}`, framework.selective ? 'selective' : '']">
         <div class="header">
             <div class="title">
-                <div class="status">
-                    <span class="indicator" :title="displayStatus(framework.status)"></span>
+                <div class="status tooltipped tooltipped-ne tooltipped-align-left-1" :aria-label="displayStatus(framework.status)">
+                    <span class="indicator"></span>
                 </div>
                 <h3 class="heading">{{ framework.name }}</h3>
-                <div class="float-right">
+                <div class="actions">
                     <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
                         <Icon symbol="sync" />
                     </button>

@@ -11,7 +11,7 @@
     >
         <div class="seam"></div>
         <div class="header">
-            <div class="status"></div>
+            <div class="status" :aria-label="displayStatus(status)" :title="displayStatus(status)"></div>
             <div class="header-inner">
                 <slot name="header"></slot>
             </div>
@@ -26,6 +26,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
     name: 'Group',
     props: {
@@ -60,7 +62,10 @@ export default {
         },
         expandStatus () {
             return this.show ? 'expanded' : 'collapsed'
-        }
+        },
+        ...mapGetters({
+            displayStatus: 'status/display'
+        })
     },
     methods: {
         onClick () {

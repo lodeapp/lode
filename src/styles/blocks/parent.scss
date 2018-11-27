@@ -3,22 +3,19 @@
     & > .header {
 
         & > .title {
+            display: flex;
             padding: 10px 5px 5px;
             position: relative;
-            overflow: hidden;
 
             .heading {
-                display: inline-block;
-                margin: 0 0 0 28px;
+                flex-grow: 1;
             }
 
             & > .status {
-                display: inline-block;
+                flex-shrink: 0;
                 height: 18px;
-                left: 8px;
-                margin: 2px 4px;
-                position: absolute;
-                top: 13px;
+                margin: 5px 8px 0 3px;
+                text-align: center;
                 width: 18px;
 
                 & > .indicator {
@@ -27,12 +24,15 @@
                     box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .6);
                     display: inline-block;
                     height: 15px;
-                    left: -2px;
                     position: relative;
                     top: 0;
                     transition: background-color 100ms ease-in-out, border-color 100ms ease-in-out, box-shadow 100ms ease-in-out;
                     width: 15px;
                 }
+            }
+
+            & > .actions {
+                flex-shrink: 0;
             }
         }
     }
@@ -114,8 +114,25 @@
                 & > .status {
 
                     & > .indicator {
-                        background-color: theme-color('idle');
-                        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .6);
+                        @include striped('partial');
+                        box-shadow: 0 0 0 4px transparentize(theme-color('partial'), .6);
+                    }
+                }
+            }
+        }
+    }
+
+    &.status--queued {
+
+        & > .header {
+
+            & > .title {
+
+                & > .status {
+
+                    & > .indicator {
+                        background-color: theme-color('queued');
+                        box-shadow: 0 0 0 4px transparentize(theme-color('queued'), .6);
                     }
                 }
             }

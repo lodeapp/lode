@@ -2,13 +2,13 @@
     <div
         class="repository parent"
         :class="[
-            `status--${status}`,
+            `status--${repository.status}`,
             `is-${expandStatus}`,
         ]"
     >
         <div class="header">
             <div class="title">
-                <div class="status">
+                <div class="status tooltipped tooltipped-se tooltipped-align-left-1" :aria-label="displayStatus(repository.status)">
                     <span class="indicator"></span>
                 </div>
                 <h2 class="heading">
@@ -51,6 +51,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { Jest, PHPUnit } from '@lib/frameworks'
 import Framework from '@/components/Framework'
 
@@ -77,12 +78,12 @@ export default {
         refreshing () {
             return this.repository.status === 'refreshing'
         },
-        status () {
-            return this.repository.status
-        },
         expandStatus () {
             return this.show ? 'expanded' : 'collapsed'
-        }
+        },
+        ...mapGetters({
+            displayStatus: 'status/display'
+        })
     },
     created () {
         // @TODO: Get parameters from config
