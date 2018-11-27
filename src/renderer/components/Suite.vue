@@ -6,9 +6,9 @@
         :has-children="suite.testsLoaded && suite.tests.length > 0"
     >
         <template slot="header">
-            <div class="selective-toggle" @click.stop="onSelectiveClick">
-                <button type="button"></button>
-                <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial">
+            <div class="selective-toggle" :class="{ disabled: running }" @click.stop="onSelectiveClick">
+                <button type="button" :disabled="running"></button>
+                <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial" :disabled="running">
             </div>
             <Filename :path="suite.relative" />
         </template>
@@ -16,6 +16,7 @@
             v-for="test in suite.tests"
             :key="test.id"
             :test="test"
+            :running="running"
             :selectable="suite.canToggleTests"
             @activate="onChildActivation"
             @deactivate="onChildDeactivation"
@@ -38,6 +39,10 @@ export default {
         suite: {
             type: Object,
             required: true
+        },
+        running: {
+            type: Boolean,
+            default: false
         }
     },
     data () {
@@ -57,6 +62,9 @@ export default {
     },
     methods: {
         onSelectiveClick (event) {
+            if (this.running) {
+                return
+            }
             const input = this.$el.querySelector('.selective-toggle input')
             if (event.target !== input && !this.suite.selected) {
                 input.click()

@@ -163,8 +163,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 .stop()
         })
         .then(() => {
-            this.updateStatus()
             this.resetQueued()
+            this.updateStatus()
         })
         .catch(error => {
             this.onError(error)
@@ -330,8 +330,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param message The error message
      */
     protected onError (message: string): void {
-        this.updateStatus('error')
         this.resetQueued()
+        this.updateStatus('error')
         this.emit('error', message)
     }
 

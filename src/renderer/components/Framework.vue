@@ -51,7 +51,12 @@
                 </div> -->
             </div>
         </div>
-        <Suite v-for="suite in framework.suites" :suite="suite" :key="suite.id" />
+        <Suite
+            v-for="suite in framework.suites"
+            :suite="suite"
+            :running="running"
+            :key="suite.id"
+        />
     </div>
 </template>
 

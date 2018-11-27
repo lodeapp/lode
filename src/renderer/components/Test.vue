@@ -7,9 +7,9 @@
         :handler="onClick"
     >
         <template slot="header">
-            <div v-if="selectable" class="selective-toggle" @click.stop="selected = true">
-                <button type="button"></button>
-                <input type="checkbox" v-model="selected">
+            <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @click.stop="selected = true">
+                <button type="button" :disabled="running"></button>
+                <input type="checkbox" v-model="selected" :disabled="running">
             </div>
             <div class="test-name" :title="test.displayName">{{ test.displayName }}</div>
         </template>
@@ -18,6 +18,7 @@
                 v-for="test in test.tests"
                 :key="test.id"
                 :test="test"
+                :running="running"
                 :selectable="selectable"
                 @activate="onChildActivation"
                 @deactivate="onChildDeactivation"
@@ -41,6 +42,10 @@ export default {
             required: true
         },
         selectable: {
+            type: Boolean,
+            default: false
+        },
+        running: {
             type: Boolean,
             default: false
         }
