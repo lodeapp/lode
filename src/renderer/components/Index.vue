@@ -1,9 +1,15 @@
 <template>
     <div class="contents">
         <Titlebar :project="project" />
-        <main>
+        <main v-if="empty">
+            Empty state for projects...
+        </main>
+        <main v-else>
             <Pane>
-                <Project :project="project" />
+                <Project
+                    :project="project"
+                    :key="project.id"
+                />
             </Pane>
             <Pane>
                 <Results :test="activeTest" />
@@ -34,13 +40,23 @@ export default {
     },
     data () {
         return {
-            project: new ProjectModel()
+            project: {},
+            empty: false
         }
     },
     computed: {
         ...mapGetters({
+            currentProject: 'config/currentProject',
             activeTest: 'tests/active'
         })
+    },
+    created () {
+        const current = this.currentProject
+        if (!current) {
+            this.empty = true
+            return
+        }
+        this.project = new ProjectModel(current.id)
     }
 }
 </script>

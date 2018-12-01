@@ -19,6 +19,7 @@ export type SuiteList = {
  * Options to instantiate a Framework with.
  */
 export type FrameworkOptions = {
+    type: string
     command: string
     path: string
     runner?: string | null

@@ -1,17 +1,25 @@
+import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
 import { IRepository, Repository } from '@lib/frameworks/repository'
 
 export interface IProject extends EventEmitter {
+    readonly id: string
     repositories: Array<IRepository>
     status: FrameworkStatus
     selected: boolean
 }
 
 export class Project extends EventEmitter implements IProject {
+    public readonly id: string
     public repositories: Array<IRepository> = []
     public status: FrameworkStatus = 'idle'
     public selected: boolean = false
+
+    constructor (id?: string) {
+        super()
+        this.id = typeof id !== 'undefined' ? id : uuid()
+    }
 
     /**
      * A function to run when a child repository changes its status.
@@ -35,9 +43,10 @@ export class Project extends EventEmitter implements IProject {
      * Add a child repository to this project.
      *
      * @param path The path of the repository we're adding.
+     * @param id The existing id of the repository we're adding.
      */
-    public addRepository (path: string): IRepository {
-        const repository = new Repository(path)
+    public addRepository (path: string, id?: string): IRepository {
+        const repository = new Repository(path, id)
         repository.on('status', this.statusListener.bind(this))
         this.repositories.push(repository)
         return repository

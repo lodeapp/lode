@@ -52,7 +52,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { Jest, PHPUnit } from '@lib/frameworks'
 import Framework from '@/components/Framework'
 
 export default {
@@ -82,23 +81,15 @@ export default {
             return this.show ? 'expanded' : 'collapsed'
         },
         ...mapGetters({
+            settings: 'config/settings',
             displayStatus: 'status/display'
         })
     },
     created () {
-        // @TODO: Get parameters from config
-        this.repository.addFramework(new Jest({
-            command: 'yarn tests',
-            path: `${this.repository.path}/tests/assets/js`,
-            runner: 'yarn'
-            // vmPath: '/aml/tests/assets/js'
-        }))
-
-        this.repository.addFramework(new PHPUnit({
-            command: 'depot test',
-            path: this.repository.path,
-            vmPath: '/aml/tests'
-        }))
+        const frameworks = this.settings('frameworks')
+        frameworks.filter(framework => framework.repository === this.repository.id).forEach(framework => {
+            this.repository.addFramework(framework)
+        })
     },
     methods: {
         toggle () {

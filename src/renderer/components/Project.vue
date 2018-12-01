@@ -1,12 +1,15 @@
 <template>
     <div class="project">
-        <div v-for="repository in project.repositories" :key="repository.path">
-            <Repository :repository="repository" />
-        </div>
+        <Repository
+            v-for="repository in project.repositories"
+            :repository="repository"
+            :key="repository.id"
+        />
     </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Repository from '@/components/Repository'
 
 export default {
@@ -20,8 +23,16 @@ export default {
             required: true
         }
     },
+    computed: {
+        ...mapGetters({
+            settings: 'config/settings'
+        })
+    },
     created () {
-        this.project.addRepository('/Users/tomasbuteler/Sites/Amiqus/aqid')
+        const repositories = this.settings('repositories')
+        repositories.filter(repository => repository.project === this.project.id).forEach(repository => {
+            this.project.addRepository(repository.path, repository.id)
+        })
     }
 }
 </script>

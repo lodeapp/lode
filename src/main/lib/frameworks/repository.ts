@@ -1,7 +1,9 @@
+import * as Path from 'path'
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
-import { IFramework } from '@lib/frameworks/framework'
+import { FrameworkFactory } from '@lib/frameworks/factory'
+import { FrameworkOptions, IFramework } from '@lib/frameworks/framework'
 
 export interface IRepository extends EventEmitter {
     readonly id: string
@@ -20,9 +22,9 @@ export class Repository extends EventEmitter implements IRepository {
     public status: FrameworkStatus = 'idle'
     public selected: boolean = false
 
-    constructor (path: string) {
+    constructor (path: string, id?: string) {
         super()
-        this.id = uuid()
+        this.id = typeof id !== 'undefined' ? id : uuid()
         this.path = path
         this.name = this.path.split('/').pop() || 'untitled'
     }
@@ -48,9 +50,16 @@ export class Repository extends EventEmitter implements IRepository {
     /**
      * Add a child framework to this repository.
      *
-     * @param framework The framework object to add.
+     * @param options The options of the framework we're adding.
      */
-    public addFramework (framework: IFramework): void {
+    public addFramework (options: FrameworkOptions): void {
+
+        // Append the framework path with the repository path before making
+        options.path = options.path ? Path.join(this.path, options.path) : this.path
+        // @TODO: determine runner from command
+        // ...
+
+        const framework: IFramework = FrameworkFactory.make(options)
         framework.on('status', this.statusListener.bind(this))
         this.frameworks.push(framework)
     }
