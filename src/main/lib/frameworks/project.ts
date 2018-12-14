@@ -18,7 +18,7 @@ export class Project extends EventEmitter implements IProject {
 
     constructor (id?: string) {
         super()
-        this.id = typeof id !== 'undefined' ? id : uuid()
+        this.id = id || uuid()
     }
 
     /**

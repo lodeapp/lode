@@ -25,12 +25,11 @@ export default {
     },
     computed: {
         ...mapGetters({
-            settings: 'config/settings'
+            storedRepositories: 'config/repositories'
         })
     },
     created () {
-        const repositories = this.settings('repositories')
-        repositories.filter(repository => repository.project === this.project.id).forEach(repository => {
+        this.storedRepositories.forEach(repository => {
             this.project.addRepository(repository.path, repository.id)
         })
     }

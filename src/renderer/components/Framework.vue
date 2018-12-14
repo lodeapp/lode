@@ -1,11 +1,23 @@
 <template>
-    <div class="framework parent" :class="[`status--${framework.status}`, framework.selective ? 'selective' : '']">
+    <div
+        class="framework parent"
+        :class="[
+            `status--${framework.status}`,
+            `is-${expandStatus}`,
+            framework.selective ? 'selective' : ''
+        ]"
+    >
         <div class="header">
             <div class="title">
                 <div class="status tooltipped tooltipped-ne tooltipped-align-left-1" :aria-label="displayStatus(framework.status)">
                     <span class="indicator"></span>
                 </div>
-                <h3 class="heading">{{ framework.name }}</h3>
+                <h3 class="heading">
+                    <span class="toggle" @click="toggle">
+                        <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
+                    </span>
+                    {{ framework.name }}
+                </h3>
                 <div class="actions">
                     <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
                         <Icon symbol="sync" />
@@ -51,12 +63,14 @@
                 </div> -->
             </div>
         </div>
-        <Suite
-            v-for="suite in framework.suites"
-            :suite="suite"
-            :running="running"
-            :key="suite.id"
-        />
+        <template v-if="show">
+            <Suite
+                v-for="suite in framework.suites"
+                :suite="suite"
+                :running="running"
+                :key="suite.id"
+            />
+        </template>
     </div>
 </template>
 
@@ -79,6 +93,11 @@ export default {
             required: true
         }
     },
+    data () {
+        return {
+            show: true
+        }
+    },
     computed: {
         running () {
             return this.framework.status === 'running'
@@ -88,6 +107,9 @@ export default {
         },
         queued () {
             return this.framework.status === 'queued'
+        },
+        expandStatus () {
+            return this.show ? 'expanded' : 'collapsed'
         },
         ...mapGetters({
             displayStatus: 'status/display'
@@ -102,8 +124,15 @@ export default {
                 pre: error
             })
         })
+
+        this.framework.on('change', framework => {
+            this.$emit('change', framework)
+        })
     },
     methods: {
+        toggle () {
+            this.show = !this.show
+        },
         refresh () {
             this.$queue.add(this.framework.queueRefresh())
         },

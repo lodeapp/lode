@@ -4,6 +4,7 @@ import { EventEmitter } from 'events'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
 import { FrameworkFactory } from '@lib/frameworks/factory'
 import { FrameworkOptions, IFramework } from '@lib/frameworks/framework'
+import { trimStart } from 'lodash'
 
 export interface IRepository extends EventEmitter {
     readonly id: string
@@ -24,7 +25,7 @@ export class Repository extends EventEmitter implements IRepository {
 
     constructor (path: string, id?: string) {
         super()
-        this.id = typeof id !== 'undefined' ? id : uuid()
+        this.id = id || uuid()
         this.path = path
         this.name = this.path.split('/').pop() || 'untitled'
     }
@@ -54,7 +55,9 @@ export class Repository extends EventEmitter implements IRepository {
      */
     public addFramework (options: FrameworkOptions): void {
 
-        // Append the framework path with the repository path before making
+        // Append the framework path with the repository path before making, but
+        // not before storing the original framework path as a relative one for persistence.
+        options.relativePath = trimStart(options.path, '/')
         options.path = options.path ? Path.join(this.path, options.path) : this.path
         // @TODO: determine runner from command
         // ...

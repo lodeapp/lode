@@ -14,6 +14,7 @@ export interface ISuite extends Container {
     readonly file: string
     readonly relative: string
     readonly root: string
+    readonly meta: Array<any>
     tests: Array<ITest>
     selected: boolean
     canToggleTests: boolean
@@ -26,12 +27,13 @@ export interface ISuite extends Container {
     queue (selective: boolean): void
     resetQueued (): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
+    persist (): ISuiteResult
 }
 
 export interface ISuiteResult {
     file: string
     tests: Array<ITestResult>
-    meta: Array<any>
+    meta?: Array<any>
     testsLoaded?: boolean
 }
 
@@ -40,6 +42,7 @@ export class Suite extends Container implements ISuite {
     public readonly root: string
     public readonly vmPath: string | null
     public readonly file: string
+    public meta!: Array<any>
     public relative!: string
     public running: Array<Promise<void>> = []
     public testsLoaded: boolean = true
@@ -51,6 +54,18 @@ export class Suite extends Container implements ISuite {
         this.vmPath = options.vmPath || null
         this.file = result.file
         this.build(result)
+    }
+
+    /**
+     * Prepares the suite for persistence.
+     */
+    public persist (): ISuiteResult {
+        return {
+            file: this.file,
+            meta: this.meta,
+            tests: this.tests.map((test: ITest) => test.persist()),
+            testsLoaded: this.testsLoaded
+        }
     }
 
     /**
@@ -76,6 +91,7 @@ export class Suite extends Container implements ISuite {
      */
     protected build (result: ISuiteResult): void {
         this.relative = Path.relative(this.vmPath || this.root, this.file)
+        this.meta = result.meta!
         this.testsLoaded = typeof result.testsLoaded !== 'undefined' ? !!result.testsLoaded : true
         this.running = []
         this.buildTests(result, true)

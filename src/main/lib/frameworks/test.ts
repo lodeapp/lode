@@ -16,15 +16,15 @@ export interface ITest extends Container {
     queue (selective: boolean): void
     resetQueued (): void
     debrief (result: ITestResult, cleanup: boolean): Promise<void>
+    persist (): ITestResult
 }
 
 export interface ITestResult {
     name: string
     displayName: string
     status: Status
-    content: Array<string>
-    feedback: string
-    assertions: number
+    feedback?: string | object
+    stats?: object
     console: Array<string>
     isLast?: boolean
     tests?: Array<ITestResult>
@@ -35,7 +35,7 @@ export class Test extends Container implements ITest {
     public readonly name: string
     public readonly displayName: string
     public status!: Status
-    public result?: ITestResult
+    public result!: ITestResult
 
     constructor (result: ITestResult) {
         super()
@@ -43,6 +43,19 @@ export class Test extends Container implements ITest {
         this.name = result.name
         this.displayName = result.displayName || result.name
         this.build(result, false)
+    }
+
+    /**
+     * Prepares the test for persistence.
+     */
+    public persist (): ITestResult {
+        return {
+            name: this.result.name,
+            displayName: this.result.displayName,
+            status: 'idle',
+            console: [],
+            tests: this.tests.map((test: ITest) => test.persist())
+        }
     }
 
     /**

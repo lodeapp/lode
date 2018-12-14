@@ -19,11 +19,14 @@ export type SuiteList = {
  * Options to instantiate a Framework with.
  */
 export type FrameworkOptions = {
+    id?: string,
     type: string
     command: string
     path: string
+    relativePath: string
     runner?: string | null
-    vmPath?: string | null
+    vmPath?: string | null,
+    suites?: Array<ISuiteResult>
 }
 
 /**
@@ -31,8 +34,10 @@ export type FrameworkOptions = {
  */
 export interface IFramework extends EventEmitter {
     readonly id: string
+    readonly type: string
     readonly command: string
     readonly path: string
+    readonly relativePath: string
     readonly runner: string | null
     process?: number
     suites: Array<ISuite>
@@ -54,8 +59,10 @@ export interface IFramework extends EventEmitter {
  */
 export abstract class Framework extends EventEmitter implements IFramework {
     public readonly id: string
+    public readonly type: string
     public readonly command: string
     public readonly path: string
+    public readonly relativePath: string
     public readonly runner: string | null
     public readonly vmPath: string | null
     public readonly runsInVm: boolean
@@ -84,12 +91,21 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
     constructor (options: FrameworkOptions) {
         super()
-        this.id = uuid()
+        this.id = options.id || uuid()
+        this.type = options.type
         this.command = options.command
         this.path = options.path
+        this.relativePath = options.relativePath
         this.runner = options.runner || null
         this.vmPath = options.vmPath || null
         this.runsInVm = !!this.vmPath
+
+        // If options include suites already (i.e. persisted state), add them.
+        if (options.suites) {
+            options.suites.forEach((result: ISuiteResult) => {
+                this.makeSuite(result, true)
+            })
+        }
     }
 
     /**
@@ -106,6 +122,20 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Reload this framework's suites and tests.
      */
     protected abstract reload (): Promise<string>
+
+    /**
+     * Prepares the framework for persistence.
+     */
+    public persist (): object {
+        return {
+            id: this.id,
+            type: this.type,
+            command: this.command,
+            path: this.relativePath,
+            vmPath: this.vmPath,
+            suites: this.suites.map(suite => suite.persist())
+        }
+    }
 
     /**
      * Update this framework's status.
@@ -166,6 +196,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         .then(() => {
             this.resetQueued()
             this.updateStatus()
+            this.emit('change', this)
         })
         .catch(error => {
             this.onError(error)
@@ -236,6 +267,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             .then(() => {
                 this.cleanStaleSuites()
                 this.updateStatus()
+                this.emit('change', this)
             })
             .catch(error => {
                 this.onError(error)
@@ -293,6 +325,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         // and should be removed.
         this.cleanSuitesByStatus('queued')
         this.updateStatus()
+        this.emit('change', this)
     }
 
     /**
@@ -334,6 +367,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.resetQueued()
         this.updateStatus('error')
         this.emit('error', message)
+        this.emit('change', this)
     }
 
     /**

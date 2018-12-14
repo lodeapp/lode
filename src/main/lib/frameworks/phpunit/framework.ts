@@ -1,15 +1,14 @@
-import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
+import { Framework } from '@lib/frameworks/framework'
 import { ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
 import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
 
 export class PHPUnit extends Framework {
     readonly name = 'PHPUnit'
-    public suites: Array<PHPUnitSuite> = []
 
-    constructor (options: FrameworkOptions) {
-        super(options)
-    }
+    // Suites are defined in the parent constructor (albeit a different class),
+    // so we'll just inherit the default value from it (or risk overriding it).
+    public suites!: Array<PHPUnitSuite>
 
     /**
      * Reload this framework's suites and tests.

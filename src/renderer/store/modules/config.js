@@ -2,6 +2,7 @@ import Config from 'electron-store'
 import _cloneDeep from 'lodash/cloneDeep'
 import _get from 'lodash/get'
 import _find from 'lodash/find'
+import _findIndex from 'lodash/findIndex'
 import _merge from 'lodash/merge'
 
 const config = new Config()
@@ -11,46 +12,41 @@ export default {
     state: {
         default: {
             projects: [],
-            repositories: [],
-            frameworks: [],
             currentProject: null
-            // projects: [{
-            //     id: '1',
-            //     name: 'Amiqus ID'
-            // }],
-            // repositories: [{
-            //     id: '2',
-            //     path: '/Users/tomasbuteler/Sites/Amiqus/aqid',
-            //     project: '1'
-            // }],
-            // frameworks: [
-            //     {
-            //         type: 'jest',
-            //         command: 'yarn tests',
-            //         path: `/tests/assets/js`,
-            //         runner: 'yarn',
-            //         // vmPath: '/aml/tests/assets/js',
-            //         repository: '2'
-            //     },
-            //     {
-            //         type: 'phpunit',
-            //         command: 'depot test',
-            //         path: '',
-            //         vmPath: '/aml/tests',
-            //         repository: '2'
-            //     }
-            // ],
-            // currentProject: '1'
         }
     },
     mutations: {
         UPDATE (state, payload) {
             config.set(payload)
+        },
+        FRAMEWORK_CHANGE (state, { project, repositoryId, framework }) {
+            // @TODO: Projects, repositories and frameworks must exist before this can work properly.
+            try {
+                const projectIndex = _findIndex(config.store.projects, { id: project.id })
+                const repositoryIndex = _findIndex(config.store.projects[projectIndex].repositories, { id: repositoryId })
+                const frameworkIndex = _findIndex(config.store.projects[projectIndex].repositories[repositoryIndex].frameworks, { id: framework.id })
+                console.log(projectIndex, repositoryIndex, frameworkIndex)
+                if (projectIndex < 0 || repositoryIndex < 0 || frameworkIndex < 0) {
+                    throw new Error()
+                }
+                config.set(
+                    `projects.${projectIndex}.repositories.${repositoryIndex}.frameworks.${frameworkIndex}`,
+                    framework.persist()
+                )
+            } catch (Error) {
+                console.log('An error occurred while attempting to store the framework changes.', Error)
+            }
         }
     },
     actions: {
         update: ({ state, commit }, payload) => {
             commit('UPDATE', payload)
+        },
+        frameworkChange: ({ state, commit, getters }, { repositoryId, framework }) => {
+            const project = getters.currentProject
+            if (project) {
+                commit('FRAMEWORK_CHANGE', { project, repositoryId, framework })
+            }
         }
     },
     getters: {
@@ -76,6 +72,22 @@ export default {
                 current = projects[0]
             }
             return _find(projects, { id: current })
+        },
+        repositories: (state, getters) => {
+            const project = getters.currentProject
+            if (project) {
+                return _get(project, 'repositories', [])
+            }
+
+            return []
+        },
+        frameworks: (state, getters) => repositoryId => {
+            const repository = _find(getters.repositories, { id: repositoryId })
+            if (repository) {
+                return _get(repository, 'frameworks', [])
+            }
+
+            return []
         }
     }
 }

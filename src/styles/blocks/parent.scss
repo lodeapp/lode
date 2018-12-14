@@ -9,6 +9,18 @@
 
             .heading {
                 flex-grow: 1;
+
+                .toggle {
+                    display: inline-block;
+                    margin: 0 0 0 4px;
+                    width: 1.3rem;
+
+                    &:hover,
+                    &:focus,
+                    &:active {
+                        color: var(--link-color);
+                    }
+                }
             }
 
             & > .status {

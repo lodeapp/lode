@@ -46,12 +46,13 @@
             v-for="framework in repository.frameworks"
             :key="framework.id"
             :framework="framework"
+            @change="storeState"
         />
     </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import Framework from '@/components/Framework'
 
 export default {
@@ -81,13 +82,12 @@ export default {
             return this.show ? 'expanded' : 'collapsed'
         },
         ...mapGetters({
-            settings: 'config/settings',
+            storedFrameworks: 'config/frameworks',
             displayStatus: 'status/display'
         })
     },
     created () {
-        const frameworks = this.settings('frameworks')
-        frameworks.filter(framework => framework.repository === this.repository.id).forEach(framework => {
+        this.storedFrameworks(this.repository.id).forEach(framework => {
             this.repository.addFramework(framework)
         })
     },
@@ -104,7 +104,13 @@ export default {
             this.repository.frameworks.forEach(framework => {
                 framework.stop()
             })
-        }
+        },
+        storeState (framework) {
+            this.frameworkChange({ repositoryId: this.repository.id, framework })
+        },
+        ...mapActions({
+            frameworkChange: 'config/frameworkChange'
+        })
     }
 }
 </script>
