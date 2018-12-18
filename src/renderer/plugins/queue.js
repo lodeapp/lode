@@ -1,14 +1,14 @@
 import Bottleneck from 'bottleneck'
 
 export default class Queue {
-    install (Vue) {
-        Vue.prototype.$queue = this
-    }
-
     constructor () {
         this.limiter = new Bottleneck({
             maxConcurrent: 3
         })
+    }
+
+    install (Vue) {
+        Vue.prototype.$queue = this
     }
 
     add (job) {

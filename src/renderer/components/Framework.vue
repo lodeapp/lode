@@ -59,7 +59,7 @@
             <div v-if="framework.expandFilters" class="filters">
                 <Ledger :framework="framework" />
                 <!-- <div class="search" v-if="framework.suites.length > 1">
-                    <input class="form-control input-block input-sm" placeholder="Filter suites">
+                    <input type="search" class="form-control input-block input-sm" placeholder="Filter suites">
                 </div> -->
             </div>
         </div>
@@ -119,7 +119,7 @@ export default {
         this.framework.on('error', error => {
             this.$alert.show({
                 message: this.$string.set('The process for **:0** terminated unexpectedly.', this.framework.name),
-                troubleshoot: this.framework.troubleshoot(error),
+                help: this.framework.troubleshoot(error),
                 type: 'error',
                 pre: error
             })

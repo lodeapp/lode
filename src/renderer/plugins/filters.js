@@ -1,4 +1,4 @@
-export default {
+export default class Filters {
     install (Vue) {
         Vue.filter('lowercase', (value) => {
             return value.toLowerCase()

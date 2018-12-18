@@ -4,5 +4,6 @@ export type MenuEvent =
   | 'show-preferences'
   | 'open-working-directory'
   | 'show-about'
+  | 'reset-settings'
   | 'boomtown'
   | 'open-external-editor'

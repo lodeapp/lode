@@ -51,6 +51,7 @@ export interface IFramework extends EventEmitter {
     start (): Promise<void>
     stop (): Promise<void>
     refresh (): Promise<void>
+    persist (): object
 }
 
 /**

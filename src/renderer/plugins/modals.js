@@ -1,10 +1,10 @@
 export default class Modals {
-    install (Vue) {
-        Vue.prototype.$modal = this
-    }
-
     constructor (store) {
         this.store = store
+    }
+
+    install (Vue) {
+        Vue.prototype.$modal = this
     }
 
     open (name, properties = {}, callback = null) {

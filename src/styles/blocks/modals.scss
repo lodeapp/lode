@@ -76,19 +76,6 @@
             color: $black;
             line-height: 1;
         }
-
-        .close {
-            font-size: 2.5rem;
-            font-weight: 300;
-            line-height: .7em;
-            margin-left: auto; // Force icon to the right even when there's no .modal-title
-            opacity: .3;
-
-            &:hover,
-            &:focus {
-                opacity: .6;
-            }
-        }
     }
 
     .modal-title {
@@ -108,6 +95,28 @@
                 margin-bottom: 0;
             }
         }
+
+        & > form {
+            margin: calc(var(--spacing-double) * -1);
+            padding: 0 var(--spacing-double);
+
+            & > h5 {
+                margin-top: var(--spacing);
+                margin-bottom: calc(var(--spacing) * -1);
+            }
+
+            & > .form-group {
+
+                .input-block {
+                    width: 100%;
+                }
+
+                & > hr {
+                    margin-left: calc(var(--spacing-double) * -1);
+                    margin-right: calc(var(--spacing-double) * -1);
+                }
+            }
+        }
     }
 
     .modal-footer {
@@ -123,13 +132,21 @@
             padding-right: 0;
         }
 
+        .btn {
+            min-width: 90px;
+        }
+
         .btn + .btn {
             margin-bottom: 0;
             margin-left: 5px;
         }
+
+        &.separated {
+            justify-content: space-between;
+        }
     }
 
-    .modal-troubleshoot {
+    .modal-help {
         background-color: $blue-100;
         border-top: 1px solid $blue-300;
         box-shadow: inset 0 -4px 0 transparentize($blue-300, .8);

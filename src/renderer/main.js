@@ -3,40 +3,39 @@ import axios from 'axios'
 import App from './App'
 import router from './router'
 import store from './store'
-import icons from './plugins/icons'
+
+// Plugins and directives
+import Events from './plugins/events'
+import Icons from './plugins/icons'
 import Queue from './plugins/queue'
 import Modals from './plugins/modals'
 import Alerts from './plugins/alerts'
 import Strings from './plugins/strings'
-import filters from './plugins/filters'
-import markdown from './directives/markdown'
-import { ipcRenderer } from 'electron'
+import Filters from './plugins/filters'
+import Markdown from './directives/markdown'
 
+// Global / recursive components
+import Test from '@/components/Test'
+
+// Styles
 import '../styles/app.scss'
 
-if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 
-Vue.use(icons)
+// Register ipcRendered event handling
+Vue.use(new Events(store))
+
+Vue.use(new Icons())
 Vue.use(new Queue())
 Vue.use(new Modals(store))
 Vue.use(new Alerts(store))
 Vue.use(new Strings('en-US'))
-Vue.use(filters)
+Vue.use(new Filters())
 
-Vue.directive('markdown', markdown(Vue))
-
-ipcRenderer.on('blur', () => {
-    document.body.classList.remove('is-focused')
-})
-
-ipcRenderer.on('focus', () => {
-    document.body.classList.add('is-focused')
-})
+Vue.directive('markdown', Markdown(Vue))
 
 // Register global or recursive components
-import Test from '@/components/Test'
 Vue.component('Test', Test)
 
 /* eslint-disable no-new */

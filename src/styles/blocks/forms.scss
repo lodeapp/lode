@@ -1,0 +1,30 @@
+input::placeholder {
+    color: var(--input-placeholder-text-color);
+}
+
+.form-group {
+
+    .form-control {
+        background-color: transparent;
+
+        &:focus {
+            box-shadow: none;
+        }
+    }
+}
+
+.remove-row {
+    -webkit-appearance: none;
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+    color: palette('red', 200);
+    margin-left: var(--spacing-half);
+    text-align: center;
+
+    &:hover,
+    &:focus {
+        color: palette('red', 600);
+        outline: 0;
+    }
+}

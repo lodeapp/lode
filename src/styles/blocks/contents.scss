@@ -3,12 +3,36 @@
     flex-direction: column;
     flex-grow: 1;
 
+    .no-projects {
+        height: 100vw;
+        padding: 210px 0 0;
+        text-align: center;
+        width: 100%;
+
+        h1 {
+            margin-bottom: var(--spacing-double);
+        }
+    }
+
     main {
         display: flex;
         flex-grow: 1;
 
-        & > :first-child {
+        &:not(.no-repositories) > :first-child {
             border-right: 1px solid $primary-border;
+        }
+
+        &.no-repositories {
+
+            & > div {
+                padding: 210px 0 0;
+                text-align: center;
+                width: 100%;
+
+                h2 {
+                    margin-bottom: var(--spacing-double);
+                }
+            }
         }
 
         .pane {

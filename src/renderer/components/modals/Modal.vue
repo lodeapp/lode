@@ -6,9 +6,6 @@
                     <slot name="header">
                         <h3 class="modal-title" v-html="title"></h3>
                     </slot>
-                    <button type="button" class="close" aria-label="::.Close.::" @click="$modal.close()" v-if="dismissable">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
                 </div>
 
                 <div class="modal-body">
@@ -17,10 +14,10 @@
                     </slot>
                 </div>
 
-                <slot name="troubleshoot">
-                    <div v-if="troubleshoot" class="modal-troubleshoot">
+                <slot name="help">
+                    <div v-if="help" class="modal-help">
                         <Icon symbol="info" />
-                        <div v-markdown>{{ troubleshoot }}</div>
+                        <div v-markdown>{{ help }}</div>
                     </div>
                 </slot>
 
@@ -58,7 +55,7 @@ export default {
             type: String,
             default: ''
         },
-        troubleshoot: {
+        help: {
             type: String,
             default: ''
         },
@@ -81,14 +78,6 @@ export default {
         }
     },
     mounted () {
-        if (this.dismissable) {
-            this.escapeHandler = (e) => {
-                if (this.$input.isEscapeKey(e)) {
-                    this.close()
-                }
-            }
-            document.addEventListener('keydown', this.escapeHandler)
-        }
         const inputs = this.$el.getElementsByTagName('input')
         if (inputs.length) {
             _first(inputs).focus()

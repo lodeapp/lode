@@ -17,11 +17,17 @@
 <script>
 import { mapGetters } from 'vuex'
 import AlertStack from '@/components/modals/AlertStack'
+import ResetSettings from '@/components/modals/ResetSettings'
+import AddProject from '@/components/modals/AddProject'
+import AddRepositories from '@/components/modals/AddRepositories'
 
 export default {
     name: 'ModalController',
     components: {
-        AlertStack
+        AlertStack,
+        ResetSettings,
+        AddProject,
+        AddRepositories
     },
     computed: {
         ...mapGetters({

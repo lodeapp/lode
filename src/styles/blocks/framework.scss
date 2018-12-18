@@ -48,10 +48,6 @@
 
             input {
                 color: var(--input-text-color);
-
-                &::-webkit-input-placeholder {
-                    color: var(--input-placeholder-text-color);
-                }
             }
         }
     }

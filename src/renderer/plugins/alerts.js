@@ -1,10 +1,10 @@
-export default class Modals {
-    install (Vue) {
-        Vue.prototype.$alert = this
-    }
-
+export default class Alerts {
     constructor (store) {
         this.store = store
+    }
+
+    install (Vue) {
+        Vue.prototype.$alert = this
     }
 
     show (alert) {

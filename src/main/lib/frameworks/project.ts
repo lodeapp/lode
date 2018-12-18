@@ -5,6 +5,7 @@ import { IRepository, Repository } from '@lib/frameworks/repository'
 
 export interface IProject extends EventEmitter {
     readonly id: string
+    readonly name: string
     repositories: Array<IRepository>
     status: FrameworkStatus
     selected: boolean
@@ -12,13 +13,26 @@ export interface IProject extends EventEmitter {
 
 export class Project extends EventEmitter implements IProject {
     public readonly id: string
+    public readonly name: string
     public repositories: Array<IRepository> = []
     public status: FrameworkStatus = 'idle'
     public selected: boolean = false
 
-    constructor (id?: string) {
+    constructor (name: string, id?: string) {
         super()
+        this.name = name
         this.id = id || uuid()
+    }
+
+    /**
+     * Prepares the repository for persistence.
+     */
+    public persist (): object {
+        return {
+            id: this.id,
+            name: this.name,
+            repositories: this.repositories.map(repository => repository.persist())
+        }
     }
 
     /**

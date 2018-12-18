@@ -1,13 +1,13 @@
 import _get from 'lodash/get'
 
 export default class Translation {
-    install (Vue, options) {
-        Vue.prototype.$trans = this
-    }
-
     constructor (locale) {
         this.locale = locale
         this.intervalRegExp = /^[\{\[]([^\[\]\{\}]*)[\}\]]\s?(.*)/
+    }
+
+    install (Vue, options) {
+        Vue.prototype.$trans = this
     }
 
     /**

@@ -14,6 +14,12 @@
     min-width: 0;
     opacity: .4;
 
+    // Hide the titlebar if empty, but leave the block so the
+    // window can still be dragged at all times from its position.
+    &.empty {
+        opacity: 0 !important;
+    }
+
     .titlebar-section {
         -webkit-app-region: no-drag;
         align-items: center;

@@ -154,6 +154,11 @@ export function buildDefaultMenu (): Electron.Menu {
     })
   }
 
+  const resetSettings: Electron.MenuItemConstructorOptions = {
+    label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
+    click: emit('reset-settings')
+  }
+
   // const submitIssueItem: Electron.MenuItemConstructorOptions = {
   //   label: __DARWIN__ ? 'Report Issue…' : 'Report issue…',
   //   click() {
@@ -202,6 +207,8 @@ export function buildDefaultMenu (): Electron.Menu {
     // contactSupportItem,
     // showUserGuides,
     // showLogsItem,
+    separator,
+    resetSettings
   ]
 
   if (__DEV__) {

@@ -13,6 +13,8 @@ export interface IRepository extends EventEmitter {
     frameworks: Array<IFramework>
     status: FrameworkStatus
     selected: boolean
+
+    persist (): object
 }
 
 export class Repository extends EventEmitter implements IRepository {
@@ -28,6 +30,17 @@ export class Repository extends EventEmitter implements IRepository {
         this.id = id || uuid()
         this.path = path
         this.name = this.path.split('/').pop() || 'untitled'
+    }
+
+    /**
+     * Prepares the repository for persistence.
+     */
+    public persist (): object {
+        return {
+            id: this.id,
+            path: this.path,
+            frameworks: this.frameworks.map(framework => framework.persist())
+        }
     }
 
     /**

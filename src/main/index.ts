@@ -1,6 +1,6 @@
 import * as fixPath from 'fix-path'
 import { app, BrowserWindow, Menu } from 'electron'
-import { buildDefaultMenu } from './menu/index'
+import { buildDefaultMenu } from './menu'
 
 fixPath()
 

@@ -1,7 +1,7 @@
 <template>
     <Modal
         :dismissable="false"
-        :troubleshoot="troubleshoot"
+        :help="help"
         :class="[alerts.length > 1 ? 'modal--paged' : '']"
         size="lg"
     >
@@ -76,8 +76,8 @@ export default {
         pre () {
             return _get(this.current, 'pre')
         },
-        troubleshoot () {
-            return _get(this.current, 'troubleshoot')
+        help () {
+            return _get(this.current, 'help')
         },
         type () {
             return _get(this.current, 'type', 'error')
