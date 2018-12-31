@@ -84,7 +84,7 @@
 
     .modal-body {
         flex: 1 1 auto;
-        max-height: 300px;
+        max-height: 340px;
         overflow: auto;
         padding: var(--spacing-double);
         position: relative;
@@ -116,6 +116,10 @@
                     margin-right: calc(var(--spacing-double) * -1);
                 }
             }
+        }
+
+        & > .fluid {
+            margin: calc(var(--spacing-double) * -1);
         }
     }
 
@@ -157,6 +161,8 @@
         i {
             color: $blue-600;
             margin-right: 10px;
+            min-width: 20px;
+            text-align: center;
         }
 
         p {

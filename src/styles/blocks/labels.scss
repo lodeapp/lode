@@ -9,7 +9,7 @@
             display: block;
             height: 100%;
             position: absolute;
-            right: 2px;
+            right: 0;
             top: 0;
             width: 15px;
         }
@@ -21,7 +21,7 @@
             font-size: 1.4rem;
             line-height: 0;
             position: relative;
-            right: -3px;
+            right: -2px;
             top: 1px;
         }
     }
@@ -70,16 +70,16 @@
 
     &--incomplete,
     &--skipped {
-        border-color: theme-color('incomplete');
-        color: theme-color('incomplete');
+        border-color: theme-color('incomplete', 'step', 200);
+        color: theme-color('incomplete', 'step', 200);
 
         &.is-active {
-            background-color: theme-color('incomplete');
-            border-color: theme-color('incomplete', 'step', 100);
+            background-color: theme-color('incomplete', 'step', 100);
+            border-color: theme-color('incomplete', 'step', 200);
             color: theme-color('incomplete', '000');
 
             &::before {
-                border-color: theme-color('incomplete', 'step', 100);
+                border-color: theme-color('incomplete', 'step', 200);
             }
 
             &:hover,

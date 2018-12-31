@@ -1,2 +1,7 @@
-export { Jest } from './jest/framework'
-export { PHPUnit } from './phpunit/framework'
+import { Jest } from './jest/framework'
+import { PHPUnit } from './phpunit/framework'
+
+export { Jest }
+export { PHPUnit }
+
+export const Frameworks = [Jest, PHPUnit]

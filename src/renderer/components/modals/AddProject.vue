@@ -19,10 +19,10 @@
             </dl>
         </form>
         <div slot="footer" class="modal-footer tertiary separated">
-            <button type="button" class="btn btn-sm" @click="$emit('hide')">
+            <button type="button" class="btn btn-sm" @click="cancel">
                 Cancel
             </button>
-            <button type="button" class="btn btn-sm btn-primary" @click="add">
+            <button type="button" class="btn btn-sm btn-primary" :disabled="!project" @click="add">
                 Add project
             </button>
         </div>
@@ -31,14 +31,16 @@
 
 <script>
 import { mapActions } from 'vuex'
-import { Project as ProjectModel } from '@lib/frameworks/project'
+import { Project } from '@lib/frameworks/project'
 import Modal from '@/components/modals/Modal'
+import Confirm from '@/components/modals/mixins/confirm'
 
 export default {
     name: 'AddProject',
     components: {
         Modal
     },
+    mixins: [Confirm],
     data () {
         return {
             project: ''
@@ -46,10 +48,8 @@ export default {
     },
     methods: {
         add () {
-            // @TODO: Validate project name
-            this.addProject(new ProjectModel(this.project))
-            this.$emit('hide')
-            this.$modal.open('AddRepositories')
+            this.addProject(new Project({ name: this.project }))
+            this.confirm()
         },
         ...mapActions({
             addProject: 'config/addProject'

@@ -1,0 +1,123 @@
+.repository-settings {
+    counter-reset: framework;
+
+    h5 {
+        background-color: var(--color-gray-100);
+        padding: var(--spacing);
+
+        button {
+            position: absolute;
+            top: 8px;
+            right: var(--spacing);
+        }
+    }
+
+    .repository-name {
+        margin-left: var(--spacing-half);
+
+        i {
+            margin-right: var(--spacing-half);
+        }
+    }
+
+    .toggle {
+
+        &:hover,
+        &:focus,
+        &:active {
+            color: var(--link-color);
+        }
+    }
+
+    .counters {
+        margin-left: var(--spacing);
+    }
+}
+
+.framework-settings {
+    border-top: 1px solid $primary-border;
+    box-shadow: inset 0 -4px 0 transparentize($gray-300, .8);
+    counter-increment: framework;
+    margin: 0;
+    padding: var(--spacing-double) var(--spacing);
+    position: relative;
+
+    .help {
+        display: flex;
+        padding: var(--spacing);
+        padding-left: 60px;
+        margin: calc(var(--spacing-double) * -1) calc(var(--spacing) * -1);
+        margin-bottom: var(--spacing);
+
+        i {
+            margin-right: 10px;
+        }
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    .counter {
+        border-radius: 100%;
+        border: 1px solid $blue-500;
+        box-shadow: 0 0 0 4px transparentize($blue-400, .8);
+        color: $blue-600;
+        font-size: 12px;
+        height: 25px;
+        left: 18px;
+        line-height: 24px;
+        min-width: 25px;
+        position: absolute;
+        text-align: center;
+        top: 14px;
+
+        &::before {
+            content: counters(framework, '');
+        }
+    }
+
+    &.status--pending {
+
+        .counter {
+            border: 1px solid $yellow-700;
+            box-shadow: 0 0 0 4px transparentize($yellow-500, .7);
+            color: $yellow-800;
+        }
+    }
+
+    &.status--removed {
+
+        .counter {
+            border: 1px solid $red-500;
+            box-shadow: 0 0 0 4px transparentize($red-400, .8);
+            color: $red-600;
+        }
+    }
+
+    &.is-collapsed {
+        padding: 0;
+        box-shadow: none;
+
+        & > div {
+            padding: var(--spacing);
+            padding-left: 50px;
+        }
+
+        .counter {
+            font-size: 10px;
+            height: 20px;
+            left: 20px;
+            line-height: 18px;
+            min-width: 20px;
+            top: 9px;
+        }
+
+        i {
+            color: $gray-500;
+            position: absolute;
+            right: 11px;
+            top: 11px;
+        }
+    }
+}

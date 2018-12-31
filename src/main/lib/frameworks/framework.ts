@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { IProcess } from '@lib/process/process'
 import { ProcessFactory } from '@lib/process/factory'
+import { ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
 import { Logger } from '@lib/logger'
@@ -20,6 +21,7 @@ export type SuiteList = {
  */
 export type FrameworkOptions = {
     id?: string,
+    name: string,
     type: string
     command: string
     path: string
@@ -27,6 +29,7 @@ export type FrameworkOptions = {
     runner?: string | null
     vmPath?: string | null,
     suites?: Array<ISuiteResult>
+    scanStatus?: 'found' | 'pending' | 'removed'
 }
 
 /**
@@ -34,6 +37,7 @@ export type FrameworkOptions = {
  */
 export interface IFramework extends EventEmitter {
     readonly id: string
+    readonly name: string
     readonly type: string
     readonly command: string
     readonly path: string
@@ -51,7 +55,8 @@ export interface IFramework extends EventEmitter {
     start (): Promise<void>
     stop (): Promise<void>
     refresh (): Promise<void>
-    persist (): object
+    persist (): FrameworkOptions
+    updateOptions (options: FrameworkOptions): void
 }
 
 /**
@@ -59,14 +64,15 @@ export interface IFramework extends EventEmitter {
  * and contains a set of test suites (files).
  */
 export abstract class Framework extends EventEmitter implements IFramework {
-    public readonly id: string
-    public readonly type: string
-    public readonly command: string
-    public readonly path: string
-    public readonly relativePath: string
-    public readonly runner: string | null
-    public readonly vmPath: string | null
-    public readonly runsInVm: boolean
+    public id: string
+    public name: string
+    public type: string
+    public command: string
+    public path: string
+    public relativePath: string
+    public runner: string | null
+    public vmPath: string | null
+    public runsInVm: boolean
     public process?: number
     public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
@@ -90,9 +96,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
         idle: 0
     }
 
+    static readonly defaults?: FrameworkOptions
+
     constructor (options: FrameworkOptions) {
         super()
         this.id = options.id || uuid()
+        this.name = options.name
         this.type = options.type
         this.command = options.command
         this.path = options.path
@@ -125,17 +134,70 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected abstract reload (): Promise<string>
 
     /**
+     * Test the given files for framework existence and return appropriate
+     * instantiation options, if applicable.
+     *
+     * Must be implemented by the frameworks themselves. It should be considered
+     * an abstract method, but Typescript doesn't support abstract static methods.
+     *
+     * @param repository The parsed repository to test.
+     */
+    public static spawnForDirectory (repository: ParsedRepository): FrameworkOptions | false {
+        return false
+    }
+
+    /**
+     * Hydrate a partial object with the default framework options.
+     *
+     * @param options An potentially partial framework options object.
+     */
+    public static hydrate (options?: object): FrameworkOptions {
+        options = options || {}
+        const defaults = this.defaults || {
+            name: '',
+            type: '',
+            command: '',
+            path: '',
+            relativePath: ''
+        }
+        return {
+            ...defaults,
+            ...options
+        }
+    }
+
+    /**
      * Prepares the framework for persistence.
      */
-    public persist (): object {
+    public persist (): FrameworkOptions {
         return {
             id: this.id,
+            name: this.name,
             type: this.type,
             command: this.command,
             path: this.relativePath,
+            relativePath: '',
             vmPath: this.vmPath,
             suites: this.suites.map(suite => suite.persist())
         }
+    }
+
+    /**
+     * Update this framework's options.
+     *
+     * @param options The new set of options to build the framework with.
+     */
+    public updateOptions (options: FrameworkOptions): void {
+        this.id = options.id || this.id || uuid()
+        this.name = options.name
+        this.type = options.type
+        this.command = options.command
+        this.path = options.path
+        this.relativePath = options.relativePath
+        this.runner = options.runner || null
+        this.vmPath = options.vmPath || null
+        this.runsInVm = !!this.vmPath
+        this.emit('change', this)
     }
 
     /**

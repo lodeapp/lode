@@ -1,14 +1,42 @@
-import { Framework } from '@lib/frameworks/framework'
+import * as Path from 'path'
+import * as fs from 'fs-extra'
+import { ParsedRepository } from '@lib/frameworks/repository'
+import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
 import { ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
 import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
 
 export class PHPUnit extends Framework {
-    readonly name = 'PHPUnit'
+
+    static readonly defaults: FrameworkOptions = {
+        name: 'PHPUnit',
+        type: 'phpunit',
+        command: './vendor/bin/phpunit',
+        path: '',
+        relativePath: ''
+    }
 
     // Suites are defined in the parent constructor (albeit a different class),
     // so we'll just inherit the default value from it (or risk overriding it).
     public suites!: Array<PHPUnitSuite>
+
+    /**
+     * Test the given files for framework existence and return appropriate
+     * instantiation options, if applicable.
+     *
+     * @param repository The parsed repository to test.
+     */
+    public static spawnForDirectory (repository: ParsedRepository): FrameworkOptions | false {
+        // Cheapest way to check is the PHPUnit XML config file.
+        if (repository.files.includes('phpunit.xml')) {
+            return this.hydrate()
+        }
+        // If no config file exists, check for binary inside dependencies.
+        if (fs.existsSync(Path.join(repository.path, 'vendor/bin/phpunit'))) {
+            return this.hydrate()
+        }
+        return false
+    }
 
     /**
      * Reload this framework's suites and tests.

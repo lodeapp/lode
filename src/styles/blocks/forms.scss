@@ -2,13 +2,75 @@ input::placeholder {
     color: var(--input-placeholder-text-color);
 }
 
+select {
+    -webkit-appearance: none;
+    box-shadow: 0 1px 3px rgba($black, .075) !important;
+
+    &.input-sm {
+        height: 28px;
+    }
+}
+
 .form-group {
+
+    & > :last-child {
+        margin-bottom: 0;
+    }
 
     .form-control {
         background-color: transparent;
+        width: auto;
 
         &:focus {
             box-shadow: none;
+        }
+    }
+
+    .form-error {
+        color: palette('red', 700);
+        margin-top: var(--spacing-third);
+    }
+
+    &.errored {
+
+        .form-control {
+            border-color: palette('red', 700);
+        }
+    }
+
+    dl {
+        display: flex;
+        margin: 0 0 var(--spacing);
+
+        dt {
+            flex-shrink: 0;
+            line-height: 28px;
+            margin: 0 var(--spacing) 0;
+            text-align: right;
+            width: 130px;
+        }
+
+        dd {
+            display: flex;
+            flex-grow: 1;
+
+            & > select,
+            & > input {
+                flex-grow: 1;
+            }
+
+            & > label {
+                line-height: 26px;
+                margin-right: var(--spacing);
+
+                & > input[type=radio] {
+                    margin-right: var(--spacing-third);
+                }
+            }
+
+            & > :last-child {
+                margin-right: 0;
+            }
         }
     }
 }

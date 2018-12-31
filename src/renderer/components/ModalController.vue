@@ -15,11 +15,11 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import AlertStack from '@/components/modals/AlertStack'
 import ResetSettings from '@/components/modals/ResetSettings'
 import AddProject from '@/components/modals/AddProject'
 import AddRepositories from '@/components/modals/AddRepositories'
+import AddFrameworks from '@/components/modals/AddFrameworks'
 
 export default {
     name: 'ModalController',
@@ -27,13 +27,18 @@ export default {
         AlertStack,
         ResetSettings,
         AddProject,
-        AddRepositories
+        AddRepositories,
+        AddFrameworks
+    },
+    data () {
+        return {
+            modals: this.$modal.modals
+        }
     },
     computed: {
-        ...mapGetters({
-            hasModals: 'modal/hasModals',
-            modals: 'modal/modals'
-        })
+        hasModals () {
+            return this.modals.length > 0
+        }
     },
     methods: {
         hide () {

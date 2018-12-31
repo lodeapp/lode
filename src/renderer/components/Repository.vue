@@ -4,6 +4,7 @@
         :class="[
             `status--${repository.status}`,
             `is-${expandStatus}`,
+            repository.frameworks.length ? '' : 'is-empty'
         ]"
     >
         <div class="header">
@@ -19,13 +20,13 @@
                         <Icon symbol="repo" />{{ repository.name }}
                     </span>
                 </h2>
-                <div class="float-right">
-                    <!-- <button class="btn btn-sm">
-                        <Icon symbol="sync" />
-                    </button> -->
+                <div v-if="repository.frameworks.length" class="actions">
+                    <button type="button" class="btn-link" @click="manage">
+                        <Icon symbol="kebab-vertical" />
+                    </button>
                     <button
                         class="btn btn-sm btn-primary"
-                        :disabled="!repository.frameworks.length || running || refreshing"
+                        :disabled="running || refreshing"
                         @click="run"
                     >
                         Run
@@ -33,12 +34,25 @@
                     </button>
                     <button
                         class="btn btn-sm btn-danger"
-                        :disabled="!repository.frameworks.length || !running && !refreshing"
+                        :disabled="!running && !refreshing"
                         @click="stop"
                     >
                         Stop
                     </button>
                 </div>
+                <div v-else class="float-right">
+                    <button
+                        class="btn btn-sm btn-primary"
+                        @click="scan"
+                    >
+                        Scan
+                    </button>
+                </div>
+            </div>
+            <div class="progress" v-show="show">
+                <template v-if="!repository.frameworks.length">
+                    No test frameworks loaded. <a href="#" @click.prevent="scan">Scan repository</a>.
+                </template>
             </div>
         </div>
         <Framework
@@ -82,18 +96,28 @@ export default {
             return this.show ? 'expanded' : 'collapsed'
         },
         ...mapGetters({
-            storedFrameworks: 'config/frameworks',
             displayStatus: 'status/display'
-        })
-    },
-    created () {
-        this.storedFrameworks(this.repository.id).forEach(framework => {
-            this.repository.addFramework(framework)
         })
     },
     methods: {
         toggle () {
             this.show = !this.show
+        },
+        scan () {
+            this.repository.scan()
+                .then(pending => {
+                    this.$modal.open('AddFrameworks', {
+                        repository: this.repository,
+                        scanned: true,
+                        pending
+                    })
+                })
+        },
+        manage () {
+            this.$modal.open('AddFrameworks', {
+                repository: this.repository,
+                scanned: false
+            })
         },
         run () {
             this.repository.frameworks.forEach(framework => {

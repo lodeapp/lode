@@ -14,21 +14,6 @@
         }
     }
 
-    .progress {
-        padding: var(--spacing-half) var(--spacing);
-        overflow: hidden;
-
-        .ellipsis-expander {
-            margin-left: 5px;
-            position: relative;
-            top: -1px;
-
-            &:focus {
-                outline: 0;
-            }
-        }
-    }
-
     .filters {
         padding: var(--spacing-third) var(--spacing);
 

@@ -2,24 +2,16 @@
     <Modal
         :dismissable="false"
         :title="project ? $string.set('Add repositories to :0', project.name) : 'Add repositories'"
-        help="Add as many repositories as you want (you can always add more later). We'll scan the repositories above to look for testing frameworks."
     >
         <form>
             <h5>Repositories</h5>
-            <dl v-for="(slot, index) in slots" :key="index" class="form-group">
-                <dd class="d-flex">
-                    <input
-                        type="text"
-                        class="form-control input-block input-sm"
-                        v-model="slot.path"
-                        placeholder="Repository path"
-                    >
-                    <button class="btn btn-sm" type="button" @click="choose(index)">Choose</button>
-                    <button class="remove-row" type="button" @click="removeRow(index)">
-                        <Icon symbol="x" />
-                    </button>
-                </dd>
-            </dl>
+            <RepositoryPath
+                v-for="(slot, index) in slots"
+                :key="slot.key"
+                :errored="slot.errored"
+                @input="onPathEdit(index, $event)"
+                @remove="removeRow(index)"
+            />
             <dl class="form-group">
                 <button type="button" class="btn btn-sm" @click="addRow">
                     Add another repository
@@ -30,7 +22,7 @@
             <button type="button" class="btn btn-sm" @click="$emit('hide')">
                 Cancel
             </button>
-            <button type="button" class="btn btn-sm btn-primary">
+            <button type="button" class="btn btn-sm btn-primary" :disabled="empty" @click="add">
                 Add repositories
             </button>
         </div>
@@ -38,31 +30,47 @@
 </template>
 
 <script>
-import { remote } from 'electron'
-import { mapGetters } from 'vuex'
+import { mapActions } from 'vuex'
+import { Repository } from '@lib/frameworks/repository'
 
 import Modal from '@/components/modals/Modal'
+import RepositoryPath from '@/components/RepositoryPath'
 
 export default {
     name: 'AddRepositories',
     components: {
-        Modal
+        Modal,
+        RepositoryPath
+    },
+    props: {
+        project: {
+            type: Object,
+            required: true
+        }
     },
     data () {
         return {
-            slots: [{
-                path: ''
-            }]
+            slots: []
         }
     },
     computed: {
-        ...mapGetters({
-            project: 'config/currentProject'
-        })
+        empty () {
+            return this.slots.filter(slot => slot.path).length === 0
+        },
+        hasErrors () {
+            return this.slots.filter(slot => slot.errored).length > 0
+        }
+    },
+    created () {
+        this.addRow()
     },
     methods: {
         addRow () {
-            this.slots.push({ path: '' })
+            this.slots.push({
+                key: this.$string.random(),
+                errored: false,
+                path: ''
+            })
         },
         removeRow (index) {
             this.slots.splice(index, 1)
@@ -70,17 +78,27 @@ export default {
                 this.addRow()
             }
         },
-        async choose (index) {
-            const directory = remote.dialog.showOpenDialog({
-                properties: ['createDirectory', 'openDirectory']
+        onPathEdit (index, path) {
+            this.slots[index].errored = false
+            this.slots[index].path = path
+        },
+        add () {
+            this.slots.forEach((slot, index) => {
+                if (!Repository.isValid(slot.path)) {
+                    this.slots[index].errored = true
+                }
             })
 
-            if (!directory) {
-                return
+            if (!this.hasErrors) {
+                this.slots.forEach((slot, index) => {
+                    this.addRepository(this.project.addRepository({ path: slot.path }))
+                })
+                this.$emit('hide')
             }
-
-            this.slots[index].path = directory[0]
-        }
+        },
+        ...mapActions({
+            addRepository: 'config/addRepository'
+        })
     }
 }
 </script>

@@ -11,20 +11,38 @@
                 font-weight: var(--font-weight-light);
 
                 i {
-                    line-height: 0;
+                    line-height: 5px;
                     vertical-align: middle;
                 }
 
                 .repository-name {
 
                     i {
-                        margin-right: 6px;
+                        margin-right: var(--spacing);
+                    }
+                }
+            }
+
+            & > .actions {
+
+                .btn-link {
+                    color: $gray-500;
+                    height: 100%;
+                    min-width: 15px;
+
+                    &:hover,
+                    &:focus,
+                    &:active {
+                        outline: 0;
+                        color: var(--link-color);
                     }
                 }
             }
         }
+
     }
 
+    &.is-empty,
     &.is-collapsed {
         border-bottom: 1px solid $primary-border;
     }
