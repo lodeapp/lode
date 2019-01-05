@@ -1,14 +1,11 @@
 import * as fs from 'fs'
-import * as Path from 'path'
 import { Glob } from 'glob'
 import { v4 as uuid } from 'uuid'
-import { cloneDeep } from 'lodash'
 import { EventEmitter } from 'events'
 import { Frameworks } from '@lib/frameworks'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
 import { FrameworkFactory } from '@lib/frameworks/factory'
 import { FrameworkOptions, IFramework } from '@lib/frameworks/framework'
-import { trimStart } from 'lodash'
 
 /**
  * Options to instantiate a Project with.
@@ -152,17 +149,7 @@ export class Repository extends EventEmitter implements IRepository {
      * @param options The options of the framework we're adding.
      */
     public addFramework (options: FrameworkOptions): IFramework {
-        // In case watchers are set for the options object, we'll clone it before modifying.
-        options = cloneDeep(options)
-
-        // Append the framework path with the repository path before making, but
-        // not before storing the original framework path as a relative one for persistence.
-        options.relativePath = trimStart(options.path, '/')
-        options.path = options.path ? Path.join(this.path, options.path) : this.path
-        // @TODO: determine runner from command
-        // ...
-
-        const framework: IFramework = FrameworkFactory.make(options)
+        const framework: IFramework = FrameworkFactory.make({ ...options, ...{ repositoryPath: this.path }})
         framework.on('status', this.statusListener.bind(this))
         this.frameworks.push(framework)
         return framework

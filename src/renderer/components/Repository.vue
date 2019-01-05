@@ -21,7 +21,7 @@
                     </span>
                 </h2>
                 <div v-if="repository.frameworks.length" class="actions">
-                    <button type="button" class="btn-link" @click="manage">
+                    <button type="button" class="btn-link more-actions" @click="onMoreClick">
                         <Icon symbol="kebab-vertical" />
                     </button>
                     <button
@@ -66,6 +66,7 @@
 </template>
 
 <script>
+import { remote } from 'electron'
 import { mapActions, mapGetters } from 'vuex'
 import Framework from '@/components/Framework'
 
@@ -81,8 +82,22 @@ export default {
         }
     },
     data () {
+        const { Menu, MenuItem } = remote
+
+        const menu = new Menu()
+        menu.append(new MenuItem({
+            label: 'Manage frameworks…',
+            click: () => {
+                this.manage()
+            }
+        }))
+        menu.on('menu-will-close', () => {
+            this.$el.querySelector('.more-actions').blur()
+        })
+
         return {
-            show: true
+            show: true,
+            menu
         }
     },
     computed: {
@@ -112,6 +127,15 @@ export default {
                         pending
                     })
                 })
+        },
+        onMoreClick (event) {
+            const { x, y, height } = this.$el.querySelector('.more-actions').getBoundingClientRect()
+            event.preventDefault()
+            this.menu.popup({
+                window: remote.getCurrentWindow(),
+                x: Math.ceil(x),
+                y: Math.ceil(y + height + 6)
+            })
         },
         manage () {
             this.$modal.open('AddFrameworks', {

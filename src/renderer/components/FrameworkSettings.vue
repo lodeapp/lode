@@ -160,7 +160,7 @@ export default {
                 return
             }
 
-            this.path = Path.relative(this.repository.path, directory[0])
+            this.fields.path = Path.relative(this.repository.path, directory[0])
         },
         remove () {
             this.$emit('remove')

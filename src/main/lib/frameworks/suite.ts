@@ -28,6 +28,7 @@ export interface ISuite extends Container {
     resetQueued (): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
     persist (): ISuiteResult
+    refresh (options: SuiteOptions): void
 }
 
 export interface ISuiteResult {
@@ -39,9 +40,9 @@ export interface ISuiteResult {
 
 export class Suite extends Container implements ISuite {
     public readonly id: string
-    public readonly root: string
-    public readonly vmPath: string | null
-    public readonly file: string
+    public root: string
+    public vmPath: string | null
+    public file!: string
     public meta!: Array<any>
     public relative!: string
     public running: Array<Promise<void>> = []
@@ -52,7 +53,6 @@ export class Suite extends Container implements ISuite {
         this.id = uuid()
         this.root = options.path
         this.vmPath = options.vmPath || null
-        this.file = result.file
         this.build(result)
     }
 
@@ -66,6 +66,12 @@ export class Suite extends Container implements ISuite {
             tests: this.tests.map((test: ITest) => test.persist()),
             testsLoaded: this.testsLoaded
         }
+    }
+
+    public refresh (options: SuiteOptions): void {
+        this.root = options.path
+        this.vmPath = options.vmPath || null
+        this.build(this.persist())
     }
 
     /**
@@ -90,6 +96,7 @@ export class Suite extends Container implements ISuite {
      * @param result The result object with which to build this suite.
      */
     protected build (result: ISuiteResult): void {
+        this.file = result.file
         this.relative = Path.relative(this.vmPath || this.root, this.file)
         this.meta = result.meta!
         this.testsLoaded = typeof result.testsLoaded !== 'undefined' ? !!result.testsLoaded : true

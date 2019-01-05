@@ -11,8 +11,7 @@ export class Jest extends Framework {
         name: 'Jest',
         type: 'jest',
         command: 'yarn test',
-        path: '',
-        relativePath: ''
+        path: ''
     }
 
     /**

@@ -118,7 +118,10 @@ export default {
                 .forEach(framework => {
                     if (framework.id) {
                         const frameworkIndex = _findIndex(this.repository.frameworks, { id: framework.id })
-                        this.repository.frameworks[frameworkIndex].updateOptions(framework)
+                        this.repository.frameworks[frameworkIndex].updateOptions({
+                            ...framework,
+                            ...{ repositoryPath: this.repository.path }
+                        })
                         return true
                     }
                     this.addFramework({ repositoryId: this.repository.id, framework: this.repository.addFramework(framework) })

@@ -10,7 +10,7 @@
                 <button type="button" :disabled="running"></button>
                 <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial" :disabled="running">
             </div>
-            <Filename :path="suite.relative" />
+            <Filename :path="suite.relative" :key="suite.relative" />
         </template>
         <Test
             v-for="test in suite.tests"

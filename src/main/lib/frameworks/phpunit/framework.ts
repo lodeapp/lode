@@ -12,8 +12,7 @@ export class PHPUnit extends Framework {
         name: 'PHPUnit',
         type: 'phpunit',
         command: './vendor/bin/phpunit',
-        path: '',
-        relativePath: ''
+        path: ''
     }
 
     // Suites are defined in the parent constructor (albeit a different class),

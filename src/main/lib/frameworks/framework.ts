@@ -1,4 +1,5 @@
-import { find, findIndex } from 'lodash'
+import * as Path from 'path'
+import { find, findIndex, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { IProcess } from '@lib/process/process'
@@ -25,8 +26,7 @@ export type FrameworkOptions = {
     type: string
     command: string
     path: string
-    relativePath: string
-    runner?: string | null
+    repositoryPath?: string
     vmPath?: string | null,
     suites?: Array<ISuiteResult>
     scanStatus?: 'found' | 'pending' | 'removed'
@@ -36,13 +36,13 @@ export type FrameworkOptions = {
  * The Framework interface.
  */
 export interface IFramework extends EventEmitter {
-    readonly id: string
-    readonly name: string
-    readonly type: string
-    readonly command: string
-    readonly path: string
-    readonly relativePath: string
-    readonly runner: string | null
+    id: string
+    name: string
+    type: string
+    command: string
+    path: string
+    fullPath: string
+    runner: string | null
     process?: number
     suites: Array<ISuite>
     status: FrameworkStatus
@@ -64,15 +64,15 @@ export interface IFramework extends EventEmitter {
  * and contains a set of test suites (files).
  */
 export abstract class Framework extends EventEmitter implements IFramework {
-    public id: string
-    public name: string
-    public type: string
-    public command: string
-    public path: string
-    public relativePath: string
-    public runner: string | null
-    public vmPath: string | null
-    public runsInVm: boolean
+    public id!: string
+    public name!: string
+    public type!: string
+    public command!: string
+    public path!: string
+    public fullPath!: string
+    public runner!: string | null
+    public vmPath!: string | null
+    public runsInVm!: boolean
     public process?: number
     public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
@@ -100,15 +100,30 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
     constructor (options: FrameworkOptions) {
         super()
+        this.build(options)
+    }
+
+    /**
+     * Build the framework from the given options. This is essentially
+     * the constructor, but it's abstracted so we can rebuild the object
+     * in case the options are updated at runtime.
+     *
+     * @param options The options to build the framework with.
+     */
+    protected build (options: FrameworkOptions) {
+        const repositoryPath = options.repositoryPath || ''
+
         this.id = options.id || uuid()
         this.name = options.name
         this.type = options.type
         this.command = options.command
-        this.path = options.path
-        this.relativePath = options.relativePath
-        this.runner = options.runner || null
+        this.path = trimStart(options.path, '/')
+        this.fullPath = this.path ? Path.join(repositoryPath, this.path) : repositoryPath
         this.vmPath = options.vmPath || null
         this.runsInVm = !!this.vmPath
+
+        // @TODO: determine runner from command
+        this.runner = null
 
         // If options include suites already (i.e. persisted state), add them.
         if (options.suites) {
@@ -157,8 +172,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             name: '',
             type: '',
             command: '',
-            path: '',
-            relativePath: ''
+            path: ''
         }
         return {
             ...defaults,
@@ -175,8 +189,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             name: this.name,
             type: this.type,
             command: this.command,
-            path: this.relativePath,
-            relativePath: '',
+            path: this.path,
             vmPath: this.vmPath,
             suites: this.suites.map(suite => suite.persist())
         }
@@ -188,15 +201,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param options The new set of options to build the framework with.
      */
     public updateOptions (options: FrameworkOptions): void {
-        this.id = options.id || this.id || uuid()
-        this.name = options.name
-        this.type = options.type
-        this.command = options.command
-        this.path = options.path
-        this.relativePath = options.relativePath
-        this.runner = options.runner || null
-        this.vmPath = options.vmPath || null
-        this.runsInVm = !!this.vmPath
+        const pathsChanged = options.path !== this.path || options.vmPath !== this.vmPath
+
+        // Rebuild the options, except id if not enforced
+        this.build({ ...options, ...{ id: options.id || this.id || uuid() }})
+
+        // If framework paths have changed, we'll refresh the underlying suites
+        if (pathsChanged) {
+            this.refreshSuites()
+        }
+
         this.emit('change', this)
     }
 
@@ -453,7 +467,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         const process = ProcessFactory.make(
             this.command,
             args,
-            this.path,
+            this.fullPath,
             this.runner
         )
 
@@ -469,7 +483,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected newSuite (result: ISuiteResult): ISuite {
         return new Suite({
-            path: this.path,
+            path: this.fullPath,
             vmPath: this.vmPath
         }, result)
     }
@@ -512,13 +526,22 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return suite
     }
 
+    protected refreshSuites () {
+        this.suites.forEach(suite => {
+            suite.refresh({
+                path: this.fullPath,
+                vmPath: this.vmPath
+            })
+        })
+    }
+
     /**
      * Whether a given file is contained inside this framework's path.
      *
      * @param file The path of the file being checked.
      */
     protected fileInPath (file: string): boolean {
-        return file.startsWith(this.vmPath || this.path)
+        return file.startsWith(this.vmPath || this.fullPath)
     }
 
     /**
