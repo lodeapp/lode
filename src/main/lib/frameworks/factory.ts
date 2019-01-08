@@ -1,5 +1,6 @@
+import { find } from 'lodash'
 import { FrameworkOptions, IFramework } from './framework'
-import { Jest, PHPUnit } from './index'
+import { Frameworks } from '@lib/frameworks'
 
 export class FrameworkFactory {
 
@@ -7,12 +8,12 @@ export class FrameworkFactory {
         options: FrameworkOptions
     ): IFramework {
 
-        switch (options.type) {
-            case 'jest':
-                return new Jest(options)
+        const framework = find(Frameworks, framework => framework.defaults.type === options.type)
 
-            case 'phpunit':
-                return new PHPUnit(options)
+        if (framework) {
+            // Create a new framework with hydrated options, in case defaults
+            // ever change significantly from any persisted state.
+            return new framework(framework.hydrate(options))
         }
 
         throw new Error(`Unknown framework type "${options.type}"`)

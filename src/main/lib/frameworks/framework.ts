@@ -21,15 +21,15 @@ export type SuiteList = {
  * Options to instantiate a Framework with.
  */
 export type FrameworkOptions = {
-    id?: string,
-    name: string,
+    id?: string
+    name: string
     type: string
     command: string
     path: string
     repositoryPath?: string
     vmPath?: string | null,
     suites?: Array<ISuiteResult>
-    scanStatus?: 'found' | 'pending' | 'removed'
+    scanStatus?: 'pending' | 'removed'
 }
 
 /**

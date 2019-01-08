@@ -19,7 +19,7 @@ import AlertStack from '@/components/modals/AlertStack'
 import ResetSettings from '@/components/modals/ResetSettings'
 import AddProject from '@/components/modals/AddProject'
 import AddRepositories from '@/components/modals/AddRepositories'
-import AddFrameworks from '@/components/modals/AddFrameworks'
+import ManageFrameworks from '@/components/modals/ManageFrameworks'
 
 export default {
     name: 'ModalController',
@@ -28,7 +28,7 @@ export default {
         ResetSettings,
         AddProject,
         AddRepositories,
-        AddFrameworks
+        ManageFrameworks
     },
     data () {
         return {

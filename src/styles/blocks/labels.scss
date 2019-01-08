@@ -69,7 +69,8 @@
     }
 
     &--incomplete,
-    &--skipped {
+    &--skipped,
+    &--pending {
         border-color: theme-color('incomplete', 'step', 200);
         color: theme-color('incomplete', 'step', 200);
 
@@ -111,7 +112,8 @@
         }
     }
 
-    &--failed {
+    &--failed,
+    &--removed {
         border-color: theme-color('failed');
         color: theme-color('failed');
 
@@ -132,7 +134,8 @@
         }
     }
 
-    &--queued {
+    &--queued,
+    &--normal {
         border-color: theme-color('queued', 'step', 200);
         color: theme-color('queued', 'step', 200);
 

@@ -121,7 +121,7 @@ export default {
         scan () {
             this.repository.scan()
                 .then(pending => {
-                    this.$modal.open('AddFrameworks', {
+                    this.$modal.open('ManageFrameworks', {
                         repository: this.repository,
                         scanned: true,
                         pending
@@ -138,7 +138,7 @@ export default {
             })
         },
         manage () {
-            this.$modal.open('AddFrameworks', {
+            this.$modal.open('ManageFrameworks', {
                 repository: this.repository,
                 scanned: false
             })

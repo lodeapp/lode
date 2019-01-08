@@ -1,4 +1,5 @@
 import { remote } from 'electron'
+import { Logger } from '@lib/logger'
 import Config from 'electron-store'
 import _cloneDeep from 'lodash/cloneDeep'
 import _find from 'lodash/find'
@@ -31,6 +32,12 @@ export default {
             state.projects[projectIndex].repositories.push(repository.persist())
             config.set(state)
         },
+        REPOSITORY_CHANGE (state, repository) {
+            const projectIndex = _findIndex(state.projects, { id: state.currentProject })
+            const repositoryIndex = _findIndex(state.projects[projectIndex].repositories, { id: repository.id })
+            state.projects[projectIndex].repositories[repositoryIndex] = repository.persist()
+            config.set(state)
+        },
         ADD_FRAMEWORK (state, { repositoryId, framework }) {
             const projectIndex = _findIndex(state.projects, { id: state.currentProject })
             const repositoryIndex = _findIndex(state.projects[projectIndex].repositories, { id: repositoryId })
@@ -50,7 +57,7 @@ export default {
                     framework.persist()
                 )
             } catch (Error) {
-                console.log('An error occurred while attempting to store the framework changes.', Error)
+                Logger.info.log('An error occurred while attempting to store the framework changes.', Error)
             }
         }
     },
@@ -64,6 +71,9 @@ export default {
         },
         addRepository: ({ commit }, repository) => {
             commit('ADD_REPOSITORY', repository)
+        },
+        repositoryChange: ({ commit }, repository) => {
+            commit('REPOSITORY_CHANGE', repository)
         },
         addFramework: ({ commit }, { repositoryId, framework }) => {
             commit('ADD_FRAMEWORK', { repositoryId, framework })

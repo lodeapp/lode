@@ -42,6 +42,10 @@
     padding: var(--spacing-double) var(--spacing);
     position: relative;
 
+    h6 {
+        min-height: 18px;
+    }
+
     .help {
         display: flex;
         padding: var(--spacing);

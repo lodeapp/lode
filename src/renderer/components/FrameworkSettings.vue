@@ -22,45 +22,49 @@
                 <dt>
                     <label>Name</label>
                 </dt>
-                <dd>
+                <dd :class="{ errored: validator.hasErrors('name') }">
                     <input
                         type="text"
                         class="form-control input-sm"
                         v-model="fields.name"
                         placeholder=""
                     >
+                    <div v-if="validator.hasErrors('name')" class="form-error">{{ validator.getErrors('name') }}</div>
                 </dd>
             </dl>
             <dl>
                 <dt>
                     <label>Framework</label>
                 </dt>
-                <dd>
+                <dd :class="{ errored: validator.hasErrors('type') }">
                     <select class="form-control form-select input-sm" v-model="fields.type">
                         <option>Select Test Framework</option>
                         <option value="jest">Jest</option>
                         <option value="phpunit">PHPUnit</option>
                     </select>
+                    <div v-if="validator.hasErrors('type')" class="form-error">{{ validator.getErrors('type') }}</div>
                 </dd>
             </dl>
             <dl>
                 <dt>
                     <label>Command</label>
                 </dt>
-                <dd>
+                <dd :class="{ errored: validator.hasErrors('command') }">
                     <input
                         type="text"
                         class="form-control input-sm"
                         v-model="fields.command"
                         placeholder=""
                     >
+                    <div v-if="validator.hasErrors('command')" class="form-error">{{ validator.getErrors('command') }}</div>
+
                 </dd>
             </dl>
             <dl>
                 <dt>
                     <label>Tests path</label>
                 </dt>
-                <dd>
+                <dd :class="{ errored: validator.hasErrors('path') }">
                     <input
                         type="text"
                         class="form-control input-sm"
@@ -68,6 +72,7 @@
                         placeholder="(Optional)"
                     >
                     <button class="btn btn-sm" type="button" @click="choose">Choose</button>
+                    <div v-if="validator.hasErrors('path')" class="form-error">{{ validator.getErrors('path') }}</div>
                 </dd>
             </dl>
             <dl>
@@ -89,13 +94,14 @@
                 <dt>
                     <label>Path inside VM</label>
                 </dt>
-                <dd>
+                <dd :class="{ errored: validator.hasErrors('vmPath') }">
                     <input
                         type="text"
                         class="form-control input-sm"
                         v-model="fields.vmPath"
                         placeholder="(Optional)"
                     >
+                    <div v-if="validator.hasErrors('vmPath')" class="form-error">{{ validator.getErrors('vmPath') }}</div>
                 </dd>
             </dl>
             <div class="form-actions">
@@ -125,6 +131,10 @@ export default {
         framework: {
             type: Object,
             required: true
+        },
+        validator: {
+            type: Object,
+            required: true
         }
     },
     data () {
@@ -137,12 +147,26 @@ export default {
                 runsInVm: !!this.framework.vmPath,
                 vmPath: this.framework.vmPath
             },
-            expanded: this.expand || ['pending', 'removed'].includes(this.framework.scanStatus),
-            pending: this.framework.scanStatus === 'pending',
-            removed: this.framework.scanStatus === 'removed'
+            expanded: ['pending', 'removed'].includes(this.framework.scanStatus)
+        }
+    },
+    computed: {
+        pending () {
+            return this.framework.scanStatus === 'pending'
+        },
+        removed () {
+            return this.framework.scanStatus === 'removed'
         }
     },
     watch: {
+        validator: {
+            handler (validator) {
+                if (!validator.isValid()) {
+                    this.expanded = true
+                }
+            },
+            deep: true
+        },
         fields: {
             handler (value) {
                 this.$emit('input', value)

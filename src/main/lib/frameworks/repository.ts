@@ -1,6 +1,6 @@
-import * as fs from 'fs'
 import { Glob } from 'glob'
 import { v4 as uuid } from 'uuid'
+import { findIndex } from 'lodash'
 import { EventEmitter } from 'events'
 import { Frameworks } from '@lib/frameworks'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
@@ -59,31 +59,6 @@ export class Repository extends EventEmitter implements IRepository {
             options.frameworks.forEach((framework: FrameworkOptions) => {
                 this.addFramework(framework)
             })
-        }
-    }
-
-    /**
-     * Check if a given repository path is a valid repository.
-     *
-     * @param path The path of the repository to check.
-     */
-    public static isValid (path: string): boolean {
-        return Repository.isDirectory(path)
-    }
-
-    /**
-     * Check if a given repository path is a directory.
-     *
-     * @param path The path of the repository to check.
-     */
-    public static isDirectory (path: string): boolean {
-        try {
-            return fs.statSync(path).isDirectory()
-        } catch (error) {
-            if (error.code === 'ENOENT') {
-                return false
-            }
-            throw error
         }
     }
 
@@ -153,5 +128,17 @@ export class Repository extends EventEmitter implements IRepository {
         framework.on('status', this.statusListener.bind(this))
         this.frameworks.push(framework)
         return framework
+    }
+
+    /**
+     * Remove a child framework from this repository using its unique id.
+     *
+     * @param id The id of the framework to remove.
+     */
+    public removeFramework (id: string): void {
+        const index = findIndex(this.frameworks, { id })
+        if (index > -1) {
+            this.frameworks.splice(index, 1)
+        }
     }
 }

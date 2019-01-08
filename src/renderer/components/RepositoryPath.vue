@@ -1,5 +1,5 @@
 <template>
-    <dl class="form-group" :class="{ errored }">
+    <dl class="form-group" :class="{ errored: validator.hasErrors('path') }">
         <dd class="d-flex">
             <input
                 type="text"
@@ -12,7 +12,7 @@
                 <Icon symbol="x" />
             </button>
         </dd>
-        <dd v-if="errored" class="form-error">Please enter a valid directory for this repository.</dd>
+        <dd v-if="validator.hasErrors('path')" class="form-error">{{ validator.getErrors('path') }}</dd>
     </dl>
 </template>
 
@@ -22,9 +22,9 @@ import { remote } from 'electron'
 export default {
     name: 'RepositoryPath',
     props: {
-        errored: {
-            type: Boolean,
-            default: false
+        validator: {
+            type: Object,
+            required: true
         }
     },
     data () {

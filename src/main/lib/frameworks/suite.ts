@@ -68,10 +68,21 @@ export class Suite extends Container implements ISuite {
         }
     }
 
+    /**
+     * Refresh this suite's metadata.
+     *
+     * @param options The suite's new options.
+     */
     public refresh (options: SuiteOptions): void {
         this.root = options.path
         this.vmPath = options.vmPath || null
-        this.build(this.persist())
+        this.build({
+            ...this.persist(),
+            // We'll fetch the results from our suites directly, as we want to
+            // keep them after a refresh (as opposed to persisting them between
+            // different app sessions.)
+            ...{ tests: this.tests.map((test: ITest) => test.result!) }
+        })
     }
 
     /**

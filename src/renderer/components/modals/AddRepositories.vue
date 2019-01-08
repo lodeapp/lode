@@ -8,7 +8,7 @@
             <RepositoryPath
                 v-for="(slot, index) in slots"
                 :key="slot.key"
-                :errored="slot.errored"
+                :validator="slot.validator"
                 @input="onPathEdit(index, $event)"
                 @remove="removeRow(index)"
             />
@@ -31,7 +31,7 @@
 
 <script>
 import { mapActions } from 'vuex'
-import { Repository } from '@lib/frameworks/repository'
+import { RepositoryValidator } from '@lib/frameworks/validator'
 
 import Modal from '@/components/modals/Modal'
 import RepositoryPath from '@/components/RepositoryPath'
@@ -58,7 +58,7 @@ export default {
             return this.slots.filter(slot => slot.path).length === 0
         },
         hasErrors () {
-            return this.slots.filter(slot => slot.errored).length > 0
+            return this.slots.filter(slot => !slot.validator.isValid()).length > 0
         }
     },
     created () {
@@ -68,6 +68,7 @@ export default {
         addRow () {
             this.slots.push({
                 key: this.$string.random(),
+                validator: new RepositoryValidator(),
                 errored: false,
                 path: ''
             })
@@ -84,9 +85,7 @@ export default {
         },
         add () {
             this.slots.forEach((slot, index) => {
-                if (!Repository.isValid(slot.path)) {
-                    this.slots[index].errored = true
-                }
+                slot.validator.validate({ path: slot.path })
             })
 
             if (!this.hasErrors) {
