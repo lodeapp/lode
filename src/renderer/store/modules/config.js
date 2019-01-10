@@ -5,6 +5,7 @@ import _cloneDeep from 'lodash/cloneDeep'
 import _find from 'lodash/find'
 import _findIndex from 'lodash/findIndex'
 import _merge from 'lodash/merge'
+import Vue from 'vue'
 
 const config = new Config()
 const defaultSettings = {
@@ -32,6 +33,12 @@ export default {
             state.projects[projectIndex].repositories.push(repository.persist())
             config.set(state)
         },
+        REMOVE_REPOSITORY (state, repository) {
+            const projectIndex = _findIndex(state.projects, { id: state.currentProject })
+            const repositoryIndex = _findIndex(state.projects[projectIndex].repositories, { id: repository.id })
+            state.projects[projectIndex].repositories.splice(repositoryIndex, 1)
+            config.set(state)
+        },
         REPOSITORY_CHANGE (state, repository) {
             const projectIndex = _findIndex(state.projects, { id: state.currentProject })
             const repositoryIndex = _findIndex(state.projects[projectIndex].repositories, { id: repository.id })
@@ -43,6 +50,9 @@ export default {
             const repositoryIndex = _findIndex(state.projects[projectIndex].repositories, { id: repositoryId })
             state.projects[projectIndex].repositories[repositoryIndex].frameworks.push(framework.persist())
             config.set(state)
+
+            // Attempt to load tests after adding a framework
+            Vue.prototype.$queue.add(framework.queueRefresh())
         },
         FRAMEWORK_CHANGE (state, { repositoryId, framework }) {
             try {
@@ -71,6 +81,9 @@ export default {
         },
         addRepository: ({ commit }, repository) => {
             commit('ADD_REPOSITORY', repository)
+        },
+        removeRepository: ({ commit }, repository) => {
+            commit('REMOVE_REPOSITORY', repository)
         },
         repositoryChange: ({ commit }, repository) => {
             commit('REPOSITORY_CHANGE', repository)

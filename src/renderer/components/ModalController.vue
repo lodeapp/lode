@@ -15,20 +15,22 @@
 </template>
 
 <script>
-import AlertStack from '@/components/modals/AlertStack'
-import ResetSettings from '@/components/modals/ResetSettings'
 import AddProject from '@/components/modals/AddProject'
 import AddRepositories from '@/components/modals/AddRepositories'
+import AlertStack from '@/components/modals/AlertStack'
 import ManageFrameworks from '@/components/modals/ManageFrameworks'
+import RemoveRepository from '@/components/modals/RemoveRepository'
+import ResetSettings from '@/components/modals/ResetSettings'
 
 export default {
     name: 'ModalController',
     components: {
-        AlertStack,
-        ResetSettings,
         AddProject,
         AddRepositories,
-        ManageFrameworks
+        AlertStack,
+        ManageFrameworks,
+        RemoveRepository,
+        ResetSettings
     },
     data () {
         return {

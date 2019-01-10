@@ -9,9 +9,7 @@
     >
         <div class="header">
             <div class="title">
-                <div class="status tooltipped tooltipped-ne tooltipped-align-left-1" :aria-label="displayStatus(framework.status)">
-                    <span class="indicator"></span>
-                </div>
+                <Indicator :status="framework.status" tooltip-orientation="ne" />
                 <h3 class="heading">
                     <span class="toggle" @click="toggle">
                         <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
@@ -75,8 +73,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import Group from '@/components/Group'
+import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
 
@@ -84,6 +82,7 @@ export default {
     name: 'Framework',
     components: {
         Group,
+        Indicator,
         Suite,
         Ledger
     },
@@ -110,10 +109,7 @@ export default {
         },
         expandStatus () {
             return this.show ? 'expanded' : 'collapsed'
-        },
-        ...mapGetters({
-            displayStatus: 'status/display'
-        })
+        }
     },
     created () {
         this.framework.on('error', error => {

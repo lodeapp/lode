@@ -6,7 +6,7 @@
         size="lg"
     >
         <template slot="header">
-            <Icon v-if="type === 'error'" class="type--error" symbol="stop" />
+            <Icon v-if="type === 'error'" class="type--error" symbol="issue-opened" />
             <h3 class="modal-title" v-html="title"></h3>
         </template>
         <div :key="$string.from(current)">

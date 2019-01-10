@@ -11,6 +11,7 @@
                         v-for="repository in project.repositories"
                         :repository="repository"
                         :key="repository.id"
+                        @remove="handleRemoveRepository"
                     />
                 </div>
             </Pane>
@@ -22,7 +23,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import Pane from '@/components/Pane'
 import Repository from '@/components/Repository'
 import Results from '@/components/Results'
@@ -43,6 +44,15 @@ export default {
     computed: {
         ...mapGetters({
             activeTest: 'tests/active'
+        })
+    },
+    methods: {
+        handleRemoveRepository (repository) {
+            this.project.removeRepository(repository.id)
+            this.removeRepository(repository)
+        },
+        ...mapActions({
+            removeRepository: 'config/removeRepository'
         })
     }
 }

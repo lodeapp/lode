@@ -245,9 +245,21 @@
         & > .header {
 
             .status {
-                background-color: theme-color('idle');
+                background-color: theme-color('idle', 'step', -200);
                 border-color: darken(theme-color('idle'), 10%);
                 box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('idle'), .5);
+
+                &::before {
+                    border-left: 1px solid darken(theme-color('idle'), 10%);
+                    content: '';
+                    display: block;
+                    height: calc(100% + 10px);
+                    left: 8px;
+                    position: relative;
+                    top: 2px;
+                    transform: rotate(40deg);
+                    width: 100%;
+                }
             }
         }
     }

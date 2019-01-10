@@ -96,6 +96,13 @@
             }
         }
 
+        code {
+            background-color: transparentize($gray-400, .6);
+            display: inline-block;
+            margin-top: 2px;
+            padding: 2px 4px;
+        }
+
         & > form {
             margin: calc(var(--spacing-double) * -1);
             padding: 0 var(--spacing-double);

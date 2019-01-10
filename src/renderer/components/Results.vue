@@ -4,9 +4,7 @@
         <div v-else class="parent" :class="[`status--${test.status}`]">
             <div class="header">
                 <div class="title">
-                    <div class="status tooltipped tooltipped-se tooltipped-align-left-1" :aria-label="displayStatus(test.status)">
-                        <span class="indicator"></span>
-                    </div>
+                    <Indicator :status="test.status" />
                     <h2 class="heading">{{ test.displayName }}</h2>
                 </div>
                 <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -26,11 +24,13 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import Indicator from '@/components/Indicator'
 import TestResult from '@/components/TestResult'
 
 export default {
     name: 'Results',
     components: {
+        Indicator,
         TestResult
     },
     props: {
@@ -41,8 +41,7 @@ export default {
     },
     computed: {
         ...mapGetters({
-            breadcrumbs: 'tests/breadcrumbs',
-            displayStatus: 'status/display'
+            breadcrumbs: 'tests/breadcrumbs'
         })
     }
 }

@@ -1,4 +1,5 @@
 import { v4 as uuid } from 'uuid'
+import { findIndex } from 'lodash'
 import { EventEmitter } from 'events'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
 import { RepositoryOptions, IRepository, Repository } from '@lib/frameworks/repository'
@@ -79,5 +80,17 @@ export class Project extends EventEmitter implements IProject {
         repository.on('status', this.statusListener.bind(this))
         this.repositories.push(repository)
         return repository
+    }
+
+    /**
+     * Remove a child repository from this project using its unique id.
+     *
+     * @param id The id of the repository to remove.
+     */
+    public removeRepository (id: string): void {
+        const index = findIndex(this.repositories, { id })
+        if (index > -1) {
+            this.repositories.splice(index, 1)
+        }
     }
 }
