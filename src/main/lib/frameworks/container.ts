@@ -4,8 +4,8 @@ import { ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
 
 export abstract class Container extends EventEmitter {
+    protected status: Status = 'idle'
     public tests: Array<ITest> = []
-    public status: Status = 'idle'
     public selected: boolean = false
     public partial: boolean = false
     public canToggleTests: boolean = false
@@ -150,9 +150,16 @@ export abstract class Container extends EventEmitter {
         if (typeof to === 'undefined') {
             to = parseStatus(this.tests.map(test => test.status))
         }
-        const from = this.status
+        const from = this.getStatus()
         this.status = to
         this.emit('status', to, from)
+    }
+
+    /**
+     * Get this container's status.
+     */
+    public getStatus (): Status {
+        return this.status
     }
 
     /**
@@ -204,10 +211,10 @@ export abstract class Container extends EventEmitter {
      * on a queued status.
      */
     public resetQueued (): void {
-        if (this.status === 'queued') {
+        if (this.getStatus() === 'queued') {
             this.reset(false)
             return
-        } else if (this.status === 'running') {
+        } else if (this.getStatus() === 'running') {
             this.tests.forEach(test => {
                 test.resetQueued()
             })

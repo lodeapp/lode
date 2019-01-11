@@ -3,7 +3,7 @@
         :dismissable="false"
         :title="project ? $string.set('Add repositories to :0', project.name) : 'Add repositories'"
     >
-        <form>
+        <form @submit="handleSubmit">
             <h5>Repositories</h5>
             <RepositoryPath
                 v-for="(slot, index) in slots"
@@ -82,6 +82,12 @@ export default {
         onPathEdit (index, path) {
             this.slots[index].errored = false
             this.slots[index].path = path
+        },
+        handleSubmit () {
+            if (this.empty) {
+                return
+            }
+            this.add()
         },
         add () {
             this.slots.forEach((slot, index) => {

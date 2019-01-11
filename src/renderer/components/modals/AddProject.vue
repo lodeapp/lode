@@ -4,7 +4,7 @@
         title="Add project"
         help="Projects allow you to group different repositories and run their tests all at once. After adding a project you'll be prompted to add repositories. You can have as many projects as you want."
     >
-        <form>
+        <form @submit="handleSubmit">
             <dl class="form-group">
                 <dt><label for="project-name">Project name</label></dt>
                 <dd>
@@ -22,7 +22,7 @@
             <button type="button" class="btn btn-sm" @click="cancel">
                 Cancel
             </button>
-            <button type="button" class="btn btn-sm btn-primary" :disabled="!project" @click="add">
+            <button type="submit" class="btn btn-sm btn-primary" :disabled="!project" @click="add">
                 Add project
             </button>
         </div>
@@ -47,6 +47,12 @@ export default {
         }
     },
     methods: {
+        handleSubmit () {
+            if (!this.project) {
+                return
+            }
+            this.add()
+        },
         add () {
             this.addProject(new Project({ name: this.project }))
             this.confirm()

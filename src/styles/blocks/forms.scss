@@ -86,13 +86,13 @@ select {
     background-color: transparent;
     border: 0;
     box-shadow: none;
-    color: palette('red', 200);
+    color: palette('gray', 500);
     margin-left: var(--spacing-half);
     text-align: center;
 
     &:hover,
     &:focus {
-        color: palette('red', 600);
+        color: palette('red', 500);
         outline: 0;
     }
 }

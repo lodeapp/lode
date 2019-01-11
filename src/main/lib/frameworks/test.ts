@@ -5,10 +5,10 @@ import { Container } from '@lib/frameworks/container'
 export interface ITest extends Container {
     readonly id: string
     readonly name: string
-    status: Status
     result?: ITestResult
     selected: boolean
 
+    getStatus (): Status
     getDisplayName (): string
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     debrief (result: ITestResult, selective: boolean): Promise<void>
@@ -31,10 +31,10 @@ export interface ITestResult {
 }
 
 export class Test extends Container implements ITest {
+    protected status!: Status
     public readonly id: string
     public readonly name: string
     public readonly displayName: string
-    public status!: Status
     public result!: ITestResult
 
     constructor (result: ITestResult) {

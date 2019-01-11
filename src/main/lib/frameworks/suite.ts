@@ -1,6 +1,7 @@
 import * as Path from 'path'
 import { cloneDeep, merge } from 'lodash'
 import { v4 as uuid } from 'uuid'
+import { Status } from '@lib/frameworks/status'
 import { Container } from '@lib/frameworks/container'
 import { ITest, ITestResult, Test } from '@lib/frameworks/test'
 
@@ -20,6 +21,7 @@ export interface ISuite extends Container {
     canToggleTests: boolean
     testsLoaded: boolean
 
+    getStatus (): Status
     getDisplayName (): string
     buildTests (result: ISuiteResult, force: boolean): void
     toggleSelected (toggle?: boolean, cascade?: boolean): void
@@ -136,6 +138,19 @@ export class Suite extends Container implements ISuite {
      */
     protected newTest (result: ITestResult): ITest {
         return new Test(result)
+    }
+
+    /**
+     * Get this suite's status.
+     */
+    public getStatus (): Status {
+        // If tests haven't been loaded, suite status will of course come back
+        // as empty. This won't be confirmed until we actually  parse the suite
+        // and load its tests, so until then we'll force an "idle" status.
+        if (!this.testsLoaded && this.status === 'empty') {
+            return 'idle'
+        }
+        return this.status
     }
 
     /**

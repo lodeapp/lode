@@ -221,7 +221,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected updateStatus (to?: FrameworkStatus): void {
         if (typeof to === 'undefined') {
-            to = parseStatus(this.suites.map(suite => suite.status))
+            to = parseStatus(this.suites.map(suite => suite.getStatus()))
         }
         const from = this.status
         this.status = to
@@ -412,7 +412,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected cleanSuitesByStatus (status: Status): void {
         this.suites = this.suites.filter(suite => {
-            if (suite.status === status) {
+            if (suite.getStatus() === status) {
                 this.updateLedger(null, status)
                 return false
             }
@@ -426,7 +426,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected cleanStaleSuites (): void {
         this.suites = this.suites.filter(suite => {
             if (!suite.fresh) {
-                this.updateLedger(null, suite.status)
+                this.updateLedger(null, suite.getStatus())
                 return false
             }
             // After checking, reset "freshness" marker.
@@ -514,7 +514,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             suite = this.newSuite(result)
             suite.on('selective', this.updateSelected.bind(this))
             suite.on('status', this.updateLedger.bind(this))
-            this.updateLedger(suite.status)
+            this.updateLedger(suite.getStatus())
             this.suites.push(suite)
         }
         // Mark suite as freshly made before returning,

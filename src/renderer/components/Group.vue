@@ -55,7 +55,7 @@ export default {
     },
     computed: {
         status () {
-            return this.model.status
+            return this.model.getStatus()
         },
         selectStatus () {
             return this.model.selected ? 'selected' : 'unselected'
