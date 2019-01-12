@@ -78,6 +78,14 @@ export default {
         }
     },
     mounted () {
+        if (this.dismissable) {
+            this.escapeHandler = (e) => {
+                if (this.$input.isEscapeKey(e)) {
+                    this.close()
+                }
+            }
+            document.addEventListener('keydown', this.escapeHandler)
+        }
         const inputs = this.$el.getElementsByTagName('input')
         if (inputs.length) {
             _first(inputs).focus()

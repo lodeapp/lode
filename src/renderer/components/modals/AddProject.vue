@@ -2,7 +2,7 @@
     <Modal
         :dismissable="false"
         title="Add project"
-        help="Projects allow you to group different repositories and run their tests all at once. After adding a project you'll be prompted to add repositories. You can have as many projects as you want."
+        :help="!projects.length ? `Projects allow you to group different repositories and run their tests all at once. After adding a project you'll be prompted to add repositories. You can have as many projects as you want.` : ''"
     >
         <form @submit="handleSubmit">
             <dl class="form-group">
@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import { Project } from '@lib/frameworks/project'
 import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
@@ -46,8 +46,14 @@ export default {
             project: ''
         }
     },
+    computed: {
+        ...mapGetters({
+            projects: 'config/projects'
+        })
+    },
     methods: {
-        handleSubmit () {
+        handleSubmit (event) {
+            event.preventDefault()
             if (!this.project) {
                 return
             }

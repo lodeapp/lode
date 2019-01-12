@@ -13,6 +13,7 @@
     justify-content: center;
     min-width: 0;
     opacity: .4;
+    z-index: var(--title-bar-z-index);
 
     // Hide the titlebar if empty, but leave the block so the
     // window can still be dragged at all times from its position.
@@ -21,88 +22,66 @@
     }
 
     .titlebar-section {
-        -webkit-app-region: no-drag;
         align-items: center;
         border-color: inherit;
         display: flex;
         flex-direction: row;
         flex-shrink: 0;
         justify-content: center;
+        z-index: calc(var(--title-bar-z-index) + 1);
 
-        .titlebar-dropdown {
-            flex-grow: 1;
-            min-width: 0;
+        .titlebar-button {
+            -webkit-app-region: no-drag;
+            height: 100%;
+            width: 100%;
 
-            .titlebar-button {
-                height: 100%;
+            & > button {
+                -webkit-appearance: none;
+                align-items: center;
+                background-color: transparent;
+                border: 0;
+                border-radius: 3px;
+                box-shadow: none;
+                color: inherit;
+                display: flex;
+                flex-direction: row;
+                margin: 0;
+                overflow: hidden;
+                padding: 3px 8px;
+                position: relative;
+                text-align: left;
+                user-select: none;
                 width: 100%;
 
-                &:hover,
                 &:focus,
+                &:hover,
                 &:active {
-
+                    background: var(--title-bar-secondary-color);
+                    outline: 0;
                 }
 
-                & > button {
-                    -webkit-appearance: none;
-                    align-items: center;
-                    background-color: transparent;
-                    border: 0;
-                    border-radius: 3px;
-                    box-shadow: none;
-                    color: inherit;
-                    display: flex;
-                    flex-direction: row;
-                    margin: 0;
-                    overflow: hidden;
-                    padding: 3px 8px;
+                &:active {
+                    background: var(--title-bar-tertiary-color);
+                }
+
+                i {
+                    color: var(--title-bar-text-secondary-color);
+                    flex-shrink: 0;
+                    margin-right: var(--spacing);
                     position: relative;
-                    text-align: left;
-                    user-select: none;
-                    width: 100%;
+                }
 
-                    &:focus,
-                    &:hover,
-                    &:active {
-                        background: var(--title-bar-secondary-color);
-                        outline: 0;
-                    }
+                .text {
+                    display: flex;
+                    flex-direction: column;
+                    flex-grow: 1;
+                    margin-right: var(--spacing);
+                    min-width: 0;
+                    position: relative;
 
-                    i {
-                        color: var(--title-bar-text-secondary-color);
-                        flex-shrink: 0;
-                        margin-right: var(--spacing);
+                    .title {
+                        font-size: 1.1rem;
                         position: relative;
-                    }
-
-                    .text {
-                        display: flex;
-                        flex-direction: column;
-                        flex-grow: 1;
-                        margin-right: var(--spacing);
-                        min-width: 0;
-                        position: relative;
-
-                        .description {
-                            color: var(--title-bar-text-secondary-color);
-                            font-size: var(--font-size-sm);
-                            overflow: hidden;
-                            position: relative;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                        }
-
-                        .title {
-                            font-size: 1.1rem;
-                            position: relative;
-                        }
-                    }
-
-                    .dropdown-arrow {
-                        flex-shrink: 0;
-                        height: 13px;
-                        position: relative;
-                        width: 9px;
                     }
                 }
             }

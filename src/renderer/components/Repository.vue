@@ -135,8 +135,8 @@ export default {
                 })
         },
         onMoreClick (event) {
-            const { x, y, height } = this.$el.querySelector('.more-actions').getBoundingClientRect()
             event.preventDefault()
+            const { x, y, height } = this.$el.querySelector('.more-actions').getBoundingClientRect()
             this.menu.popup({
                 window: remote.getCurrentWindow(),
                 x: Math.ceil(x),

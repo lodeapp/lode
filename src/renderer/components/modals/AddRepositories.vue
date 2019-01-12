@@ -83,7 +83,8 @@ export default {
             this.slots[index].errored = false
             this.slots[index].path = path
         },
-        handleSubmit () {
+        handleSubmit (event) {
+            event.preventDefault()
             if (this.empty) {
                 return
             }

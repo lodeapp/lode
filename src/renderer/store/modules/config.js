@@ -28,6 +28,10 @@ export default {
             state.currentProject = project.id
             config.set(state)
         },
+        SWITCH_PROJECT (state, projectId) {
+            state.currentProject = projectId
+            config.set(state)
+        },
         ADD_REPOSITORY (state, repository) {
             const projectIndex = _findIndex(state.projects, { id: state.currentProject })
             state.projects[projectIndex].repositories.push(repository.persist())
@@ -79,6 +83,9 @@ export default {
         addProject: ({ commit }, project) => {
             commit('ADD_PROJECT', project)
         },
+        switchProject: ({ commit }, projectId) => {
+            commit('SWITCH_PROJECT', projectId)
+        },
         addRepository: ({ commit }, repository) => {
             commit('ADD_REPOSITORY', repository)
         },
@@ -98,6 +105,9 @@ export default {
     getters: {
         all: (state) => {
             return state
+        },
+        projects: (state) => {
+            return state.projects
         },
         currentProject: (state, getters) => {
             let current = state.currentProject

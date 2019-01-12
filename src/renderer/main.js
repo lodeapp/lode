@@ -11,6 +11,7 @@ import Queue from './plugins/queue'
 import Modals from './plugins/modals'
 import Alerts from './plugins/alerts'
 import Strings from './plugins/strings'
+import Input from './plugins/input'
 import Filters from './plugins/filters'
 import Markdown from './directives/markdown'
 
@@ -28,9 +29,10 @@ Vue.use(new Events(store))
 
 Vue.use(new Icons())
 Vue.use(new Queue())
-Vue.use(new Modals(store))
+Vue.use(new Modals())
 Vue.use(new Alerts(store))
 Vue.use(new Strings('en-US'))
+Vue.use(new Input())
 Vue.use(new Filters())
 
 Vue.directive('markdown', Markdown(Vue))

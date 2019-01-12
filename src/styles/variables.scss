@@ -6,9 +6,11 @@
     --title-bar-height: 38px;
     --title-bar-color: linear-gradient(to bottom, rgb(237, 237, 237) 0%, rgb(223, 223, 223) 100%);
     --title-bar-secondary-color: linear-gradient(to bottom, rgb(217, 217, 217) 0%, rgb(203, 203, 203) 100%);
+    --title-bar-tertiary-color: linear-gradient(to bottom, rgb(207, 207, 207) 0%, rgb(193, 193, 193) 100%);
     --title-bar-border-color: rgb(190, 190, 190);
     --title-bar-text-color: #{$gray-700};
     --title-bar-text-secondary-color: #{$gray-600};
+    --title-bar-z-index: 1000;
 
     // @TODO: Dark mode?
     // --title-bar-color: linear-gradient(to bottom, #3b3f46 0%, #2b2e33 100%);
