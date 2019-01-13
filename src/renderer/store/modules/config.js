@@ -66,10 +66,8 @@ export default {
                 if (projectIndex < 0 || repositoryIndex < 0 || frameworkIndex < 0) {
                     throw new Error()
                 }
-                config.set(
-                    `projects.${projectIndex}.repositories.${repositoryIndex}.frameworks.${frameworkIndex}`,
-                    framework.persist()
-                )
+                state.projects[projectIndex].repositories[repositoryIndex].frameworks[frameworkIndex] = framework.persist()
+                config.set(state)
             } catch (Error) {
                 Logger.info.log('An error occurred while attempting to store the framework changes.', Error)
             }
@@ -100,6 +98,12 @@ export default {
         },
         frameworkChange: ({ commit, getters }, { repositoryId, framework }) => {
             commit('FRAMEWORK_CHANGE', { repositoryId, framework })
+        },
+        logSettings: ({ getters }) => {
+            Logger.info.log({
+                object: getters['all'],
+                json: JSON.stringify(getters['all'])
+            })
         }
     },
     getters: {

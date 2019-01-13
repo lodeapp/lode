@@ -59,8 +59,7 @@ export default {
             this.menu.append(new MenuItem({
                 label: 'New Project…',
                 click: () => {
-                    this.$modal.confirm('AddProject')
-                        .catch(() => {})
+                    this.$root.addProject()
                 }
             }))
         },

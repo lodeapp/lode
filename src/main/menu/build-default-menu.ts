@@ -154,6 +154,11 @@ export function buildDefaultMenu (): Electron.Menu {
     })
   }
 
+  const logSettings: Electron.MenuItemConstructorOptions = {
+    label: __DARWIN__ ? 'Log Settings' : 'Log settings',
+    click: emit('log-settings')
+  }
+
   const resetSettings: Electron.MenuItemConstructorOptions = {
     label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
     click: emit('reset-settings')
@@ -208,6 +213,7 @@ export function buildDefaultMenu (): Electron.Menu {
     // showUserGuides,
     // showLogsItem,
     separator,
+    logSettings,
     resetSettings
   ]
 
