@@ -1,8 +1,13 @@
 <template>
-    <div v-if="currentProject" :key="currentProject.id" class="titlebar-button" @click="openMenu">
+    <div
+        v-if="$root.project"
+        :key="$string.from({ id: $root.project.id, name: $root.project.name })"
+        class="titlebar-button"
+        @click="openMenu"
+    >
         <button type="button">
             <div class="text">
-                <div class="title">{{ currentProject.name }}</div>
+                <div class="title">{{ $root.project.name }}</div>
             </div>
             <Icon symbol="code" class="rotate-90" />
         </button>
@@ -10,9 +15,9 @@
 </template>
 
 <script>
-import _sortBy from 'lodash/sortBy'
 import { remote } from 'electron'
-import { mapActions, mapGetters } from 'vuex'
+import { Config } from '@lib/config'
+import { mapActions } from 'vuex'
 
 export default {
     name: 'ProjectSelector',
@@ -21,36 +26,20 @@ export default {
             menu: null
         }
     },
-    computed: {
-        ...mapGetters({
-            projects: 'config/projects',
-            currentProject: 'config/currentProject'
-        })
-    },
     updated () {
         this.buildMenu()
     },
     methods: {
         buildMenu () {
             const { Menu, MenuItem } = remote
-
             this.menu = new Menu()
 
-            // Clone a simplified version of projects in config, so we can sort
-            // them alphabetically by name and create menu items out of them.
-            const projects = this.projects.map(({ id, name }) => ({ id, name }))
-            _sortBy(projects, [project => {
-                return this.$string.ascii(project.name)
-            }]).forEach(project => {
+            Config.get('projects').forEach(project => {
                 this.menu.append(new MenuItem({
                     label: project.name,
                     type: 'radio',
-                    checked: project.id === this.currentProject.id,
+                    checked: project.id === this.$root.project.id,
                     click: () => {
-                        // Clicking on current project doesn't have any effect.
-                        if (project.id === this.currentProject.id) {
-                            return false
-                        }
                         this.switchProject(project.id)
                     }
                 }))

@@ -3,8 +3,8 @@
         <template v-if="hasModals">
             <component
                 :key="`modal-${index}`"
-                :is="modal.name"
-                v-bind="modal.properties"
+                :is="modal"
+                v-bind="$modal.getProperties(index)"
                 :class="{ 'is-last': index + 1 === modals.length }"
                 v-for="(modal, index) in modals"
                 @hide="hide"
@@ -15,32 +15,31 @@
 </template>
 
 <script>
-import AddProject from '@/components/modals/AddProject'
+import { mapGetters } from 'vuex'
+import EditProject from '@/components/modals/EditProject'
 import AddRepositories from '@/components/modals/AddRepositories'
 import AlertStack from '@/components/modals/AlertStack'
 import ManageFrameworks from '@/components/modals/ManageFrameworks'
+import RemoveProject from '@/components/modals/RemoveProject'
 import RemoveRepository from '@/components/modals/RemoveRepository'
 import ResetSettings from '@/components/modals/ResetSettings'
 
 export default {
     name: 'ModalController',
     components: {
-        AddProject,
+        EditProject,
         AddRepositories,
         AlertStack,
         ManageFrameworks,
+        RemoveProject,
         RemoveRepository,
         ResetSettings
     },
-    data () {
-        return {
-            modals: this.$modal.modals
-        }
-    },
     computed: {
-        hasModals () {
-            return this.modals.length > 0
-        }
+        ...mapGetters({
+            hasModals: 'modals/hasModals',
+            modals: 'modals/modals'
+        })
     },
     methods: {
         hide () {

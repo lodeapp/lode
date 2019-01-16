@@ -1,8 +1,8 @@
 <template>
     <Modal
         :dismissable="false"
-        title="Add project"
-        :help="!projects.length ? `Projects allow you to group different repositories and run their tests all at once. After adding a project you'll be prompted to add repositories. You can have as many projects as you want.` : ''"
+        :title="project ? 'Edit project' : 'Add project'"
+        :help="!hasProjects ? `Projects allow you to group different repositories and run their tests all at once. After adding a project you'll be prompted to add repositories. You can have as many projects as you want.` : ''"
     >
         <form @submit="handleSubmit">
             <dl class="form-group">
@@ -12,7 +12,7 @@
                         type="text"
                         id="project-name"
                         class="form-control input-block input-sm"
-                        v-model="project"
+                        v-model="name"
                         placeholder="Project name"
                     >
                 </dd>
@@ -22,8 +22,8 @@
             <button type="button" class="btn btn-sm" @click="cancel">
                 Cancel
             </button>
-            <button type="submit" class="btn btn-sm btn-primary" :disabled="!project" @click="add">
-                Add project
+            <button type="submit" class="btn btn-sm btn-primary" :disabled="!name" @click="submit">
+                {{ project ? 'Save changes' : 'Add project' }}
             </button>
         </div>
     </Modal>
@@ -36,35 +36,47 @@ import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
 
 export default {
-    name: 'AddProject',
+    name: 'EditProject',
     components: {
         Modal
     },
     mixins: [Confirm],
+    props: {
+        project: {
+            type: Object,
+            default: null
+        }
+    },
     data () {
         return {
-            project: ''
+            name: this.project ? this.project.name : ''
         }
     },
     computed: {
         ...mapGetters({
-            projects: 'config/projects'
+            hasProjects: 'config/hasProjects'
         })
     },
     methods: {
         handleSubmit (event) {
             event.preventDefault()
-            if (!this.project) {
+            if (!this.name) {
                 return
             }
-            this.add()
+            this.submit()
         },
-        add () {
-            this.addProject(new Project({ name: this.project }))
+        submit () {
+            if (this.project) {
+                this.project.updateOptions({ name: this.name })
+                this.projectChange(this.project)
+            } else {
+                this.addProject(new Project({ name: this.name }))
+            }
             this.confirm()
         },
         ...mapActions({
-            addProject: 'config/addProject'
+            addProject: 'config/addProject',
+            projectChange: 'config/projectChange'
         })
     }
 }

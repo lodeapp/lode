@@ -15,7 +15,7 @@ export type ProjectOptions = {
 
 export interface IProject extends EventEmitter {
     readonly id: string
-    readonly name: string
+    name: string
     repositories: Array<IRepository>
     status: FrameworkStatus
     selected: boolean
@@ -23,7 +23,7 @@ export interface IProject extends EventEmitter {
 
 export class Project extends EventEmitter implements IProject {
     public readonly id: string
-    public readonly name: string
+    public name: string
     public repositories: Array<IRepository> = []
     public status: FrameworkStatus = 'idle'
     public selected: boolean = false
@@ -50,6 +50,16 @@ export class Project extends EventEmitter implements IProject {
             name: this.name,
             repositories: this.repositories.map(repository => repository.persist())
         }
+    }
+
+    /**
+     * Update this project's options.
+     *
+     * @param options The new set of options.
+     */
+    public updateOptions (options: ProjectOptions): void {
+        // Currently only the name is editable
+        this.name = options.name
     }
 
     /**

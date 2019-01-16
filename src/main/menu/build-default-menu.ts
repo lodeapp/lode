@@ -2,12 +2,25 @@ import { Menu, ipcMain } from 'electron'
 import { ensureItemIds } from './ensure-item-ids'
 import { MenuEvent } from './menu-event'
 
-
 // import { log } from '../log'
 // import { ensureDir } from 'fs-extra'
 // import { openDirectorySafe } from '../shell'
 
-export function buildDefaultMenu (): Electron.Menu {
+// We seem to be unable to simple declare menu items as "radio" without TS
+// raising an alert, so we need to forcibly cast types when defining them.
+type MenuItemType = ('normal' | 'separator' | 'submenu' | 'checkbox' | 'radio')
+
+export type ProjectSettings = {
+    id: string
+    name: string
+}
+
+export type ApplicationMenuOptions = {
+    currentProject?: string
+    projects?: Array<ProjectSettings>
+}
+
+export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electron.Menu {
   const template = new Array<Electron.MenuItemConstructorOptions>()
   const separator: Electron.MenuItemConstructorOptions = { type: 'separator' }
 
@@ -45,12 +58,42 @@ export function buildDefaultMenu (): Electron.Menu {
   const fileMenu: Electron.MenuItemConstructorOptions = {
     label: __DARWIN__ ? 'File' : '&File',
     submenu: [
-      // {
-      //   label: __DARWIN__ ? 'New Project…' : 'New project…',
-      //   id: 'new-project',
-      //   accelerator: 'CmdOrCtrl+N',
-      //   click: emit('new-project'),
-      // }
+      {
+        label: __DARWIN__ ? 'New Project…' : 'New project…',
+        id: 'new-project',
+        accelerator: 'CmdOrCtrl+N',
+        click: emit('new-project')
+      },
+      {
+        label: __DARWIN__ ? 'Switch Project' : 'Switch project',
+        id: 'switch-project',
+        enabled: options.projects && options.projects.length > 1,
+        submenu: options.projects && options.projects.length > 1 ? options.projects.map(project => {
+          return {
+            label: project.name,
+            type: <MenuItemType>'radio',
+            checked: options.currentProject === project.id,
+            click: emit('switch-project', project.id)
+          }
+        }) : undefined
+      },
+      separator,
+      {
+        id: 'rename-project',
+        label: __DARWIN__ ? 'Rename Project…' : 'Rename project…',
+        click: emit('rename-project')
+      },
+      {
+        id: 'remove-project',
+        label: __DARWIN__ ? 'Remove Project…' : 'Remove project…',
+        click: emit('remove-project')
+      },
+      separator,
+      {
+        id: 'add-repositories',
+        label: __DARWIN__ ? 'Add Repositories… ' : 'Add repositories…',
+        click: emit('add-repositories')
+      }
     ],
   }
 
@@ -111,12 +154,7 @@ export function buildDefaultMenu (): Electron.Menu {
       {
         label: '&Reload',
         id: 'reload-window',
-        // Ctrl+Alt is interpreted as AltGr on international keyboards and this
-        // can clash with other shortcuts. We should always use Ctrl+Shift for
-        // chorded shortcuts, but this menu item is not a user-facing feature
-        // so we are going to keep this one around and save Ctrl+Shift+R for
-        // a different shortcut in the future...
-        accelerator: 'CmdOrCtrl+Alt+R',
+        accelerator: 'CmdOrCtrl+Shift+R',
         click(item: any, focusedWindow: Electron.BrowserWindow) {
           if (focusedWindow) {
             focusedWindow.reload()
@@ -137,6 +175,7 @@ export function buildDefaultMenu (): Electron.Menu {
             focusedWindow.webContents.toggleDevTools()
           }
         },
+        visible: __DEV__,
       },
     ],
   })
@@ -270,12 +309,12 @@ type ClickHandler = (
  * Utility function returning a Click event handler which, when invoked, emits
  * the provided menu event over IPC.
  */
-function emit(name: MenuEvent): ClickHandler {
+function emit(name: MenuEvent, properties?: any): ClickHandler {
   return (menuItem, window) => {
     if (window) {
-      window.webContents.send('menu-event', { name })
+      window.webContents.send('menu-event', { name, properties })
     } else {
-      ipcMain.emit('menu-event', { name })
+      ipcMain.emit('menu-event', { name, properties })
     }
   }
 }

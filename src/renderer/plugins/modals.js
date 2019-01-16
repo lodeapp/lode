@@ -1,7 +1,6 @@
-import _has from 'lodash/has'
-
 export default class Modals {
-    constructor () {
+    constructor (store) {
+        this.store = store
         this.modals = []
     }
 
@@ -9,53 +8,32 @@ export default class Modals {
         Vue.prototype.$modal = this
     }
 
-    add (payload) {
-        this.modals.push(payload)
+    open (name, properties = {}, callback = null) {
+        this.store.dispatch('modals/open', name)
+        this.modals.push({ properties, callback })
     }
 
-    remove () {
+    confirm (name, properties = {}) {
+        return new Promise((resolve, reject) => {
+            this.store.dispatch('modals/open', name)
+            this.modals.push({ properties: { ...properties, ...{ resolve, reject }}})
+        })
+    }
+
+    close () {
+        this.store.dispatch('modals/close')
         const modal = this.modals.pop()
-        if (_has(modal, 'callback') && modal.callback) {
+        if (modal.callback) {
             modal.callback.call()
         }
     }
 
     clear () {
+        this.store.dispatch('modals/clear')
         this.modals = []
     }
 
-    onChange () {
-        if (this.modals.length) {
-            document.body.classList.add('modal-open')
-            return
-        }
-        document.body.classList.remove('modal-open')
-    }
-
-    all () {
-        return this.modals
-    }
-
-    hasModals () {
-        return this.modals.length > 0
-    }
-
-    open (name, properties = {}, callback = null) {
-        this.add({ name, properties, callback })
-        this.onChange()
-    }
-
-    confirm (name, properties = {}) {
-        return new Promise((resolve, reject) => {
-            this.add({
-                name,
-                properties: Object.assign(properties, { resolve, reject })
-            })
-        })
-    }
-
-    close () {
-        this.remove()
-        this.onChange()
+    getProperties (index) {
+        return this.modals[index].properties
     }
 }

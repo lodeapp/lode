@@ -1,5 +1,8 @@
 export type MenuEvent =
   | 'new-project'
+  | 'switch-project'
+  | 'add-repositories'
+  | 'rename-project'
   | 'remove-project'
   | 'show-preferences'
   | 'open-working-directory'

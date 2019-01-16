@@ -1,59 +1,65 @@
 import { remote } from 'electron'
+import { Config } from '@lib/config'
 import { Logger } from '@lib/logger'
-import Config from 'electron-store'
-import _cloneDeep from 'lodash/cloneDeep'
 import _find from 'lodash/find'
 import _findIndex from 'lodash/findIndex'
-import _merge from 'lodash/merge'
 import Vue from 'vue'
-
-const config = new Config()
-const defaultSettings = {
-    projects: [],
-    currentProject: null
-}
 
 export default {
     namespaced: true,
-    state: _merge(
-        _cloneDeep(defaultSettings),
-        _cloneDeep(config.store)
-    ),
+    state: Config.get(),
     mutations: {
         RESET (state) {
-            config.clear()
+            Config.clear()
         },
         ADD_PROJECT (state, project) {
             state.projects.push(project.persist())
             state.currentProject = project.id
-            config.set(state)
+            Config.save(state)
+        },
+        REMOVE_PROJECT (state, project) {
+            const projectIndex = _findIndex(state.projects, { id: state.currentProject })
+            state.projects.splice(projectIndex, 1)
+            // After removing project, switch to left adjacent project, or reset
+            const index = Math.max(0, (projectIndex - 1))
+            state.currentProject = typeof state.projects[index] !== 'undefined' ? state.projects[index].id : null
+            Config.save(state)
         },
         SWITCH_PROJECT (state, projectId) {
+            // Clicking on current project doesn't have any effect.
+            if (projectId === state.currentProject) {
+                return false
+            }
             state.currentProject = projectId
-            config.set(state)
+            Config.save(state)
+        },
+        PROJECT_CHANGE (state, project) {
+            const projectIndex = _findIndex(state.projects, { id: state.currentProject })
+            state.projects[projectIndex] = project.persist()
+            Config.save(state)
         },
         ADD_REPOSITORY (state, repository) {
             const projectIndex = _findIndex(state.projects, { id: state.currentProject })
             state.projects[projectIndex].repositories.push(repository.persist())
-            config.set(state)
+            Config.save(state)
         },
         REMOVE_REPOSITORY (state, repository) {
             const projectIndex = _findIndex(state.projects, { id: state.currentProject })
             const repositoryIndex = _findIndex(state.projects[projectIndex].repositories, { id: repository.id })
             state.projects[projectIndex].repositories.splice(repositoryIndex, 1)
-            config.set(state)
+            Config.save(state)
         },
         REPOSITORY_CHANGE (state, repository) {
             const projectIndex = _findIndex(state.projects, { id: state.currentProject })
             const repositoryIndex = _findIndex(state.projects[projectIndex].repositories, { id: repository.id })
             state.projects[projectIndex].repositories[repositoryIndex] = repository.persist()
-            config.set(state)
+            Config.save(state)
         },
         ADD_FRAMEWORK (state, { repositoryId, framework }) {
             const projectIndex = _findIndex(state.projects, { id: state.currentProject })
             const repositoryIndex = _findIndex(state.projects[projectIndex].repositories, { id: repositoryId })
             state.projects[projectIndex].repositories[repositoryIndex].frameworks.push(framework.persist())
-            config.set(state)
+            Config.save(state)
 
             // Attempt to load tests after adding a framework
             Vue.prototype.$queue.add(framework.queueRefresh())
@@ -67,7 +73,7 @@ export default {
                     throw new Error()
                 }
                 state.projects[projectIndex].repositories[repositoryIndex].frameworks[frameworkIndex] = framework.persist()
-                config.set(state)
+                Config.save(state)
             } catch (Error) {
                 Logger.info.log('An error occurred while attempting to store the framework changes.', Error)
             }
@@ -81,8 +87,14 @@ export default {
         addProject: ({ commit }, project) => {
             commit('ADD_PROJECT', project)
         },
+        removeProject: ({ commit }, project) => {
+            commit('REMOVE_PROJECT', project)
+        },
         switchProject: ({ commit }, projectId) => {
             commit('SWITCH_PROJECT', projectId)
+        },
+        projectChange: ({ commit }, project) => {
+            commit('PROJECT_CHANGE', project)
         },
         addRepository: ({ commit }, repository) => {
             commit('ADD_REPOSITORY', repository)
@@ -101,19 +113,16 @@ export default {
         },
         logSettings: ({ getters }) => {
             Logger.info.log({
-                object: getters['all'],
-                json: JSON.stringify(getters['all'])
+                object: Config.get(),
+                json: JSON.stringify(Config.get())
             })
         }
     },
     getters: {
-        all: (state) => {
-            return state
+        hasProjects: (state) => {
+            return state.projects.length > 0
         },
-        projects: (state) => {
-            return state.projects
-        },
-        currentProject: (state, getters) => {
+        currentProject: (state) => {
             let current = state.currentProject
             if (!state.projects.length) {
                 return false
