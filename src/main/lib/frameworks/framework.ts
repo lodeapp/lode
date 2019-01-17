@@ -25,6 +25,7 @@ export type FrameworkOptions = {
     name: string
     type: string
     command: string
+    runner?: string
     path: string
     repositoryPath?: string
     vmPath?: string | null,
@@ -116,14 +117,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.id = options.id || uuid()
         this.name = options.name
         this.type = options.type
-        this.command = options.command
+        this.command = options.command.trim()
         this.path = trimStart(options.path, '/')
         this.fullPath = this.path ? Path.join(repositoryPath, this.path) : repositoryPath
         this.vmPath = options.vmPath || null
         this.runsInVm = !!this.vmPath
-
-        // @TODO: determine runner from command
-        this.runner = null
+        this.runner = options.runner || ''
 
         // If options include suites already (i.e. persisted state), add them.
         if (options.suites) {

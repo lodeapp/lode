@@ -15,6 +15,7 @@ export interface IProcess extends EventEmitter {
 }
 
 export class DefaultProcess extends EventEmitter implements IProcess {
+    static readonly type: string = 'default'
     command: string
     spawnPath: string = ''
     args: Array<string> = []
@@ -81,9 +82,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.spawnPath = this.args.shift()!
 
         Logger.debug.log('Spawning command', { spawn: this.spawnPath, args: this.args, path: this.path })
-        Logger.debug.log(`Command: ${this.spawnPath} ${this.args.join(' ')}`)
+        Logger.debug.log(`Command: ${this.spawnPath} ${this.spawnArguments().join(' ')}`)
 
-        const spawnedProcess = spawn(this.spawnPath, this.args || [], {
+        const spawnedProcess = spawn(this.spawnPath, this.spawnArguments(), {
             cwd: this.path,
             detached: true,
             env: Object.assign({}, process.env, {
@@ -92,13 +93,19 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             })
         })
 
-        Logger.info.group(`Process ${spawnedProcess.pid}`)
-
         spawnedProcess.stdout.setEncoding('utf8')
         spawnedProcess.stderr.setEncoding('utf8')
         this.addListeners(spawnedProcess)
 
         this.process = spawnedProcess
+    }
+
+    /**
+     * Return the array of arguments with which to spawn the child process.
+     * This is a chance for runners to influence how arguments are passed.
+     */
+    protected spawnArguments (): Array<string> {
+        return this.args || []
     }
 
     /**
@@ -185,8 +192,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 code
             })
         }
-
-        Logger.info.groupEnd()
 
         this.emit('close', { process: this })
     }
