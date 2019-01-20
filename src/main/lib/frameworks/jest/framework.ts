@@ -77,7 +77,7 @@ export class Jest extends Framework {
             '--expand',
             '--colors',
             '--reporters',
-            this.runsInVm ? 'jest-lode' : Path.resolve(__dirname, '../../bridge/jest/reporter.js')
+            '@lodeapp/jest'
         ]
 
         if (__DEV__) {
@@ -98,5 +98,22 @@ export class Jest extends Framework {
         })
 
         return args.concat(this.runArgs())
+    }
+
+    /**
+     * Troubleshoot a Jest error.
+     *
+     * @param error The error to be parsed for troubleshooting.
+     */
+    protected troubleshoot (error: Error | string): string {
+        if (error instanceof Error) {
+            error = error.toString()
+        }
+
+        if (error.includes('Error: Could not resolve a module for a custom reporter.')) {
+            return 'Make sure to include the Lode Jest reporter package as a dependency in your repository. You can do this by running `yarn add --dev @lodeapp/jest` or `npm install --save-dev @lodeapp/jest` inside your repository\'s directory.'
+        }
+
+        return ''
     }
 }

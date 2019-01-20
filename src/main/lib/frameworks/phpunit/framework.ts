@@ -2,7 +2,7 @@ import * as Path from 'path'
 import * as fs from 'fs-extra'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
-import { ISuite, ISuiteResult } from '@lib/frameworks/suite'
+import { ISuiteResult, Suite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
 import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
 
@@ -18,6 +18,15 @@ export class PHPUnit extends Framework {
     // Suites are defined in the parent constructor (albeit a different class),
     // so we'll just inherit the default value from it (or risk overriding it).
     public suites!: Array<PHPUnitSuite>
+
+
+    /**
+     * The class of suite we use for this framework. Overrides the default
+     * with a PHPUnit-specific suite class.
+     */
+    protected suiteClass(): typeof Suite {
+        return PHPUnitSuite
+    }
 
     /**
      * Test the given files for framework existence and return appropriate
@@ -42,7 +51,7 @@ export class PHPUnit extends Framework {
      */
     protected reload (): Promise<string> {
         return new Promise((resolve, reject) => {
-            this.spawn(['--columns=42'].concat(this.runArgs()))
+            this.spawn(['--columns=1'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
                     report.forEach((result: ISuiteResult) => {
                         this.makeSuite(result, true)
@@ -65,7 +74,7 @@ export class PHPUnit extends Framework {
         const args = [
             '--color=always',
             '--printer',
-            '\\LodeApp\\PHPUnit\\Reporter'
+            '\\LodeApp\\PHPUnit\\LodeReporter'
         ]
 
         if (__DEV__) {
@@ -101,18 +110,6 @@ export class PHPUnit extends Framework {
     }
 
     /**
-     * Instantiates a new PHPUnit suite using a result object.
-     *
-     * @param result The standardised suite results.
-     */
-    protected newSuite (result: ISuiteResult): ISuite {
-        return new PHPUnitSuite({
-            path: this.path,
-            vmPath: this.vmPath
-        }, result)
-    }
-
-    /**
      * Troubleshoot a PHPUnit error.
      *
      * @param error The error to be parsed for troubleshooting.
@@ -122,8 +119,8 @@ export class PHPUnit extends Framework {
             error = error.toString()
         }
 
-        if (error.includes('Could not use "\\LodeApp\\PHPUnit\\Reporter" as printer: class does not exist')) {
-            return 'Make sure to include the Lode PHPUnit reporter package as a dependency in your repository. If you already have, try running `composer dump-autoload`.'
+        if (error.includes('Could not use "\\LodeApp\\PHPUnit\\LodeReporter" as printer: class does not exist')) {
+            return 'Make sure to include the Lode PHPUnit reporter package as a dependency in your repository. You can do this by running `composer require lodeapp/phpunit --dev` inside your repository\'s directory. If you already have, try running `composer dump-autoload`.'
         }
 
         return ''

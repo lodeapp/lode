@@ -71,7 +71,7 @@
     "markdown-it": "^8.4.2",
     "octicons": "^8.1.0",
     "sha1-es": "^1.8.2",
-    "strip-ansi": "^4.0.0",
+    "strip-ansi": "^5.0.0",
     "terminal.js": "^1.0.10",
     "uuid": "^3.3.2",
     "vue": "^2.5.16",

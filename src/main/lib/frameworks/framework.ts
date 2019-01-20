@@ -476,12 +476,20 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * The class of suite we use for this framework.
+     */
+    protected suiteClass(): typeof Suite {
+        return Suite
+    }
+
+    /**
      * Instantiates a new suite using a result object.
      *
      * @param result The standardised suite results.
      */
     protected newSuite (result: ISuiteResult): ISuite {
-        return new Suite({
+        const suiteClass = this.suiteClass()
+        return new suiteClass({
             path: this.fullPath,
             vmPath: this.vmPath
         }, result)

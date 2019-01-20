@@ -101,6 +101,14 @@ export default {
         parseFrameworks (scanned = false, pending = []) {
             const types = pending.map(options => options.type)
             const frameworks = this.repository.frameworks.map(framework => {
+                // If an existing framework has been removed, but user has
+                // triggered scan again, continue. This means the existing
+                // framework object will be removed, while a new, pristine
+                // object will be added.
+                if (this.removed.includes(framework.id)) {
+                    return false
+                }
+
                 const options = framework.persist()
                 if (!scanned || framework.type === 'custom') {
                     return options
@@ -116,8 +124,10 @@ export default {
                 return options
             })
 
-            // Parsed frameworks are joined by pending ones, if any
-            this.frameworks = frameworks.concat(scanned ? pending : [])
+            // Parsed frameworks are joined by pending ones (if any) when we're
+            // processing scanned frameworks. Also, filter out falsy values from
+            // the array, in case we skipped any existing framework during map.
+            this.frameworks = frameworks.filter(Boolean).concat(scanned ? pending : [])
 
             // Add a reactive validator instance to the mapped frameworks
             this.frameworks.forEach(framework => {
