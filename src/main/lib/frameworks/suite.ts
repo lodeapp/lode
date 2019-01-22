@@ -7,7 +7,8 @@ import { ITest, ITestResult, Test } from '@lib/frameworks/test'
 
 export type SuiteOptions = {
     path: string,
-    vmPath?: string | null
+    runsInVm?: boolean
+    vmPath?: string
 }
 
 export interface ISuite extends Container {
@@ -43,7 +44,8 @@ export interface ISuiteResult {
 export class Suite extends Container implements ISuite {
     public readonly id: string
     public root: string
-    public vmPath: string | null
+    public runsInVm: boolean
+    public vmPath: string
     public file!: string
     public meta!: Array<any>
     public relative!: string
@@ -54,7 +56,9 @@ export class Suite extends Container implements ISuite {
         super()
         this.id = uuid()
         this.root = options.path
-        this.vmPath = options.vmPath || null
+        this.runsInVm = options.runsInVm || false
+        options.vmPath = options.vmPath || ''
+        this.vmPath = options.vmPath.startsWith('/') ? options.vmPath : '/' + options.vmPath
         this.build(result)
     }
 
@@ -77,7 +81,9 @@ export class Suite extends Container implements ISuite {
      */
     public refresh (options: SuiteOptions): void {
         this.root = options.path
-        this.vmPath = options.vmPath || null
+        this.runsInVm = options.runsInVm || false
+        options.vmPath = options.vmPath || ''
+        this.vmPath = options.vmPath.startsWith('/') ? options.vmPath : '/' + options.vmPath
         this.build({
             ...this.persist(),
             // We'll fetch the results from our suites directly, as we want to
@@ -110,7 +116,7 @@ export class Suite extends Container implements ISuite {
      */
     protected build (result: ISuiteResult): void {
         this.file = result.file
-        this.relative = Path.relative(this.vmPath || this.root, this.file)
+        this.relative = Path.relative(this.runsInVm ? this.vmPath : this.root, this.file)
         this.meta = result.meta!
         this.testsLoaded = typeof result.testsLoaded !== 'undefined' ? !!result.testsLoaded : true
         this.running = []

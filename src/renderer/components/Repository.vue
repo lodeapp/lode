@@ -158,7 +158,7 @@ export default {
         },
         run () {
             this.repository.frameworks.forEach(framework => {
-                this.$queue.add(framework.queueStart())
+                framework.queueStart()
             })
         },
         stop () {

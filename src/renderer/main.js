@@ -10,7 +10,6 @@ import '../styles/app.scss'
 
 // Plugins and directives
 import Icons from './plugins/icons'
-import Queue from './plugins/queue'
 import Modals from './plugins/modals'
 import Alerts from './plugins/alerts'
 import Strings from './plugins/strings'
@@ -26,7 +25,6 @@ Vue.config.productionTip = false
 
 // Register plugins
 Vue.use(new Icons())
-Vue.use(new Queue())
 Vue.use(new Modals(store))
 Vue.use(new Alerts(store))
 Vue.use(new Strings('en-US'))

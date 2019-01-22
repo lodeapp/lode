@@ -130,10 +130,10 @@ export default {
             this.show = !this.show
         },
         refresh () {
-            this.$queue.add(this.framework.queueRefresh())
+            this.framework.queueRefresh()
         },
         run () {
-            this.$queue.add(this.framework.queueStart())
+            this.framework.queueStart()
         },
         async stop () {
             await this.framework.stop()

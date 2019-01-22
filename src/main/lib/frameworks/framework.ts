@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { IProcess } from '@lib/process/process'
 import { ProcessFactory } from '@lib/process/factory'
+import { queue } from '@lib/process/queue'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
@@ -28,7 +29,8 @@ export type FrameworkOptions = {
     runner?: string
     path: string
     repositoryPath?: string
-    vmPath?: string | null,
+    runsInVm?: boolean
+    vmPath?: string
     suites?: Array<ISuiteResult>
     scanStatus?: 'pending' | 'removed'
 }
@@ -42,7 +44,10 @@ export interface IFramework extends EventEmitter {
     type: string
     command: string
     path: string
+    repositoryPath: string
     fullPath: string
+    runsInVm: boolean,
+    vmPath: string | null
     runner: string | null
     process?: number
     suites: Array<ISuite>
@@ -70,9 +75,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public type!: string
     public command!: string
     public path!: string
+    public repositoryPath!: string
     public fullPath!: string
     public runner!: string | null
-    public vmPath!: string | null
+    public vmPath!: string
     public runsInVm!: boolean
     public process?: number
     public suites: Array<ISuite> = []
@@ -112,16 +118,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param options The options to build the framework with.
      */
     protected build (options: FrameworkOptions) {
-        const repositoryPath = options.repositoryPath || ''
 
         this.id = options.id || uuid()
         this.name = options.name
         this.type = options.type
         this.command = options.command.trim()
         this.path = trimStart(options.path, '/')
-        this.fullPath = this.path ? Path.join(repositoryPath, this.path) : repositoryPath
-        this.vmPath = options.vmPath || null
-        this.runsInVm = !!this.vmPath
+        this.repositoryPath = options.repositoryPath || ''
+        this.fullPath = this.path ? Path.join(this.repositoryPath, this.path) : this.repositoryPath
+        this.runsInVm = options.runsInVm || false
+        this.vmPath = options.vmPath || ''
         this.runner = options.runner || ''
 
         // If options include suites already (i.e. persisted state), add them.
@@ -189,6 +195,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             type: this.type,
             command: this.command,
             path: this.path,
+            runsInVm: this.runsInVm,
             vmPath: this.vmPath,
             suites: this.suites.map(suite => suite.persist())
         }
@@ -200,13 +207,21 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param options The new set of options to build the framework with.
      */
     public updateOptions (options: FrameworkOptions): void {
-        const pathsChanged = options.path !== this.path || options.vmPath !== this.vmPath
+        const initChanged = options.command !== this.command || this.runsInVm !== options.runsInVm
+        const pathsChanged = this.runsInVm && options.vmPath !== this.vmPath || !this.runsInVm && options.path !== this.path
 
         // Rebuild the options, except id if not enforced
         this.build({ ...options, ...{ id: options.id || this.id || uuid() }})
 
-        // If framework paths have changed, we'll refresh the underlying suites
-        if (pathsChanged) {
+        if (initChanged) {
+            // If framework initialization has changed, we need to remove the
+            // existing suites and add them again, because their unique identifier
+            // will potentially have changed (i.e. their absolute file path)
+            this.suites = []
+            this.queueRefresh()
+        } else if (pathsChanged) {
+            // Else if only framework paths have changed, we'll refresh just
+            // the underlying suites to update their relative paths.
             this.refreshSuites()
         }
 
@@ -466,7 +481,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         const process = ProcessFactory.make(
             this.command,
             args,
-            this.fullPath,
+            this.repositoryPath,
             this.runner
         )
 
@@ -491,6 +506,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         const suiteClass = this.suiteClass()
         return new suiteClass({
             path: this.fullPath,
+            runsInVm: this.runsInVm,
             vmPath: this.vmPath
         }, result)
     }
@@ -537,6 +553,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.suites.forEach(suite => {
             suite.refresh({
                 path: this.fullPath,
+                runsInVm: this.runsInVm,
                 vmPath: this.vmPath
             })
         })
@@ -622,22 +639,22 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Queue a `start` job with a unique id. This let's us cancel the job
      * if it's not yet executed simply by clearing the internal queue object.
      */
-    protected queueStart (): Function {
+    protected queueStart (): void {
         this.updateStatus('queued')
         const id = uuid()
         this.queue[id] = () => this.start()
-        return () => this.runQueued(id)
+        queue.add(() => this.runQueued(id))
     }
 
     /**
      * Queue a `refresh` job with a unique id.
      * See @queueStart for more info.
      */
-    protected queueRefresh (): Function {
+    protected queueRefresh (): void {
         this.updateStatus('queued')
         const id = uuid()
         this.queue[id] = () => this.refresh()
-        return () => this.runQueued(id)
+        queue.add(() => this.runQueued(id))
     }
 
     /**

@@ -19,6 +19,7 @@ select {
 
     .form-control {
         background-color: transparent;
+        order: 0;
         width: auto;
 
         &:focus {
@@ -26,9 +27,16 @@ select {
         }
     }
 
+    .form-help {
+        color: palette('gray', 600);
+        margin-top: var(--spacing-third);
+        order: 1;
+    }
+
     .form-error {
         color: palette('red', 700);
         margin-top: var(--spacing-third);
+        order: 2;
     }
 
     &.errored,
@@ -70,7 +78,8 @@ select {
                 }
             }
 
-            & > .form-error {
+            & > .form-error,
+            & > .form-help {
                 width: 100%;
             }
 

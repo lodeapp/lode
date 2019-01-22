@@ -23,13 +23,13 @@
                     <label>Name</label>
                 </dt>
                 <dd :class="{ errored: validator.hasErrors('name') }">
+                    <div v-if="validator.hasErrors('name')" class="form-error">{{ validator.getErrors('name') }}</div>
                     <input
                         type="text"
                         class="form-control input-sm"
                         v-model="fields.name"
                         placeholder=""
                     >
-                    <div v-if="validator.hasErrors('name')" class="form-error">{{ validator.getErrors('name') }}</div>
                 </dd>
             </dl>
             <dl>
@@ -37,12 +37,12 @@
                     <label>Framework</label>
                 </dt>
                 <dd :class="{ errored: validator.hasErrors('type') }">
+                    <div v-if="validator.hasErrors('type')" class="form-error">{{ validator.getErrors('type') }}</div>
                     <select class="form-control form-select input-sm" v-model="fields.type">
                         <option>Select Test Framework</option>
                         <option value="jest">Jest</option>
                         <option value="phpunit">PHPUnit</option>
                     </select>
-                    <div v-if="validator.hasErrors('type')" class="form-error">{{ validator.getErrors('type') }}</div>
                 </dd>
             </dl>
             <dl>
@@ -50,29 +50,14 @@
                     <label>Command</label>
                 </dt>
                 <dd :class="{ errored: validator.hasErrors('command') }">
+                    <div class="form-help">Commands are run from the repository's root directory.</div>
+                    <div v-if="validator.hasErrors('command')" class="form-error">{{ validator.getErrors('command') }}</div>
                     <input
                         type="text"
                         class="form-control input-sm"
                         v-model="fields.command"
                         placeholder=""
                     >
-                    <div v-if="validator.hasErrors('command')" class="form-error">{{ validator.getErrors('command') }}</div>
-
-                </dd>
-            </dl>
-            <dl>
-                <dt>
-                    <label>Tests path</label>
-                </dt>
-                <dd :class="{ errored: validator.hasErrors('path') }">
-                    <input
-                        type="text"
-                        class="form-control input-sm"
-                        v-model="fields.path"
-                        placeholder="(Optional)"
-                    >
-                    <button class="btn btn-sm" type="button" @click="choose">Choose</button>
-                    <div v-if="validator.hasErrors('path')" class="form-error">{{ validator.getErrors('path') }}</div>
                 </dd>
             </dl>
             <dl>
@@ -90,18 +75,35 @@
                     </label>
                 </dd>
             </dl>
+            <dl v-show="!fields.runsInVm">
+                <dt>
+                    <label>Tests path</label>
+                </dt>
+                <dd :class="{ errored: validator.hasErrors('path') }">
+                    <div class="form-help">Relative to the repository's path.</div>
+                    <div v-if="validator.hasErrors('path')" class="form-error">{{ validator.getErrors('path') }}</div>
+                    <input
+                        type="text"
+                        class="form-control input-sm"
+                        v-model="fields.path"
+                        placeholder="(Optional)"
+                    >
+                    <button class="btn btn-sm" type="button" @click="choose">Choose</button>
+                </dd>
+            </dl>
             <dl v-show="fields.runsInVm">
                 <dt>
-                    <label>Path inside VM</label>
+                    <label>Tests path inside VM</label>
                 </dt>
                 <dd :class="{ errored: validator.hasErrors('vmPath') }">
+                    <div class="form-help">Absolute path to tests inside VM.</div>
+                    <div v-if="validator.hasErrors('vmPath')" class="form-error">{{ validator.getErrors('vmPath') }}</div>
                     <input
                         type="text"
                         class="form-control input-sm"
                         v-model="fields.vmPath"
                         placeholder="(Optional)"
                     >
-                    <div v-if="validator.hasErrors('vmPath')" class="form-error">{{ validator.getErrors('vmPath') }}</div>
                 </dd>
             </dl>
             <div class="form-actions">
@@ -144,7 +146,7 @@ export default {
                 type: this.framework.type,
                 command: this.framework.command,
                 path: this.framework.path,
-                runsInVm: !!this.framework.vmPath,
+                runsInVm: this.framework.runsInVm,
                 vmPath: this.framework.vmPath
             },
             expanded: ['pending', 'removed'].includes(this.framework.scanStatus)
@@ -185,6 +187,7 @@ export default {
             }
 
             this.fields.path = Path.relative(this.repository.path, directory[0])
+            this.validator.reset('path')
         },
         remove () {
             this.$emit('remove')

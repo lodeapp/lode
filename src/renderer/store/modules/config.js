@@ -3,7 +3,6 @@ import { Config } from '@lib/config'
 import { Logger } from '@lib/logger'
 import _find from 'lodash/find'
 import _findIndex from 'lodash/findIndex'
-import Vue from 'vue'
 
 export default {
     namespaced: true,
@@ -62,7 +61,7 @@ export default {
             Config.save(state)
 
             // Attempt to load tests after adding a framework
-            Vue.prototype.$queue.add(framework.queueRefresh())
+            framework.queueRefresh()
         },
         FRAMEWORK_CHANGE (state, { repositoryId, framework }) {
             try {

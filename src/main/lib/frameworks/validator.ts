@@ -60,9 +60,11 @@ export class Validator {
     /**
      * Reset errors in the current instance.
      */
-    public reset (): void {
+    public reset (fields?: Array<string>): void {
         Object.keys(this.errors).forEach(key => {
-            this.errors[key] = []
+            if (!fields || fields.includes(key)) {
+                this.errors[key] = []
+            }
         })
     }
 
@@ -180,7 +182,7 @@ export class FrameworkValidator extends Validator {
             if (Path.isAbsolute(options.path)) {
                 this.addError('path', 'Please enter a path relative to the repository directory.')
             } else if (!this.isDirectory(Path.join(this.repositoryPath, options.path))) {
-                this.addError('path', 'Please enter a valid directory.')
+                this.addError('path', 'Please enter a valid directory relative to the repository directory.')
             }
         }
 
