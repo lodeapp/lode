@@ -73,7 +73,6 @@
 </template>
 
 <script>
-import Group from '@/components/Group'
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
@@ -81,7 +80,6 @@ import Ledger from '@/components/Ledger'
 export default {
     name: 'Framework',
     components: {
-        Group,
         Indicator,
         Suite,
         Ledger

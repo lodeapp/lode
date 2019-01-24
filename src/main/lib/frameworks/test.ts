@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid'
 import { Status } from '@lib/frameworks/status'
-import { Container } from '@lib/frameworks/container'
+import { Nugget } from '@lib/frameworks/nugget'
 
-export interface ITest extends Container {
+export interface ITest extends Nugget {
     readonly id: string
     readonly name: string
     result?: ITestResult
@@ -30,7 +30,7 @@ export interface ITestResult {
     tests?: Array<ITestResult>
 }
 
-export class Test extends Container implements ITest {
+export class Test extends Nugget implements ITest {
     protected status!: Status
     public readonly id: string
     public readonly name: string

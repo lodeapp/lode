@@ -252,12 +252,12 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
     // showUserGuides,
     // showLogsItem,
     separator,
-    logSettings,
     resetSettings
   ]
 
   if (__DEV__) {
     helpItems.push(
+      logSettings,
       separator,
       {
         label: 'Crash main process…',

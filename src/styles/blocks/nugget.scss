@@ -1,4 +1,4 @@
-.group {
+.nugget {
     @include clearfix;
     position: relative;
 
@@ -84,7 +84,7 @@
         }
     }
 
-    & > .group-items {
+    & > .nugget-items {
         background-color: $secondary;
         list-style: none;
         padding: 0 0 8px var(--status-block-width);
@@ -115,11 +115,11 @@
             display: block;
         }
 
-        & > .group-items {
+        & > .nugget-items {
 
             & > :nth-last-child(1) {
 
-                &.group.is-expanded {
+                &.nugget.is-expanded {
 
                     & > .seam {
 
@@ -128,7 +128,7 @@
                         }
                     }
 
-                    & > .group-items {
+                    & > .nugget-items {
                         padding-bottom: 0;
                     }
                 }

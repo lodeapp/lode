@@ -177,7 +177,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
             name: '',
             type: '',
             command: '',
-            path: ''
+            path: '',
+            runsInVm: false
         }
         return {
             ...defaults,
@@ -217,7 +218,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             // If framework initialization has changed, we need to remove the
             // existing suites and add them again, because their unique identifier
             // will potentially have changed (i.e. their absolute file path)
-            this.suites = []
+            this.resetSuites()
             this.queueRefresh()
         } else if (pathsChanged) {
             // Else if only framework paths have changed, we'll refresh just
@@ -549,7 +550,22 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return suite
     }
 
-    protected refreshSuites () {
+    /**
+     * Clear the framework's suites.
+     */
+    protected resetSuites (): void {
+        this.suites = []
+        this.selected = {
+            suites: []
+        }
+        this.selective = false
+        this.resetLedger()
+    }
+
+    /**
+     * Refresh the framework's suites with new instantiation options.
+     */
+    protected refreshSuites (): void {
         this.suites.forEach(suite => {
             suite.refresh({
                 path: this.fullPath,
@@ -596,6 +612,15 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
         if (from) {
             this.ledger[from]!--
+        }
+    }
+
+    /**
+     * Reset the framework's ledger to its initial value.
+     */
+    protected resetLedger (): void {
+        for (let key of Object.keys(this.ledger)) {
+            this.ledger[<Status>key] = 0
         }
     }
 

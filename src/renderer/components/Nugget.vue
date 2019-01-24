@@ -1,6 +1,6 @@
 <template>
     <div
-        class="group"
+        class="nugget"
         :class="[
             `status--${status}`,
             `is-${selectStatus}`,
@@ -19,7 +19,7 @@
                 <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
             </div>
         </div>
-        <div v-if="hasChildren && show" class="group-items">
+        <div v-if="hasChildren && show" class="nugget-items">
             <slot></slot>
         </div>
     </div>
@@ -29,7 +29,7 @@
 import { mapGetters } from 'vuex'
 
 export default {
-    name: 'Group',
+    name: 'Nugget',
     props: {
         model: {
             type: Object,

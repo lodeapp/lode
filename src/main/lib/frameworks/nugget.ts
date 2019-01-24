@@ -3,7 +3,11 @@ import { EventEmitter } from 'events'
 import { ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
 
-export abstract class Container extends EventEmitter {
+/**
+ * Nuggets are the testable elements inside a repository
+ * (i.e. either a suite or a test).
+ */
+export abstract class Nugget extends EventEmitter {
     protected status: Status = 'idle'
     public tests: Array<ITest> = []
     public selected: boolean = false
@@ -25,7 +29,7 @@ export abstract class Container extends EventEmitter {
     protected abstract newTest (result: ITestResult): ITest
 
     /**
-     * Find the test by a given name in the container's current children.
+     * Find the test by a given name in the nugget's current children.
      *
      * @param name The name of the test to try to find.
      */
@@ -37,7 +41,7 @@ export abstract class Container extends EventEmitter {
      * Factory function for creating a new child test.
      *
      * @param result The test result with which to instantiate a new test.
-     * @param force Whether to bypass looking for the test in the container's current children.
+     * @param force Whether to bypass looking for the test in the nugget's current children.
      */
     protected makeTest (
         result: ITestResult,
@@ -47,7 +51,7 @@ export abstract class Container extends EventEmitter {
         if (!test) {
             test = this.newTest(result)
             test.on('selective', this.updateCountsListener)
-            // If container is selected, newly created test should be, too.
+            // If nugget is selected, newly created test should be, too.
             test.selected = this.selected
             this.tests.push(test)
         }
@@ -55,7 +59,7 @@ export abstract class Container extends EventEmitter {
     }
 
     /**
-     * Trigger an update of this container's selected count.
+     * Trigger an update of this nugget's selected count.
      */
     protected updateSelectedCounts (): void {
         const total = this.tests.length
@@ -69,7 +73,7 @@ export abstract class Container extends EventEmitter {
     }
 
     /**
-     * Debrief the tests inside this container.
+     * Debrief the tests inside this nugget.
      *
      * @param tests An array of test results.
      * @param cleanup Whether to clean obsolete tests after debriefing. Can be overridden by the method's logic.
@@ -118,7 +122,7 @@ export abstract class Container extends EventEmitter {
     }
 
     /**
-     * A function that runs after debriefing this container.
+     * A function that runs after debriefing this nugget.
      *
      * @param cleanup Whether we should clean-up idle children (i.e. obsolete)
      * @param isLast Last child indicator. See @debriefTests
@@ -142,7 +146,7 @@ export abstract class Container extends EventEmitter {
     }
 
     /**
-     * Update this container's status.
+     * Update this nugget's status.
      *
      * @param to The status we're updating to.
      */
@@ -156,17 +160,17 @@ export abstract class Container extends EventEmitter {
     }
 
     /**
-     * Get this container's status.
+     * Get this nugget's status.
      */
     public getStatus (): Status {
         return this.status
     }
 
     /**
-     * Toggle this container's selected state.
+     * Toggle this nugget's selected state.
      *
      * @param toggle Whether it should be toggled on or off. Leave blank for inverting toggle.
-     * @param cascade Whether toggling should apply to container's children.
+     * @param cascade Whether toggling should apply to nugget's children.
      */
     public toggleSelected (toggle?: boolean, cascade?: boolean): void {
         this.selected = typeof toggle === 'undefined' ? !this.selected : toggle
@@ -179,7 +183,7 @@ export abstract class Container extends EventEmitter {
     }
 
     /**
-     * Reset this container to its initial state.
+     * Reset this nugget to its initial state.
      *
      * @param selective Whether we're currently in selective mode or not.
      */
@@ -193,7 +197,7 @@ export abstract class Container extends EventEmitter {
     }
 
     /**
-     * Mark this container as queued for running.
+     * Mark this nugget as queued for running.
      *
      * @param selective Whether we're currently in selective mode or not.
      */
@@ -207,7 +211,7 @@ export abstract class Container extends EventEmitter {
     }
 
     /**
-     * Reset this container or any of its children if they are
+     * Reset this nugget or any of its children if they are
      * on a queued status.
      */
     public resetQueued (): void {

@@ -6,16 +6,21 @@
     >
         <span class="indicator">
             <Icon v-if="status === 'error'" symbol="issue-opened" />
-            <Icon v-else-if="status === 'empty'" symbol="circle-slash" />
+            <Icon v-if="status === 'empty'" symbol="circle-slash" />
+            <Spinner v-if="status === 'refreshing'" />
         </span>
     </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import Spinner from '@/components/Spinner'
 
 export default {
     name: 'Indicator',
+    components: {
+        Spinner
+    },
     props: {
         status: {
             type: String,

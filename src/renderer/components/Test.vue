@@ -1,5 +1,5 @@
 <template>
-    <Group
+    <Nugget
         :model="test"
         class="test"
         :class="{ 'is-active': isActive, 'is-child-active': isChildActive }"
@@ -24,17 +24,17 @@
                 @deactivate="onChildDeactivation"
             />
         </template>
-    </Group>
+    </Nugget>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
-import Group from '@/components/Group'
+import Nugget from '@/components/Nugget'
 
 export default {
     name: 'Test',
     components: {
-        Group
+        Nugget
     },
     props: {
         test: {

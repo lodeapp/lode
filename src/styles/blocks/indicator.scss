@@ -15,6 +15,16 @@
             position: relative;
             top: -3px;
         }
+
+        .spinner {
+            left: -2px;
+            position: relative;
+            top: -2px;
+
+            & > svg {
+                overflow: visible;
+            }
+        }
     }
 
     &.status--passed {
@@ -95,6 +105,14 @@
                 color: $white;
                 opacity: .9;
             }
+        }
+    }
+
+    &.status--refreshing {
+
+        & > .indicator {
+            background-color: transparentize(theme-color('idle'), .6);
+            box-shadow: 0 0 0 4px transparent;
         }
     }
 }

@@ -2,7 +2,7 @@ import * as Path from 'path'
 import { cloneDeep, merge } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { Status } from '@lib/frameworks/status'
-import { Container } from '@lib/frameworks/container'
+import { Nugget } from '@lib/frameworks/nugget'
 import { ITest, ITestResult, Test } from '@lib/frameworks/test'
 
 export type SuiteOptions = {
@@ -11,7 +11,7 @@ export type SuiteOptions = {
     vmPath?: string
 }
 
-export interface ISuite extends Container {
+export interface ISuite extends Nugget {
     readonly id: string
     readonly file: string
     readonly relative: string
@@ -41,7 +41,7 @@ export interface ISuiteResult {
     testsLoaded?: boolean
 }
 
-export class Suite extends Container implements ISuite {
+export class Suite extends Nugget implements ISuite {
     public readonly id: string
     public root: string
     public runsInVm: boolean
@@ -127,7 +127,7 @@ export class Suite extends Container implements ISuite {
      * Build this suite's tests from a result object.
      *
      * @param result The result object with which to build this suite's tests.
-     * @param force Whether to bypass looking for the tests in the container's current children.
+     * @param force Whether to bypass looking for the tests in the suite's current children.
      */
     public buildTests (
         result: ISuiteResult,
