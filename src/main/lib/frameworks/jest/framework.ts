@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import * as fs from 'fs-extra'
+import * as Fs from 'fs-extra'
 import { get } from 'lodash'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
@@ -23,16 +23,23 @@ export class Jest extends Framework {
     public static spawnForDirectory (repository: ParsedRepository): FrameworkOptions | false {
         // Use repository's package.json to determine whether Jest exists or not.
         if (repository.files.includes('package.json')) {
-            const pkg = fs.readJsonSync(Path.join(repository.path, 'package.json'), { throws: false }) || {}
-            // First, test for possible scripts, and adjust default command accordingly
-            const scripts = ['test', 'tests', 'unit']
-            for (let i = 0; i < scripts.length; i++) {
-                if (get(pkg, `scripts.${scripts[i]}`) && get(pkg, `scripts.${scripts[i]}`).search(/\bjest\b/) > -1) {
-                    return this.hydrate({
-                        command: `yarn ${scripts[i]}`
-                    })
+            const pkg = Fs.readJsonSync(Path.join(repository.path, 'package.json'), { throws: false }) || {}
+            try {
+                // First, test for possible scripts, and adjust default command accordingly
+                const scripts = get(pkg, 'scripts')
+                for (let script in scripts) {
+                    // Test for whole-word "jest". Should match "jest" shorthand
+                    // and also "./node_modules/jest/bin/jest.js", etc.
+                    if (scripts[script].search(/\bjest\b/) > -1) {
+                        return this.hydrate({
+                            command: `yarn ${script}`
+                        })
+                    }
                 }
+            } catch (Error) {
+                // Fail silently, just don't detect Jest.
             }
+
             // If no scripts with jest are found, check for Jest configuration
             // in the root of the package.json as a last recourse. User will
             // likely need to configure the command manually.

@@ -173,12 +173,15 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     public static hydrate (options?: object): FrameworkOptions {
         options = options || {}
-        const defaults = this.defaults || {
-            name: '',
-            type: '',
-            command: '',
-            path: '',
-            runsInVm: false
+        const defaults = {
+            ...{
+                name: '',
+                type: '',
+                command: '',
+                path: '',
+                runsInVm: false
+            },
+            ...(this.defaults || {})
         }
         return {
             ...defaults,

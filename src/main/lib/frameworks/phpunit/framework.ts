@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import * as fs from 'fs-extra'
+import * as Fs from 'fs-extra'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
 import { ISuiteResult, Suite } from '@lib/frameworks/suite'
@@ -40,7 +40,7 @@ export class PHPUnit extends Framework {
             return this.hydrate()
         }
         // If no config file exists, check for binary inside dependencies.
-        if (fs.existsSync(Path.join(repository.path, 'vendor/bin/phpunit'))) {
+        if (Fs.existsSync(Path.join(repository.path, 'vendor/bin/phpunit'))) {
             return this.hydrate()
         }
         return false

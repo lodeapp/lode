@@ -1,7 +1,7 @@
 import stripAnsi from 'strip-ansi'
 import { EventEmitter } from 'events'
 import * as Path from 'path'
-import * as fs from 'fs-extra'
+import * as Fs from 'fs-extra'
 import { compact, flattenDeep } from 'lodash'
 import { spawn, ChildProcess } from 'child_process'
 import { Logger } from '../logger'
@@ -60,10 +60,10 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             process.nextTick(() => {
                 const file = Path.isAbsolute(this.fromFile!) ? this.fromFile! : Path.join(__dirname, `./debug/${this.fromFile}.json`)
                 Logger.debug.log(`Re-running process from file ${file}.`)
-                if (!fs.existsSync(file)) {
+                if (!Fs.existsSync(file)) {
                     Logger.debug.log(`File ${file} does not exist.`)
                 }
-                const stored = fs.readJsonSync(file, { throws: false }) || []
+                const stored = Fs.readJsonSync(file, { throws: false }) || []
                 stored.forEach((chunk: string) => {
                     this.onData(chunk)
                 })
@@ -207,12 +207,12 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         // to a file then repeat them as needed.
         if (!this.fromFile && this.writeToFile) {
             const file = Path.join(__dirname, `./debug/${this.process!.pid}.json`)
-            if (!fs.existsSync(file)) {
-                fs.writeFileSync(file, JSON.stringify([], null, 4))
+            if (!Fs.existsSync(file)) {
+                Fs.writeFileSync(file, JSON.stringify([], null, 4))
             }
-            const stored = fs.readJsonSync(file, { throws: false }) || []
+            const stored = Fs.readJsonSync(file, { throws: false }) || []
             stored.push(rawChunk)
-            fs.writeFileSync(file, JSON.stringify(stored, null, 4))
+            Fs.writeFileSync(file, JSON.stringify(stored, null, 4))
         }
 
         this.emit('data', {

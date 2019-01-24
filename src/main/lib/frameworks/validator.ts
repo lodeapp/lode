@@ -1,5 +1,5 @@
-import * as fs from 'fs'
 import * as Path from 'path'
+import * as Fs from 'fs'
 import { RepositoryOptions } from '@lib/frameworks/repository'
 import { FrameworkOptions } from '@lib/frameworks/framework'
 import { Frameworks } from '@lib/frameworks'
@@ -41,7 +41,7 @@ export class Validator {
      */
     public isDirectory (path: string): boolean {
         try {
-            return fs.statSync(path).isDirectory()
+            return Fs.statSync(path).isDirectory()
         } catch (error) {
             if (error.code === 'ENOENT') {
                 return false

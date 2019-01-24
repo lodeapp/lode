@@ -99,6 +99,7 @@ export default {
     },
     methods: {
         parseFrameworks (scanned = false, pending = []) {
+            console.log({ pending })
             const types = pending.map(options => options.type)
             const frameworks = this.repository.frameworks.map(framework => {
                 // If an existing framework has been removed, but user has

@@ -64,6 +64,12 @@ export class Window {
 
   public load() {
 
+    this.window.webContents.once('did-finish-load', () => {
+      if (process.env.NODE_ENV === 'development') {
+        this.window.webContents.openDevTools()
+      }
+    })
+
     this.window.webContents.on('did-finish-load', () => {
       this.window.webContents.setVisualZoomLevelLimits(1, 1)
     })

@@ -6,6 +6,7 @@ import { ProjectOptions } from '@lib/frameworks/project'
 export class Settings {
     private store: ElectronStore
     private defaultSettings: object = {
+        maxProcesses: 3,
         currentProject: null,
         projects: []
     }
@@ -18,7 +19,7 @@ export class Settings {
         ))
     }
 
-    public get (key?: string) {
+    public get (key?: string, fallback?: any): any {
         if (key) {
             switch (key) {
                 case 'projects':
@@ -27,17 +28,17 @@ export class Settings {
                     }])
 
                 default:
-                    return this.store.get(key)
+                    return this.store.get(key, fallback)
             }
         }
         return this.store.store
     }
 
-    public save (state: object) {
+    public save (state: object): void {
         this.store.set(state)
     }
 
-    public clear () {
+    public clear (): void {
         this.store.clear()
     }
 }

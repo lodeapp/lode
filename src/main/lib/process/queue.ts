@@ -1,4 +1,5 @@
 import Bottleneck from 'bottleneck'
+import { Config } from '@lib/config'
 
 export interface IQueue {
     add (job: any): void
@@ -10,7 +11,7 @@ class Queue implements IQueue {
 
     constructor () {
         this.limiter = new Bottleneck({
-            maxConcurrent: 3
+            maxConcurrent: Config.get('maxProcesses', 3)
         })
     }
 
