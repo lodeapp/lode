@@ -19,6 +19,10 @@ export interface IProject extends EventEmitter {
     repositories: Array<IRepository>
     status: FrameworkStatus
     selected: boolean
+
+    start (): void
+    stop (): Promise<void>
+    persist (): ProjectOptions
 }
 
 export class Project extends EventEmitter implements IProject {
@@ -39,6 +43,29 @@ export class Project extends EventEmitter implements IProject {
                 this.addRepository(repository)
             })
         }
+    }
+
+    /**
+     * Run all of this project's repositories.
+     */
+    public start (): void {
+        this.repositories.forEach((repository: IRepository) => {
+            repository.start()
+        })
+    }
+
+    /**
+     * Stop any repository in this project that might be running.
+     */
+    public stop (): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const stopping = this.repositories.map((repository: IRepository) => {
+                return repository.stop()
+            })
+            Promise.all(stopping).then(() => {
+                resolve()
+            })
+        })
     }
 
     /**

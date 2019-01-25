@@ -18,15 +18,6 @@ export default {
             type: [Object, Boolean],
             default: false
         }
-    },
-    methods: {
-        switchProject () {
-            if (this.$superimpose.hasSuperimposed()) {
-                this.$superimpose.close()
-                return
-            }
-            this.$superimpose.open('Projects')
-        }
     }
 }
 </script>

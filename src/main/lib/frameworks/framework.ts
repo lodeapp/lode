@@ -58,9 +58,9 @@ export interface IFramework extends EventEmitter {
     queue: { [index: string]: Function }
     ledger: { [key in Status]: number }
 
-    start (): Promise<void>
+    start (): void
+    refresh (): void
     stop (): Promise<void>
-    refresh (): Promise<void>
     persist (): FrameworkOptions
     updateOptions (options: FrameworkOptions): void
 }
@@ -222,7 +222,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             // existing suites and add them again, because their unique identifier
             // will potentially have changed (i.e. their absolute file path)
             this.resetSuites()
-            this.queueRefresh()
+            this.refresh()
         } else if (pathsChanged) {
             // Else if only framework paths have changed, we'll refresh just
             // the underlying suites to update their relative paths.
@@ -249,7 +249,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Run this framework's test suites, either fully or selectively.
      */
-    public start (): Promise<void> {
+    protected handleRun (): Promise<void> {
         if (this.selective) {
             return this.runSelective()
                 .catch(error => {
@@ -328,8 +328,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
                         this.report(this.runArgs(), resolve, reject)
                     })
                     .catch(error => {
-                        // Rejecting the Promise is enough to bubble up the
-                        // error chain, as we're already catching it on @start
+                        // Rejecting the Promise is enough to bubble the error
+                        // up the chain, as we're already catching it on @handleRun
                         reject(error)
                     })
             })
@@ -356,7 +356,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Refresh the list of suites inside this framework.
      */
-    public refresh (): Promise<void> {
+    protected handleRefresh (): Promise<void> {
         this.updateStatus('refreshing')
         return this.reload()
             .then(() => {
@@ -664,25 +664,25 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
-     * Queue a `start` job with a unique id. This let's us cancel the job
+     * Queue a run job with a unique id. This let's us cancel the job
      * if it's not yet executed simply by clearing the internal queue object.
      */
-    protected queueStart (): void {
+    public start (): void {
         this.updateStatus('queued')
         const id = uuid()
-        this.queue[id] = () => this.start()
-        queue.add(() => this.runQueued(id))
+        this.queue[id] = () => this.handleRun()
+        queue.add(() => this.handleQueued(id))
     }
 
     /**
      * Queue a `refresh` job with a unique id.
-     * See @queueStart for more info.
+     * See @start for more info.
      */
-    protected queueRefresh (): void {
+    public refresh (): void {
         this.updateStatus('queued')
         const id = uuid()
-        this.queue[id] = () => this.refresh()
-        queue.add(() => this.runQueued(id))
+        this.queue[id] = () => this.handleRefresh()
+        queue.add(() => this.handleQueued(id))
     }
 
     /**
@@ -693,7 +693,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param id The unique id of the job to run.
      */
-    protected runQueued (id: string): Function {
+    protected handleQueued (id: string): Function {
         if (typeof this.queue[id] === 'undefined') {
             Logger.debug.log(`Queued job with id ${id} was cancelled before execution.`)
             return () => Promise.resolve()

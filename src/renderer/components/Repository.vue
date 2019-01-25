@@ -26,7 +26,7 @@
                         <button
                             class="btn btn-sm btn-primary"
                             :disabled="running || refreshing"
-                            @click="run"
+                            @click="start"
                         >
                             Run
                             <span v-if="repository.frameworks.length > 1" class="Counter">{{ repository.frameworks.length }}</span>
@@ -156,15 +156,11 @@ export default {
                 })
                 .catch(() => {})
         },
-        run () {
-            this.repository.frameworks.forEach(framework => {
-                framework.queueStart()
-            })
+        start () {
+            this.repository.start()
         },
         stop () {
-            this.repository.frameworks.forEach(framework => {
-                framework.stop()
-            })
+            this.repository.stop()
         },
         storeState (framework) {
             this.frameworkChange({ repositoryId: this.repository.id, framework })

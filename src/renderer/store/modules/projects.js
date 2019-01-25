@@ -24,10 +24,6 @@ export default {
             Config.save(state)
         },
         SWITCH_PROJECT (state, projectId) {
-            // Clicking on current project doesn't have any effect.
-            if (projectId === state.currentProject) {
-                return false
-            }
             state.currentProject = projectId
             Config.save(state)
         },
@@ -60,7 +56,7 @@ export default {
             Config.save(state)
 
             // Attempt to load tests after adding a framework
-            framework.queueRefresh()
+            framework.refresh()
         },
         FRAMEWORK_CHANGE (state, { repositoryId, framework }) {
             try {

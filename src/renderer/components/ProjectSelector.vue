@@ -17,7 +17,6 @@
 <script>
 import { remote } from 'electron'
 import { Config } from '@lib/config'
-import { mapActions } from 'vuex'
 
 export default {
     name: 'ProjectSelector',
@@ -40,7 +39,7 @@ export default {
                     type: 'radio',
                     checked: project.id === this.$root.project.id,
                     click: () => {
-                        this.switchProject(project.id)
+                        this.$root.switchProject(project.id)
                     }
                 }))
             })
@@ -65,10 +64,7 @@ export default {
                 x: Math.ceil(x),
                 y: Math.ceil(y + height + 6)
             })
-        },
-        ...mapActions({
-            switchProject: 'projects/switchProject'
-        })
+        }
     }
 }
 </script>

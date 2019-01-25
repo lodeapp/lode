@@ -35,6 +35,8 @@ export interface IRepository extends EventEmitter {
     selected: boolean
     scanning: boolean
 
+    start (): void
+    stop (): Promise<void>
     persist (): RepositoryOptions
     scan (): Promise<Array<FrameworkOptions>>
 }
@@ -60,6 +62,29 @@ export class Repository extends EventEmitter implements IRepository {
                 this.addFramework(framework)
             })
         }
+    }
+
+    /**
+     * Run all of this repository's test frameworks.
+     */
+    public start (): void {
+        this.frameworks.forEach((framework: IFramework) => {
+            framework.start()
+        })
+    }
+
+    /**
+     * Stop any test framework in this repository that might be running.
+     */
+    public stop (): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const stopping = this.frameworks.map((framework: IFramework) => {
+                return framework.stop()
+            })
+            Promise.all(stopping).then(() => {
+                resolve()
+            })
+        })
     }
 
     /**

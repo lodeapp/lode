@@ -147,8 +147,19 @@ export default new Vue({
                 projects: Config.get('projects')
             })
         },
+        switchProject (projectId) {
+            // Clicking on current project doesn't have any effect.
+            if (projectId === this.project.id) {
+                return false
+            }
+
+            // @TODO: Ask for confirmation before stopping current project
+            this.project.stop().then(() => {
+                this.handleSwitchProject(projectId)
+            })
+        },
         ...mapActions({
-            switchProject: 'projects/switchProject',
+            handleSwitchProject: 'projects/switchProject',
             removeProject: 'projects/removeProject'
         })
     },

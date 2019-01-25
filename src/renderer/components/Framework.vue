@@ -23,7 +23,7 @@
                     <button
                         class="btn btn-sm btn-primary"
                         :disabled="running || refreshing"
-                        @click="run"
+                        @click="start"
                     >
                         {{ framework.selective ? 'Run selected' : 'Run' }}
                         <span v-if="framework.selective" class="Counter">{{ framework.selected.suites.length }}</span>
@@ -128,10 +128,10 @@ export default {
             this.show = !this.show
         },
         refresh () {
-            this.framework.queueRefresh()
+            this.framework.refresh()
         },
-        run () {
-            this.framework.queueStart()
+        start () {
+            this.framework.start()
         },
         async stop () {
             await this.framework.stop()
