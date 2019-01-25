@@ -1,9 +1,9 @@
 import * as Path from 'path'
 import { cloneDeep, merge } from 'lodash'
 import { v4 as uuid } from 'uuid'
-import { Status } from '@lib/frameworks/status'
-import { Nugget } from '@lib/frameworks/nugget'
+import { Status, parseStatus } from '@lib/frameworks/status'
 import { ITest, ITestResult, Test } from '@lib/frameworks/test'
+import { Nugget } from '@lib/frameworks/nugget'
 
 export type SuiteOptions = {
     path: string,
@@ -144,6 +144,24 @@ export class Suite extends Nugget implements ISuite {
      */
     protected newTest (result: ITestResult): ITest {
         return new Test(result)
+    }
+
+    /**
+     * Update this suite's status.
+     *
+     * Override default status parsing to make sure we don't mark suites
+     * without loaded tests as "empty". Mark them as "idle", instead.
+     *
+     * @param to The status we're updating to.
+     */
+    protected updateStatus (to?: Status): void {
+        if (typeof to === 'undefined') {
+            to = parseStatus(this.tests.map(test => test.getStatus()))
+            if (to === 'empty' && !this.testsLoaded) {
+                to = 'idle'
+            }
+        }
+        super.updateStatus(to)
     }
 
     /**

@@ -152,7 +152,7 @@ export abstract class Nugget extends EventEmitter {
      */
     protected updateStatus (to?: Status): void {
         if (typeof to === 'undefined') {
-            to = parseStatus(this.tests.map(test => test.status))
+            to = parseStatus(this.tests.map(test => test.getStatus()))
         }
         const from = this.getStatus()
         this.status = to
