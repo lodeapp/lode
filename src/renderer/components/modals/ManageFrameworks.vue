@@ -99,7 +99,6 @@ export default {
     },
     methods: {
         parseFrameworks (scanned = false, pending = []) {
-            console.log({ pending })
             const types = pending.map(options => options.type)
             const frameworks = this.repository.frameworks.map(framework => {
                 // If an existing framework has been removed, but user has
@@ -191,8 +190,8 @@ export default {
             this.repositoryChange(this.repository)
         },
         ...mapActions({
-            addFramework: 'config/addFramework',
-            repositoryChange: 'config/repositoryChange'
+            addFramework: 'projects/addFramework',
+            repositoryChange: 'projects/repositoryChange'
         })
     }
 }

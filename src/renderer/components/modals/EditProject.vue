@@ -22,7 +22,7 @@
             <button type="button" class="btn btn-sm" @click="cancel">
                 Cancel
             </button>
-            <button type="submit" class="btn btn-sm btn-primary" :disabled="!name" @click="submit">
+            <button type="button" class="btn btn-sm btn-primary" :disabled="!name" @click="submit">
                 {{ project ? 'Save changes' : 'Add project' }}
             </button>
         </div>
@@ -54,7 +54,7 @@ export default {
     },
     computed: {
         ...mapGetters({
-            hasProjects: 'config/hasProjects'
+            hasProjects: 'projects/hasProjects'
         })
     },
     methods: {
@@ -75,8 +75,8 @@ export default {
             this.confirm()
         },
         ...mapActions({
-            addProject: 'config/addProject',
-            projectChange: 'config/projectChange'
+            addProject: 'projects/addProject',
+            projectChange: 'projects/projectChange'
         })
     }
 }

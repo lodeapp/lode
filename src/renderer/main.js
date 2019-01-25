@@ -1,8 +1,9 @@
 import Vue from 'vue'
 import store from './store'
 import { mapActions, mapGetters } from 'vuex'
-import { ipcRenderer } from 'electron'
+import { remote, ipcRenderer } from 'electron'
 import { Config } from '@lib/config'
+import { Logger } from '@lib/logger'
 import { Project } from '@lib/frameworks/project'
 
 // Styles
@@ -49,7 +50,7 @@ export default new Vue({
     },
     computed: {
         ...mapGetters({
-            currentProject: 'config/currentProject'
+            currentProject: 'projects/currentProject'
         })
     },
     watch: {
@@ -72,6 +73,9 @@ export default new Vue({
             })
             .on('menu-event', (event, { name, properties }) => {
                 switch (name) {
+                    case 'show-preferences':
+                        this.$modal.open('Preferences')
+                        break
                     case 'new-project':
                         this.addProject()
                         break
@@ -88,12 +92,16 @@ export default new Vue({
                         this.addRepositories()
                         break
                     case 'log-settings':
-                        this.$store.dispatch('config/logSettings')
+                        Logger.info.log({
+                            object: Config.get(),
+                            json: JSON.stringify(Config.get())
+                        })
                         break
                     case 'reset-settings':
                         this.$modal.confirm('ResetSettings')
                             .then(() => {
-                                this.$store.dispatch('config/reset')
+                                Config.clear()
+                                remote.getCurrentWindow().reload()
                             })
                             .catch(() => {})
                         break
@@ -140,8 +148,8 @@ export default new Vue({
             })
         },
         ...mapActions({
-            switchProject: 'config/switchProject',
-            removeProject: 'config/removeProject'
+            switchProject: 'projects/switchProject',
+            removeProject: 'projects/removeProject'
         })
     },
     store,

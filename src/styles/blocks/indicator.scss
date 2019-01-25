@@ -108,7 +108,8 @@
         }
     }
 
-    &.status--refreshing {
+    &.status--refreshing,
+    &.status--running {
 
         & > .indicator {
             background-color: transparentize(theme-color('idle'), .6);

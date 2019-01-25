@@ -20,6 +20,7 @@ import EditProject from '@/components/modals/EditProject'
 import AddRepositories from '@/components/modals/AddRepositories'
 import AlertStack from '@/components/modals/AlertStack'
 import ManageFrameworks from '@/components/modals/ManageFrameworks'
+import Preferences from '@/components/modals/Preferences'
 import RemoveProject from '@/components/modals/RemoveProject'
 import RemoveRepository from '@/components/modals/RemoveRepository'
 import ResetSettings from '@/components/modals/ResetSettings'
@@ -31,6 +32,7 @@ export default {
         AddRepositories,
         AlertStack,
         ManageFrameworks,
+        Preferences,
         RemoveProject,
         RemoveRepository,
         ResetSettings

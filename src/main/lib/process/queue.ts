@@ -11,7 +11,14 @@ class Queue implements IQueue {
 
     constructor () {
         this.limiter = new Bottleneck({
-            maxConcurrent: Config.get('maxProcesses', 3)
+            maxConcurrent: Config.get('concurrency')
+        })
+
+        // Listen for config changes on concurrency to update the limiter
+        Config.on('set:concurrency', (value: number) => {
+            this.limiter.updateSettings({
+                maxConcurrent: value
+            })
         })
     }
 

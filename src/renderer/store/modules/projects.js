@@ -1,4 +1,3 @@
-import { remote } from 'electron'
 import { Config } from '@lib/config'
 import { Logger } from '@lib/logger'
 import _find from 'lodash/find'
@@ -6,11 +5,11 @@ import _findIndex from 'lodash/findIndex'
 
 export default {
     namespaced: true,
-    state: Config.get(),
+    state: {
+        projects: Config.get('projects'),
+        currentProject: Config.get('currentProject')
+    },
     mutations: {
-        RESET (state) {
-            Config.clear()
-        },
         ADD_PROJECT (state, project) {
             state.projects.push(project.persist())
             state.currentProject = project.id
@@ -79,10 +78,6 @@ export default {
         }
     },
     actions: {
-        reset: ({ commit }) => {
-            commit('RESET')
-            remote.getCurrentWindow().reload()
-        },
         addProject: ({ commit }, project) => {
             commit('ADD_PROJECT', project)
         },
@@ -109,12 +104,6 @@ export default {
         },
         frameworkChange: ({ commit, getters }, { repositoryId, framework }) => {
             commit('FRAMEWORK_CHANGE', { repositoryId, framework })
-        },
-        logSettings: ({ getters }) => {
-            Logger.info.log({
-                object: Config.get(),
-                json: JSON.stringify(Config.get())
-            })
         }
     },
     getters: {

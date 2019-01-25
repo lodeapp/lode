@@ -170,7 +170,7 @@ export default {
             this.frameworkChange({ repositoryId: this.repository.id, framework })
         },
         ...mapActions({
-            frameworkChange: 'config/frameworkChange'
+            frameworkChange: 'projects/frameworkChange'
         })
     }
 }

@@ -103,7 +103,7 @@ export default {
             }
         },
         ...mapActions({
-            addRepository: 'config/addRepository'
+            addRepository: 'projects/addRepository'
         })
     }
 }

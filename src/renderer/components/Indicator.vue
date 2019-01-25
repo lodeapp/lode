@@ -7,7 +7,7 @@
         <span class="indicator">
             <Icon v-if="status === 'error'" symbol="issue-opened" />
             <Icon v-if="status === 'empty'" symbol="circle-slash" />
-            <Spinner v-if="status === 'refreshing'" />
+            <Spinner v-if="status === 'refreshing' || status === 'running'" />
         </span>
     </div>
 </template>

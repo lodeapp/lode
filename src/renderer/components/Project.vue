@@ -52,7 +52,7 @@ export default {
             this.removeRepository(repository)
         },
         ...mapActions({
-            removeRepository: 'config/removeRepository'
+            removeRepository: 'projects/removeRepository'
         })
     }
 }

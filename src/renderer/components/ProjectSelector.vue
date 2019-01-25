@@ -67,7 +67,7 @@ export default {
             })
         },
         ...mapActions({
-            switchProject: 'config/switchProject'
+            switchProject: 'projects/switchProject'
         })
     }
 }
