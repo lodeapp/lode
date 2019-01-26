@@ -78,6 +78,15 @@ select {
                 }
             }
 
+            &.checkbox-list {
+                position: relative;
+                top: 1px;
+
+                label {
+                    font-weight: normal;
+                }
+            }
+
             & > .form-error,
             & > .form-help {
                 width: 100%;

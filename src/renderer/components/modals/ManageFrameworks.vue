@@ -1,8 +1,5 @@
 <template>
-    <Modal
-        :dismissable="false"
-        title="Manage test frameworks"
-    >
+    <Modal title="Manage test frameworks">
         <div class="fluid">
             <div class="repository-settings">
                 <h5>

@@ -1,7 +1,7 @@
 <template>
-    <Modal :dismissable="false">
+    <Modal>
         <template slot="header">
-            <Icon symbol="alert" class="type--error" />
+            <Icon symbol="stop" class="type--error" />
             <h3 class="modal-title">Remove Repository</h3>
         </template>
         <div>
@@ -14,7 +14,7 @@
             </div>
         </div>
         <div slot="footer" class="modal-footer tertiary separated">
-            <button type="button" class="btn btn-sm" @click="cancel">
+            <button type="button" class="btn btn-sm autofocus" @click="cancel">
                 Cancel
             </button>
             <button type="button" class="btn btn-sm btn-danger" @click="confirm">

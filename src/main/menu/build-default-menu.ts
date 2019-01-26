@@ -71,9 +71,14 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         submenu: options.projects && options.projects.length > 1 ? options.projects.map(project => {
           return {
             label: project.name,
-            type: <MenuItemType>'radio',
+            type: <MenuItemType>'checkbox',
             checked: options.currentProject === project.id,
-            click: emit('switch-project', project.id)
+            click: emit('switch-project', project.id, (menuItem: Electron.MenuItem) => {
+              // Don't toggle the item, unless it's the current project,
+              // as the switch might still be cancelled by the user. If
+              // switch project is confirmed, menu will be rebuilt anyway.
+              menuItem.checked = options.currentProject === project.id
+            })
           }
         }) : undefined
       },
@@ -309,12 +314,15 @@ type ClickHandler = (
  * Utility function returning a Click event handler which, when invoked, emits
  * the provided menu event over IPC.
  */
-function emit(name: MenuEvent, properties?: any): ClickHandler {
-  return (menuItem, window) => {
+function emit(name: MenuEvent, properties?: any, callback?: Function): ClickHandler {
+  return (menuItem, window, event) => {
     if (window) {
       window.webContents.send('menu-event', { name, properties })
     } else {
       ipcMain.emit('menu-event', { name, properties })
+    }
+    if (callback) {
+      callback(menuItem, window, event)
     }
   }
 }

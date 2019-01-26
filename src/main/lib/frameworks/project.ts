@@ -23,6 +23,9 @@ export interface IProject extends EventEmitter {
     start (): void
     stop (): Promise<void>
     persist (): ProjectOptions
+    updateOptions (options: ProjectOptions): void
+    addRepository (options: RepositoryOptions): IRepository
+    removeRepository (id: string): void
 }
 
 export class Project extends EventEmitter implements IProject {

@@ -1,9 +1,6 @@
 <template>
-    <Modal
-        :dismissable="false"
-        :title="project ? $string.set('Add repositories to :0', project.name) : 'Add repositories'"
-    >
-        <form @submit="handleSubmit">
+    <Modal :title="project ? $string.set('Add repositories to :0', project.name) : 'Add repositories'">
+        <form @submit.prevent="handleSubmit">
             <h5>Repositories</h5>
             <RepositoryPath
                 v-for="(slot, index) in slots"
@@ -83,8 +80,7 @@ export default {
             this.slots[index].errored = false
             this.slots[index].path = path
         },
-        handleSubmit (event) {
-            event.preventDefault()
+        handleSubmit () {
             if (this.empty) {
                 return
             }

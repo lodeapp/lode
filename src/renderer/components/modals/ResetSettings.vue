@@ -1,7 +1,7 @@
 <template>
-    <Modal :dismissable="false">
+    <Modal>
         <template slot="header">
-            <Icon symbol="alert" class="type--error" />
+            <Icon symbol="stop" class="type--error" />
             <h3 class="modal-title">Reset Settings</h3>
         </template>
         <div>

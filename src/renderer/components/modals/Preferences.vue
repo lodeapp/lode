@@ -1,9 +1,6 @@
 <template>
-    <Modal
-        :dismissable="false"
-        title="Preferences"
-    >
-        <form class="preferences" @submit.prevent>
+    <Modal title="Preferences">
+        <form class="preferences" @submit.prevent="handleSubmit">
             <div class="form-group">
                 <dl>
                     <dt><label for="project-name">Concurrent process limit:</label></dt>
@@ -16,6 +13,15 @@
                             <option>4</option>
                             <option>5</option>
                         </select>
+                    </dd>
+                </dl>
+                <dl>
+                    <dt><label>Show confirmation dialog:</label></dt>
+                    <dd class="checkbox-list">
+                        <label>
+                            <input type="checkbox" checked="checked" v-model="confirmSwitchProject">
+                            When switching from non-idle projects
+                        </label>
                     </dd>
                 </dl>
             </div>
@@ -45,6 +51,19 @@ export default {
             set (value) {
                 return Config.set('concurrency', value)
             }
+        },
+        confirmSwitchProject: {
+            get () {
+                return Config.get('confirm.switchProject')
+            },
+            set (value) {
+                return Config.set('confirm.switchProject', value)
+            }
+        }
+    },
+    methods: {
+        handleSubmit () {
+            this.$emit('hide')
         }
     }
 }

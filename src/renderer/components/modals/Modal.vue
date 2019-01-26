@@ -1,5 +1,5 @@
 <template>
-    <div class="modal" :class="{ 'is-last': isLast }" tabindex="-1" role="dialog" @click.self="handleClick">
+    <div class="modal" :class="{ 'is-last': isLast }" tabindex="-1" role="dialog">
         <div class="modal-dialog" :class="[sizeClass]">
             <div class="modal-content">
                 <div class="modal-header">
@@ -30,18 +30,12 @@
 </template>
 
 <script>
-import _first from 'lodash/first'
-
 export default {
     name: 'Modal',
     props: {
         isLast: {
             type: Boolean,
             default: false
-        },
-        dismissable: {
-            type: Boolean,
-            default: true
         },
         title: {
             type: String,
@@ -78,18 +72,21 @@ export default {
         }
     },
     mounted () {
-        if (this.dismissable) {
-            this.escapeHandler = (e) => {
-                if (this.$input.isEscapeKey(e)) {
-                    this.close()
-                }
+        this.escapeHandler = (e) => {
+            if (this.$input.isEscapeKey(e)) {
+                this.close()
             }
-            document.addEventListener('keydown', this.escapeHandler)
         }
-        const inputs = this.$el.getElementsByTagName('input')
-        if (inputs.length) {
-            _first(inputs).focus()
-        }
+        document.addEventListener('keydown', this.escapeHandler)
+
+        const selectors = ['.autofocus', 'input, select']
+        selectors.some(selector => {
+            const elements = this.$el.querySelectorAll(selector)
+            if (elements.length) {
+                elements[0].focus()
+                return true
+            }
+        })
     },
     destroyed () {
         document.removeEventListener('keydown', this.escapeHandler)
@@ -100,11 +97,6 @@ export default {
                 this.$parent.reject()
             }
             this.$modal.close()
-        },
-        handleClick () {
-            if (this.dismissable) {
-                this.close()
-            }
         }
     }
 }

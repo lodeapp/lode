@@ -153,10 +153,18 @@ export default new Vue({
                 return false
             }
 
-            // @TODO: Ask for confirmation before stopping current project
-            this.project.stop().then(() => {
-                this.handleSwitchProject(projectId)
-            })
+            this.$modal.confirmIf(() => {
+                return this.project.status === 'idle' ? false : Config.get('confirm.switchProject')
+            }, 'ConfirmSwitchProject')
+                .then(disableConfirm => {
+                    if (disableConfirm) {
+                        Config.set('confirm.switchProject', false)
+                    }
+                    this.project.stop().then(() => {
+                        this.handleSwitchProject(projectId)
+                    })
+                })
+                .catch(() => {})
         },
         ...mapActions({
             handleSwitchProject: 'projects/switchProject',

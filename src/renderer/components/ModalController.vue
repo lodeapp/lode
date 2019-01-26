@@ -16,26 +16,18 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import EditProject from '@/components/modals/EditProject'
-import AddRepositories from '@/components/modals/AddRepositories'
-import AlertStack from '@/components/modals/AlertStack'
-import ManageFrameworks from '@/components/modals/ManageFrameworks'
-import Preferences from '@/components/modals/Preferences'
-import RemoveProject from '@/components/modals/RemoveProject'
-import RemoveRepository from '@/components/modals/RemoveRepository'
-import ResetSettings from '@/components/modals/ResetSettings'
+
+// Load all components from modals directory
+const context = require.context('@/components/modals', true, /\.vue$/)
+const Modals = {}
+context.keys().forEach((key) => {
+    Modals[key.replace(/^\.\/([aA0-zZ9]+)\.vue$/, '$1')] = context(key).default
+})
 
 export default {
     name: 'ModalController',
     components: {
-        EditProject,
-        AddRepositories,
-        AlertStack,
-        ManageFrameworks,
-        Preferences,
-        RemoveProject,
-        RemoveRepository,
-        ResetSettings
+        ...Modals
     },
     computed: {
         ...mapGetters({

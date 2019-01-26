@@ -20,6 +20,17 @@ export default class Modals {
         })
     }
 
+    confirmIf (condition, name, properties = {}) {
+        if (typeof condition === 'function') {
+            condition = condition()
+        }
+        // If no confirmation is required, return a promise that resolves
+        // automatically, for consistency.
+        return condition ? this.confirm(name, properties) : new Promise((resolve, reject) => {
+            resolve()
+        })
+    }
+
     close () {
         this.store.dispatch('modals/close')
         const modal = this.modals.pop()

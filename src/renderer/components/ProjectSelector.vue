@@ -36,9 +36,13 @@ export default {
             Config.get('projects').forEach(project => {
                 this.menu.append(new MenuItem({
                     label: project.name,
-                    type: 'radio',
+                    type: 'checkbox',
                     checked: project.id === this.$root.project.id,
-                    click: () => {
+                    click: (menuItem) => {
+                        // Don't toggle the item, unless it's the current project,
+                        // as the switch might still be cancelled by the user. If
+                        // switch project is confirmed, menu will be rebuilt anyway.
+                        menuItem.checked = project.id === this.$root.project.id
                         this.$root.switchProject(project.id)
                     }
                 }))

@@ -8,6 +8,9 @@ export class Settings extends EventEmitter {
     private store: ElectronStore
     private defaultSettings: object = {
         concurrency: 3,
+        confirm: {
+            switchProject: true
+        },
         currentProject: null,
         projects: []
     }

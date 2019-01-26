@@ -65,6 +65,10 @@
             &.type--error {
                 color: theme-color('failed');
             }
+
+            &.type--warning {
+                color: theme-color('warning', 'step', -100);
+            }
         }
 
         h1,

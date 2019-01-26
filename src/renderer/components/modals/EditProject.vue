@@ -1,10 +1,9 @@
 <template>
     <Modal
-        :dismissable="false"
         :title="project ? 'Edit project' : 'Add project'"
         :help="!hasProjects ? `Projects allow you to group different repositories and run their tests all at once. After adding a project you'll be prompted to add repositories. You can have as many projects as you want.` : ''"
     >
-        <form @submit="handleSubmit">
+        <form @submit.prevent="handleSubmit">
             <dl class="form-group">
                 <dt><label for="project-name">Project name</label></dt>
                 <dd>
@@ -59,7 +58,6 @@ export default {
     },
     methods: {
         handleSubmit (event) {
-            event.preventDefault()
             if (!this.name) {
                 return
             }
