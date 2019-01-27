@@ -136,6 +136,7 @@
     "globals": {
         "global": false,
         "__dirname": false,
+        "__static": false,
         "require": false,
         "process": false,
         "__DEV__": false,

@@ -73,6 +73,9 @@ export default new Vue({
             })
             .on('menu-event', (event, { name, properties }) => {
                 switch (name) {
+                    case 'show-about':
+                        this.$modal.open('Licenses')
+                        break
                     case 'show-preferences':
                         this.$modal.open('Preferences')
                         break

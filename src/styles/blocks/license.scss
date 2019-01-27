@@ -1,0 +1,16 @@
+.license {
+    counter-increment: dependency;
+
+    h5 {
+
+        &::before {
+            content: counters(dependency, '.') '. ';
+        }
+    }
+
+    pre {
+        cursor: text;
+        margin: var(--spacing-half) 0 var(--spacing-double);
+        user-select: text;
+    }
+}
