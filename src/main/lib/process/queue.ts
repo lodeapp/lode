@@ -4,10 +4,13 @@ import { Config } from '@lib/config'
 export interface IQueue {
     add (job: any): void
     stop (): void
+    getLatestJobName (): string
 }
 
 class Queue implements IQueue {
     protected limiter: Bottleneck
+    protected latestJob?: Function
+    protected latestJobName: string = ''
 
     constructor () {
         this.limiter = new Bottleneck({
@@ -27,8 +30,25 @@ class Queue implements IQueue {
         wrapped()
     }
 
+    public latest (name: string, job: any): void {
+        this.latestJobName = name
+        this.latestJob = job
+        job()
+    }
+
+    public runLatest (): void {
+        if (!this.latestJob) {
+            return
+        }
+        this.add(this.latestJob)
+    }
+
     public stop (): void {
         this.limiter.stop()
+    }
+
+    public getLatestJobName (): string {
+        return this.latestJobName
     }
 }
 

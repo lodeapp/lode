@@ -23,6 +23,9 @@
                         <Icon symbol="kebab-vertical" />
                     </button>
                     <template v-if="repository.frameworks.length">
+                        <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
+                            <Icon symbol="sync" />
+                        </button>
                         <button
                             class="btn btn-sm btn-primary"
                             :disabled="running || refreshing"
@@ -157,7 +160,13 @@ export default {
                 .catch(() => {})
         },
         start () {
-            this.repository.start()
+            this.$root.latest(
+                this.$string.set(':0 repository run', this.repository.name),
+                () => this.repository.start()
+            )
+        },
+        refresh () {
+            this.repository.refresh()
         },
         stop () {
             this.repository.stop()

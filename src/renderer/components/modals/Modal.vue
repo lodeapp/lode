@@ -1,10 +1,10 @@
 <template>
-    <div class="modal" :class="{ 'is-last': isLast }" tabindex="-1" role="dialog">
+    <div class="modal" :class="{ 'is-last': isLast }" tabindex="-1" role="dialog" @click.self="handleClick">
         <div class="modal-dialog" :class="[sizeClass]">
             <div class="modal-content">
                 <div class="modal-header">
                     <slot name="header">
-                        <h3 class="modal-title" v-html="title"></h3>
+                        <h3 v-if="title" v-html="title" class="modal-title"></h3>
                     </slot>
                 </div>
 
@@ -34,6 +34,10 @@ export default {
     name: 'Modal',
     props: {
         isLast: {
+            type: Boolean,
+            default: false
+        },
+        dismissable: {
             type: Boolean,
             default: false
         },
@@ -97,6 +101,11 @@ export default {
                 this.$parent.reject()
             }
             this.$modal.close()
+        },
+        handleClick () {
+            if (this.dismissable) {
+                this.close()
+            }
         }
     }
 }

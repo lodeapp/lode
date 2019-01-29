@@ -61,6 +61,9 @@ export interface IFramework extends EventEmitter {
     start (): void
     refresh (): void
     stop (): Promise<void>
+    isRunning (): boolean
+    isRrefreshing (): boolean
+    isBusy (): boolean
     persist (): FrameworkOptions
     updateOptions (options: FrameworkOptions): void
 }
@@ -296,6 +299,27 @@ export abstract class Framework extends EventEmitter implements IFramework {
         .catch(error => {
             this.onError(error)
         })
+    }
+
+    /**
+     * Whether this framework is running.
+     */
+    public isRunning (): boolean {
+        return this.status === 'running'
+    }
+
+    /**
+     * Whether this framework is refreshing.
+     */
+    public isRrefreshing (): boolean {
+        return this.status === 'refreshing'
+    }
+
+    /**
+     * Whether this framework is busy.
+     */
+    public isBusy (): boolean {
+        return this.isRunning() || this.isRrefreshing()
     }
 
     /**
@@ -668,6 +692,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * if it's not yet executed simply by clearing the internal queue object.
      */
     public start (): void {
+        // Only queue job if no other is queued or currently running
+        if (this.isBusy() || Object.keys(this.queue).length > 0) {
+            return
+        }
         this.updateStatus('queued')
         const id = uuid()
         this.queue[id] = () => this.handleRun()
@@ -679,6 +707,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * See @start for more info.
      */
     public refresh (): void {
+        // Only queue job if no other is queued or currently running
+        if (this.isBusy() || Object.keys(this.queue).length > 0) {
+            return
+        }
         this.updateStatus('queued')
         const id = uuid()
         this.queue[id] = () => this.handleRefresh()
@@ -699,7 +731,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
             return () => Promise.resolve()
         }
         Logger.debug.log(`Running queued job with id ${id}.`)
-        return this.queue[id]()
+
+        // Pluck job from the queue before returning
+        const job = this.queue[id]
+        delete this.queue[id]
+        return job()
     }
 
     /**

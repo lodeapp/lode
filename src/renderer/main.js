@@ -5,6 +5,7 @@ import { remote, ipcRenderer } from 'electron'
 import { Config } from '@lib/config'
 import { Logger } from '@lib/logger'
 import { Project } from '@lib/frameworks/project'
+import { queue } from '@lib/process/queue'
 
 // Styles
 import '../styles/app.scss'
@@ -57,7 +58,7 @@ export default new Vue({
         currentProject (value) {
             this.$modal.clear()
             this.refreshProject()
-            this.emitProjectChange()
+            this.updateApplicationMenu()
         }
     },
     created () {
@@ -74,7 +75,7 @@ export default new Vue({
             .on('menu-event', (event, { name, properties }) => {
                 switch (name) {
                     case 'show-about':
-                        this.$modal.open('Licenses')
+                        this.$modal.open('About')
                         break
                     case 'show-preferences':
                         this.$modal.open('Preferences')
@@ -84,6 +85,21 @@ export default new Vue({
                         break
                     case 'switch-project':
                         this.switchProject(properties)
+                        break
+                    case 'run-project':
+                        this.latest(
+                            this.$string.set(':0 project run', this.project.name),
+                            () => this.project.start()
+                        )
+                        break
+                    case 'refresh-project':
+                        this.project.refresh()
+                        break
+                    case 'stop-project':
+                        this.project.stop()
+                        break
+                    case 'rerun-last':
+                        queue.runLatest()
                         break
                     case 'rename-project':
                         this.editProject()
@@ -130,7 +146,7 @@ export default new Vue({
                     // Since current project hasn't changed, just been updated,
                     // we need to forcibly emit the change to the main process,
                     // so that the application menu gets updated.
-                    this.emitProjectChange()
+                    this.updateApplicationMenu()
                 })
                 .catch(() => {})
         },
@@ -144,10 +160,9 @@ export default new Vue({
         addRepositories () {
             this.$modal.open('AddRepositories', { project: this.project })
         },
-        emitProjectChange () {
-            ipcRenderer.send('project-changed', {
-                project: this.project,
-                projects: Config.get('projects')
+        updateApplicationMenu () {
+            ipcRenderer.send('update-menu', {
+                latestJobName: queue.getLatestJobName()
             })
         },
         switchProject (projectId) {
@@ -168,6 +183,10 @@ export default new Vue({
                     })
                 })
                 .catch(() => {})
+        },
+        latest (name, job) {
+            queue.latest(name, job)
+            this.updateApplicationMenu()
         },
         ...mapActions({
             handleSwitchProject: 'projects/switchProject',

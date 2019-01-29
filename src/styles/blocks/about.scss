@@ -1,0 +1,12 @@
+.about {
+    text-align: center;
+
+    & > img {
+        height: 80px;
+        width: 80px;
+    }
+
+    h4 {
+        margin-bottom: var(--spacing);
+    }
+}

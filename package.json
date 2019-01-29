@@ -7,10 +7,10 @@
   "main": "./dist/electron/main.js",
   "scripts": {
     "licenses": "node .electron-vue/licenses.js",
-    "build": "yarn run licenses && node .electron-vue/build.js && electron-builder",
-    "build:dir": "yarn run licenses && node .electron-vue/build.js && electron-builder --dir",
+    "build": "cp -rf build/icons static/icons && yarn run licenses && node .electron-vue/build.js && electron-builder",
+    "build:dir": "cp -rf build/icons static/icons && yarn run licenses && node .electron-vue/build.js && electron-builder --dir",
     "build:dev": "cross-env IS_DEV=true yarn run build",
-    "dev": "cross-env IS_DEV=true node .electron-vue/dev-runner.js",
+    "dev": "cp -rf build/icons static/icons && cross-env IS_DEV=true node .electron-vue/dev-runner.js",
     "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter src",
     "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src",
     "pack": "npm run pack:main && npm run pack:renderer",

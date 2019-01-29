@@ -1,6 +1,5 @@
 import * as fixPath from 'fix-path'
 import { app, ipcMain, Menu } from 'electron'
-import { Config } from './lib/config'
 import { buildDefaultMenu } from './menu'
 import { Window } from './window'
 
@@ -28,11 +27,8 @@ function createWindow() {
   mainWindow = window
 }
 
-function buildMenu() {
-    Menu.setApplicationMenu(buildDefaultMenu({
-        currentProject: Config.get('currentProject'),
-        projects: Config.get('projects')
-    }))
+function buildMenu(options = {}) {
+    Menu.setApplicationMenu(buildDefaultMenu(options))
 }
 
 app.on('ready', () => {
@@ -52,8 +48,8 @@ app.on('activate', () => {
     }
 })
 
-ipcMain.on('project-changed', () => {
-    buildMenu()
+ipcMain.on('update-menu', (event: any, options = {}) => {
+    buildMenu(options)
 })
 
 /**

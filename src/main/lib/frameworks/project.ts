@@ -21,6 +21,7 @@ export interface IProject extends EventEmitter {
     selected: boolean
 
     start (): void
+    refresh (): void
     stop (): Promise<void>
     persist (): ProjectOptions
     updateOptions (options: ProjectOptions): void
@@ -54,6 +55,17 @@ export class Project extends EventEmitter implements IProject {
     public start (): void {
         this.repositories.forEach((repository: IRepository) => {
             repository.start()
+        })
+    }
+
+    /**
+     * Refresh all of this project's repositories.
+     */
+    public refresh (): void {
+        console.log('refreshing project')
+        this.repositories.forEach((repository: IRepository) => {
+            console.log('refreshing repository')
+            repository.refresh()
         })
     }
 

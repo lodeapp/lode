@@ -26,11 +26,23 @@
 
     .modal-dialog {
         flex-grow: 1;
-        margin: var(--spacing);
+        margin: var(--spacing-triple) auto;
+        max-width: var(--modal-medium);
         pointer-events: none;
         position: relative;
         transition: transform .3s ease, opacity .3s ease;
         width: auto;
+
+        &.modal-sm {
+            max-width: var(--modal-small);
+        }
+
+        @include media-breakpoint-up(xl) {
+
+            .modal-lg {
+                max-width: var(--modal-large);
+            }
+        }
     }
 
     .modal-content {
@@ -79,6 +91,10 @@
         h6 {
             color: $black;
             line-height: 1;
+        }
+
+        &:empty {
+            display: none;
         }
     }
 
@@ -205,6 +221,13 @@
             }
         }
     }
+
+    .modal-dialog {
+
+        &.modal-sm {
+            max-width: var(--modal-small);
+        }
+    }
 }
 
 .modal-backdrop {
@@ -231,34 +254,3 @@
         transform: scale(1.1);
     }
 }
-
-
-// ========================================================================
-// Larger screens
-// ========================================================================
-
-@include media-breakpoint-up(sm) {
-
-    .modal {
-
-        .modal-dialog {
-            margin: var(--spacing-triple) auto;
-            max-width: var(--modal-medium);
-        }
-
-        &.modal-sm {
-            max-width: var(--modal-small);
-        }
-    }
-}
-
-@include media-breakpoint-up(xl) {
-
-    .modal {
-
-        .modal-lg {
-            max-width: var(--modal-large);
-        }
-    }
-}
-
