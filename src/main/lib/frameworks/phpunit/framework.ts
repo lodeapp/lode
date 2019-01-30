@@ -110,6 +110,13 @@ export class PHPUnit extends Framework {
     }
 
     /**
+     * Provide setup instructions for using Lode with Jest.
+     */
+    public static instructions (): string {
+        return "Install the Lode PHPUnit reporter package by running `composer require lodeapp/phpunit --dev` inside your repository\'s directory."
+    }
+
+    /**
      * Troubleshoot a PHPUnit error.
      *
      * @param error The error to be parsed for troubleshooting.

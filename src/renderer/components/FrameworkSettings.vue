@@ -40,8 +40,11 @@
                     <div v-if="validator.hasErrors('type')" class="form-error">{{ validator.getErrors('type') }}</div>
                     <select class="form-control form-select input-sm" v-model="fields.type">
                         <option>Select Test Framework</option>
-                        <option value="jest">Jest</option>
-                        <option value="phpunit">PHPUnit</option>
+                        <option
+                            v-for="framework in availableFrameworks"
+                            :key="framework.defaults.type"
+                            :value="framework.defaults.type"
+                        >{{ framework.name }}</option>
                     </select>
                 </dd>
             </dl>
@@ -106,7 +109,14 @@
                     >
                 </dd>
             </dl>
+            <div class="instructions" v-show="showInstructions">
+                <div>
+                    <h6>{{ 'How to setup :0 testing with Lode' | set(currentFrameworkName) }}</h6>
+                    <p v-markdown>{{ currentFrameworkInstructions }}</p>
+                </div>
+            </div>
             <div class="form-actions">
+                <button class="btn btn-outline btn-sm" type="button" @click="showInstructions = !showInstructions"><Icon symbol="question" /></button>
                 <button class="btn btn-sm btn-danger" type="button" @click="remove">Remove</button>
                 <button class="btn btn-sm" type="button" @click="expanded = !expanded">Done</button>
             </div>
@@ -120,8 +130,10 @@
 </template>
 
 <script>
+import _find from 'lodash/find'
 import * as Path from 'path'
 import { remote } from 'electron'
+import { Frameworks } from '@lib/frameworks'
 
 export default {
     name: 'FrameworkSettings',
@@ -149,7 +161,8 @@ export default {
                 runsInVm: this.framework.runsInVm,
                 vmPath: this.framework.vmPath
             },
-            expanded: ['pending', 'removed'].includes(this.framework.scanStatus)
+            expanded: ['pending', 'removed'].includes(this.framework.scanStatus),
+            showInstructions: this.framework.scanStatus === 'pending'
         }
     },
     computed: {
@@ -158,6 +171,17 @@ export default {
         },
         removed () {
             return this.framework.scanStatus === 'removed'
+        },
+        availableFrameworks () {
+            return Frameworks
+        },
+        currentFrameworkName () {
+            const framework = _find(Frameworks, framework => framework.defaults.type === this.fields.type)
+            return framework ? framework.defaults.name : ''
+        },
+        currentFrameworkInstructions () {
+            const framework = _find(Frameworks, framework => framework.defaults.type === this.fields.type)
+            return framework ? framework.instructions() : ''
         }
     },
     watch: {

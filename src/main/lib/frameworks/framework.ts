@@ -739,6 +739,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * Provide setup instructions for using Lode with a testing framework.
+     */
+    public static instructions (): string {
+        return ''
+    }
+
+    /**
      * Give the opportunity for frameworks to troubleshoot certain errors in
      * processing, returning a helpful message for additional context. This will
      * be shown inside the alert, alongside the errors themselves.

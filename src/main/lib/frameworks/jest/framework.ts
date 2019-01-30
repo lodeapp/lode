@@ -108,6 +108,13 @@ export class Jest extends Framework {
     }
 
     /**
+     * Provide setup instructions for using Lode with Jest.
+     */
+    public static instructions (): string {
+        return "Install the Lode Jest reporter package by running `yarn add --dev @lodeapp/jest` or `npm install --save-dev @lodeapp/jest` inside your repository\'s directory."
+    }
+
+    /**
      * Troubleshoot a Jest error.
      *
      * @param error The error to be parsed for troubleshooting.
