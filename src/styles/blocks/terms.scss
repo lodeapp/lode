@@ -1,0 +1,28 @@
+.terms {
+
+    pre {
+        background-color: transparent;
+        border: 0;
+        font-family: var(--font-family-sans-serif);
+        padding: 0;
+        white-space: normal;
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            margin-bottom: var(--spacing-half);
+        }
+
+        ol,
+        ul {
+            margin-left: var(--spacing-double);
+
+            li {
+                margin-bottom: var(--spacing-half);
+            }
+        }
+    }
+}

@@ -14,7 +14,9 @@
                     <span class="toggle" @click="toggle">
                         <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
                     </span>
-                    {{ framework.name }}
+                    <span class="name">
+                        {{ framework.name }}
+                    </span>
                 </h3>
                 <div class="actions">
                     <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">

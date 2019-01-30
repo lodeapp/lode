@@ -1,6 +1,7 @@
 export type MenuEvent =
   | 'add-repositories'
   | 'boomtown'
+  | 'feedback'
   | 'log-settings'
   | 'new-project'
   | 'open-external-editor'

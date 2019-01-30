@@ -1,6 +1,7 @@
 .parent {
 
     & > .header {
+        position: sticky;
 
         & > .title {
             display: flex;
@@ -8,10 +9,13 @@
             position: relative;
 
             .heading {
+                display: flex;
                 flex-grow: 1;
 
                 .toggle {
                     display: inline-block;
+                    flex-grow: 0;
+                    flex-shrink: 0;
                     margin: 0 0 0 var(--spacing-half);
                     position: relative;
                     width: 1rem;
@@ -20,6 +24,11 @@
                     &:focus,
                     &:active {
                         color: var(--link-color);
+                    }
+
+                    & > i {
+                        line-height: 5px;
+                        vertical-align: middle;
                     }
                 }
             }

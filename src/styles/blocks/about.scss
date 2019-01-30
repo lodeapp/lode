@@ -9,4 +9,21 @@
     h4 {
         margin-bottom: var(--spacing);
     }
+
+    .legal {
+        font-size: 0;
+
+        a {
+            border-right: 1px solid $black;
+            display: inline-block;
+            font-size: 1rem;
+            height: 14px;
+            line-height: 14px;
+            padding: 0 4px;
+        }
+
+        :last-child {
+            border: 0;
+        }
+    }
 }

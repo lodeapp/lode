@@ -4,12 +4,33 @@
     margin-bottom: 10px;
 
     & > .header {
+        background-color: $primary;
+        border-bottom: 1px solid $primary-border;
+        top: var(--repository-header-height);
+        z-index: var(--framework-z-index);
 
         & > .title {
 
             .heading {
                 font-size: 1.5rem;
                 font-weight: var(--font-weight-bold);
+
+                & > .name {
+                    line-height: 1.2em;
+                    margin-left: var(--spacing);
+                    padding-right: var(--spacing);
+                    position: relative;
+                    top: 3px;
+                    word-break: break-word;
+                }
+            }
+        }
+
+        // First nugget has no top border.
+        & + .nugget {
+
+            & > .header {
+                padding-top: 0;
             }
         }
     }

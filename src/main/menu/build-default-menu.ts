@@ -259,11 +259,6 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         })
     }
 
-    const resetSettings: Electron.MenuItemConstructorOptions = {
-        label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
-        click: emit('reset-settings')
-    }
-
     // const submitIssueItem: Electron.MenuItemConstructorOptions = {
     //   label: __DARWIN__ ? 'Report Issue…' : 'Report issue…',
     //   click() {
@@ -313,7 +308,15 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         // showUserGuides,
         // showLogsItem,
         separator,
-        resetSettings
+        {
+            label: __DARWIN__ ? 'Report a Problem or Feature Request' : 'Report a problem or feature request',
+            click: emit('feedback')
+        },
+        separator,
+        {
+            label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
+            click: emit('reset-settings')
+        }
     ]
 
     if (__DARWIN__) {

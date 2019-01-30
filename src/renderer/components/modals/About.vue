@@ -4,7 +4,10 @@
             <img :src="logo">
             <h4>Lode</h4>
             <p v-markdown.set="(new Date()).getFullYear()">&copy; 2018 - :0 Tomas Buteler. All rights reserved.</p>
-            <p><a href="#" @click.prevent="showLicenses">Open Source Notices</a></p>
+            <p class="legal">
+                <a href="#" @click.prevent="showTerms">Terms and Conditions</a>
+                <a href="#" @click.prevent="showLicenses">Open Source Notices</a>
+            </p>
         </div>
     </Modal>
 </template>
@@ -23,6 +26,10 @@ export default {
         }
     },
     methods: {
+        showTerms () {
+            this.$emit('hide')
+            this.$modal.open('Terms')
+        },
         showLicenses () {
             this.$emit('hide')
             this.$modal.open('Licenses')

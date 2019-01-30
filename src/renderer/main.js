@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import store from './store'
 import { mapActions, mapGetters } from 'vuex'
-import { remote, ipcRenderer } from 'electron'
+import { remote, ipcRenderer, shell } from 'electron'
 import { Config } from '@lib/config'
 import { Logger } from '@lib/logger'
 import { Project } from '@lib/frameworks/project'
@@ -116,6 +116,9 @@ export default new Vue({
                             json: JSON.stringify(Config.get())
                         })
                         break
+                    case 'feedback':
+                        window.location.href = 'mailto:tbuteler@me.com'
+                        break
                     case 'reset-settings':
                         this.$modal.confirm('ResetSettings')
                             .then(() => {
@@ -187,6 +190,9 @@ export default new Vue({
         latest (name, job) {
             queue.latest(name, job)
             this.updateApplicationMenu()
+        },
+        openExternal (link) {
+            shell.openExternal(link)
         },
         ...mapActions({
             handleSwitchProject: 'projects/switchProject',

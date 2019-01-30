@@ -66,7 +66,7 @@ export default class Input {
     on (event, tag, callback) {
         event.preventDefault()
         if (this.isTag(event, tag)) {
-            callback.call()
+            callback(event)
         }
     }
 }

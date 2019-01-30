@@ -1,6 +1,7 @@
 export type MenuIDs =
   | 'about'
   | 'add-repositories'
+  | 'feedback'
   | 'new-project'
   | 'open-external-editor'
   | 'open-working-directory'

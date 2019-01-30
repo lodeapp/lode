@@ -14,8 +14,9 @@
                     <span class="toggle" @click="toggle">
                         <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
                     </span>
-                    <span class="repository-name">
-                        <Icon symbol="repo" />{{ repository.name }}
+                    <Icon symbol="repo" />
+                    <span class="name" :title="repository.name">
+                        {{ repository.name }}
                     </span>
                 </h2>
                 <div class="actions">
