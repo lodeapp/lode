@@ -114,7 +114,12 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
             separator,
             { role: 'cut', label: __DARWIN__ ? 'Cut' : 'Cu&t' },
             { role: 'copy', label: __DARWIN__ ? 'Copy' : '&Copy' },
-            { role: 'paste', label: __DARWIN__ ? 'Paste' : '&Paste' }
+            { role: 'paste', label: __DARWIN__ ? 'Paste' : '&Paste' },
+            {
+              label: __DARWIN__ ? 'Select All' : 'Select &all',
+              accelerator: 'CmdOrCtrl+A',
+              click: emit('select-all'),
+            }
         ]
     })
 

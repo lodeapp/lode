@@ -74,13 +74,16 @@ export default {
         }
     },
     actions: {
-        addProject: ({ commit }, project) => {
+        addProject: ({ commit, dispatch }, project) => {
+            dispatch('tests/reset', null, { root: true })
             commit('ADD_PROJECT', project)
         },
-        removeProject: ({ commit }, project) => {
+        removeProject: ({ commit, dispatch }, project) => {
+            dispatch('tests/reset', null, { root: true })
             commit('REMOVE_PROJECT', project)
         },
-        switchProject: ({ commit }, projectId) => {
+        switchProject: ({ commit, dispatch }, projectId) => {
+            dispatch('tests/reset', null, { root: true })
             commit('SWITCH_PROJECT', projectId)
         },
         projectChange: ({ commit }, project) => {
@@ -89,7 +92,14 @@ export default {
         addRepository: ({ commit }, repository) => {
             commit('ADD_REPOSITORY', repository)
         },
-        removeRepository: ({ commit }, repository) => {
+        removeRepository: ({ commit, dispatch, rootGetters }, repository) => {
+            rootGetters['tests/breadcrumbs'].forEach(breadcrumb => {
+                // If a test within the repository to remove is currently
+                // in focus, reset the active test pane.
+                if (breadcrumb.id === repository.id) {
+                    dispatch('tests/reset', null, { root: true })
+                }
+            })
             commit('REMOVE_REPOSITORY', repository)
         },
         repositoryChange: ({ commit }, repository) => {
@@ -97,6 +107,17 @@ export default {
         },
         addFramework: ({ commit }, { repositoryId, framework }) => {
             commit('ADD_FRAMEWORK', { repositoryId, framework })
+        },
+        removeFramework: ({ commit, dispatch, rootGetters }, { repository, frameworkId }) => {
+            rootGetters['tests/breadcrumbs'].forEach(breadcrumb => {
+                // If a test within the framework to remove is currently
+                // in focus, reset the active test pane.
+                if (breadcrumb.id === frameworkId) {
+                    dispatch('tests/reset', null, { root: true })
+                }
+            })
+            repository.removeFramework(frameworkId)
+            commit('REPOSITORY_CHANGE', repository)
         },
         frameworkChange: ({ commit, getters }, { repositoryId, framework }) => {
             commit('FRAMEWORK_CHANGE', { repositoryId, framework })

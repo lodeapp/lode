@@ -12,6 +12,7 @@ export type MenuEvent =
   | 'rerun-last'
   | 'reset-settings'
   | 'run-project'
+  | 'select-all'
   | 'show-about'
   | 'show-preferences'
   | 'stop-project'

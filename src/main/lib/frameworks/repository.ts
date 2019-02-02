@@ -40,6 +40,7 @@ export interface IRepository extends EventEmitter {
     stop (): Promise<void>
     persist (): RepositoryOptions
     scan (): Promise<Array<FrameworkOptions>>
+    getDisplayName (): string
 }
 
 export class Repository extends EventEmitter implements IRepository {
@@ -133,6 +134,13 @@ export class Repository extends EventEmitter implements IRepository {
             resolve(scanned)
             this.scanning = false
         })
+    }
+
+    /**
+     * Get this repository's display name.
+     */
+    public getDisplayName (): string {
+        return this.name
     }
 
     /**

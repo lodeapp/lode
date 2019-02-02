@@ -66,6 +66,7 @@ export interface IFramework extends EventEmitter {
     isBusy (): boolean
     persist (): FrameworkOptions
     updateOptions (options: FrameworkOptions): void
+    getDisplayName (): string
 }
 
 /**
@@ -233,6 +234,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         this.emit('change', this)
+    }
+
+    /**
+     * Get this framework's display name.
+     */
+    public getDisplayName (): string {
+        return this.name
     }
 
     /**
@@ -506,12 +514,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param args The arguments to spawn the process with.
      */
     protected spawn (args: Array<string>): IProcess {
-        const process = ProcessFactory.make(
-            this.command,
+        const process = ProcessFactory.make({
+            command: this.command,
             args,
-            this.repositoryPath,
-            this.runner
-        )
+            path: this.repositoryPath,
+            forceRunner: this.runner
+        })
 
         this.process = process.getId()
 
@@ -750,11 +758,27 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * processing, returning a helpful message for additional context. This will
      * be shown inside the alert, alongside the errors themselves.
      *
+     * Frameworks extending this functionality should call super.troubleshoot()
+     * as fallback, so we can still show the general troubleshooting advice
+     * listed below.
+     *
      * Supports markdown.
      *
      * @param error The error to be parsed for troubleshooting.
      */
     protected troubleshoot (error: Error | string): string {
+        if (error instanceof Error) {
+            error = error.toString()
+        }
+
+        if (error.includes('EACCES')) {
+            return 'When running commands that connect into a virtual machine instance, make sure all arguments needed to connect to the machine and running the test framework after doing so are present in the command itself. Using a batch script or storing SSH connection information in a file might be helpful or even required.'
+        }
+
+        if (error === '' && this.runsInVm) {
+            return 'Is the virtual machine that runs the tests running?'
+        }
+
         return ''
     }
 }

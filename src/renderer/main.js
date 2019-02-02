@@ -86,6 +86,9 @@ export default new Vue({
                     case 'switch-project':
                         this.switchProject(properties)
                         break
+                    case 'select-all':
+                        this.selectAll()
+                        break
                     case 'run-project':
                         this.latest(
                             this.$string.set(':0 project run', this.project.name),
@@ -115,6 +118,9 @@ export default new Vue({
                             object: Config.get(),
                             json: JSON.stringify(Config.get())
                         })
+                        break
+                    case 'boomtown':
+                        this.boomtown()
                         break
                     case 'feedback':
                         window.location.href = 'mailto:tbuteler@me.com'
@@ -193,6 +199,21 @@ export default new Vue({
         },
         openExternal (link) {
             shell.openExternal(link)
+        },
+        selectAll () {
+            const event = new CustomEvent('select-all', {
+                bubbles: true,
+                cancelable: true
+            })
+
+            if (document.activeElement.dispatchEvent(event)) {
+                remote.getCurrentWebContents().selectAll()
+            }
+        },
+        boomtown () {
+            window.setImmediate(() => {
+                throw new Error('Boomtown!')
+            })
         },
         ...mapActions({
             handleSwitchProject: 'projects/switchProject',

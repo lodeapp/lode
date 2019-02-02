@@ -7,6 +7,13 @@ import { spawn, ChildProcess } from 'child_process'
 import { Logger } from '../logger'
 import { ErrorWithCode } from './errors'
 
+export type ProcessOptions = {
+    command: string
+    args: Array<string>
+    path: string
+    forceRunner?: string | null
+}
+
 export interface IProcess extends EventEmitter {
     readonly process?: ChildProcess
     getId (): number
@@ -30,16 +37,12 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     fromFile?: string
     process?: ChildProcess
 
-    constructor (
-       command: string,
-       args: Array<string> = [],
-       path?: string
-    ) {
+    constructor (options: ProcessOptions) {
         super()
 
         // Remember raw command and path for user feedback
-        this.command = command
-        this.path = path
+        this.command = options.command
+        this.path = options.path
 
         // Set process control defaults
         this.rawChunks = []
@@ -48,10 +51,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.reports = false
         this.reportBuffer = ''
         this.reportClosed = false
-
-        if (Path.isAbsolute(command)) {
-            this.fromFile = command
-        }
 
         // We can re-process stored streams with the `fromFile` property,
         // being that of a JSON file stored in the debug folder (i.e. previously
@@ -75,7 +74,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         // Parse command and arguments into something we
         // can use for spawning a process.
         this.args = compact(
-            flattenDeep([command].concat(args!).map((arg: string) => {
+            flattenDeep([this.command].concat(options.args!).map((arg: string) => {
                 return arg.split(' ')
             }))
         )

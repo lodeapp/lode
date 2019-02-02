@@ -1,6 +1,6 @@
 {
   "name": "lode",
-  "version": "0.0.1",
+  "version": "0.8.0",
   "author": "Tomas Buteler <tbuteler@me.com>",
   "description": "A universal GUI for test runners",
   "license": null,
@@ -10,6 +10,7 @@
     "build": "cp -rf build/icons static/icons && yarn run licenses && node .electron-vue/build.js && electron-builder",
     "build:dir": "cp -rf build/icons static/icons && yarn run licenses && node .electron-vue/build.js && electron-builder --dir",
     "build:dev": "cross-env IS_DEV=true yarn run build",
+    "build:all": "cp -rf build/icons static/icons && yarn run licenses && node .electron-vue/build.js && electron-builder --m --l --w",
     "dev": "cp -rf build/icons static/icons && cross-env IS_DEV=true node .electron-vue/dev-runner.js",
     "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter src",
     "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src",
@@ -46,13 +47,31 @@
       ]
     },
     "mac": {
-      "icon": "build/icons/icon.icns"
+      "icon": "build/icons/icon.icns",
+      "target": [
+        {
+          "target": "dmg"
+        }
+      ]
     },
     "win": {
-      "icon": "build/icons/icon.ico"
+      "icon": "build/icons/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
     },
     "linux": {
-      "icon": "build/icons"
+      "icon": "build/icons",
+      "target": [
+        {
+          "target": "deb"
+        }
+      ]
     }
   },
   "dependencies": {
@@ -61,7 +80,6 @@
     "electron-log": "^2.2.17",
     "electron-store": "^2.0.0",
     "electron-window-state": "^5.0.2",
-    "fix-path": "^2.1.0",
     "fs-extra": "^7.0.0",
     "fuzzaldrin": "^2.1.0",
     "glob": "^7.1.3",
@@ -71,6 +89,7 @@
     "markdown-it": "^8.4.2",
     "octicons": "^8.1.0",
     "sha1-es": "^1.8.2",
+    "shell-env": "^2.2.0",
     "strip-ansi": "^5.0.0",
     "terminal.js": "^1.0.10",
     "uuid": "^3.3.2",

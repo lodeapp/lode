@@ -63,8 +63,10 @@
             v-show="show"
             v-for="framework in repository.frameworks"
             :key="framework.id"
-            :framework="framework"
+            :model="framework"
             @change="storeState"
+            @activate="onChildActivation"
+            @deactivate="onChildDeactivation"
         />
     </div>
 </template>
@@ -74,6 +76,7 @@ import { remote } from 'electron'
 import { mapActions } from 'vuex'
 import Framework from '@/components/Framework'
 import Indicator from '@/components/Indicator'
+import Breadcrumb from '@/components/mixins/breadcrumb'
 
 export default {
     name: 'Repository',
@@ -81,8 +84,11 @@ export default {
         Framework,
         Indicator
     },
+    mixins: [
+        Breadcrumb
+    ],
     props: {
-        repository: {
+        model: {
             type: Object,
             required: true
         }
@@ -114,6 +120,9 @@ export default {
         }
     },
     computed: {
+        repository () {
+            return this.model
+        },
         running () {
             return this.repository.status === 'running'
         },

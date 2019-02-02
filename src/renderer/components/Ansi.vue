@@ -18,11 +18,19 @@ export default {
     },
     props: {
         content: {
-            type: String,
+            type: [String, Error],
             default: ''
         }
     },
     data () {
+        // If content is an error, don't try to parse it
+        if (this.content instanceof Error) {
+            return {
+                raw: false,
+                html: this.content
+            }
+        }
+
         // Create a new Terminal instance with plenty of space for our output.
         // We'll trim the unsused space when rendering the html.
         const terminal = new Terminal({ columns: 20000, rows: 20000 })

@@ -66,9 +66,11 @@
         <template v-if="show">
             <Suite
                 v-for="suite in framework.suites"
-                :suite="suite"
+                :model="suite"
                 :running="running"
                 :key="suite.id"
+                @activate="onChildActivation"
+                @deactivate="onChildDeactivation"
             />
         </template>
     </div>
@@ -78,6 +80,7 @@
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
+import Breadcrumb from '@/components/mixins/breadcrumb'
 
 export default {
     name: 'Framework',
@@ -86,8 +89,11 @@ export default {
         Suite,
         Ledger
     },
+    mixins: [
+        Breadcrumb
+    ],
     props: {
-        framework: {
+        model: {
             type: Object,
             required: true
         }
@@ -98,6 +104,9 @@ export default {
         }
     },
     computed: {
+        framework () {
+            return this.model
+        },
         running () {
             return this.framework.status === 'running'
         },

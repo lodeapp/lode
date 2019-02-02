@@ -57,14 +57,19 @@ export class Jest extends Framework {
         return new Promise((resolve, reject) => {
             this.spawn(['--listTests', '--forceExit'])
                 .on('success', ({ process }) => {
-                    const lines = process.getLines()
-                    lines.sort()
-                    lines.filter((file: string) => this.fileInPath(file))
-                        .map((file: string) => this.makeSuite(Suite.buildResult({
-                            file,
-                            testsLoaded: false
-                        })))
-                    resolve('success')
+                    try {
+                        const lines = process.getLines()
+                        lines.sort()
+                        lines.filter((file: string) => this.fileInPath(file))
+                            .map((file: string) => this.makeSuite(Suite.buildResult({
+                                file,
+                                testsLoaded: false
+                            })))
+                        resolve('success')
+                    } catch (error) {
+                        this.stop()
+                        reject('The Jest package returned unexpected results.')
+                    }
                 })
                 .on('killed', ({ process }) => {
                     resolve('killed')
@@ -128,6 +133,10 @@ export class Jest extends Framework {
             return 'Make sure to include the Lode Jest reporter package as a dependency in your repository. You can do this by running `yarn add --dev @lodeapp/jest` or `npm install --save-dev @lodeapp/jest` inside your repository\'s directory.'
         }
 
-        return ''
+        if (error.includes('The Jest package returned unexpected results.')) {
+            return 'Your Lode Jest package might be out of date. Please try running `yarn upgrade lodeapp/jest` and try again. You might want to check if there are updates available for the Lode app, too.'
+        }
+
+        return super.troubleshoot(error)
     }
 }

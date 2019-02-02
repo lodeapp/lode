@@ -17,7 +17,7 @@
             <Test
                 v-for="test in test.tests"
                 :key="test.id"
-                :test="test"
+                :model="test"
                 :running="running"
                 :selectable="selectable"
                 @activate="onChildActivation"
@@ -30,14 +30,18 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import Nugget from '@/components/Nugget'
+import Breadcrumb from '@/components/mixins/breadcrumb'
 
 export default {
     name: 'Test',
     components: {
         Nugget
     },
+    mixins: [
+        Breadcrumb
+    ],
     props: {
-        test: {
+        model: {
             type: Object,
             required: true
         },
@@ -53,11 +57,13 @@ export default {
     data () {
         return {
             show: false,
-            isActive: false,
-            isChildActive: false
+            isActive: false
         }
     },
     computed: {
+        test () {
+            return this.model
+        },
         hasChildren () {
             return this.test.tests && this.test.tests.length > 0
         },
@@ -74,8 +80,8 @@ export default {
         })
     },
     watch: {
-        activeTest () {
-            if (this.isActive) {
+        activeTest (active) {
+            if (this.isActive && active.id !== this.test.id) {
                 this.deactivate()
             }
         }
@@ -83,6 +89,11 @@ export default {
     mounted () {
         this.test.on('debriefed', () => {
             if (this.isActive) {
+                this.refresh()
+            }
+        })
+        this.test.on('status', (to, from) => {
+            if (this.isActive && to === 'queued') {
                 this.refresh()
             }
         })
@@ -108,18 +119,8 @@ export default {
         refresh () {
             this.activate()
         },
-        onChildActivation () {
-            this.isChildActive = true
-            this.breadcrumb(this.test)
-            this.$emit('activate')
-        },
-        onChildDeactivation () {
-            this.isChildActive = false
-            this.$emit('deactivate')
-        },
         ...mapActions({
-            showResults: 'tests/show',
-            breadcrumb: 'tests/breadcrumb'
+            showResults: 'tests/show'
         })
     }
 }

@@ -11,4 +11,5 @@ export type MenuIDs =
   | 'rename-project'
   | 'rerun-last'
   | 'run-project'
+  | 'select-all'
   | 'stop-project'

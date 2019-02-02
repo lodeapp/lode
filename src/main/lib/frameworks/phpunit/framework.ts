@@ -51,12 +51,17 @@ export class PHPUnit extends Framework {
      */
     protected reload (): Promise<string> {
         return new Promise((resolve, reject) => {
-            this.spawn(['--columns=1'].concat(this.runArgs()))
+            this.spawn(['--columns=42'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
-                    report.forEach((result: ISuiteResult) => {
-                        this.makeSuite(result, true)
-                    })
-                    resolve('success')
+                    try {
+                        report.forEach((result: ISuiteResult) => {
+                            this.makeSuite(result, true)
+                        })
+                        resolve('success')
+                    } catch (error) {
+                        this.stop()
+                        reject('The PHPUnit package returned unexpected results.')
+                    }
                 })
                 .on('killed', ({ process }) => {
                     resolve('killed')
@@ -130,6 +135,10 @@ export class PHPUnit extends Framework {
             return 'Make sure to include the Lode PHPUnit reporter package as a dependency in your repository. You can do this by running `composer require lodeapp/phpunit --dev` inside your repository\'s directory. If you already have, try running `composer dump-autoload`.'
         }
 
-        return ''
+        if (error.includes('The PHPUnit package returned unexpected results.')) {
+            return 'Your Lode PHPUnit package might be out of date. Please try running `composer update lodeapp/phpunit` and try again. You might want to check if there are updates available for the Lode app, too.'
+        }
+
+        return super.troubleshoot(error)
     }
 }

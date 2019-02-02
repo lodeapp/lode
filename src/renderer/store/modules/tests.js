@@ -1,4 +1,5 @@
 import _cloneDeep from 'lodash/cloneDeep'
+import _omit from 'lodash/omit'
 
 export default {
     namespaced: true,
@@ -8,13 +9,19 @@ export default {
     },
     mutations: {
         SHOW (state, test) {
-            state.active = _cloneDeep(test)
+            state.active = _cloneDeep(
+                // If test is in a transient state, omit potentially stale results.
+                ['queued', 'running', 'idle'].includes(test.getStatus()) ? _omit(test, 'result') : test
+            )
         },
         BREADCRUMBS (state, breadcrumb) {
             state.breadcrumbs.unshift(_cloneDeep(breadcrumb))
         },
         RESET_BREADCRUMBS (state) {
             state.breadcrumbs = []
+        },
+        RESET (state) {
+            state.active = null
         }
     },
     actions: {
@@ -24,6 +31,9 @@ export default {
         },
         breadcrumb: ({ commit }, breadcrumb) => {
             commit('BREADCRUMBS', breadcrumb)
+        },
+        reset ({ commit }) {
+            commit('RESET')
         }
     },
     getters: {

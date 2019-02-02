@@ -15,7 +15,7 @@
         <Test
             v-for="test in suite.tests"
             :key="test.id"
-            :test="test"
+            :model="test"
             :running="running"
             :selectable="suite.canToggleTests"
             @activate="onChildActivation"
@@ -25,9 +25,9 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
 import Nugget from '@/components/Nugget'
 import Filename from '@/components/Filename'
+import Breadcrumb from '@/components/mixins/breadcrumb'
 
 export default {
     name: 'Suite',
@@ -35,8 +35,11 @@ export default {
         Nugget,
         Filename
     },
+    mixins: [
+        Breadcrumb
+    ],
     props: {
-        suite: {
+        model: {
             type: Object,
             required: true
         },
@@ -45,12 +48,10 @@ export default {
             default: false
         }
     },
-    data () {
-        return {
-            isChildActive: false
-        }
-    },
     computed: {
+        suite () {
+            return this.model
+        },
         selected: {
             get () {
                 return this.suite.selected
@@ -69,19 +70,7 @@ export default {
             if (event.target !== input && !this.suite.selected) {
                 input.click()
             }
-        },
-        onChildActivation () {
-            this.isChildActive = true
-            this.breadcrumb(this.suite)
-            this.$emit('activate')
-        },
-        onChildDeactivation () {
-            this.isChildActive = false
-            this.$emit('deactivate')
-        },
-        ...mapActions({
-            breadcrumb: 'tests/breadcrumb'
-        })
+        }
     }
 }
 </script>

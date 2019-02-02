@@ -40,8 +40,14 @@ export default {
         }
     },
     computed: {
+        breadcrumbs () {
+            // Remove repository and framework from breadcrumbs, as it feels
+            // like an unnecessary repetition. We want both in the complete
+            // breadcrumbs for other purposes, not necessarily here.
+            return this.allBreadcrumbs.slice(2)
+        },
         ...mapGetters({
-            breadcrumbs: 'tests/breadcrumbs'
+            allBreadcrumbs: 'tests/breadcrumbs'
         })
     }
 }

@@ -9,7 +9,7 @@
                 <div class="project">
                     <Repository
                         v-for="repository in project.repositories"
-                        :repository="repository"
+                        :model="repository"
                         :key="repository.id"
                         @remove="handleRemoveRepository"
                     />

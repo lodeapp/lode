@@ -178,16 +178,15 @@ export default {
         removeFrameworks () {
             // Remove duplicate ids.
             this.removed = [...new Set(this.removed)]
-            // Iterate through frameworks marked for removal and splice them
-            // from their parent repository.
+            // Iterate through frameworks marked for removal and trigger
+            // the removal action on their parent repository.
             this.removed.forEach(frameworkId => {
-                this.repository.removeFramework(frameworkId)
+                this.removeFramework({ repository: this.repository, frameworkId })
             })
-            // Finally, persist the changes in the config.
-            this.repositoryChange(this.repository)
         },
         ...mapActions({
             addFramework: 'projects/addFramework',
+            removeFramework: 'projects/removeFramework',
             repositoryChange: 'projects/repositoryChange'
         })
     }

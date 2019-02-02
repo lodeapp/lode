@@ -18,7 +18,7 @@
                     <TestStatistics :stats="stats" />
                 </div>
             </div>
-            <div v-if="empty">No test data.</div>
+            <div v-if="empty">Awaiting test data.</div>
         </div>
     </div>
 </template>

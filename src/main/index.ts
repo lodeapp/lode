@@ -1,13 +1,12 @@
-import * as fixPath from 'fix-path'
 import { app, ipcMain, Menu } from 'electron'
 import { buildDefaultMenu } from './menu'
 import { Window } from './window'
+import { mergeEnvFromShell } from '@lib/process/shell'
 
-fixPath()
+// Merge environment variables from shell, if needed.
+mergeEnvFromShell()
 
-/**
- * Set `__static` path to static files in production
- */
+// Set `__static` path to static files in production
 if (process.env.NODE_ENV !== 'development') {
     (global as any).__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }

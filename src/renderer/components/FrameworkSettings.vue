@@ -44,7 +44,7 @@
                             v-for="framework in availableFrameworks"
                             :key="framework.defaults.type"
                             :value="framework.defaults.type"
-                        >{{ framework.name }}</option>
+                        >{{ framework.defaults.name }}</option>
                     </select>
                 </dd>
             </dl>
@@ -57,7 +57,7 @@
                     <div v-if="validator.hasErrors('command')" class="form-error">{{ validator.getErrors('command') }}</div>
                     <input
                         type="text"
-                        class="form-control input-sm"
+                        class="form-control input-sm input-monospace"
                         v-model="fields.command"
                         placeholder=""
                     >
@@ -109,14 +109,14 @@
                     >
                 </dd>
             </dl>
-            <div class="instructions" v-show="showInstructions">
+            <div class="instructions" v-show="instructions">
                 <div>
                     <h6>{{ 'How to setup :0 testing with Lode' | set(currentFrameworkName) }}</h6>
                     <p v-markdown>{{ currentFrameworkInstructions }}</p>
                 </div>
             </div>
             <div class="form-actions">
-                <button class="btn btn-outline btn-sm" type="button" @click="showInstructions = !showInstructions"><Icon symbol="question" /></button>
+                <button class="btn btn-outline btn-sm" type="button" @click="instructions = !instructions"><Icon symbol="question" /></button>
                 <button class="btn btn-sm btn-danger" type="button" @click="remove">Remove</button>
                 <button class="btn btn-sm" type="button" @click="expanded = !expanded">Done</button>
             </div>
@@ -162,7 +162,7 @@ export default {
                 vmPath: this.framework.vmPath
             },
             expanded: ['pending', 'removed'].includes(this.framework.scanStatus),
-            showInstructions: this.framework.scanStatus === 'pending'
+            instructions: this.framework.scanStatus === 'pending'
         }
     },
     computed: {
