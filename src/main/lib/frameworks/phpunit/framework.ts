@@ -131,7 +131,7 @@ export class PHPUnit extends Framework {
             error = error.toString()
         }
 
-        if (error.includes('Could not use "\\LodeApp\\PHPUnit\\LodeReporter" as printer: class does not exist')) {
+        if ((new RegExp('Could not use ".*" as printer: class does not exist', 'gi')).test(error)) {
             return 'Make sure to include the Lode PHPUnit reporter package as a dependency in your repository. You can do this by running `composer require lodeapp/phpunit --dev` inside your repository\'s directory. If you already have, try running `composer dump-autoload`.'
         }
 
