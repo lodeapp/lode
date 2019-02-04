@@ -108,7 +108,7 @@ export default new Vue({
                         this.editProject()
                         break
                     case 'remove-project':
-                        this.confirmRemoveProject()
+                        this.removeProject()
                         break
                     case 'add-repositories':
                         this.addRepositories()
@@ -119,8 +119,8 @@ export default new Vue({
                             json: JSON.stringify(Config.get())
                         })
                         break
-                    case 'boomtown':
-                        this.boomtown()
+                    case 'crash':
+                        this.crash()
                         break
                     case 'feedback':
                         window.location.href = 'mailto:tbuteler@me.com'
@@ -142,16 +142,23 @@ export default new Vue({
         },
         addProject () {
             this.$modal.confirm('EditProject')
-                .then(() => {
-                    this.$nextTick(() => {
-                        this.addRepositories()
+                .then(options => {
+                    // Stop current project before adding a new one.
+                    this.project.stop().then(() => {
+                        this.handleAddProject(new Project(options))
+                        this.$nextTick(() => {
+                            this.addRepositories()
+                        })
                     })
                 })
                 .catch(() => {})
         },
         editProject () {
             this.$modal.confirm('EditProject', { project: this.project })
-                .then(() => {
+                .then(options => {
+                    this.project.updateOptions(options)
+                    this.projectChange(this.project)
+
                     // Since current project hasn't changed, just been updated,
                     // we need to forcibly emit the change to the main process,
                     // so that the application menu gets updated.
@@ -159,10 +166,12 @@ export default new Vue({
                 })
                 .catch(() => {})
         },
-        confirmRemoveProject () {
+        removeProject () {
             this.$modal.confirm('RemoveProject')
                 .then(() => {
-                    this.removeProject()
+                    this.project.stop().then(() => {
+                        this.handleRemoveProject()
+                    })
                 })
                 .catch(() => {})
         },
@@ -210,14 +219,16 @@ export default new Vue({
                 remote.getCurrentWebContents().selectAll()
             }
         },
-        boomtown () {
+        crash () {
             window.setImmediate(() => {
                 throw new Error('Boomtown!')
             })
         },
         ...mapActions({
-            handleSwitchProject: 'projects/switchProject',
-            removeProject: 'projects/removeProject'
+            projectChange: 'projects/projectChange',
+            handleAddProject: 'projects/addProject',
+            handleRemoveProject: 'projects/removeProject',
+            handleSwitchProject: 'projects/switchProject'
         })
     },
     store,

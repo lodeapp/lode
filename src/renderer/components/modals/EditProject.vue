@@ -29,8 +29,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
-import { Project } from '@lib/frameworks/project'
+import { mapGetters } from 'vuex'
 import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
 
@@ -64,18 +63,8 @@ export default {
             this.submit()
         },
         submit () {
-            if (this.project) {
-                this.project.updateOptions({ name: this.name })
-                this.projectChange(this.project)
-            } else {
-                this.addProject(new Project({ name: this.name }))
-            }
-            this.confirm()
-        },
-        ...mapActions({
-            addProject: 'projects/addProject',
-            projectChange: 'projects/projectChange'
-        })
+            this.confirm({ name: this.name })
+        }
     }
 }
 </script>

@@ -27,28 +27,27 @@
                     text-overflow: ellipsis;
                 }
             }
-
-            & > .actions {
-
-                .more-actions {
-                    border-radius: .25em;
-                    color: $gray-500;
-                    height: 100%;
-                    min-width: 15px;
-
-                    &:hover,
-                    &:focus,
-                    &:active {
-                        background-color: darken($secondary, 5%);
-                        outline: 0;
-                    }
-                }
-            }
         }
 
         // First framework has no top border.
         & + .framework {
             border-top: 0;
         }
+    }
+
+
+    &.is-empty {
+
+        &.is-expanded {
+
+            & > .header {
+                border-bottom: 0;
+            }
+        }
+    }
+
+    & > .empty-cta {
+        padding: var(--spacing);
+        border-bottom: 1px solid $primary-border;
     }
 }

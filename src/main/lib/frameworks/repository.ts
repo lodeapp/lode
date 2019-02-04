@@ -14,6 +14,7 @@ export type RepositoryOptions = {
     id?: string,
     name?: string,
     path: string
+    collapsed?: boolean
     frameworks?: Array<FrameworkOptions>
 }
 
@@ -34,6 +35,7 @@ export interface IRepository extends EventEmitter {
     status: FrameworkStatus
     selected: boolean
     scanning: boolean
+    collapsed: boolean
 
     start (): void
     refresh (): void
@@ -41,6 +43,7 @@ export interface IRepository extends EventEmitter {
     persist (): RepositoryOptions
     scan (): Promise<Array<FrameworkOptions>>
     getDisplayName (): string
+    toggle (): void
 }
 
 export class Repository extends EventEmitter implements IRepository {
@@ -51,12 +54,14 @@ export class Repository extends EventEmitter implements IRepository {
     public status: FrameworkStatus = 'idle'
     public selected: boolean = false
     public scanning: boolean = false
+    public collapsed: boolean
 
     constructor (options: RepositoryOptions) {
         super()
         this.id = options.id || uuid()
         this.path = options.path
         this.name = options.name || this.path.split('/').pop() || 'untitled'
+        this.collapsed = options.collapsed || false
 
         // If options include frameworks already (i.e. persisted state), add them.
         if (options.frameworks) {
@@ -106,6 +111,7 @@ export class Repository extends EventEmitter implements IRepository {
             id: this.id,
             name: this.name,
             path: this.path,
+            collapsed: this.collapsed,
             frameworks: this.frameworks.map(framework => framework.persist())
         }
     }
@@ -141,6 +147,14 @@ export class Repository extends EventEmitter implements IRepository {
      */
     public getDisplayName (): string {
         return this.name
+    }
+
+    /**
+     * Toggle this repository's visibility.
+     */
+    public toggle (): void {
+        this.collapsed = !this.collapsed
+        this.emit('change', this)
     }
 
     /**

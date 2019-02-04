@@ -1,8 +1,9 @@
 <template>
     <div
-        class="status tooltipped tooltipped-align-left-1"
-        :class="[`status--${status}`, `tooltipped-${tooltipOrientation}`]"
+        class="status"
+        :class="[`status--${status}`]"
         :aria-label="displayStatus(status)"
+        :title="displayStatus(status)"
     >
         <span class="indicator">
             <Icon v-if="status === 'error'" symbol="issue-opened" />
@@ -25,10 +26,6 @@ export default {
         status: {
             type: String,
             required: true
-        },
-        tooltipOrientation: {
-            type: String,
-            default: 'se'
         }
     },
     computed: {

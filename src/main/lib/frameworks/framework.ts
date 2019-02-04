@@ -31,6 +31,8 @@ export type FrameworkOptions = {
     repositoryPath?: string
     runsInVm?: boolean
     vmPath?: string
+    collapsed?: boolean
+    expandFilters?: boolean
     suites?: Array<ISuiteResult>
     scanStatus?: 'pending' | 'removed'
 }
@@ -54,6 +56,7 @@ export interface IFramework extends EventEmitter {
     status: FrameworkStatus
     selective: boolean
     selected: SuiteList
+    collapsed: boolean
     expandFilters: boolean
     queue: { [index: string]: Function }
     ledger: { [key in Status]: number }
@@ -67,6 +70,8 @@ export interface IFramework extends EventEmitter {
     persist (): FrameworkOptions
     updateOptions (options: FrameworkOptions): void
     getDisplayName (): string
+    toggle (): void
+    toggleFilters (): void
 }
 
 /**
@@ -92,7 +97,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public selected: SuiteList = {
         suites: []
     }
-    public expandFilters: boolean = false
+    public collapsed!: boolean
+    public expandFilters!: boolean
     public queue: { [index: string]: Function } = {}
     public ledger: { [key in Status]: number } = {
         queued: 0,
@@ -133,6 +139,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.runsInVm = options.runsInVm || false
         this.vmPath = options.vmPath || ''
         this.runner = options.runner || ''
+
+        this.collapsed = options.collapsed || false
+        this.expandFilters = options.expandFilters || false
 
         // If options include suites already (i.e. persisted state), add them.
         if (options.suites) {
@@ -205,6 +214,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
             path: this.path,
             runsInVm: this.runsInVm,
             vmPath: this.vmPath,
+            collapsed: this.collapsed,
+            expandFilters: this.expandFilters,
             suites: this.suites.map(suite => suite.persist())
         }
     }
@@ -241,6 +252,22 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     public getDisplayName (): string {
         return this.name
+    }
+
+    /**
+     * Toggle this framework's visibility.
+     */
+    public toggle (): void {
+        this.collapsed = !this.collapsed
+        this.emit('change', this)
+    }
+
+    /**
+     * Toggle this framework's filters visibility.
+     */
+    public toggleFilters (): void {
+        this.expandFilters = !this.expandFilters
+        this.emit('change', this)
     }
 
     /**

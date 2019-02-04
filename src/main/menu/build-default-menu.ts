@@ -62,7 +62,7 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         label: __DARWIN__ ? 'File' : '&File',
         submenu: [
             {
-                label: __DARWIN__ ? 'New Project…' : 'New project…',
+                label: __DARWIN__ ? 'New Project' : 'New project',
                 id: 'new-project',
                 accelerator: 'CmdOrCtrl+N',
                 click: emit('new-project')
@@ -195,12 +195,12 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
             separator,
             {
                 id: 'rename-project',
-                label: __DARWIN__ ? 'Rename…' : 'Rename…',
+                label: __DARWIN__ ? 'Rename' : 'Rename',
                 click: emit('rename-project')
             },
             {
                 id: 'remove-project',
-                label: __DARWIN__ ? 'Remove…' : 'Remove…',
+                label: __DARWIN__ ? 'Remove' : 'Remove',
                 click: emit('remove-project')
             },
             separator,
@@ -230,7 +230,7 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
                 },
                 {
                     label: 'Crash renderer process',
-                    click: emit('boomtown'),
+                    click: emit('crash'),
                 },
                 separator,
                 {

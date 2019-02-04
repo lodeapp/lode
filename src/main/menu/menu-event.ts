@@ -1,6 +1,6 @@
 export type MenuEvent =
   | 'add-repositories'
-  | 'boomtown'
+  | 'crash'
   | 'feedback'
   | 'log-settings'
   | 'new-project'

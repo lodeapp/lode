@@ -11,7 +11,8 @@
                         v-for="repository in project.repositories"
                         :model="repository"
                         :key="repository.id"
-                        @remove="handleRemoveRepository"
+                        @remove="removeRepository"
+                        @change="storeRepositoryState"
                     />
                 </div>
             </Pane>
@@ -47,12 +48,16 @@ export default {
         })
     },
     methods: {
-        handleRemoveRepository (repository) {
+        removeRepository (repository) {
             this.project.removeRepository(repository.id)
-            this.removeRepository(repository)
+            this.handleRemoveRepository(repository)
+        },
+        storeRepositoryState (repository) {
+            this.repositoryChange(repository)
         },
         ...mapActions({
-            removeRepository: 'projects/removeRepository'
+            handleRemoveRepository: 'projects/removeRepository',
+            repositoryChange: 'projects/repositoryChange'
         })
     }
 }

@@ -9,7 +9,7 @@
     >
         <div class="header">
             <div class="title">
-                <Indicator :status="framework.status" tooltip-orientation="ne" />
+                <Indicator :status="framework.status" />
                 <h3 class="heading">
                     <span class="toggle" @click="toggle">
                         <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
@@ -19,6 +19,9 @@
                     </span>
                 </h3>
                 <div class="actions">
+                    <button type="button" class="btn-link more-actions" @click="onMoreClick">
+                        <Icon symbol="kebab-vertical" />
+                    </button>
                     <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
                         <Icon symbol="sync" />
                     </button>
@@ -49,7 +52,7 @@
                         type="button"
                         class="ellipsis-expander"
                         :aria-expanded="framework.expandFilters"
-                        @click="framework.expandFilters = !framework.expandFilters"
+                        @click="toggleFilters"
                     >&hellip;</button>
                 </template>
                 <template v-else>
@@ -77,6 +80,7 @@
 </template>
 
 <script>
+import { remote } from 'electron'
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
@@ -99,13 +103,36 @@ export default {
         }
     },
     data () {
+        const { Menu, MenuItem } = remote
+
+        const menu = new Menu()
+        // menu.append(new MenuItem({
+        //     label: 'Manage frameworks…',
+        //     click: () => {
+        //         this.manage()
+        //     }
+        // }))
+        // menu.append(new MenuItem({ type: 'separator' }))
+        menu.append(new MenuItem({
+            label: 'Remove',
+            click: () => {
+                this.remove()
+            }
+        }))
+        menu.on('menu-will-close', () => {
+            this.$el.querySelector('.more-actions').blur()
+        })
+
         return {
-            show: true
+            menu
         }
     },
     computed: {
         framework () {
             return this.model
+        },
+        show () {
+            return !this.framework.collapsed
         },
         running () {
             return this.framework.status === 'running'
@@ -136,7 +163,19 @@ export default {
     },
     methods: {
         toggle () {
-            this.show = !this.show
+            this.framework.toggle()
+        },
+        toggleFilters () {
+            this.framework.toggleFilters()
+        },
+        onMoreClick (event) {
+            event.preventDefault()
+            const { x, y, height } = this.$el.querySelector('.more-actions').getBoundingClientRect()
+            this.menu.popup({
+                window: remote.getCurrentWindow(),
+                x: Math.ceil(x),
+                y: Math.ceil(y + height + 6)
+            })
         },
         refresh () {
             this.framework.refresh()
@@ -149,6 +188,13 @@ export default {
         },
         async stop () {
             await this.framework.stop()
+        },
+        remove () {
+            this.$modal.confirm('RemoveFramework', { framework: this.framework })
+                .then(() => {
+                    this.$emit('remove', this.framework)
+                })
+                .catch(() => {})
         }
     }
 }

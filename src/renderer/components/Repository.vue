@@ -53,21 +53,24 @@
                     </template>
                 </div>
             </div>
-            <div class="progress" v-show="show">
-                <template v-if="!repository.frameworks.length">
-                    No test frameworks loaded. <a href="#" @click.prevent="scan">Scan repository</a>.
-                </template>
-            </div>
         </div>
-        <Framework
-            v-show="show"
-            v-for="framework in repository.frameworks"
-            :key="framework.id"
-            :model="framework"
-            @change="storeState"
-            @activate="onChildActivation"
-            @deactivate="onChildDeactivation"
-        />
+        <template v-if="!repository.frameworks.length">
+            <div class="empty-cta" v-show="show">
+                No test frameworks loaded. <a href="#" @click.prevent="scan">Scan repository</a>.
+            </div>
+        </template>
+        <template v-else>
+            <Framework
+                v-show="show"
+                v-for="framework in repository.frameworks"
+                :key="framework.id"
+                :model="framework"
+                @remove="removeFramework"
+                @change="storeFrameworkState"
+                @activate="onChildActivation"
+                @deactivate="onChildDeactivation"
+            />
+        </template>
     </div>
 </template>
 
@@ -98,14 +101,14 @@ export default {
 
         const menu = new Menu()
         menu.append(new MenuItem({
-            label: 'Manage frameworks…',
+            label: 'Manage frameworks',
             click: () => {
                 this.manage()
             }
         }))
         menu.append(new MenuItem({ type: 'separator' }))
         menu.append(new MenuItem({
-            label: 'Remove…',
+            label: 'Remove',
             click: () => {
                 this.remove()
             }
@@ -115,13 +118,15 @@ export default {
         })
 
         return {
-            show: true,
             menu
         }
     },
     computed: {
         repository () {
             return this.model
+        },
+        show () {
+            return !this.repository.collapsed
         },
         running () {
             return this.repository.status === 'running'
@@ -133,9 +138,14 @@ export default {
             return this.show ? 'expanded' : 'collapsed'
         }
     },
+    created () {
+        this.repository.on('change', repository => {
+            this.$emit('change', repository)
+        })
+    },
     methods: {
         toggle () {
-            this.show = !this.show
+            this.repository.toggle()
         },
         scan () {
             this.repository.scan()
@@ -181,10 +191,14 @@ export default {
         stop () {
             this.repository.stop()
         },
-        storeState (framework) {
+        removeFramework (framework) {
+            this.handleRemoveFramework({ repository: this.repository, frameworkId: framework.id })
+        },
+        storeFrameworkState (framework) {
             this.frameworkChange({ repositoryId: this.repository.id, framework })
         },
         ...mapActions({
+            handleRemoveFramework: 'projects/removeFramework',
             frameworkChange: 'projects/frameworkChange'
         })
     }
