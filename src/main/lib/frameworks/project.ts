@@ -62,9 +62,7 @@ export class Project extends EventEmitter implements IProject {
      * Refresh all of this project's repositories.
      */
     public refresh (): void {
-        console.log('refreshing project')
         this.repositories.forEach((repository: IRepository) => {
-            console.log('refreshing repository')
             repository.refresh()
         })
     }

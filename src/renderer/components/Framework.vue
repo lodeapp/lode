@@ -149,7 +149,6 @@ export default {
     },
     created () {
         this.framework.on('error', (error, process) => {
-            console.log({ error, process })
             this.$alert.show({
                 message: this.$string.set('The process for **:0** terminated unexpectedly.', this.framework.name),
                 help: this.framework.troubleshoot(error),
