@@ -74,8 +74,8 @@ export class Jest extends Framework {
                 .on('killed', ({ process }) => {
                     resolve('killed')
                 })
-                .on('error', ({ message }) => {
-                    reject(message)
+                .on('error', error => {
+                    reject(error)
                 })
         })
     }

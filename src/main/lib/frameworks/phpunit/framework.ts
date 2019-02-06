@@ -66,8 +66,8 @@ export class PHPUnit extends Framework {
                 .on('killed', ({ process }) => {
                     resolve('killed')
                 })
-                .on('error', ({ message }) => {
-                    reject(message)
+                .on('error', error => {
+                    reject(error)
                 })
         })
     }

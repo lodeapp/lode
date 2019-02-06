@@ -30,8 +30,5 @@ export class Console {
         }
 
         (console as any)[method].apply(console, data)
-
-        // @TODO: log this to a toggleable pseudo-console
-        // inside the app, with date and time
     }
 }

@@ -1,6 +1,6 @@
 <template>
     <div class="ansi">
-        <pre v-html="raw ? content : html"></pre>
+        <pre v-if="content" v-html="raw ? content : html"></pre>
         <button type="button" title="Show raw output" @click="raw = !raw">
             <Icon symbol="code" />
         </button>
@@ -27,7 +27,7 @@ export default {
         if (this.content instanceof Error) {
             return {
                 raw: false,
-                html: this.content
+                html: this.content.toString()
             }
         }
 

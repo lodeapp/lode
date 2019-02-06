@@ -61,4 +61,14 @@ export class Settings extends EventEmitter {
         this.emit('clear', this.get())
         this.store.clear()
     }
+
+    public keys (): Array<string> {
+        const keys = (obj: object): Array<string> => {
+            return Object.keys(obj)
+                .filter((key: string) => (obj as any)[key] instanceof Object)
+                .map((key: string) => keys((obj as any)[key]).map((k: string) => `${key}.${k}`))
+                .reduce((x, y) => x.concat(y), Object.keys(obj))
+        }
+        return keys(this.get())
+    }
 }

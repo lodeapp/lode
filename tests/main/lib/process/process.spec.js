@@ -6,196 +6,254 @@ const fixtures = Path.join(__dirname, '../../../fixtures/process')
 const decoded = fs.readJsonSync(Path.join(__dirname, '../../../fixtures/process/decoded.json'))
 
 describe('main/lib/process/DefaultProcess', () => {
-    it('emits decoded reports', () => {
+    it('emits decoded reports', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '1.json')
         const spy = jest.fn()
-        const spawned = new DefaultProcess(Path.join(fixtures, '1.json'))
+        const spawned = new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
             expect(spawned.reportClosed).toBe(true)
+            done()
         })
     })
-    it('can parse chunks with start delimiter', () => {
+
+    it('can parse chunks with start delimiter', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '2.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '2.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can parse chunks with end delimiter', () => {
+
+    it('can parse chunks with end delimiter', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '3.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '3.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can parse chunks with both delimiters', () => {
+
+    it('can parse chunks with both delimiters', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '4.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '4.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can buffer chunks', () => {
+
+    it('can buffer chunks', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '5.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '5.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can buffer chunks with start delimiter', () => {
+
+    it('can buffer chunks with start delimiter', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '6.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '6.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can buffer chunks with end delimiter', () => {
+
+    it('can buffer chunks with end delimiter', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '7.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '7.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can buffer chunks with both delimiters', () => {
+
+    it('can buffer chunks with both delimiters', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '8.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '8.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can parse reports without whitespace in chunk', () => {
+
+    it('can parse reports without whitespace in chunk', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '9.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '9.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can parse multiple reports in the same chunk', () => {
+
+    it('can parse multiple reports in the same chunk', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '10.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '10.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy).toHaveBeenCalledTimes(2)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
             expect(spy.mock.calls[1][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can parse multiple reports in the same chunk with start delimiter', () => {
+
+    it('can parse multiple reports in the same chunk with start delimiter', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '11.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '11.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy).toHaveBeenCalledTimes(2)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
             expect(spy.mock.calls[1][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can parse multiple reports in the same chunk with end delimiter', () => {
+
+    it('can parse multiple reports in the same chunk with end delimiter', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '12.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '12.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy).toHaveBeenCalledTimes(2)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
             expect(spy.mock.calls[1][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can parse multiple reports in the same chunk with both delimiters', () => {
+
+    it('can parse multiple reports in the same chunk with both delimiters', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '13.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '13.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy).toHaveBeenCalledTimes(2)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
             expect(spy.mock.calls[1][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can parse multiple reports in the same chunk with stray whitespace', () => {
+
+    it('can parse multiple reports in the same chunk with stray whitespace', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '14.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '14.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy).toHaveBeenCalledTimes(2)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
             expect(spy.mock.calls[1][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can parse multiple buffered reports', () => {
+
+    it('can parse multiple buffered reports', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '15.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '15.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy).toHaveBeenCalledTimes(2)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
             expect(spy.mock.calls[1][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can buffer reports with chunked start wrapper', () => {
+
+    it('can buffer reports with chunked start wrapper', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '16.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '16.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can buffer reports with chunked end wrapper', () => {
+
+    it('can buffer reports with chunked end wrapper', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '17.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '17.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can buffer reports with chunked wrappers and padding', () => {
+
+    it('can buffer reports with chunked wrappers and padding', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '18.json')
         const spy = jest.fn()
-        new DefaultProcess(Path.join(fixtures, '18.json'))
+        new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            done()
         })
     })
-    it('can stores only stray content, not reports', () => {
+
+    it('stores only stray content, not reports', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '19.json')
         const spy = jest.fn()
-        const spawned = new DefaultProcess(Path.join(fixtures, '19.json'))
+        const spawned = new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
-            expect(spawned.rawChunks).toEqual([
+            expect(spawned.chunks).toEqual([
                 'Starting...',
                 'Ended!'
             ])
+            done()
         })
     })
-    it('handles interrupted report streams', () => {
+
+    it('handles interrupted report streams', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '20.json')
         const spy = jest.fn()
-        const spawned = new DefaultProcess(Path.join(fixtures, '20.json'))
+        const spawned = new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
-            expect(spawned.rawChunks).toEqual([
+            expect(spawned.chunks).toEqual([
                 'Starting...',
                 'Ended!'
             ])
@@ -207,11 +265,14 @@ describe('main/lib/process/DefaultProcess', () => {
                 spawned.close(-1)
             }).toThrow()
             expect(spawned.error).toBe('Starting...Ended!')
+            done()
         })
     })
-    it('handles interrupted report streams, with final output in same chunk as report', () => {
+
+    it('handles interrupted report streams, with final output in same chunk as report', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '21.json')
         const spy = jest.fn()
-        const spawned = new DefaultProcess(Path.join(fixtures, '21.json'))
+        const spawned = new DefaultProcess()
             .on('report', spy)
         process.nextTick(() => {
             expect(spy.mock.calls.length).toBe(1)
@@ -219,7 +280,7 @@ describe('main/lib/process/DefaultProcess', () => {
             // Raw chunk store will not contain the ending message, as it is
             // mixed with the report chunk itself, but we *should* still be
             // capable of outputting it in the error message.
-            expect(spawned.rawChunks).toEqual([
+            expect(spawned.chunks).toEqual([
                 'Starting...'
             ])
             expect(spawned.reportClosed).toBe(false)
@@ -231,10 +292,13 @@ describe('main/lib/process/DefaultProcess', () => {
             // Even though it isn't in the raw chunk store, final message must
             // show in the error property after process closes with non-zero code.
             expect(spawned.error).toBe('Starting...Ended!')
+            done()
         })
     })
-    it('can get the lines from a closed process', () => {
-        const spawned = new DefaultProcess(Path.join(fixtures, '22.json'))
+
+    it('can get the lines from a closed process', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '22.json')
+        const spawned = new DefaultProcess()
         process.nextTick(() => {
             expect(spawned.getLines()).toEqual([
                 'Starting...',
@@ -244,6 +308,20 @@ describe('main/lib/process/DefaultProcess', () => {
                 '\u001b[1mStarting...\u001b[0m',
                 '\u001b[1mEnded!\u001b[0m'
             ])
+            done()
+        })
+    })
+
+    it.only('can parse lines with carriage returns', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '23.json')
+        const spy = jest.fn()
+        const spawned = new DefaultProcess()
+            .on('report', spy)
+        process.nextTick(() => {
+            expect(spy.mock.calls.length).toBe(1)
+            expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            expect(spawned.reportClosed).toBe(true)
+            done()
         })
     })
 })

@@ -1,4 +1,28 @@
-// https://github.com/desktop/dugite/blob/b30c78cd41d53052357412993b857779ec8aaa5f/lib/git-process.ts#L87
+import { IProcess } from './process'
+
 export interface ErrorWithCode extends Error {
-  code: string | number | undefined
+    code?: string | number
+}
+
+export class ProcessError extends Error implements ErrorWithCode {
+    process?: IProcess
+    code?: string | number | undefined
+
+    constructor (...args: Array<string>) {
+        super(...args)
+    }
+
+    public setProcess (process: IProcess): this {
+        this.process = process
+        return this
+    }
+
+    public setCode (code?: string | number): this {
+        this.code = code
+        return this
+    }
+
+    public toString (): string {
+        return this.message
+    }
 }

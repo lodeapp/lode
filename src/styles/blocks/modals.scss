@@ -66,7 +66,7 @@
         justify-content: left;
         padding: var(--spacing-and-half);
 
-        i {
+       & > i {
             margin-right: var(--spacing);
 
             svg {
@@ -91,6 +91,24 @@
         h6 {
             color: $black;
             line-height: 1;
+        }
+
+        & > .more-actions {
+            margin-left: auto;
+
+            button {
+                border-radius: .25em;
+                color: $gray-500;
+                height: 25px;
+                min-width: 25px;
+
+                &:hover,
+                &:focus,
+                &:active {
+                    background-color: darken($secondary, 5%);
+                    outline: 0;
+                }
+            }
         }
 
         &:empty {

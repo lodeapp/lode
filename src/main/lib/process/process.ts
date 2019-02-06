@@ -2,16 +2,18 @@ import stripAnsi from 'strip-ansi'
 import { EventEmitter } from 'events'
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { compact, flattenDeep } from 'lodash'
+import { compact, flattenDeep, get } from 'lodash'
 import { spawn, ChildProcess } from 'child_process'
 import { Logger } from '../logger'
-import { ErrorWithCode } from './errors'
+import { ErrorWithCode, ProcessError } from './errors'
 
 export type ProcessOptions = {
     command: string
     args: Array<string>
     path: string
     forceRunner?: string | null
+    ssh?: boolean
+    sshOptions?: object
 }
 
 export interface IProcess extends EventEmitter {
@@ -23,69 +25,130 @@ export interface IProcess extends EventEmitter {
 
 export class DefaultProcess extends EventEmitter implements IProcess {
     static readonly type: string = 'default'
-    command: string
-    spawnPath: string = ''
+    command!: string
+    binary: string = ''
     args: Array<string> = []
     path?: string
-    rawChunks: Array<string>
-    error: string
-    killed: boolean
-    reports: boolean
-    reportBuffer: string
-    reportClosed: boolean
+    ssh: boolean = false
+    sshOptions?: object = {}
+    chunks: Array<string> = []
+    rawChunks: Array<string> = []
+    error: string = ''
+    killed: boolean = false
+    closed: boolean = false
+    exitCode?: number
+    exitSignal: string | null = null
+    reports: boolean = false
+    reportBuffer: string = ''
+    reportClosed: boolean = false
     writeToFile: boolean = false
-    fromFile?: string
     process?: ChildProcess
 
     constructor (options: ProcessOptions) {
         super()
 
-        // Remember raw command and path for user feedback
-        this.command = options.command
-        this.path = options.path
-
-        // Set process control defaults
-        this.rawChunks = []
-        this.error = ''
-        this.killed = false
-        this.reports = false
-        this.reportBuffer = ''
-        this.reportClosed = false
-
-        // We can re-process stored streams with the `fromFile` property,
-        // being that of a JSON file stored in the debug folder (i.e. previously
-        // recorded using the `writeToFile` property).
-        if (this.fromFile) {
+        // We can re-process stored streams by running FROM_FILE=${file} yarn dev.
+        // If set, all processes will output chunks from the stored file.
+        if (__DEV__ && process.env.FROM_FILE) {
             process.nextTick(() => {
-                const file = Path.isAbsolute(this.fromFile!) ? this.fromFile! : Path.join(__dirname, `./debug/${this.fromFile}.json`)
+                const file = Path.isAbsolute(process.env.FROM_FILE!)
+                    ? process.env.FROM_FILE!
+                    : Path.join(__dirname, `./debug/${process.env.FROM_FILE}.json`)
+
                 Logger.debug.log(`Re-running process from file ${file}.`)
+
                 if (!Fs.existsSync(file)) {
                     Logger.debug.log(`File ${file} does not exist.`)
                 }
+
                 const stored = Fs.readJsonSync(file, { throws: false }) || []
-                stored.forEach((chunk: string) => {
+                get(stored, 'process.rawChunks', []).forEach((chunk: string) => {
                     this.onData(chunk)
                 })
-                this.onClose(0, null)
+                this.onClose(get(stored, 'process.exitCode', 0), null)
             }, 0)
             return
         }
 
+        // Remember raw command and path for user feedback
+        this.command = options.command
+        this.path = options.path
+
+        this.ssh = options.ssh || false
+        this.sshOptions = {
+            host: '127.0.0.1',
+            user: 'vagrant',
+            port: 2222,
+            // Identity: '/Users/tomasbuteler/.ssh/id_rsa',
+            Identity: '/Users/tomasbuteler/Sites/support/Homestead/.vagrant/machines/homestead/virtualbox/private_key',
+            // -i
+            options: {
+                BatchMode: 'yes',
+                Compression: 'yes',
+                DSAAuthentication: 'yes',
+                LogLevel: 'FATAL',
+                StrictHostKeyChecking: 'no',
+                UserKnownHostsFile: '/dev/null',
+                ForwardAgent: 'yes',
+                IdentitiesOnly: 'yes',
+                ControlMaster: 'no',
+                ExitOnForwardFailure: 'yes',
+                ConnectTimeout: 10,
+            }
+
+            // 1) SSH host
+            // 2) SSH user
+            // 3) SSH identity key file
+            // 3) SSH port
+            //
+            // Choose identity file...
+            //
+            // const directory = remote.dialog.showOpenDialog({
+            //     properties: ['openFile', 'showHiddenFiles'],
+            //     message: 'Choose a custom SSH key file to use with this connection.\nNote that ~/.ssh/id_rsa and identities defined in your SSH configuration are included by default.'
+            // })
+            //
+        }
+
         // Parse command and arguments into something we
         // can use for spawning a process.
-        this.args = compact(
-            flattenDeep([this.command].concat(options.args!).map((arg: string) => {
-                return arg.split(' ')
-            }))
+        this.args = this.spawnArguments(
+            compact(
+                flattenDeep([this.command].concat(options.args!).map((arg: string) => {
+                    return arg.split(' ')
+                }))
+            ) || []
         )
-        this.spawnPath = this.args.shift()!
 
-        Logger.debug.log('Spawning command', { spawn: this.spawnPath, args: this.args, path: this.path })
-        Logger.debug.log(`Command: ${this.spawnPath} ${this.spawnArguments().join(' ')}`)
+        if (this.ssh) {
+            this.binary = 'ssh'
+            const sshArgs: Array<string> = [
+                '-S none',
+                get(this.sshOptions, 'host'),
+                ['-l', get(this.sshOptions, 'user')].join(' '),
+                ['-p', get(this.sshOptions, 'port')].join(' '),
+                ['-i', get(this.sshOptions, 'Identity')].join(' ')
+            ]
+            Object.keys(get(this.sshOptions, 'options')).forEach((key) => {
+                sshArgs.push(['-o', [key, get(this.sshOptions, `options.${key}`)].join('=')].join(' '))
+            })
+            this.args = this.args.map(arg => {
+                return arg
+                    .replace(/\\/g, "'\\\\'")
+                    .replace(/\|/, "'\|'")
+            })
+            this.args = sshArgs.concat(['-tt', this.args.join(' ')])
+        } else {
+            this.binary = this.args.shift()!
+        }
 
-        const spawnedProcess = spawn(this.spawnPath, this.spawnArguments(), {
+        Logger.debug.log('Spawning command', { spawn: this.binary, args: this.args, path: this.path })
+        Logger.debug.log(`Command: ${this.binary} ${this.args.join(' ')}`)
+
+        const spawnedProcess = spawn(this.binary, this.args, {
             cwd: this.path,
             detached: true,
+            shell: this.ssh,
             env: Object.assign({}, process.env, {
                 // Ensure ANSI color is supported
                 FORCE_COLOR: 1
@@ -103,8 +166,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * Return the array of arguments with which to spawn the child process.
      * This is a chance for runners to influence how arguments are passed.
      */
-    protected spawnArguments (): Array<string> {
-        return this.args || []
+    protected spawnArguments (args: Array<string>): Array<string> {
+        return args
     }
 
     /**
@@ -123,7 +186,11 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * Get this process's unique id.
      */
     public getId (): number {
-        return this.fromFile ? parseInt(Path.basename(this.fromFile)) : this.process!.pid
+        if (__DEV__ && process.env.FROM_FILE) {
+            // If we're re-processing from a file, generate a hash from the filename.
+            return Array.from(process.env.FROM_FILE).reduce((s, c) => Math.imul(31, s) + c.charCodeAt(0) | 0, 0)
+        }
+        return this.process!.pid
     }
 
     /**
@@ -178,20 +245,30 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             // information about the error itself.
             if (!this.error) {
                 if (this.reportBuffer) {
-                    this.rawChunks.push(this.reportBuffer)
+                    this.chunks.push(this.reportBuffer)
                 }
-                this.error = this.rawChunks.join('')
+                this.error = this.chunks.join('')
             }
 
-            Logger.debug.log('Process errored without throwing.', { error: this.error })
+            const error = (new ProcessError(this.error))
+                .setProcess(this)
+                .setCode(code)
 
-            this.emit('error', {
-                process: this,
-                message: this.error,
-                code
-            })
+            Logger.debug.log('Process errored without throwing.', { error })
+
+            this.emit('error', error)
         }
 
+        if (this.writeToFile) {
+            Logger.debug
+                .withError(this.error)
+                .withProcess(this)
+                .save(Path.join(__dirname, 'debug'))
+        }
+
+        this.closed = true
+        this.exitCode = code
+        this.exitSignal = signal
         this.emit('close', { process: this })
     }
 
@@ -202,47 +279,38 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     protected onData(rawChunk: string): void {
 
-        // When debugging a stream, we can write all chunks
-        // to a file then repeat them as needed.
-        if (!this.fromFile && this.writeToFile) {
-            const file = Path.join(__dirname, `./debug/${this.process!.pid}.json`)
-            if (!Fs.existsSync(file)) {
-                Fs.writeFileSync(file, JSON.stringify([], null, 4))
-            }
-            const stored = Fs.readJsonSync(file, { throws: false }) || []
-            stored.push(rawChunk)
-            Fs.writeFileSync(file, JSON.stringify(stored, null, 4))
-        }
+        let chunk = rawChunk
+
+        this.rawChunks.push(rawChunk)
 
         this.emit('data', {
             process: this,
-            chunk: rawChunk
+            chunk
         })
 
         let storeChunk: boolean = true
-        const lines: Array<string> = rawChunk.split('\n')
-
+        const lines: Array<string> = chunk.split('\n')
         if (lines.length) {
 
             // Look for report prefix in the first line
             // of this chunk. If found, start report mode.
             if (!this.reports && !this.reportClosed) {
-                if (lines.includes('{')) {
+                if (lines.filter(line => line.match(/\s*\{\s*/m)).length) {
                     this.reports = true
 
-                    // Remove delimiter from raw chunk, in case need to we store it.
-                    rawChunk = rawChunk.replace(/\n\{\n?/m, '')
+                    // Remove delimiter from chunk, in case need to we store it.
+                    chunk = chunk.replace(/\s*\{\s*/m, '')
                 }
             }
 
             if (this.reports && !this.reportClosed) {
                 // Only add to buffer if it's full or partial base64 string,
                 // as some reporters might occasionally output stray content.
-                if ((/^[A-Za-z0-9\/\+=\(\)]+$/im).test(rawChunk)) {
-                    this.reportBuffer += rawChunk
+                if ((/^[A-Za-z0-9\/\+=\(\)]+$/im).test(chunk)) {
+                    this.reportBuffer += chunk
                     // Test if buffer is now a complete report and, if so, extract it
                     if ((/\((?:(?!\)).)+\)/).test(this.reportBuffer)) {
-                        this.reportBuffer = this.reportBuffer.replace(/\s?({\s?)?\((?:(?!\)).)+\)\s?}?/g, (match, offset, string) => {
+                        this.reportBuffer = this.reportBuffer.replace(/\s*({\s*)?\((?:(?!\)).)+\)\s*}?/g, (match, offset, string) => {
                             this.report(match)
                             return ''
                         })
@@ -250,20 +318,20 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                     storeChunk = false
                 }
 
-                if (lines.includes('}')) {
+                if (lines.filter(line => line.match(/\s*\}\s*/m)).length) {
                     this.reportClosed = true
 
                     // Remove delimiter from raw chunk, in case need to we store it.
-                    rawChunk = rawChunk.replace(/\n?\}/m, '')
+                    chunk = chunk.replace(/\s*\}\s*/m, '')
                 }
             }
         }
 
         // If reporting hasn't overridden store directive and if there's still
         // chunk left to store, add it to our output array.
-        if (storeChunk && rawChunk) {
-            this.rawChunks.push(rawChunk)
-            Logger.info.log(rawChunk)
+        if (storeChunk && chunk) {
+            this.chunks.push(chunk)
+            Logger.info.log(chunk)
         }
     }
 
@@ -301,14 +369,14 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * Get all lines received from the output stream, clear of Ansi escape codes.
      */
     public getLines (): Array<string> {
-        return this.rawChunks.join('\n').split('\n').map(chunk => stripAnsi(chunk))
+        return this.chunks.join('\n').split('\n').map(chunk => stripAnsi(chunk))
     }
 
     /**
      * Get all lines received from the output stream, unprocessed
      */
     public getRawLines (): Array<string> {
-        return this.rawChunks.join('\n').split('\n')
+        return this.chunks.join('\n').split('\n')
     }
 
     /**
@@ -337,5 +405,25 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     public owns (command: string): boolean {
         return true
+    }
+
+    /**
+     * The string representation of this process.
+     */
+    public toString (): string {
+        return JSON.stringify({
+            id: this.getId(),
+            command: this.command,
+            binary: this.binary,
+            args: this.args,
+            chunks: this.chunks,
+            rawChunks: this.rawChunks,
+            closed: this.closed,
+            killed: this.killed,
+            reports: this.reports,
+            reportClosed: this.reportClosed,
+            exitCode: this.exitCode,
+            exitSignal: this.exitSignal
+        })
     }
 }

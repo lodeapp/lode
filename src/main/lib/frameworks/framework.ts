@@ -465,8 +465,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
             .on('killed', ({ process }) => {
                 resolve()
             })
-            .on('error', ({ message }) => {
-                reject(message)
+            .on('error', error => {
+                reject(error)
             })
     }
 
@@ -799,11 +799,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         if (error.includes('EACCES')) {
-            return 'When running commands that connect into a virtual machine instance, make sure all arguments needed to connect to the machine and running the test framework after doing so are present in the command itself. Using a batch script or storing SSH connection information in a file might be helpful or even required.'
+            return 'When running commands that connect into a remote machine instance, make sure all arguments needed to connect to the machine and running the test framework after doing so are present in the command itself. Using a batch script or storing SSH connection information in a file might be helpful or even required.'
         }
 
         if (error === '' && this.runsInVm) {
-            return 'Is the virtual machine that runs the tests running?'
+            return 'Is the remote machine that runs the tests running?'
         }
 
         return ''

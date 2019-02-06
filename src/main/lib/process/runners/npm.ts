@@ -17,7 +17,7 @@ export class NpmProcess extends DefaultProcess implements IProcess {
      * NPM requires arguments to be preceded by '--', so this is where we
      * will enforce that syntax.
      */
-    protected spawnArguments (): Array<string> {
-        return this.args ? ['--'].concat(this.args) : []
+    protected spawnArguments (args: Array<string>): Array<string> {
+        return args.length ? ['--'].concat(args) : args
     }
 }

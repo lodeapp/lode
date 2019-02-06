@@ -1,3 +1,7 @@
-[
-    "\u001b[1mStarting...\u001b[0m\n\u001b[1mEnded!\u001b[0m"
-]
+{
+    "process": {
+        "rawChunks": [
+            "\u001b[1mStarting...\u001b[0m\n\u001b[1mEnded!\u001b[0m"
+        ]
+    }
+}

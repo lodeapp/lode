@@ -3,10 +3,15 @@
         <template slot="header">
             <Icon v-if="type === 'error'" class="type--error" symbol="issue-opened" />
             <h3 class="modal-title" v-html="title"></h3>
+            <div class="more-actions">
+                <button type="button" class="btn-link" @click.prevent="onMoreClick">
+                    <Icon symbol="kebab-vertical" />
+                </button>
+            </div>
         </template>
         <div :key="$string.from(current)">
             <p v-markdown>{{ message }}</p>
-            <Ansi v-if="pre" :content="pre" />
+            <Ansi v-if="error" :content="error" />
         </div>
         <div slot="footer" class="modal-footer tertiary">
             <div v-if="alerts.length > 1" class="modal-pages">
@@ -46,7 +51,10 @@
 
 <script>
 import _get from 'lodash/get'
+import { remote } from 'electron'
 import { mapGetters } from 'vuex'
+import { Logger } from '@lib/logger'
+import { ProcessError } from '@lib/process/errors'
 import Modal from '@/components/modals/Modal'
 import Ansi from '@/components/Ansi'
 
@@ -57,8 +65,22 @@ export default {
         Ansi
     },
     data () {
+        const { Menu, MenuItem } = remote
+
+        const menu = new Menu()
+        menu.append(new MenuItem({
+            label: 'Save Error Report…',
+            click: () => {
+                this.save(_get(this.current, 'error', null))
+            }
+        }))
+        menu.on('menu-will-close', () => {
+            this.$el.querySelector('.more-actions button').blur()
+        })
+
         return {
-            index: 0
+            index: 0,
+            menu
         }
     },
     computed: {
@@ -68,8 +90,8 @@ export default {
         message () {
             return _get(this.current, 'message')
         },
-        pre () {
-            return _get(this.current, 'pre')
+        error () {
+            return _get(this.current, 'error')
         },
         help () {
             return _get(this.current, 'help')
@@ -102,6 +124,31 @@ export default {
         },
         previous () {
             this.index--
+        },
+        onMoreClick (event) {
+            event.preventDefault()
+            const { x, y, height } = this.$el.querySelector('.more-actions button').getBoundingClientRect()
+            this.menu.popup({
+                window: remote.getCurrentWindow(),
+                x: Math.ceil(x),
+                y: Math.ceil(y + height + 6)
+            })
+        },
+        async save (error) {
+            const directory = remote.dialog.showOpenDialog({
+                properties: ['openDirectory'],
+                message: 'Select directory to save the file',
+                buttonLabel: 'Save Error Report'
+            })
+
+            if (!directory) {
+                return
+            }
+
+            Logger.debug
+                .withError(error)
+                .withProcess(error instanceof ProcessError ? error.process : null)
+                .save(directory[0])
         }
     }
 }

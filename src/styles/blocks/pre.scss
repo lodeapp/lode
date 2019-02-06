@@ -7,4 +7,8 @@ pre {
     user-select: text;
     white-space: pre-wrap;
     word-break: break-word;
+
+    &:empty {
+        display: none;
+    }
 }
