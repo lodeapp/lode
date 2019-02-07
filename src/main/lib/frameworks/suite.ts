@@ -7,8 +7,8 @@ import { Nugget } from '@lib/frameworks/nugget'
 
 export type SuiteOptions = {
     path: string,
-    runsInVm?: boolean
-    vmPath?: string
+    runsInRemote?: boolean
+    remotePath?: string
 }
 
 export interface ISuite extends Nugget {
@@ -44,8 +44,8 @@ export interface ISuiteResult {
 export class Suite extends Nugget implements ISuite {
     public readonly id: string
     public root: string
-    public runsInVm: boolean
-    public vmPath: string
+    public runsInRemote: boolean
+    public remotePath: string
     public file!: string
     public meta!: Array<any>
     public relative!: string
@@ -56,9 +56,9 @@ export class Suite extends Nugget implements ISuite {
         super()
         this.id = uuid()
         this.root = options.path
-        this.runsInVm = options.runsInVm || false
-        options.vmPath = options.vmPath || ''
-        this.vmPath = options.vmPath.startsWith('/') ? options.vmPath : '/' + options.vmPath
+        this.runsInRemote = options.runsInRemote || false
+        options.remotePath = options.remotePath || ''
+        this.remotePath = options.remotePath.startsWith('/') ? options.remotePath : '/' + options.remotePath
         this.build(result)
     }
 
@@ -81,9 +81,9 @@ export class Suite extends Nugget implements ISuite {
      */
     public refresh (options: SuiteOptions): void {
         this.root = options.path
-        this.runsInVm = options.runsInVm || false
-        options.vmPath = options.vmPath || ''
-        this.vmPath = options.vmPath.startsWith('/') ? options.vmPath : '/' + options.vmPath
+        this.runsInRemote = options.runsInRemote || false
+        options.remotePath = options.remotePath || ''
+        this.remotePath = options.remotePath.startsWith('/') ? options.remotePath : '/' + options.remotePath
         this.build({
             ...this.persist(),
             // We'll fetch the results from our suites directly, as we want to
@@ -116,7 +116,7 @@ export class Suite extends Nugget implements ISuite {
      */
     protected build (result: ISuiteResult): void {
         this.file = result.file
-        this.relative = Path.relative(this.runsInVm ? this.vmPath : this.root, this.file)
+        this.relative = Path.relative(this.runsInRemote ? this.remotePath : this.root, this.file)
         this.meta = result.meta!
         this.testsLoaded = typeof result.testsLoaded !== 'undefined' ? !!result.testsLoaded : true
         this.running = []

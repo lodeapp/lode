@@ -65,21 +65,6 @@
             </dl>
             <dl>
                 <dt>
-                    <label>Runs in VM</label>
-                </dt>
-                <dd>
-                    <label>
-                        <input type="radio" :value="false" v-model="fields.runsInVm">
-                        No
-                    </label>
-                    <label>
-                        <input type="radio" :value="true" v-model="fields.runsInVm">
-                        Yes
-                    </label>
-                </dd>
-            </dl>
-            <dl v-show="!fields.runsInVm">
-                <dt>
                     <label>Tests path</label>
                 </dt>
                 <dd :class="{ errored: validator.hasErrors('path') }">
@@ -94,21 +79,96 @@
                     <button class="btn btn-sm" type="button" @click="choose">Choose</button>
                 </dd>
             </dl>
-            <dl v-show="fields.runsInVm">
+            <dl>
                 <dt>
-                    <label>Tests path inside VM</label>
+                    <label>Runs in local machine</label>
                 </dt>
-                <dd :class="{ errored: validator.hasErrors('vmPath') }">
-                    <div class="form-help">Absolute path to tests inside VM.</div>
-                    <div v-if="validator.hasErrors('vmPath')" class="form-error">{{ validator.getErrors('vmPath') }}</div>
-                    <input
-                        type="text"
-                        class="form-control input-sm"
-                        v-model="fields.vmPath"
-                        placeholder="(Optional)"
-                    >
+                <dd>
+                    <label>
+                        <input type="radio" :value="false" v-model="fields.runsInRemote">
+                        Yes
+                    </label>
+                    <label>
+                        <input type="radio" :value="true" v-model="fields.runsInRemote">
+                        No
+                    </label>
                 </dd>
             </dl>
+            <template v-show="fields.runsInRemote">
+                <dl>
+                    <dt>
+                        <label>Remote repository path</label>
+                    </dt>
+                    <dd :class="{ errored: validator.hasErrors('remotePath') }">
+                        <div class="form-help">Absolute path to repository inside remote machine.</div>
+                        <div v-if="validator.hasErrors('remotePath')" class="form-error">{{ validator.getErrors('remotePath') }}</div>
+                        <input
+                            type="text"
+                            class="form-control input-sm"
+                            v-model="fields.remotePath"
+                            placeholder="(Optional)"
+                        >
+                    </dd>
+                </dl>
+                <dl>
+                    <dt>
+                        <label>SSH Host</label>
+                    </dt>
+                    <dd :class="{ errored: validator.hasErrors('sshOptions.host') }">
+                        <div v-if="validator.hasErrors('sshOptions.host')" class="form-error">{{ validator.getErrors('sshOptions.host') }}</div>
+                        <input
+                            type="text"
+                            class="form-control input-sm"
+                            v-model="fields.sshOptions.host"
+                            placeholder="(Optional)"
+                        >
+                    </dd>
+                </dl>
+                <dl>
+                    <dt>
+                        <label>SSH User</label>
+                    </dt>
+                    <dd :class="{ errored: validator.hasErrors('sshOptions.user') }">
+                        <div v-if="validator.hasErrors('sshOptions.user')" class="form-error">{{ validator.getErrors('sshOptions.user') }}</div>
+                        <input
+                            type="text"
+                            class="form-control input-sm"
+                            v-model="fields.sshOptions.user"
+                            placeholder="(Optional)"
+                        >
+                    </dd>
+                </dl>
+                <dl>
+                    <dt>
+                        <label>SSH Port</label>
+                    </dt>
+                    <dd :class="{ errored: validator.hasErrors('sshOptions.port') }">
+                        <div v-if="validator.hasErrors('sshOptions.port')" class="form-error">{{ validator.getErrors('sshOptions.port') }}</div>
+                        <input
+                            type="text"
+                            class="form-control input-sm"
+                            v-model="fields.sshOptions.port"
+                            placeholder="(Optional)"
+                        >
+                    </dd>
+                </dl>
+                <dl>
+                    <dt>
+                        <label>Identity file</label>
+                    </dt>
+                    <dd :class="{ errored: validator.hasErrors('sshOptions.identity') }">
+                        <div class="form-help">If different than `ssh-config` settings.</div>
+                        <div v-if="validator.hasErrors('sshOptions.identity')" class="form-error">{{ validator.getErrors('sshOptions.identity') }}</div>
+                        <input
+                            type="text"
+                            class="form-control input-sm"
+                            v-model="fields.sshOptions.identity"
+                            placeholder="(Optional)"
+                        >
+                        <button class="btn btn-sm" type="button" @click="chooseIdentity">Choose</button>
+                    </dd>
+                </dl>
+            </template>
             <div class="instructions" v-show="instructions">
                 <div>
                     <h6>{{ 'How to setup :0 testing with Lode' | set(currentFrameworkName) }}</h6>
@@ -158,8 +218,14 @@ export default {
                 type: this.framework.type,
                 command: this.framework.command,
                 path: this.framework.path,
-                runsInVm: this.framework.runsInVm,
-                vmPath: this.framework.vmPath
+                runsInRemote: this.framework.runsInRemote,
+                remotePath: this.framework.remotePath,
+                sshOptions: {
+                    host: this.framework.sshOptions.host,
+                    user: this.framework.sshOptions.user || '',
+                    identity: this.framework.sshOptions.identity || '',
+                    port: this.framework.sshOptions.port || ''
+                }
             },
             expanded: ['pending', 'removed'].includes(this.framework.scanStatus),
             instructions: this.framework.scanStatus === 'pending'
@@ -201,7 +267,7 @@ export default {
         }
     },
     methods: {
-        async choose (index) {
+        async choose () {
             const directory = remote.dialog.showOpenDialog({
                 properties: ['createDirectory', 'openDirectory']
             })
@@ -212,6 +278,19 @@ export default {
 
             this.fields.path = Path.relative(this.repository.path, directory[0])
             this.validator.reset('path')
+        },
+        async chooseIdentity () {
+            const file = remote.dialog.showOpenDialog({
+                properties: ['openFile', 'showHiddenFiles'],
+                message: 'Choose a custom SSH key file to use with this connection.\nNote that ~/.ssh/id_rsa and identities defined in your SSH configuration are included by default.'
+            })
+
+            if (!file) {
+                return
+            }
+
+            this.fields.sshOptions.identity = file[0]
+            this.validator.reset('sshOptions.identity')
         },
         remove () {
             this.$emit('remove')

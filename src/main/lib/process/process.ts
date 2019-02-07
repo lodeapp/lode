@@ -5,6 +5,7 @@ import * as Fs from 'fs-extra'
 import { compact, flattenDeep, get } from 'lodash'
 import { spawn, ChildProcess } from 'child_process'
 import { Logger } from '../logger'
+import { SSHOptions, SSH } from './ssh'
 import { ErrorWithCode, ProcessError } from './errors'
 
 export type ProcessOptions = {
@@ -13,7 +14,7 @@ export type ProcessOptions = {
     path: string
     forceRunner?: string | null
     ssh?: boolean
-    sshOptions?: object
+    sshOptions?: SSHOptions
 }
 
 export interface IProcess extends EventEmitter {
@@ -29,8 +30,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     binary: string = ''
     args: Array<string> = []
     path?: string
-    ssh: boolean = false
-    sshOptions?: object = {}
     chunks: Array<string> = []
     rawChunks: Array<string> = []
     error: string = ''
@@ -74,42 +73,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.command = options.command
         this.path = options.path
 
-        this.ssh = options.ssh || false
-        this.sshOptions = {
-            host: '127.0.0.1',
-            user: 'vagrant',
-            port: 2222,
-            // Identity: '/Users/tomasbuteler/.ssh/id_rsa',
-            Identity: '/Users/tomasbuteler/Sites/support/Homestead/.vagrant/machines/homestead/virtualbox/private_key',
-            // -i
-            options: {
-                BatchMode: 'yes',
-                Compression: 'yes',
-                DSAAuthentication: 'yes',
-                LogLevel: 'FATAL',
-                StrictHostKeyChecking: 'no',
-                UserKnownHostsFile: '/dev/null',
-                ForwardAgent: 'yes',
-                IdentitiesOnly: 'yes',
-                ControlMaster: 'no',
-                ExitOnForwardFailure: 'yes',
-                ConnectTimeout: 10,
-            }
-
-            // 1) SSH host
-            // 2) SSH user
-            // 3) SSH identity key file
-            // 3) SSH port
-            //
-            // Choose identity file...
-            //
-            // const directory = remote.dialog.showOpenDialog({
-            //     properties: ['openFile', 'showHiddenFiles'],
-            //     message: 'Choose a custom SSH key file to use with this connection.\nNote that ~/.ssh/id_rsa and identities defined in your SSH configuration are included by default.'
-            // })
-            //
-        }
-
         // Parse command and arguments into something we
         // can use for spawning a process.
         this.args = this.spawnArguments(
@@ -120,24 +83,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             ) || []
         )
 
-        if (this.ssh) {
+        if (options.ssh) {
             this.binary = 'ssh'
-            const sshArgs: Array<string> = [
-                '-S none',
-                get(this.sshOptions, 'host'),
-                ['-l', get(this.sshOptions, 'user')].join(' '),
-                ['-p', get(this.sshOptions, 'port')].join(' '),
-                ['-i', get(this.sshOptions, 'Identity')].join(' ')
-            ]
-            Object.keys(get(this.sshOptions, 'options')).forEach((key) => {
-                sshArgs.push(['-o', [key, get(this.sshOptions, `options.${key}`)].join('=')].join(' '))
-            })
-            this.args = this.args.map(arg => {
-                return arg
-                    .replace(/\\/g, "'\\\\'")
-                    .replace(/\|/, "'\|'")
-            })
-            this.args = sshArgs.concat(['-tt', this.args.join(' ')])
+            this.args = (new SSH(options.sshOptions)).commandArgs(this.args)
         } else {
             this.binary = this.args.shift()!
         }
@@ -148,7 +96,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         const spawnedProcess = spawn(this.binary, this.args, {
             cwd: this.path,
             detached: true,
-            shell: this.ssh,
+            shell: options.ssh,
             env: Object.assign({}, process.env, {
                 // Ensure ANSI color is supported
                 FORCE_COLOR: 1

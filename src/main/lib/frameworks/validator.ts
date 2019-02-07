@@ -1,8 +1,10 @@
 import * as Path from 'path'
 import * as Fs from 'fs'
+import { get } from 'lodash'
 import { RepositoryOptions } from '@lib/frameworks/repository'
 import { FrameworkOptions } from '@lib/frameworks/framework'
 import { Frameworks } from '@lib/frameworks'
+import{ SSHOptions } from '@lib/process/ssh'
 
 export type ValidationErrors = { [index: string]: Array<string> }
 
@@ -15,6 +17,7 @@ export type PotentialFrameworkOptions = FrameworkOptions & {
     type?: string
     command?: string
     path?: string
+    sshOptions?: SSHOptions
 }
 
 export type FrameworkValidatorOptions = {
@@ -151,7 +154,11 @@ export class FrameworkValidator extends Validator {
             name: [],
             type: [],
             command: [],
-            path: []
+            path: [],
+            'sshOptions.host': [],
+            'sshOptions.user': [],
+            'sshOptions.port': [],
+            'sshOptions.identity': []
         }
         this.repositoryPath = options.repositoryPath
     }
@@ -183,6 +190,12 @@ export class FrameworkValidator extends Validator {
                 this.addError('path', 'Please enter a path relative to the repository directory.')
             } else if (!this.isDirectory(Path.join(this.repositoryPath, options.path))) {
                 this.addError('path', 'Please enter a valid directory relative to the repository directory.')
+            }
+        }
+
+        if (get(options, 'sshOptions.port')) {
+            if (!String(options.sshOptions!.port!).match(/^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/)) {
+                this.addError('sshOptions.port', 'Please enter a valid port number.')
             }
         }
 

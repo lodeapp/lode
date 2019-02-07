@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import { find, findIndex, trimStart } from 'lodash'
+import { find, findIndex, get, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { IProcess } from '@lib/process/process'
@@ -8,6 +8,7 @@ import { queue } from '@lib/process/queue'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
+import { SSHOptions } from '@lib/process/ssh'
 import { Logger } from '@lib/logger'
 import pool from '@lib/process/pool'
 
@@ -29,8 +30,9 @@ export type FrameworkOptions = {
     runner?: string
     path: string
     repositoryPath?: string
-    runsInVm?: boolean
-    vmPath?: string
+    runsInRemote?: boolean
+    remotePath?: string
+    sshOptions?: SSHOptions
     collapsed?: boolean
     expandFilters?: boolean
     suites?: Array<ISuiteResult>
@@ -48,8 +50,9 @@ export interface IFramework extends EventEmitter {
     path: string
     repositoryPath: string
     fullPath: string
-    runsInVm: boolean,
-    vmPath: string | null
+    runsInRemote: boolean,
+    remotePath: string | null
+    sshOptions: SSHOptions
     runner: string | null
     process?: number
     suites: Array<ISuite>
@@ -87,8 +90,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public repositoryPath!: string
     public fullPath!: string
     public runner!: string | null
-    public vmPath!: string
-    public runsInVm!: boolean
+    public remotePath!: string
+    public runsInRemote!: boolean
+    public sshOptions!: SSHOptions
     public process?: number
     public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
@@ -136,8 +140,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.path = trimStart(options.path, '/')
         this.repositoryPath = options.repositoryPath || ''
         this.fullPath = this.path ? Path.join(this.repositoryPath, this.path) : this.repositoryPath
-        this.runsInVm = options.runsInVm || false
-        this.vmPath = options.vmPath || ''
+        this.runsInRemote = options.runsInRemote || false
+        this.remotePath = options.remotePath || ''
+        this.sshOptions = options.sshOptions || { host: '' }
         this.runner = options.runner || ''
 
         this.collapsed = options.collapsed || false
@@ -192,7 +197,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 type: '',
                 command: '',
                 path: '',
-                runsInVm: false
+                runsInRemote: false
             },
             ...(this.defaults || {})
         }
@@ -212,8 +217,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
             type: this.type,
             command: this.command,
             path: this.path,
-            runsInVm: this.runsInVm,
-            vmPath: this.vmPath,
+            runsInRemote: this.runsInRemote,
+            remotePath: this.remotePath,
+            sshOptions: this.sshOptions,
             collapsed: this.collapsed,
             expandFilters: this.expandFilters,
             suites: this.suites.map(suite => suite.persist())
@@ -226,8 +232,18 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param options The new set of options to build the framework with.
      */
     public updateOptions (options: FrameworkOptions): void {
-        const initChanged = options.command !== this.command || this.runsInVm !== options.runsInVm
-        const pathsChanged = this.runsInVm && options.vmPath !== this.vmPath || !this.runsInVm && options.path !== this.path
+        const initChanged = options.command !== this.command
+            || this.runsInRemote !== options.runsInRemote
+            || this.sshOptions.host !== get(options, 'sshOptions.host')
+
+        const pathsChanged = this.runsInRemote && options.remotePath !== this.remotePath
+            || !this.runsInRemote && options.path !== this.path
+
+        // If framework doesn't run in remote, reset
+        // SSH options, lest they linger inadvertently.
+        if (!options.runsInRemote) {
+            options.sshOptions = { host: '' }
+        }
 
         // Rebuild the options, except id if not enforced
         this.build({ ...options, ...{ id: options.id || this.id || uuid() }})
@@ -545,7 +561,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
             command: this.command,
             args,
             path: this.repositoryPath,
-            forceRunner: this.runner
+            forceRunner: this.runner,
+            ssh: !!this.sshOptions.host,
+            sshOptions: this.sshOptions
         })
 
         this.process = process.getId()
@@ -569,8 +587,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
         const suiteClass = this.suiteClass()
         return new suiteClass({
             path: this.fullPath,
-            runsInVm: this.runsInVm,
-            vmPath: this.vmPath
+            runsInRemote: this.runsInRemote,
+            remotePath: this.remotePath
         }, result)
     }
 
@@ -631,8 +649,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.suites.forEach(suite => {
             suite.refresh({
                 path: this.fullPath,
-                runsInVm: this.runsInVm,
-                vmPath: this.vmPath
+                runsInRemote: this.runsInRemote,
+                remotePath: this.remotePath
             })
         })
     }
@@ -643,7 +661,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param file The path of the file being checked.
      */
     protected fileInPath (file: string): boolean {
-        return file.startsWith(this.vmPath || this.fullPath)
+        return file.startsWith(this.remotePath || this.fullPath)
     }
 
     /**
@@ -802,7 +820,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             return 'When running commands that connect into a remote machine instance, make sure all arguments needed to connect to the machine and running the test framework after doing so are present in the command itself. Using a batch script or storing SSH connection information in a file might be helpful or even required.'
         }
 
-        if (error === '' && this.runsInVm) {
+        if (error === '' && this.runsInRemote) {
             return 'Is the remote machine that runs the tests running?'
         }
 
