@@ -144,7 +144,7 @@ export default new Vue({
             this.$modal.confirm('EditProject')
                 .then(options => {
                     // Stop current project before adding a new one.
-                    this.project.stop().then(() => {
+                    (this.project ? this.project.stop() : Promise.resolve()).then(() => {
                         this.handleAddProject(new Project(options))
                         this.$nextTick(() => {
                             this.addRepositories()

@@ -94,7 +94,7 @@
                     </label>
                 </dd>
             </dl>
-            <template v-show="fields.runsInRemote">
+            <div v-show="fields.runsInRemote">
                 <dl>
                     <dt>
                         <label>Remote repository path</label>
@@ -114,12 +114,12 @@
                     <dt>
                         <label>SSH Host</label>
                     </dt>
-                    <dd :class="{ errored: validator.hasErrors('sshOptions.host') }">
-                        <div v-if="validator.hasErrors('sshOptions.host')" class="form-error">{{ validator.getErrors('sshOptions.host') }}</div>
+                    <dd :class="{ errored: validator.hasErrors('sshHost') }">
+                        <div v-if="validator.hasErrors('sshHost')" class="form-error">{{ validator.getErrors('sshHost') }}</div>
                         <input
                             type="text"
                             class="form-control input-sm"
-                            v-model="fields.sshOptions.host"
+                            v-model="fields.sshHost"
                             placeholder="(Optional)"
                         >
                     </dd>
@@ -128,12 +128,12 @@
                     <dt>
                         <label>SSH User</label>
                     </dt>
-                    <dd :class="{ errored: validator.hasErrors('sshOptions.user') }">
-                        <div v-if="validator.hasErrors('sshOptions.user')" class="form-error">{{ validator.getErrors('sshOptions.user') }}</div>
+                    <dd :class="{ errored: validator.hasErrors('sshUser') }">
+                        <div v-if="validator.hasErrors('sshUser')" class="form-error">{{ validator.getErrors('sshUser') }}</div>
                         <input
                             type="text"
                             class="form-control input-sm"
-                            v-model="fields.sshOptions.user"
+                            v-model="fields.sshUser"
                             placeholder="(Optional)"
                         >
                     </dd>
@@ -142,12 +142,12 @@
                     <dt>
                         <label>SSH Port</label>
                     </dt>
-                    <dd :class="{ errored: validator.hasErrors('sshOptions.port') }">
-                        <div v-if="validator.hasErrors('sshOptions.port')" class="form-error">{{ validator.getErrors('sshOptions.port') }}</div>
+                    <dd :class="{ errored: validator.hasErrors('sshPort') }">
+                        <div v-if="validator.hasErrors('sshPort')" class="form-error">{{ validator.getErrors('sshPort') }}</div>
                         <input
                             type="text"
                             class="form-control input-sm"
-                            v-model="fields.sshOptions.port"
+                            v-model="fields.sshPort"
                             placeholder="(Optional)"
                         >
                     </dd>
@@ -156,19 +156,19 @@
                     <dt>
                         <label>Identity file</label>
                     </dt>
-                    <dd :class="{ errored: validator.hasErrors('sshOptions.identity') }">
+                    <dd :class="{ errored: validator.hasErrors('sshIdentity') }">
                         <div class="form-help">If different than `ssh-config` settings.</div>
-                        <div v-if="validator.hasErrors('sshOptions.identity')" class="form-error">{{ validator.getErrors('sshOptions.identity') }}</div>
+                        <div v-if="validator.hasErrors('sshIdentity')" class="form-error">{{ validator.getErrors('sshIdentity') }}</div>
                         <input
                             type="text"
                             class="form-control input-sm"
-                            v-model="fields.sshOptions.identity"
+                            v-model="fields.sshIdentity"
                             placeholder="(Optional)"
                         >
                         <button class="btn btn-sm" type="button" @click="chooseIdentity">Choose</button>
                     </dd>
                 </dl>
-            </template>
+            </div>
             <div class="instructions" v-show="instructions">
                 <div>
                     <h6>{{ 'How to setup :0 testing with Lode' | set(currentFrameworkName) }}</h6>
@@ -220,12 +220,10 @@ export default {
                 path: this.framework.path,
                 runsInRemote: this.framework.runsInRemote,
                 remotePath: this.framework.remotePath,
-                sshOptions: {
-                    host: this.framework.sshOptions.host,
-                    user: this.framework.sshOptions.user || '',
-                    identity: this.framework.sshOptions.identity || '',
-                    port: this.framework.sshOptions.port || ''
-                }
+                sshHost: this.framework.sshHost,
+                sshUser: this.framework.sshUser,
+                sshPort: this.framework.sshPort,
+                sshIdentity: this.framework.sshIdentity
             },
             expanded: ['pending', 'removed'].includes(this.framework.scanStatus),
             instructions: this.framework.scanStatus === 'pending'
@@ -269,6 +267,7 @@ export default {
     methods: {
         async choose () {
             const directory = remote.dialog.showOpenDialog({
+                defaultPath: this.repository.path,
                 properties: ['createDirectory', 'openDirectory']
             })
 
@@ -289,8 +288,8 @@ export default {
                 return
             }
 
-            this.fields.sshOptions.identity = file[0]
-            this.validator.reset('sshOptions.identity')
+            this.fields.sshIdentity = file[0]
+            this.validator.reset('sshIdentity')
         },
         remove () {
             this.$emit('remove')

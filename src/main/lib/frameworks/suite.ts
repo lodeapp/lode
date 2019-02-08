@@ -7,6 +7,7 @@ import { Nugget } from '@lib/frameworks/nugget'
 
 export type SuiteOptions = {
     path: string,
+    root: string,
     runsInRemote?: boolean
     remotePath?: string
 }
@@ -15,6 +16,7 @@ export interface ISuite extends Nugget {
     readonly id: string
     readonly file: string
     readonly relative: string
+    readonly path: string
     readonly root: string
     readonly meta: Array<any>
     tests: Array<ITest>
@@ -43,6 +45,7 @@ export interface ISuiteResult {
 
 export class Suite extends Nugget implements ISuite {
     public readonly id: string
+    public path: string
     public root: string
     public runsInRemote: boolean
     public remotePath: string
@@ -55,7 +58,8 @@ export class Suite extends Nugget implements ISuite {
     constructor (options: SuiteOptions, result: ISuiteResult) {
         super()
         this.id = uuid()
-        this.root = options.path
+        this.path = options.path
+        this.root = options.root
         this.runsInRemote = options.runsInRemote || false
         options.remotePath = options.remotePath || ''
         this.remotePath = options.remotePath.startsWith('/') ? options.remotePath : '/' + options.remotePath
@@ -80,7 +84,8 @@ export class Suite extends Nugget implements ISuite {
      * @param options The suite's new options.
      */
     public refresh (options: SuiteOptions): void {
-        this.root = options.path
+        this.path = options.path
+        this.root = options.root
         this.runsInRemote = options.runsInRemote || false
         options.remotePath = options.remotePath || ''
         this.remotePath = options.remotePath.startsWith('/') ? options.remotePath : '/' + options.remotePath
@@ -116,7 +121,9 @@ export class Suite extends Nugget implements ISuite {
      */
     protected build (result: ISuiteResult): void {
         this.file = result.file
-        this.relative = Path.relative(this.runsInRemote ? this.remotePath : this.root, this.file)
+        this.relative = this.runsInRemote && this.remotePath === '/'
+            ? this.file
+            : Path.relative(this.runsInRemote ? (Path.join(this.remotePath, this.path)) : this.root, this.file)
         this.meta = result.meta!
         this.testsLoaded = typeof result.testsLoaded !== 'undefined' ? !!result.testsLoaded : true
         this.running = []

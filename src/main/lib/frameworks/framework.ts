@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import { find, findIndex, get, trimStart } from 'lodash'
+import { find, findIndex, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { IProcess } from '@lib/process/process'
@@ -32,7 +32,10 @@ export type FrameworkOptions = {
     repositoryPath?: string
     runsInRemote?: boolean
     remotePath?: string
-    sshOptions?: SSHOptions
+    sshHost?: string
+    sshUser?: string | null
+    sshPort?: number | null
+    sshIdentity?: string | null
     collapsed?: boolean
     expandFilters?: boolean
     suites?: Array<ISuiteResult>
@@ -52,7 +55,10 @@ export interface IFramework extends EventEmitter {
     fullPath: string
     runsInRemote: boolean,
     remotePath: string | null
-    sshOptions: SSHOptions
+    sshHost: string
+    sshUser: string | null
+    sshPort: number | null
+    sshIdentity: string | null
     runner: string | null
     process?: number
     suites: Array<ISuite>
@@ -92,7 +98,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public runner!: string | null
     public remotePath!: string
     public runsInRemote!: boolean
-    public sshOptions!: SSHOptions
+    public sshHost!: string
+    public sshUser!: string | null
+    public sshPort!: number | null
+    public sshIdentity!: string | null
     public process?: number
     public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
@@ -142,7 +151,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.fullPath = this.path ? Path.join(this.repositoryPath, this.path) : this.repositoryPath
         this.runsInRemote = options.runsInRemote || false
         this.remotePath = options.remotePath || ''
-        this.sshOptions = options.sshOptions || { host: '' }
+        this.sshHost = options.sshHost || ''
+        this.sshUser = options.sshUser || null
+        this.sshPort = options.sshPort || null
+        this.sshIdentity = options.sshIdentity || null
         this.runner = options.runner || ''
 
         this.collapsed = options.collapsed || false
@@ -219,7 +231,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
             path: this.path,
             runsInRemote: this.runsInRemote,
             remotePath: this.remotePath,
-            sshOptions: this.sshOptions,
+            sshHost: this.sshHost,
+            sshUser: this.sshUser,
+            sshPort: this.sshPort,
+            sshIdentity: this.sshIdentity,
             collapsed: this.collapsed,
             expandFilters: this.expandFilters,
             suites: this.suites.map(suite => suite.persist())
@@ -234,15 +249,17 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public updateOptions (options: FrameworkOptions): void {
         const initChanged = options.command !== this.command
             || this.runsInRemote !== options.runsInRemote
-            || this.sshOptions.host !== get(options, 'sshOptions.host')
+            || this.sshHost !== options.sshHost
 
-        const pathsChanged = this.runsInRemote && options.remotePath !== this.remotePath
-            || !this.runsInRemote && options.path !== this.path
+        const pathsChanged = options.path !== this.path || (this.runsInRemote && options.remotePath !== this.remotePath)
 
         // If framework doesn't run in remote, reset
         // SSH options, lest they linger inadvertently.
         if (!options.runsInRemote) {
-            options.sshOptions = { host: '' }
+            options.sshHost = ''
+            options.sshUser = null
+            options.sshPort = null
+            options.sshIdentity = null
         }
 
         // Rebuild the options, except id if not enforced
@@ -562,8 +579,14 @@ export abstract class Framework extends EventEmitter implements IFramework {
             args,
             path: this.repositoryPath,
             forceRunner: this.runner,
-            ssh: !!this.sshOptions.host,
-            sshOptions: this.sshOptions
+            ssh: !!this.sshHost,
+            sshOptions: <SSHOptions>{
+                host: this.sshHost,
+                user: this.sshUser,
+                port: this.sshPort,
+                identity: this.sshIdentity,
+                path: this.remotePath
+            }
         })
 
         this.process = process.getId()
@@ -586,7 +609,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected newSuite (result: ISuiteResult): ISuite {
         const suiteClass = this.suiteClass()
         return new suiteClass({
-            path: this.fullPath,
+            path: this.path,
+            root: this.fullPath,
             runsInRemote: this.runsInRemote,
             remotePath: this.remotePath
         }, result)
@@ -648,7 +672,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected refreshSuites (): void {
         this.suites.forEach(suite => {
             suite.refresh({
-                path: this.fullPath,
+                path: this.path,
+                root: this.fullPath,
                 runsInRemote: this.runsInRemote,
                 remotePath: this.remotePath
             })

@@ -2,9 +2,10 @@ import { compact, get } from 'lodash'
 
 export type SSHOptions = {
     host: string
-    user?: string
-    port?: number
-    Identity?: string
+    user?: string | null
+    port?: number | null
+    identity?: string | null
+    path?: string
     options?: {
         BatchMode?: string
         Compression?: string
@@ -24,7 +25,6 @@ export class SSH {
 
     protected defaults: SSHOptions = {
         host: '',
-        user: '',
         options: {
             BatchMode: 'yes',
             Compression: 'yes',
@@ -61,6 +61,7 @@ export class SSH {
     }
 
     public commandArgs (args: Array<string>): Array<string> {
+        console.log(this.connection)
         return [
             '-S none',
             get(this.connection, 'host', '')
@@ -72,17 +73,26 @@ export class SSH {
             [
                 compact(['-l', get(this.connection, 'user', '')]),
                 compact(['-p', get(this.connection, 'port')]),
-                compact(['-i', get(this.connection, 'Identity')])
+                compact(['-i', get(this.connection, 'identity')])
             ]
             .filter(details => details.length > 1)
             .map(details => details.join(' '))
         )
-        .concat(['-tt', args.map((arg: string) => this.sanitize(arg)).join(' ')])
+        .concat([
+            '-tt',
+            // If connection includes a remote path, connect straight into it
+            // by preprending the cd comand into our existing remote args.
+            '"' + (this.connection!.path ? ['cd ' + this.connection!.path + ' &&'] : []).concat(
+                args.map((arg: string) => this.sanitize(arg))
+            ).join(' ') + '"'
+        ])
     }
 
     public sanitize (arg: string): string {
         return arg
-            .replace(/\\/g, "'\\\\'")
-            .replace(/\|/, "'\|'")
+            .replace(/\b\\\b/g, "'\\\\'")
+            .replace(/\b\\\\\b/g, "'\\\\\\\\'")
+            .replace(/\b\|\b/g, "'\\\|'")
+            .replace(/"/g, "'\"'")
     }
 }
