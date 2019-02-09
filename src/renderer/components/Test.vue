@@ -5,6 +5,7 @@
         :class="{ 'is-active': isActive, 'is-child-active': isChildActive }"
         :has-children="hasChildren"
         :handler="onClick"
+        @contextmenu.native.stop.prevent="onContextMenu"
     >
         <template slot="header">
             <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @click.stop="selected = true">
@@ -28,6 +29,7 @@
 </template>
 
 <script>
+import { clipboard, remote } from 'electron'
 import { mapGetters, mapActions } from 'vuex'
 import Nugget from '@/components/Nugget'
 import Breadcrumb from '@/components/mixins/breadcrumb'
@@ -104,6 +106,40 @@ export default {
                 this.activate()
                 return false
             }
+        },
+        onContextMenu (event) {
+            event.preventDefault()
+
+            const name = this.test.displayName
+            const originalName = this.test.name !== this.test.displayName ? this.test.name : false
+
+            const { Menu, MenuItem } = remote
+
+            const menu = new Menu()
+
+            menu.append(new MenuItem({
+                label: __DARWIN__
+                    ? 'Copy Test Name'
+                    : 'Copy test name',
+                click: () => {
+                    clipboard.writeText(name)
+                }
+            }))
+
+            if (originalName) {
+                menu.append(new MenuItem({
+                    label: __DARWIN__
+                        ? 'Copy Original Test Name'
+                        : 'Copy original test name',
+                    click: () => {
+                        clipboard.writeText(originalName)
+                    }
+                }))
+            }
+
+            menu.popup({
+                window: remote.getCurrentWindow()
+            })
         },
         activate () {
             this.showResults(this.test)

@@ -4,12 +4,13 @@
         :class="{
             'status--pending': pending,
             'status--removed': removed,
+            'is-dedicated': dedicated,
             'is-expanded': expanded,
             'is-collapsed': !expanded
         }"
     >
         <div v-if="expanded">
-            <div class="help">
+            <div v-if="!dedicated" class="help">
                 <template v-if="pending">
                     <div>This framework was found during a scan of the repository. Check the settings below and save changes to add, or <a @click="remove">ignore this framework</a>.</div>
                 </template>
@@ -17,7 +18,7 @@
                     <div>This framework was not found during a scan of the repository. You might want to remove it.</div>
                 </template>
             </div>
-            <div class="counter"></div>
+            <div v-if="!dedicated" class="counter"></div>
             <dl>
                 <dt>
                     <label>Name</label>
@@ -169,13 +170,13 @@
                     </dd>
                 </dl>
             </div>
-            <div class="instructions" v-show="instructions">
+            <div v-if="!dedicated" class="instructions" v-show="instructions">
                 <div>
                     <h6>{{ 'How to setup :0 testing with Lode' | set(currentFrameworkName) }}</h6>
                     <p v-markdown>{{ currentFrameworkInstructions }}</p>
                 </div>
             </div>
-            <div class="form-actions">
+            <div v-if="!dedicated" class="form-actions">
                 <button class="btn btn-outline btn-sm" type="button" @click="instructions = !instructions"><Icon symbol="question" /></button>
                 <button class="btn btn-sm btn-danger" type="button" @click="remove">Remove</button>
                 <button class="btn btn-sm" type="button" @click="expanded = !expanded">Done</button>
@@ -209,6 +210,10 @@ export default {
         validator: {
             type: Object,
             required: true
+        },
+        dedicated: {
+            type: Boolean,
+            default: false
         }
     },
     data () {
@@ -225,7 +230,7 @@ export default {
                 sshPort: this.framework.sshPort,
                 sshIdentity: this.framework.sshIdentity
             },
-            expanded: ['pending', 'removed'].includes(this.framework.scanStatus),
+            expanded: this.dedicated || ['pending', 'removed'].includes(this.framework.scanStatus),
             instructions: this.framework.scanStatus === 'pending'
         }
     },

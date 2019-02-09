@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import _uniqBy from 'lodash/uniqBy'
 import { mapActions } from 'vuex'
 import { RepositoryValidator } from '@lib/frameworks/validator'
 
@@ -65,7 +66,7 @@ export default {
         addRow () {
             this.slots.push({
                 key: this.$string.random(),
-                validator: new RepositoryValidator(),
+                validator: new RepositoryValidator(this.project.repositories.map(repository => repository.path)),
                 errored: false,
                 path: ''
             })
@@ -92,7 +93,8 @@ export default {
             })
 
             if (!this.hasErrors) {
-                this.slots.forEach((slot, index) => {
+                console.log(this.slots, _uniqBy(this.slots, 'path'))
+                _uniqBy(this.slots, 'path').forEach((slot, index) => {
                     this.addRepository(this.project.addRepository({ path: slot.path }))
                 })
                 this.$emit('hide')

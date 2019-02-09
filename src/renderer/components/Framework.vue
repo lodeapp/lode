@@ -106,13 +106,13 @@ export default {
         const { Menu, MenuItem } = remote
 
         const menu = new Menu()
-        // menu.append(new MenuItem({
-        //     label: 'Manage frameworks…',
-        //     click: () => {
-        //         this.manage()
-        //     }
-        // }))
-        // menu.append(new MenuItem({ type: 'separator' }))
+        menu.append(new MenuItem({
+            label: 'Framework settings…',
+            click: () => {
+                this.manage()
+            }
+        }))
+        menu.append(new MenuItem({ type: 'separator' }))
         menu.append(new MenuItem({
             label: 'Remove',
             click: () => {
@@ -188,6 +188,9 @@ export default {
         },
         async stop () {
             await this.framework.stop()
+        },
+        manage () {
+            this.$emit('manage', this.framework)
         },
         remove () {
             this.$modal.confirm('RemoveFramework', { framework: this.framework })

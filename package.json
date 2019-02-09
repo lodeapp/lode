@@ -75,6 +75,7 @@
     }
   },
   "dependencies": {
+    "@types/shell-escape": "^0.2.0",
     "bottleneck": "^2.13.0",
     "child_process": "^1.0.2",
     "electron-log": "^2.2.17",
@@ -90,6 +91,7 @@
     "octicons": "^8.1.0",
     "sha1-es": "^1.8.2",
     "shell-env": "^2.2.0",
+    "shell-escape": "^0.2.0",
     "strip-ansi": "^5.0.0",
     "terminal.js": "^1.0.10",
     "uuid": "^3.3.2",

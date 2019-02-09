@@ -26,6 +26,7 @@ export interface ISuite extends Nugget {
 
     getStatus (): Status
     getDisplayName (): string
+    getFilePath (): string
     buildTests (result: ISuiteResult, force: boolean): void
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     reset (selective: boolean): void
@@ -189,6 +190,17 @@ export class Suite extends Nugget implements ISuite {
      */
     public getDisplayName (): string {
         return this.relative
+    }
+
+    /**
+     * Get this suite's local file path, regardless of running remotely.
+     */
+    public getFilePath (): string {
+        if (!this.runsInRemote) {
+            return this.file
+        }
+
+        return Path.join(this.root, Path.relative(Path.join(this.remotePath, this.path), this.file))
     }
 
     /**

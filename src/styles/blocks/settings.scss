@@ -153,4 +153,9 @@
             top: 11px;
         }
     }
+
+    &.is-dedicated {
+        border-top: 0;
+        box-shadow: none;
+    }
 }

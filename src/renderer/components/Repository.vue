@@ -67,6 +67,7 @@
                 :model="framework"
                 @remove="removeFramework"
                 @change="storeFrameworkState"
+                @manage="manageFramework"
                 @activate="onChildActivation"
                 @deactivate="onChildDeactivation"
             />
@@ -170,6 +171,13 @@ export default {
             this.$modal.open('ManageFrameworks', {
                 repository: this.repository,
                 scanned: false
+            })
+        },
+        manageFramework (framework) {
+            this.$modal.open('ManageFrameworks', {
+                repository: this.repository,
+                scanned: false,
+                framework
             })
         },
         remove () {

@@ -1,8 +1,8 @@
 <template>
-    <Modal title="Manage test frameworks">
+    <Modal :title="singleFramework ? 'Framework Settings' : 'Manage test frameworks'">
         <div class="fluid">
             <div class="repository-settings">
-                <h5>
+                <h5 v-if="!singleFramework">
                     <span class="repository-name">
                         <Icon symbol="repo" />{{ repository.name }}
                     </span>
@@ -20,13 +20,14 @@
                     <button type="button" class="btn btn-sm" @click="scan">Scan</button>
                 </h5>
                 <FrameworkSettings
-                    v-for="(framework, index) in frameworks"
+                    v-for="framework in filteredFrameworks"
                     :key="framework.key"
                     :repository="repository"
                     :framework="framework"
                     :validator="framework.validator"
-                    @input="handleChange(index, $event)"
-                    @remove="handleRemove(index)"
+                    :dedicated="singleFramework"
+                    @input="handleChange(framework, $event)"
+                    @remove="handleRemove(framework)"
                 />
             </div>
         </div>
@@ -44,6 +45,7 @@
 <script>
 import { mapActions } from 'vuex'
 import _findIndex from 'lodash/findIndex'
+import _isEmpty from 'lodash/isEmpty'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 
 import Modal from '@/components/modals/Modal'
@@ -59,6 +61,12 @@ export default {
         repository: {
             type: Object,
             required: true
+        },
+        framework: {
+            type: Object,
+            default () {
+                return {}
+            }
         },
         scanned: {
             type: Boolean,
@@ -78,6 +86,15 @@ export default {
         }
     },
     computed: {
+        singleFramework () {
+            return !_isEmpty(this.framework)
+        },
+        filteredFrameworks () {
+            if (!this.singleFramework) {
+                return this.frameworks
+            }
+            return this.frameworks.filter(framework => framework.id === this.framework.id)
+        },
         amountActive () {
             return this.frameworks.filter(framework => !framework.scanStatus).length
         },
@@ -140,14 +157,20 @@ export default {
                     this.parseFrameworks(true, pending)
                 })
         },
-        handleChange (index, values) {
-            this.frameworks[index] = { ...this.frameworks[index], ...values, ...{ dirty: true }}
+        handleChange (framework, values) {
+            const index = _findIndex(this.frameworks, { key: framework.key })
+            if (index > -1) {
+                this.frameworks[index] = { ...this.frameworks[index], ...values, ...{ dirty: true }}
+            }
         },
-        handleRemove (index) {
-            const removed = this.frameworks.splice(index, 1)
-            // If framework already exists, mark for removal if changes are saved
-            if (removed[0].id) {
-                this.removed.push(removed[0].id)
+        handleRemove (framework) {
+            const index = _findIndex(this.frameworks, { key: framework.key })
+            if (index > -1) {
+                const removed = this.frameworks.splice(index, 1)
+                // If framework already exists, mark for removal if changes are saved
+                if (removed[0].id) {
+                    this.removed.push(removed[0].id)
+                }
             }
         },
         save () {

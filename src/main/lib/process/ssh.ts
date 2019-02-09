@@ -1,9 +1,10 @@
-import { compact, get } from 'lodash'
+import shellEscape from 'shell-escape'
+import { compact, flatten, get } from 'lodash'
 
 export type SSHOptions = {
     host: string
     user?: string | null
-    port?: number | null
+    port?: string | null
     identity?: string | null
     path?: string
     options?: {
@@ -61,22 +62,24 @@ export class SSH {
     }
 
     public commandArgs (args: Array<string>): Array<string> {
-        console.log(this.connection)
         return [
             '-S none',
-            get(this.connection, 'host', '')
+            shellEscape([get(this.connection, 'host', '')])
         ]
         .concat(Object.keys(this.connection!.options!).map((key: string) => {
             return ['-o', [key, get(this.connection, `options.${key}`)].join('=')].join(' ')
         }))
         .concat(
-            [
-                compact(['-l', get(this.connection, 'user', '')]),
-                compact(['-p', get(this.connection, 'port')]),
-                compact(['-i', get(this.connection, 'identity')])
-            ]
-            .filter(details => details.length > 1)
-            .map(details => details.join(' '))
+            shellEscape(
+                flatten(
+                    [
+                        compact(['-l', get(this.connection, 'user', '')]),
+                        compact(['-p', get(this.connection, 'port')]),
+                        compact(['-i', get(this.connection, 'identity')])
+                    ]
+                    .filter(details => details.length > 1)
+                )
+            )
         )
         .concat([
             '-tt',

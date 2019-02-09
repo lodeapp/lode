@@ -121,8 +121,11 @@ export class Validator {
 
 export class RepositoryValidator extends Validator {
 
-    constructor () {
+    protected existing: Array<string>
+
+    constructor (existing: Array<string>) {
         super()
+        this.existing = existing
         this.errors = {
             path: []
         }
@@ -140,6 +143,8 @@ export class RepositoryValidator extends Validator {
             this.addError('path', 'Please enter a repository path.')
         } else if (!this.isDirectory(options.path)) {
             this.addError('path', 'Please enter a valid repository directory.')
+        } else if (this.existing.includes(options.path)) {
+            this.addError('path', 'The project already contains this repository.')
         }
 
         return this
