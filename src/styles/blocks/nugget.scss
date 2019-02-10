@@ -299,24 +299,38 @@
         }
     }
 
-    &.is-active {
+    &.has-context {
 
         & > .header {
 
             & > .header-inner {
-                background-color: theme-color('selected', 200);
+                background-color: var(--item-selected-background-color);
+            }
+        }
+    }
+
+    &.is-active {
+
+        & > .header {
+            background-color: var(--item-selected-active-background-color);
+
+            & > .header-inner {
+                background-color: var(--item-selected-active-background-color);
+                color: var(--item-selected-active-text-color);
             }
         }
     }
 
     &.is-active,
-    &.is-child-active {
+    &.has-context,
+    &.is-child-active,
+    &.child-has-context {
 
         & > .header {
 
             & > .status {
                 border-right-color: theme-color('selected');
-                box-shadow: 4px 0 0 0 rgba(theme-color('selected'), .5);
+                box-shadow: 4px 0 0 0 $blue-300;
             }
         }
     }

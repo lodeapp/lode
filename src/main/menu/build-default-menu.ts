@@ -1,11 +1,10 @@
 import { Menu, ipcMain } from 'electron'
 import { ensureItemIds } from './ensure-item-ids'
 import { MenuEvent } from './menu-event'
-import { Config } from '@lib/config'
+import { Config } from '@main/lib/config'
 
 // import { log } from '../log'
 // import { ensureDir } from 'fs-extra'
-// import { openDirectorySafe } from '../shell'
 
 // We seem to be unable to simple declare menu items as "radio" without TS
 // raising an alert, so we need to forcibly cast types when defining them.
@@ -287,31 +286,10 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
     //   },
     // }
 
-    // const showLogsLabel = __DARWIN__
-    //   ? 'Show Logs in Finder'
-    //   : __WIN32__
-    //     ? 'S&how logs in Explorer'
-    //     : 'S&how logs in your File Manager'
-
-    // const showLogsItem: Electron.MenuItemConstructorOptions = {
-    //   label: showLogsLabel,
-    //   click() {
-    //     const logPath = getLogDirectoryPath()
-    //     ensureDir(logPath)
-    //       .then(() => {
-    //         openDirectorySafe(logPath)
-    //       })
-    //       .catch(err => {
-    //         // log('error', err.message)
-    //       })
-    //   },
-    // }
-
     const helpItems = [
         // submitIssueItem,
         // contactSupportItem,
         // showUserGuides,
-        // showLogsItem,
         separator,
         {
             label: __DARWIN__ ? 'Report a Problem or Feature Request' : 'Report a problem or feature request',

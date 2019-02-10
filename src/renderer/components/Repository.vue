@@ -20,7 +20,7 @@
                     </span>
                 </h2>
                 <div class="actions">
-                    <button type="button" class="btn-link more-actions" @click="onMoreClick">
+                    <button type="button" class="btn-link more-actions" @click.prevent="onMoreClick">
                         <Icon symbol="kebab-vertical" />
                     </button>
                     <template v-if="repository.frameworks.length">
@@ -76,8 +76,8 @@
 </template>
 
 <script>
-import { remote } from 'electron'
 import { mapActions } from 'vuex'
+import { Menu } from '@main/menu'
 import Framework from '@/components/Framework'
 import Indicator from '@/components/Indicator'
 import Breadcrumb from '@/components/mixins/breadcrumb'
@@ -98,28 +98,24 @@ export default {
         }
     },
     data () {
-        const { Menu, MenuItem } = remote
-
-        const menu = new Menu()
-        menu.append(new MenuItem({
-            label: 'Manage frameworks',
-            click: () => {
-                this.manage()
-            }
-        }))
-        menu.append(new MenuItem({ type: 'separator' }))
-        menu.append(new MenuItem({
-            label: 'Remove',
-            click: () => {
-                this.remove()
-            }
-        }))
-        menu.on('menu-will-close', () => {
-            this.$el.querySelector('.more-actions').blur()
-        })
-
         return {
-            menu
+            menu: new Menu()
+                .add({
+                    label: 'Manage frameworks',
+                    click: () => {
+                        this.manage()
+                    }
+                })
+                .separator()
+                .add({
+                    label: 'Remove',
+                    click: () => {
+                        this.remove()
+                    }
+                })
+                .after(() => {
+                    this.$el.querySelector('.more-actions').blur()
+                })
         }
     },
     computed: {
@@ -159,13 +155,9 @@ export default {
                 })
         },
         onMoreClick (event) {
-            event.preventDefault()
-            const { x, y, height } = this.$el.querySelector('.more-actions').getBoundingClientRect()
-            this.menu.popup({
-                window: remote.getCurrentWindow(),
-                x: Math.ceil(x),
-                y: Math.ceil(y + height + 6)
-            })
+            this.menu
+                .attachTo(this.$el.querySelector('.more-actions'))
+                .open()
         },
         manage () {
             this.$modal.open('ManageFrameworks', {

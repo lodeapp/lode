@@ -15,7 +15,10 @@ export default {
             )
         },
         BREADCRUMBS (state, breadcrumb) {
-            state.breadcrumbs.unshift(_cloneDeep(breadcrumb))
+            state.breadcrumbs.unshift({
+                id: breadcrumb.id,
+                name: breadcrumb.getDisplayName()
+            })
         },
         RESET_BREADCRUMBS (state) {
             state.breadcrumbs = []

@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import store from './store'
 import { mapActions, mapGetters } from 'vuex'
-import { remote, ipcRenderer, shell } from 'electron'
-import { Config } from '@lib/config'
-import { Logger } from '@lib/logger'
-import { Project } from '@lib/frameworks/project'
-import { queue } from '@lib/process/queue'
+import { clipboard, remote, ipcRenderer, shell } from 'electron'
+import { Config } from '@main/lib/config'
+import { Logger } from '@main/lib/logger'
+import { Project } from '@main/lib/frameworks/project'
+import { queue } from '@main/lib/process/queue'
 
 // Styles
 import '../styles/app.scss'
@@ -16,6 +16,7 @@ import Modals from './plugins/modals'
 import Alerts from './plugins/alerts'
 import Strings from './plugins/strings'
 import Input from './plugins/input'
+import Filesystem from './plugins/filesystem'
 import Filters from './plugins/filters'
 import Markdown from './directives/markdown'
 
@@ -30,6 +31,7 @@ Vue.use(new Icons())
 Vue.use(new Modals(store))
 Vue.use(new Alerts(store))
 Vue.use(new Strings('en-US'))
+Vue.use(new Filesystem())
 Vue.use(new Input())
 Vue.use(new Filters())
 
@@ -208,6 +210,22 @@ export default new Vue({
         },
         openExternal (link) {
             shell.openExternal(link)
+        },
+        async openFile (path) {
+            const result = await shell.openExternal(`file://${path}`)
+
+            if (!result) {
+                // const error = {
+                //     name: 'no-external-program',
+                //     message: `Unable to open file ${path} in an external program. Please check you have a program associated with this file extension`,
+                // }
+            }
+        },
+        revealFile (path) {
+            shell.showItemInFolder(path)
+        },
+        copyToClipboard (string) {
+            clipboard.writeText(string)
         },
         selectAll () {
             const event = new CustomEvent('select-all', {

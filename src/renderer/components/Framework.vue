@@ -19,7 +19,7 @@
                     </span>
                 </h3>
                 <div class="actions">
-                    <button type="button" class="btn-link more-actions" @click="onMoreClick">
+                    <button type="button" class="btn-link more-actions" @click.prevent="onMoreClick">
                         <Icon symbol="kebab-vertical" />
                     </button>
                     <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import { remote } from 'electron'
+import { Menu } from '@main/menu'
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
@@ -103,28 +103,24 @@ export default {
         }
     },
     data () {
-        const { Menu, MenuItem } = remote
-
-        const menu = new Menu()
-        menu.append(new MenuItem({
-            label: 'Framework settings…',
-            click: () => {
-                this.manage()
-            }
-        }))
-        menu.append(new MenuItem({ type: 'separator' }))
-        menu.append(new MenuItem({
-            label: 'Remove',
-            click: () => {
-                this.remove()
-            }
-        }))
-        menu.on('menu-will-close', () => {
-            this.$el.querySelector('.more-actions').blur()
-        })
-
         return {
-            menu
+            menu: new Menu()
+                .add({
+                    label: 'Framework settings…',
+                    click: () => {
+                        this.manage()
+                    }
+                })
+                .separator()
+                .add({
+                    label: 'Remove',
+                    click: () => {
+                        this.remove()
+                    }
+                })
+                .after(() => {
+                    this.$el.querySelector('.more-actions').blur()
+                })
         }
     },
     computed: {
@@ -169,13 +165,9 @@ export default {
             this.framework.toggleFilters()
         },
         onMoreClick (event) {
-            event.preventDefault()
-            const { x, y, height } = this.$el.querySelector('.more-actions').getBoundingClientRect()
-            this.menu.popup({
-                window: remote.getCurrentWindow(),
-                x: Math.ceil(x),
-                y: Math.ceil(y + height + 6)
-            })
+            this.menu
+                .attachTo(this.$el.querySelector('.more-actions'))
+                .open()
         },
         refresh () {
             this.framework.refresh()

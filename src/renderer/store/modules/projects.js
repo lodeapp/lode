@@ -1,5 +1,5 @@
-import { Config } from '@lib/config'
-import { Logger } from '@lib/logger'
+import { Config } from '@main/lib/config'
+import { Logger } from '@main/lib/logger'
 import _find from 'lodash/find'
 import _findIndex from 'lodash/findIndex'
 

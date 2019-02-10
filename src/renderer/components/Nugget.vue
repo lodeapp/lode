@@ -81,6 +81,13 @@ export default {
                 return
             }
             this.show = !this.show
+        },
+
+        /**
+         * Bubble up the `canOpen` verification between Test and Suite.
+         */
+        canOpen () {
+            return this.$parent.canOpen()
         }
     }
 }

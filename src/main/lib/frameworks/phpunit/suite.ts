@@ -1,5 +1,5 @@
 import { get } from 'lodash'
-import { ISuiteResult, Suite } from '@lib/frameworks/suite'
+import { ISuiteResult, Suite } from '@main/lib/frameworks/suite'
 
 export class PHPUnitSuite extends Suite {
     public canToggleTests: boolean = true

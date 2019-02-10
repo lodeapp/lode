@@ -1,9 +1,9 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { get } from 'lodash'
-import { ParsedRepository } from '@lib/frameworks/repository'
-import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
-import { Suite } from '@lib/frameworks/suite'
+import { ParsedRepository } from '@main/lib/frameworks/repository'
+import { FrameworkOptions, Framework } from '@main/lib/frameworks/framework'
+import { Suite } from '@main/lib/frameworks/suite'
 
 export class Jest extends Framework {
 

@@ -2,7 +2,11 @@
     <Nugget
         :model="suite"
         class="suite"
-        :class="{ 'is-child-active': isChildActive }"
+        :class="{
+            'is-child-active': isChildActive,
+            'has-context': hasContext,
+            'child-has-context': childHasContext
+        }"
         :has-children="suite.testsLoaded && suite.tests.length > 0"
         @contextmenu.native.stop.prevent="onContextMenu"
     >
@@ -19,18 +23,23 @@
             :model="test"
             :running="running"
             :selectable="suite.canToggleTests"
+            @open="openFile"
             @activate="onChildActivation"
             @deactivate="onChildDeactivation"
+            @add-context="onChildAddContext"
+            @remove-context="onChildRemoveContext"
         />
     </Nugget>
 </template>
 
 <script>
-import { pathExists } from 'fs-extra'
-import { clipboard, remote, shell } from 'electron'
+import * as Path from 'path'
+import { pathExistsSync } from 'fs-extra'
+import { Menu } from '@main/menu'
 import Nugget from '@/components/Nugget'
 import Filename from '@/components/Filename'
 import Breadcrumb from '@/components/mixins/breadcrumb'
+import Context from '@/components/mixins/context'
 
 export default {
     name: 'Suite',
@@ -39,7 +48,8 @@ export default {
         Filename
     },
     mixins: [
-        Breadcrumb
+        Breadcrumb,
+        Context
     ],
     props: {
         model: {
@@ -62,6 +72,21 @@ export default {
             set (checked) {
                 this.suite.toggleSelected(checked)
             }
+        },
+        filePath () {
+            return this.suite.getFilePath()
+        },
+        remoteFilePath () {
+            return this.suite.file !== this.filePath ? this.suite.file : false
+        },
+        fileExists () {
+            return pathExistsSync(this.filePath)
+        },
+        fileExtension () {
+            return Path.extname(this.filePath)
+        },
+        fileIsSafe () {
+            return this.$fileystem.isExtensionSafe(this.fileExtension)
         }
     },
     methods: {
@@ -74,52 +99,58 @@ export default {
                 input.click()
             }
         },
-        async onContextMenu (event) {
-            event.preventDefault()
-
-            const path = this.suite.getFilePath()
-            const fileExistsOnDisk = await pathExists(path)
-            const remotePath = this.suite.file !== this.suite.getFilePath() ? this.suite.file : false
-
-            const { Menu, MenuItem } = remote
-
-            const menu = new Menu()
-            menu.append(new MenuItem({
-                label: __DARWIN__
-                    ? 'Reveal in Finder'
-                    : __WIN32__
-                        ? 'Show in Explorer'
-                        : 'Show in your File Manager',
-                click: () => {
-                    shell.showItemInFolder(path)
-                },
-                enabled: fileExistsOnDisk
-            }))
-
-            menu.append(new MenuItem({
-                label: __DARWIN__
-                    ? remotePath ? 'Copy Local File Path' : 'Copy File Path'
-                    : remotePath ? 'Copy local file path' : 'Copy file path',
-                click: () => {
-                    clipboard.writeText(path)
-                },
-                enabled: fileExistsOnDisk
-            }))
-
-            if (remotePath) {
-                menu.append(new MenuItem({
+        onContextMenu (event) {
+            new Menu()
+                .before(() => {
+                    this.onAddContext()
+                })
+                .add({
+                    label: __DARWIN__
+                        ? 'Reveal in Finder'
+                        : __WIN32__
+                            ? 'Show in Explorer'
+                            : 'Show in your File Manager',
+                    click: () => {
+                        this.$root.revealFile(this.filePath)
+                    },
+                    enabled: this.fileExists
+                })
+                .add({
+                    label: __DARWIN__
+                        ? this.remoteFilePath ? 'Copy Local File Path' : 'Copy File Path'
+                        : this.remoteFilePath ? 'Copy local file path' : 'Copy file path',
+                    click: () => {
+                        this.$root.copyToClipboard(this.filePath)
+                    },
+                    enabled: this.fileExists
+                })
+                .addIf(this.remoteFilePath, {
                     label: __DARWIN__
                         ? 'Copy Remote File Path'
                         : 'Copy Remote file path',
                     click: () => {
-                        clipboard.writeText(remotePath)
+                        this.$root.copyToClipboard(this.remoteFilePath)
                     }
-                }))
-            }
-
-            menu.popup({
-                window: remote.getCurrentWindow()
-            })
+                })
+                .add({
+                    label: __DARWIN__
+                        ? 'Open with Default Program'
+                        : 'Open with default program',
+                    click: () => {
+                        this.openFile()
+                    },
+                    enabled: this.canOpen()
+                })
+                .after(() => {
+                    this.onRemoveContext()
+                })
+                .open()
+        },
+        canOpen () {
+            return this.fileIsSafe && this.fileExists
+        },
+        openFile () {
+            this.$root.openFile(this.filePath)
         }
     }
 }

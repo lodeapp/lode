@@ -2,7 +2,12 @@
     <Nugget
         :model="test"
         class="test"
-        :class="{ 'is-active': isActive, 'is-child-active': isChildActive }"
+        :class="{
+            'is-active': isActive,
+            'is-child-active': isChildActive,
+            'has-context': hasContext,
+            'child-has-context': childHasContext
+        }"
         :has-children="hasChildren"
         :handler="onClick"
         @contextmenu.native.stop.prevent="onContextMenu"
@@ -12,7 +17,7 @@
                 <button type="button" :disabled="running"></button>
                 <input type="checkbox" v-model="selected" :disabled="running">
             </div>
-            <div class="test-name" :title="test.displayName">{{ test.displayName }}</div>
+            <div class="test-name" :title="displayName">{{ displayName }}</div>
         </template>
         <template v-if="hasChildren">
             <Test
@@ -21,18 +26,22 @@
                 :model="test"
                 :running="running"
                 :selectable="selectable"
+                @open="$emit('open')"
                 @activate="onChildActivation"
                 @deactivate="onChildDeactivation"
+                @add-context="onChildAddContext"
+                @remove-context="onChildRemoveContext"
             />
         </template>
     </Nugget>
 </template>
 
 <script>
-import { clipboard, remote } from 'electron'
 import { mapGetters, mapActions } from 'vuex'
+import { Menu } from '@main/menu'
 import Nugget from '@/components/Nugget'
 import Breadcrumb from '@/components/mixins/breadcrumb'
+import Context from '@/components/mixins/context'
 
 export default {
     name: 'Test',
@@ -40,7 +49,8 @@ export default {
         Nugget
     },
     mixins: [
-        Breadcrumb
+        Breadcrumb,
+        Context
     ],
     props: {
         model: {
@@ -77,6 +87,12 @@ export default {
                 this.test.toggleSelected(checked)
             }
         },
+        displayName () {
+            return this.test.displayName
+        },
+        originalName () {
+            return this.test.name !== this.displayName ? this.test.name : false
+        },
         ...mapGetters({
             activeTest: 'tests/active'
         })
@@ -108,38 +124,43 @@ export default {
             }
         },
         onContextMenu (event) {
-            event.preventDefault()
-
-            const name = this.test.displayName
-            const originalName = this.test.name !== this.test.displayName ? this.test.name : false
-
-            const { Menu, MenuItem } = remote
-
-            const menu = new Menu()
-
-            menu.append(new MenuItem({
-                label: __DARWIN__
-                    ? 'Copy Test Name'
-                    : 'Copy test name',
-                click: () => {
-                    clipboard.writeText(name)
-                }
-            }))
-
-            if (originalName) {
-                menu.append(new MenuItem({
+            new Menu()
+                .before(() => {
+                    this.onAddContext()
+                })
+                .add({
+                    label: __DARWIN__
+                        ? 'Copy Test Name'
+                        : 'Copy test name',
+                    click: () => {
+                        this.$root.copyToClipboard(this.displayName)
+                    }
+                })
+                .addIf(this.originalName, {
                     label: __DARWIN__
                         ? 'Copy Original Test Name'
                         : 'Copy original test name',
                     click: () => {
-                        clipboard.writeText(originalName)
+                        this.$root.copyToClipboard(this.originalName)
                     }
-                }))
-            }
-
-            menu.popup({
-                window: remote.getCurrentWindow()
-            })
+                })
+                .separator()
+                .add({
+                    label: __DARWIN__
+                        ? 'Open Suite with Default Program'
+                        : 'Open suite with default program',
+                    click: () => {
+                        this.$emit('open')
+                    },
+                    enabled: this.canOpen()
+                })
+                .after(() => {
+                    this.onRemoveContext()
+                })
+                .open()
+        },
+        canOpen () {
+            return this.$parent.canOpen()
         },
         activate () {
             this.showResults(this.test)

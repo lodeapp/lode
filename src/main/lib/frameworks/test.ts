@@ -1,9 +1,10 @@
 import { v4 as uuid } from 'uuid'
-import { Status } from '@lib/frameworks/status'
-import { Nugget } from '@lib/frameworks/nugget'
+import { Status } from '@main/lib/frameworks/status'
+import { Nugget } from '@main/lib/frameworks/nugget'
 
 export interface ITest extends Nugget {
     readonly id: string
+    readonly identifier: string
     readonly name: string
     result?: ITestResult
     selected: boolean
@@ -20,12 +21,12 @@ export interface ITest extends Nugget {
 }
 
 export interface ITestResult {
+    identifier: string
     name: string
     displayName: string
     status: Status
     feedback?: string | object
     stats?: object
-    console: Array<string>
     isLast?: boolean
     tests?: Array<ITestResult>
 }
@@ -33,6 +34,7 @@ export interface ITestResult {
 export class Test extends Nugget implements ITest {
     protected status!: Status
     public readonly id: string
+    public readonly identifier: string
     public readonly name: string
     public readonly displayName: string
     public result!: ITestResult
@@ -40,6 +42,7 @@ export class Test extends Nugget implements ITest {
     constructor (result: ITestResult) {
         super()
         this.id = uuid()
+        this.identifier = result.identifier
         this.name = result.name
         this.displayName = result.displayName || result.name
         this.build(result, false)
@@ -50,10 +53,10 @@ export class Test extends Nugget implements ITest {
      */
     public persist (): ITestResult {
         return {
+            identifier: this.result.identifier,
             name: this.result.name,
             displayName: this.result.displayName,
             status: 'idle',
-            console: [],
             tests: this.tests.map((test: ITest) => test.persist())
         }
     }

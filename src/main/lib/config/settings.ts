@@ -2,7 +2,7 @@ import latinize from 'latinize'
 import ElectronStore from 'electron-store'
 import { EventEmitter } from 'events'
 import { merge, cloneDeep, sortBy } from 'lodash'
-import { ProjectOptions } from '@lib/frameworks/project'
+import { ProjectOptions } from '@main/lib/frameworks/project'
 
 export class Settings extends EventEmitter {
     private store: ElectronStore

@@ -53,8 +53,9 @@
 import _get from 'lodash/get'
 import { remote } from 'electron'
 import { mapGetters } from 'vuex'
-import { Logger } from '@lib/logger'
-import { ProcessError } from '@lib/process/errors'
+import { Menu } from '@main/menu'
+import { Logger } from '@main/lib/logger'
+import { ProcessError } from '@main/lib/process/errors'
 import Modal from '@/components/modals/Modal'
 import Ansi from '@/components/Ansi'
 
@@ -65,22 +66,18 @@ export default {
         Ansi
     },
     data () {
-        const { Menu, MenuItem } = remote
-
-        const menu = new Menu()
-        menu.append(new MenuItem({
-            label: 'Save Error Report…',
-            click: () => {
-                this.save(_get(this.current, 'error', null))
-            }
-        }))
-        menu.on('menu-will-close', () => {
-            this.$el.querySelector('.more-actions button').blur()
-        })
-
         return {
             index: 0,
-            menu
+            menu: new Menu()
+                .add({
+                    label: 'Save Error Report…',
+                    click: () => {
+                        this.save(_get(this.current, 'error', null))
+                    }
+                })
+                .after(() => {
+                    this.$el.querySelector('.more-actions button').blur()
+                })
         }
     },
     computed: {
@@ -126,13 +123,8 @@ export default {
             this.index--
         },
         onMoreClick (event) {
-            event.preventDefault()
-            const { x, y, height } = this.$el.querySelector('.more-actions button').getBoundingClientRect()
-            this.menu.popup({
-                window: remote.getCurrentWindow(),
-                x: Math.ceil(x),
-                y: Math.ceil(y + height + 6)
-            })
+            this.menu.attachTo(this.$el.querySelector('.more-actions button'))
+                .open()
         },
         async save (error) {
             const directory = remote.dialog.showOpenDialog({

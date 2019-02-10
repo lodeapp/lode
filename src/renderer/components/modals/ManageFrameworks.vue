@@ -46,7 +46,7 @@
 import { mapActions } from 'vuex'
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
-import { FrameworkValidator } from '@lib/frameworks/validator'
+import { FrameworkValidator } from '@main/lib/frameworks/validator'
 
 import Modal from '@/components/modals/Modal'
 import FrameworkSettings from '@/components/FrameworkSettings'

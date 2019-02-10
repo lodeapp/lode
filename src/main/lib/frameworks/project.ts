@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid'
 import { findIndex } from 'lodash'
 import { EventEmitter } from 'events'
-import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
-import { RepositoryOptions, IRepository, Repository } from '@lib/frameworks/repository'
+import { FrameworkStatus, parseFrameworkStatus } from '@main/lib/frameworks/status'
+import { RepositoryOptions, IRepository, Repository } from '@main/lib/frameworks/repository'
 
 /**
  * Options to instantiate a Project with.

@@ -13,7 +13,7 @@
                             v-for="breadcrumb in breadcrumbs"
                             :key="breadcrumb.id"
                             class="breadcrumb-item text-small"
-                        >{{ breadcrumb.getDisplayName() }}</li>
+                        >{{ breadcrumb.name }}</li>
                     </ol>
                 </nav>
             </div>

@@ -1,4 +1,4 @@
-import { IProcess, DefaultProcess } from '@lib/process/process'
+import { IProcess, DefaultProcess } from '@main/lib/process/process'
 
 export class NpmProcess extends DefaultProcess implements IProcess {
     static readonly type: string = 'npm'

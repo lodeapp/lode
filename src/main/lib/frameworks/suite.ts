@@ -1,9 +1,9 @@
 import * as Path from 'path'
 import { cloneDeep, merge } from 'lodash'
 import { v4 as uuid } from 'uuid'
-import { Status, parseStatus } from '@lib/frameworks/status'
-import { ITest, ITestResult, Test } from '@lib/frameworks/test'
-import { Nugget } from '@lib/frameworks/nugget'
+import { Status, parseStatus } from '@main/lib/frameworks/status'
+import { ITest, ITestResult, Test } from '@main/lib/frameworks/test'
+import { Nugget } from '@main/lib/frameworks/nugget'
 
 export type SuiteOptions = {
     path: string,

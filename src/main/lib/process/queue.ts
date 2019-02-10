@@ -1,5 +1,5 @@
 import Bottleneck from 'bottleneck'
-import { Config } from '@lib/config'
+import { Config } from '@main/lib/config'
 
 export interface IQueue {
     add (job: any): void

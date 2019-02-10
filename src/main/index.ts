@@ -1,7 +1,7 @@
 import { app, ipcMain, Menu } from 'electron'
 import { buildDefaultMenu } from './menu'
 import { Window } from './window'
-import { mergeEnvFromShell } from '@lib/process/shell'
+import { mergeEnvFromShell } from '@main/lib/process/shell'
 
 // Merge environment variables from shell, if needed.
 mergeEnvFromShell()

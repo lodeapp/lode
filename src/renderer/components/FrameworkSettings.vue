@@ -194,7 +194,7 @@
 import _find from 'lodash/find'
 import * as Path from 'path'
 import { remote } from 'electron'
-import { Frameworks } from '@lib/frameworks'
+import { Frameworks } from '@main/lib/frameworks'
 
 export default {
     name: 'FrameworkSettings',

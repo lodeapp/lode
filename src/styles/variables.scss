@@ -142,6 +142,14 @@
     --status-soft-border-width: 4px;
 
     //
+    // Focus
+    //
+
+    --item-selected-background-color: #{theme-color('selected', 100)};
+    --item-selected-active-background-color: #{theme-color('selected', 400)};
+    --item-selected-active-text-color: #{$white};
+
+    //
     // Modals
     //
 

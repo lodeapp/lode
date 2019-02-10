@@ -1,6 +1,6 @@
 import { find } from 'lodash'
 import { FrameworkOptions, IFramework } from './framework'
-import { Frameworks } from '@lib/frameworks'
+import { Frameworks } from '@main/lib/frameworks'
 
 export class FrameworkFactory {
 

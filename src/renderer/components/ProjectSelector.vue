@@ -3,7 +3,7 @@
         v-if="$root.project"
         :key="$string.from({ id: $root.project.id, name: $root.project.name })"
         class="titlebar-button"
-        @click="openMenu"
+        @click.prevent="openMenu"
     >
         <button type="button">
             <div class="text">
@@ -15,8 +15,8 @@
 </template>
 
 <script>
-import { remote } from 'electron'
-import { Config } from '@lib/config'
+import { Menu } from '@main/menu'
+import { Config } from '@main/lib/config'
 
 export default {
     name: 'ProjectSelector',
@@ -30,11 +30,10 @@ export default {
     },
     methods: {
         buildMenu () {
-            const { Menu, MenuItem } = remote
             this.menu = new Menu()
 
             Config.get('projects').forEach(project => {
-                this.menu.append(new MenuItem({
+                this.menu.add({
                     label: project.name,
                     type: 'checkbox',
                     checked: project.id === this.$root.project.id,
@@ -45,29 +44,23 @@ export default {
                         menuItem.checked = project.id === this.$root.project.id
                         this.$root.switchProject(project.id)
                     }
-                }))
+                })
             })
-            this.menu.append(new MenuItem({ type: 'separator' }))
-            this.menu.append(new MenuItem({
-                label: 'New Project…',
-                click: () => {
-                    this.$root.addProject()
-                }
-            }))
+            this.menu
+                .separator()
+                .add({
+                    label: 'New Project…',
+                    click: () => {
+                        this.$root.addProject()
+                    }
+                })
         },
         openMenu (event) {
-            event.preventDefault()
-
             if (!this.menu) {
                 this.buildMenu()
             }
 
-            const { x, y, height } = this.$el.getBoundingClientRect()
-            this.menu.popup({
-                window: remote.getCurrentWindow(),
-                x: Math.ceil(x),
-                y: Math.ceil(y + height + 6)
-            })
+            this.menu.attachTo(this.$el).open()
         }
     }
 }

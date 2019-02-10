@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { Config } from '@lib/config'
+import { Config } from '@main/lib/config'
 import Modal from '@/components/modals/Modal'
 
 export default {
