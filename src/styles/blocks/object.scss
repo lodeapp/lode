@@ -8,6 +8,10 @@
             font-weight: var(--font-weight-semibold);
             text-transform: uppercase;
         }
+
+        & > .value {
+            user-select: text;
+        }
     }
 
     & > :last-child {

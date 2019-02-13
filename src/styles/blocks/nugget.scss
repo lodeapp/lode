@@ -317,6 +317,18 @@
             & > .header-inner {
                 background-color: var(--item-selected-active-background-color);
                 color: var(--item-selected-active-text-color);
+
+                & > .selective-toggle {
+
+                    button {
+                        border-color: $white;
+                    }
+
+                    input {
+                        border-radius: 2px;
+                        box-shadow: 0px 0px 0px 1px white;
+                    }
+                }
             }
         }
     }

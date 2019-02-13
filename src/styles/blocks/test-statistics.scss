@@ -4,4 +4,8 @@
     .heading {
         font-weight: var(--font-weight-semibold);
     }
+
+    td:not(.heading) {
+        user-select: text;
+    }
 }

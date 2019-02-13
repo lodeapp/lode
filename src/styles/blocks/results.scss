@@ -17,10 +17,15 @@
         h2 {
             font-size: 1.7rem;
             line-height: 1.9rem;
+            user-select: text;
         }
 
         .breadcrumbs {
             padding: 0 15px 0;
+
+            li {
+                user-select: text;
+            }
         }
     }
 }
