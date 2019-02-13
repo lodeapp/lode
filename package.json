@@ -7,20 +7,23 @@
   "main": "./dist/electron/main.js",
   "scripts": {
     "licenses": "node .electron-vue/licenses.js",
-    "build": "cp -rf build/icons static/icons && yarn run licenses && node .electron-vue/build.js && electron-builder",
-    "build:dir": "cp -rf build/icons static/icons && yarn run licenses && node .electron-vue/build.js && electron-builder --dir",
+    "icons": "cp -rf build/icons static/icons",
+    "build": "yarn icons && yarn run licenses && node .electron-vue/build.js && electron-builder",
+    "build:dir": "yarn icons  && yarn run licenses && node .electron-vue/build.js && electron-builder --dir",
     "build:dev": "cross-env IS_DEV=true yarn run build",
-    "build:all": "cp -rf build/icons static/icons && yarn run licenses && node .electron-vue/build.js && electron-builder --m --l --w",
-    "dev": "cp -rf build/icons static/icons && cross-env IS_DEV=true node .electron-vue/dev-runner.js",
+    "build:all": "yarn icons && yarn run licenses && node .electron-vue/build.js && electron-builder --m --l --w",
+    "dev": "yarn icons && cross-env IS_DEV=true node .electron-vue/dev-runner.js",
     "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter src",
     "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src",
-    "pack": "npm run pack:main && npm run pack:renderer",
+    "pack": "yarn pack:main && yarn pack:renderer",
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.main.config.js",
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
-    "postinstall": "npm run lint:fix",
+    "pack:jest": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/reporters/webpack.jest.config.js",
+    "pack:reporters": "yarn pack:jest",
+    "postinstall": "yarn lint:fix",
     "tests": "jest --config .jestrc.json",
-    "coverage": "yarn run tests --coverage",
-    "e2e": "npm run pack && mocha tests/e2e"
+    "coverage": "yarn tests --coverage",
+    "e2e": "yarn pack && mocha tests/e2e"
   },
   "build": {
     "productName": "Lode",
@@ -30,6 +33,10 @@
     },
     "files": [
       "dist/electron/**/*"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "dist/electron/static/reporters/**/**"
     ],
     "dmg": {
       "contents": [
@@ -75,7 +82,7 @@
     }
   },
   "dependencies": {
-    "@types/shell-escape": "^0.2.0",
+    "@lodeapp/jest": "^0.8.2",
     "bottleneck": "^2.13.0",
     "child_process": "^1.0.2",
     "electron-log": "^2.2.17",
@@ -107,6 +114,7 @@
     "@types/latinize": "^0.2.15",
     "@types/lodash": "^4.14.116",
     "@types/node": "^10.9.4",
+    "@types/shell-escape": "^0.2.0",
     "@types/uuid": "^3.4.4",
     "@types/winston": "^2.4.4",
     "@vue/test-utils": "^1.0.0-beta.25",

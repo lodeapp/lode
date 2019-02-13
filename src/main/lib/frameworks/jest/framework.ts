@@ -1,6 +1,7 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { get } from 'lodash'
+import { unpacked } from '@main/lib/helpers'
 import { ParsedRepository } from '@main/lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@main/lib/frameworks/framework'
 import { Suite } from '@main/lib/frameworks/suite'
@@ -89,7 +90,9 @@ export class Jest extends Framework {
             '--expand',
             '--colors',
             '--reporters',
-            '@lodeapp/jest'
+            __DEV__
+                ? Path.resolve(__dirname, '../../reporters/jest/index.js')
+                : unpacked(Path.join(__static, './reporters/jest/index.js'))
         ]
 
         if (__DEV__) {

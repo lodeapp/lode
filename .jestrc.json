@@ -7,9 +7,15 @@
   ],
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/src/renderer/$1",
-    "^@lib/(.*)$": "<rootDir>/src/main/lib/$1",
+    "^@main/(.*)$": "<rootDir>/src/main/$1",
     "^@fixtures/(.*)$": "<rootDir>/tests/fixtures/$1"
   },
+  "testPathIgnorePatterns":
+  [
+    "<rootDir>/build/",
+    "<rootDir>/dist/",
+    "<rootDir>/node_modules/"
+  ],
   "transform": {
     ".*\\.(vue)$": "vue-jest",
     "^.+\\.(ts|tsx)$": "ts-jest",

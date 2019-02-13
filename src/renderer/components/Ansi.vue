@@ -9,6 +9,7 @@
 
 <script>
 import Terminal from 'terminal.js'
+import { ProcessError } from '@main/lib/process/errors'
 import Icon from '@/components/Icon'
 
 export default {
@@ -24,17 +25,19 @@ export default {
     },
     data () {
         // If content is an error, don't try to parse it
-        if (this.content instanceof Error) {
+        if (this.content instanceof Error && !(this.content instanceof ProcessError)) {
             return {
                 raw: false,
                 html: this.content.toString()
             }
         }
 
+        const content = this.content instanceof ProcessError ? this.content.toString() : this.content
+
         // Create a new Terminal instance with plenty of space for our output.
         // We'll trim the unsused space when rendering the html.
         const terminal = new Terminal({ columns: 20000, rows: 20000 })
-        terminal.write(this.content.replace(/\n/g, '\r\n') + '\r\n')
+        terminal.write(content.replace(/\n/g, '\r\n') + '\r\n')
         return {
             raw: false,
             html: terminal

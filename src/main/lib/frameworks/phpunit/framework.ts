@@ -36,7 +36,7 @@ export class PHPUnit extends Framework {
      */
     public static spawnForDirectory (repository: ParsedRepository): FrameworkOptions | false {
         // Cheapest way to check is the PHPUnit XML config file.
-        if (repository.files.includes('phpunit.xml')) {
+        if (repository.files.includes('phpunit.xml') || repository.files.includes('phpunit.xml.dist')) {
             return this.hydrate()
         }
         // If no config file exists, check for binary inside dependencies.

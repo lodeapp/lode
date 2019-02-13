@@ -14,6 +14,9 @@ declare const __WIN32__: boolean
 /** Is the app being built to run on Linux? */
 declare const __LINUX__: boolean
 
+/** Path to static files */
+declare const __static: string
+
 declare namespace Electron {
     interface MenuItem {
         readonly accelerator?: Electron.Accelerator

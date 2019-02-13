@@ -17,6 +17,15 @@
         "stage-0"
       ]
     },
+    "reporters": {
+      "presets": [
+        ["env", {
+          "modules": false
+        }],
+        "stage-0"
+      ],
+      "plugins": ["transform-es2015-modules-commonjs"]
+    },
     "test": {
       "presets": [
         ["env", {

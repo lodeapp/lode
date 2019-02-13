@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import * as fs from 'fs-extra'
-import { DefaultProcess } from '@lib/process/process'
+import { DefaultProcess } from '@main/lib/process/process'
 
 const fixtures = Path.join(__dirname, '../../../fixtures/process')
 const decoded = fs.readJsonSync(Path.join(__dirname, '../../../fixtures/process/decoded.json'))
@@ -312,7 +312,7 @@ describe('main/lib/process/DefaultProcess', () => {
         })
     })
 
-    it.only('can parse lines with carriage returns', (done) => {
+    it('can parse lines with carriage returns', (done) => {
         process.env.FROM_FILE = Path.join(fixtures, '23.json')
         const spy = jest.fn()
         const spawned = new DefaultProcess()

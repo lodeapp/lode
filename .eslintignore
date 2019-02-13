@@ -1,4 +1,5 @@
 /build/**
 /dist/**
-/src/main/lib/bridge/**
+/static/**
+/src/main/lib/reporters/**
 /src/main/lib/process/debug/**

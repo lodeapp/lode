@@ -129,6 +129,14 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
+"@lodeapp/jest@^0.8.2":
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/@lodeapp/jest/-/jest-0.8.2.tgz#c5366cc58ab26ab8d76abb7f8bbf76c462f5beeb"
+  integrity sha512-v4dKNGkxhkfAEA3EBkXOY4JwGtfe3y4sfTHZ7ELthBpEzhgKSZWk73McLcBKhoG8gi9GY2JHAKT4DCXgmX5dOg==
+  dependencies:
+    lodash "^4.17.11"
+    strip-ansi "^5.0.0"
+
 "@types/electron-store@^1.3.0":
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@types/electron-store/-/electron-store-1.3.0.tgz#340f780952bc98043e24ac8c7903e78665495091"
@@ -7098,7 +7106,7 @@ lodash.uniq@^4.5.0:
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
 
-lodash@4.x, lodash@^4.13.1, lodash@^4.17.4, lodash@^4.8.0:
+lodash@4.x, lodash@^4.13.1, lodash@^4.17.11, lodash@^4.17.4, lodash@^4.8.0:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
