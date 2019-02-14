@@ -1,4 +1,4 @@
-import { debounce, find } from 'lodash'
+import { debounce, find, merge } from 'lodash'
 import { EventEmitter } from 'events'
 import { ITest, ITestResult } from '@main/lib/frameworks/test'
 import { Status, parseStatus } from '@main/lib/frameworks/status'
@@ -22,6 +22,35 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
+     * Create a full test result object from a potentially incomplete one.
+     *
+     * @param partial The potentially incomplete test result object.
+     */
+    protected hydrateTestResult (partial: object): ITestResult {
+        return merge(
+            // If a specific version was passed, inject it in the result.
+            // This is useful for frameworks cannot pass versions from results,
+            // but its framework class can figure out the version via command.
+            this.getVersion() ? { version: this.getVersion() } : {},
+            {
+                identifier: '',
+                name: '',
+                displayName: '',
+                status: <Status>'idle',
+                feedback: '',
+                stats: {},
+                tests: []
+            },
+            partial
+        )
+    }
+
+    /**
+     * Get the framework version from this nugget, if any.
+     */
+    public abstract getVersion (): string | undefined
+
+    /**
      * Instantiate a new test.
      *
      * @param result The test result with which to instantiate a new test.
@@ -29,12 +58,12 @@ export abstract class Nugget extends EventEmitter {
     protected abstract newTest (result: ITestResult): ITest
 
     /**
-     * Find the test by a given name in the nugget's current children.
+     * Find the test by a given identifier in the nugget's current children.
      *
-     * @param name The name of the test to try to find.
+     * @param identifier The identifier of the test to try to find.
      */
-    protected findTest (name: string): ITest | undefined {
-        return find(this.tests, { name })
+    protected findTest (identifier: string): ITest | undefined {
+        return find(this.tests, { identifier })
     }
 
     /**
@@ -109,7 +138,8 @@ export abstract class Nugget extends EventEmitter {
                 cleanup = false
             }
 
-            tests.forEach((result: ITestResult) => {
+            tests.forEach((partial: ITestResult) => {
+                const result = this.hydrateTestResult(partial)
                 let test: ITest = this.makeTest(result)
                 running.push(test.debrief(result, cleanup))
             })

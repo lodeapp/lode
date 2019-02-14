@@ -2,7 +2,7 @@ import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { ParsedRepository } from '@main/lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@main/lib/frameworks/framework'
-import { ISuiteResult, Suite } from '@main/lib/frameworks/suite'
+import { Suite } from '@main/lib/frameworks/suite'
 import { ITest } from '@main/lib/frameworks/test'
 import { PHPUnitSuite } from '@main/lib/frameworks/phpunit/suite'
 
@@ -54,8 +54,8 @@ export class PHPUnit extends Framework {
             this.spawn(['--columns=42'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
                     try {
-                        report.forEach((result: ISuiteResult) => {
-                            this.makeSuite(result, true)
+                        report.forEach((result: object) => {
+                            this.makeSuite(this.hydrateSuiteResult(result), true)
                         })
                         resolve('success')
                     } catch (error) {
@@ -102,7 +102,7 @@ export class PHPUnit extends Framework {
             if (selected.length !== suite.tests.length) {
                 // If not running all tests from suite, filter each one
                 selected.forEach((test: ITest) => {
-                    filters.push(`${suiteClass}::${test.name}$`)
+                    filters.push(`${suiteClass}::${test.getName()}$`)
                 })
             } else {
                 filters.push(suiteClass)

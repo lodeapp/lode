@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import { find, findIndex, trimStart } from 'lodash'
+import { find, findIndex, merge, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { IProcess } from '@main/lib/process/process'
@@ -126,6 +126,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
         idle: 0
     }
 
+    protected version?: string
+
     static readonly defaults?: FrameworkOptions
 
     constructor (options: FrameworkOptions) {
@@ -162,8 +164,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
         // If options include suites already (i.e. persisted state), add them.
         if (options.suites) {
-            options.suites.forEach((result: ISuiteResult) => {
-                this.makeSuite(result, true)
+            options.suites.forEach((result: object) => {
+                // Hydrate results in case schema has changed from previously saved state
+                this.makeSuite(this.hydrateSuiteResult(result), true)
             })
         }
     }
@@ -285,6 +288,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     public getDisplayName (): string {
         return this.name
+    }
+
+    /**
+     * Get this framework's version, if set.
+     */
+    public getVersion (): string | undefined {
+        return this.version
     }
 
     /**
@@ -482,8 +492,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return this.spawn(args)
             .on('report', ({ process, report }) => {
                 try {
-                    const suite = this.debriefSuite(report)
-                    this.running.push(suite)
+                    this.running.push(this.debriefSuite(report))
                 } catch (error) {
                     // @TODO: Notify user of error (i.e. add to alert stack)
                     Logger.info.log('Failed to debrief suite results.', { report })
@@ -592,6 +601,38 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.process = process.getId()
 
         return process
+    }
+
+    /**
+     * Create a full suite result object from a potentially incomplete one.
+     *
+     * @param partial The potentially incomplete result object.
+     */
+    protected hydrateSuiteResult (partial: object): ISuiteResult {
+        return merge(
+            // If a specific version was passed, inject it in the result.
+            // This is useful for frameworks cannot pass versions from results,
+            // but its framework class can figure out the version via command.
+            this.getVersion() ? { version: this.getVersion() } : {},
+            {
+                file: '',
+                tests: [],
+                meta: [],
+                testsLoaded: true
+            },
+            this.decodeSuiteResult(partial)
+        )
+    }
+
+    /**
+     * Decode the results of a suite run. This is a chance
+     * for each framework to process content from their
+     * respective reporters.
+     *
+     * @param partial The suite's run results (potentially incomplete)
+     */
+    protected decodeSuiteResult (partial: object): object {
+        return partial
     }
 
     /**
@@ -730,23 +771,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
-     * Decode the results of a suite run. This is a chance
-     * for each framework to process content from their
-     * respective reporters.
-     *
-     * @param result The suite's run results
-     */
-    protected decodeSuiteResult (result: ISuiteResult): ISuiteResult {
-        return result
-    }
-
-    /**
      * Debrief a specific suite with the run's results.
      *
-     * @param result The suite's run results
+     * @param partial The suite's run results (potentially incomplete)
      */
-    protected debriefSuite (result: ISuiteResult): Promise<void> {
-        result = this.decodeSuiteResult(result)
+    protected debriefSuite (partial: object): Promise<void> {
+        const result: ISuiteResult = this.hydrateSuiteResult(partial)
         const suite: ISuite = this.makeSuite(result)
         return suite.debrief(result, this.shouldCleanup(suite))
     }

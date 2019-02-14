@@ -4,7 +4,6 @@ import { get } from 'lodash'
 import { unpacked } from '@main/lib/helpers'
 import { ParsedRepository } from '@main/lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@main/lib/frameworks/framework'
-import { Suite } from '@main/lib/frameworks/suite'
 
 export class Jest extends Framework {
 
@@ -62,7 +61,7 @@ export class Jest extends Framework {
                         const lines = process.getLines()
                         lines.sort()
                         lines.filter((file: string) => this.fileInPath(file))
-                            .map((file: string) => this.makeSuite(Suite.buildResult({
+                            .map((file: string) => this.makeSuite(this.hydrateSuiteResult({
                                 file,
                                 testsLoaded: false
                             })))
@@ -109,7 +108,7 @@ export class Jest extends Framework {
         const args: Array<string> = []
 
         this.suites.filter(suite => suite.selected).forEach(suite => {
-            args.push(suite.relative)
+            args.push(suite.getRelativePath())
         })
 
         return args.concat(this.runArgs())

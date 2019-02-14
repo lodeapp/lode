@@ -15,7 +15,7 @@
                 <button type="button" :disabled="running"></button>
                 <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial" :disabled="running">
             </div>
-            <Filename :path="suite.relative" :key="suite.relative" />
+            <Filename :path="relativePath" :key="relativePath" />
         </template>
         <Test
             v-for="test in suite.tests"
@@ -72,6 +72,12 @@ export default {
             set (checked) {
                 this.suite.toggleSelected(checked)
             }
+        },
+        testsLoaded () {
+            return this.suite.testsLoaded()
+        },
+        relativePath () {
+            return this.suite.getRelativePath()
         },
         filePath () {
             return this.suite.getFilePath()

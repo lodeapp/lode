@@ -5,7 +5,7 @@
             <div class="header">
                 <div class="title">
                     <Indicator :status="test.status" />
-                    <h2 class="heading">{{ test.displayName }}</h2>
+                    <h2 class="heading">{{ test.identifier }}</h2>
                 </div>
                 <nav class="breadcrumbs" aria-label="Breadcrumb">
                     <ol>

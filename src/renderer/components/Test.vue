@@ -88,10 +88,10 @@ export default {
             }
         },
         displayName () {
-            return this.test.displayName
+            return this.test.getDisplayName()
         },
         originalName () {
-            return this.test.name !== this.displayName ? this.test.name : false
+            return this.test.getName() !== this.displayName ? this.test.getName() : false
         },
         ...mapGetters({
             activeTest: 'tests/active'
