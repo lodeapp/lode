@@ -93,7 +93,6 @@ export default {
             })
 
             if (!this.hasErrors) {
-                console.log(this.slots, _uniqBy(this.slots, 'path'))
                 _uniqBy(this.slots, 'path').forEach((slot, index) => {
                     this.addRepository(this.project.addRepository({ path: slot.path }))
                 })

@@ -222,6 +222,7 @@ export abstract class Nugget extends EventEmitter {
         this.updateStatus('idle')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
             .forEach(test => {
+                test.resetResult()
                 test.reset(selective)
             })
     }
@@ -236,6 +237,7 @@ export abstract class Nugget extends EventEmitter {
         this.updateStatus('queued')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
             .forEach(test => {
+                test.resetResult()
                 test.queue(selective)
             })
     }

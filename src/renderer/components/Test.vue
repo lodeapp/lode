@@ -37,7 +37,6 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
 import { Menu } from '@main/menu'
 import Nugget from '@/components/Nugget'
 import Breadcrumb from '@/components/mixins/breadcrumb'
@@ -92,29 +91,14 @@ export default {
         },
         originalName () {
             return this.test.getName() !== this.displayName ? this.test.getName() : false
-        },
-        ...mapGetters({
-            activeTest: 'tests/active'
-        })
+        }
     },
     watch: {
-        activeTest (active) {
+        '$root.active.test' (active) {
             if (this.isActive && active.id !== this.test.id) {
                 this.deactivate()
             }
         }
-    },
-    mounted () {
-        this.test.on('debriefed', () => {
-            if (this.isActive) {
-                this.refresh()
-            }
-        })
-        this.test.on('status', (to, from) => {
-            if (this.isActive && to === 'queued') {
-                this.refresh()
-            }
-        })
     },
     methods: {
         onClick () {
@@ -163,7 +147,7 @@ export default {
             return this.$parent.canOpen()
         },
         activate () {
-            this.showResults(this.test)
+            this.$root.setActiveTest(this.test)
             this.$nextTick(() => {
                 this.isActive = true
                 this.$emit('activate')
@@ -175,10 +159,7 @@ export default {
         },
         refresh () {
             this.activate()
-        },
-        ...mapActions({
-            showResults: 'tests/show'
-        })
+        }
     }
 }
 </script>

@@ -5,7 +5,7 @@
             <div class="header">
                 <div class="title">
                     <Indicator :status="test.status" />
-                    <h2 class="heading">{{ test.identifier }}</h2>
+                    <h2 class="heading">{{ test.getDisplayName() }}</h2>
                 </div>
                 <nav class="breadcrumbs" aria-label="Breadcrumb">
                     <ol>
@@ -23,7 +23,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import Indicator from '@/components/Indicator'
 import TestResult from '@/components/TestResult'
 
@@ -44,11 +43,8 @@ export default {
             // Remove repository and framework from breadcrumbs, as it feels
             // like an unnecessary repetition. We want both in the complete
             // breadcrumbs for other purposes, not necessarily here.
-            return this.allBreadcrumbs.slice(2)
-        },
-        ...mapGetters({
-            allBreadcrumbs: 'tests/breadcrumbs'
-        })
+            return this.$root.active.breadcrumbs.slice(2)
+        }
     }
 }
 </script>

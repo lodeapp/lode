@@ -17,14 +17,14 @@
                 </div>
             </Pane>
             <Pane>
-                <Results :test="activeTest" />
+                <Results :test="$root.active.test" />
             </Pane>
         </template>
     </main>
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions } from 'vuex'
 import Pane from '@/components/Pane'
 import Repository from '@/components/Repository'
 import Results from '@/components/Results'
@@ -42,13 +42,9 @@ export default {
             required: true
         }
     },
-    computed: {
-        ...mapGetters({
-            activeTest: 'tests/active'
-        })
-    },
     methods: {
         removeRepository (repository) {
+            this.$root.onModelRemove(repository.id)
             this.project.removeRepository(repository.id)
             this.handleRemoveRepository(repository)
         },

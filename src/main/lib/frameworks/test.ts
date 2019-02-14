@@ -15,6 +15,7 @@ export interface ITest extends Nugget {
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     debrief (result: ITestResult, selective: boolean): Promise<void>
     reset (selective: boolean): void
+    resetResult (): void
     queue (selective: boolean): void
     resetQueued (): void
     debrief (result: ITestResult, cleanup: boolean): Promise<void>
@@ -70,6 +71,18 @@ export class Test extends Nugget implements ITest {
         this.result = omit(result, 'tests')
         if (result.tests && result.tests.length) {
             this.debriefTests(result.tests, cleanup)
+        }
+    }
+
+    /**
+     * Reset this test's result
+     */
+    public resetResult (): void {
+        this.result = {
+            identifier: this.result.identifier,
+            name: this.getName(),
+            displayName: this.getDisplayName(),
+            status: this.status
         }
     }
 

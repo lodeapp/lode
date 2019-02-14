@@ -192,6 +192,7 @@ export default {
             this.repository.stop()
         },
         removeFramework (framework) {
+            this.$root.onModelRemove(framework.id)
             this.handleRemoveFramework({ repository: this.repository, frameworkId: framework.id })
         },
         storeFrameworkState (framework) {

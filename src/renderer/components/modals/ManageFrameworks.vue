@@ -204,6 +204,7 @@ export default {
             // Iterate through frameworks marked for removal and trigger
             // the removal action on their parent repository.
             this.removed.forEach(frameworkId => {
+                this.$root.onModelRemove(frameworkId)
                 this.removeFramework({ repository: this.repository, frameworkId })
             })
         },

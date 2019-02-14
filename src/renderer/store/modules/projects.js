@@ -93,13 +93,6 @@ export default {
             commit('ADD_REPOSITORY', repository)
         },
         removeRepository: ({ commit, dispatch, rootGetters }, repository) => {
-            rootGetters['tests/breadcrumbs'].forEach(breadcrumb => {
-                // If a test within the repository to remove is currently
-                // in focus, reset the active test pane.
-                if (breadcrumb.id === repository.id) {
-                    dispatch('tests/reset', null, { root: true })
-                }
-            })
             commit('REMOVE_REPOSITORY', repository)
         },
         repositoryChange: ({ commit }, repository) => {
@@ -109,13 +102,6 @@ export default {
             commit('ADD_FRAMEWORK', { repositoryId, framework })
         },
         removeFramework: ({ commit, dispatch, rootGetters }, { repository, frameworkId }) => {
-            rootGetters['tests/breadcrumbs'].forEach(breadcrumb => {
-                // If a test within the framework to remove is currently
-                // in focus, reset the active test pane.
-                if (breadcrumb.id === frameworkId) {
-                    dispatch('tests/reset', null, { root: true })
-                }
-            })
             repository.removeFramework(frameworkId)
             commit('REPOSITORY_CHANGE', repository)
         },

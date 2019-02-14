@@ -48,7 +48,11 @@ export default new Vue({
     data () {
         return {
             modals: [],
-            project: null
+            project: null,
+            active: {
+                test: null,
+                breadcrumbs: []
+            }
         }
     },
     computed: {
@@ -240,6 +244,29 @@ export default new Vue({
         crash () {
             window.setImmediate(() => {
                 throw new Error('Boomtown!')
+            })
+        },
+        setActiveTest (test) {
+            this.active.breadcrumbs = []
+            this.active.test = test
+        },
+        resetActiveTest (test) {
+            this.active.breadcrumbs = []
+            this.active.test = null
+        },
+        breadcrumb (breadcrumb) {
+            this.active.breadcrumbs.unshift({
+                id: breadcrumb.id,
+                name: breadcrumb.getDisplayName()
+            })
+        },
+        onModelRemove (modelId) {
+            this.active.breadcrumbs.forEach(breadcrumb => {
+                // If a test within the model to remove is currently
+                // in focus, reset the active test pane.
+                if (breadcrumb.id === modelId) {
+                    this.resetActiveTest()
+                }
             })
         },
         ...mapActions({
