@@ -77,7 +77,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         // can use for spawning a process.
         this.args = this.spawnArguments(
             compact(
-                flattenDeep([this.command].concat(options.args!).map((arg: string) => {
+                flattenDeep(([this.command] as any).concat(options.args!).map((arg: string) => {
                     return arg.split(' ')
                 }))
             ) || []

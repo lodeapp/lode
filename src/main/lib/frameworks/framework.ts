@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import { find, findIndex, merge, trimStart } from 'lodash'
+import { cloneDeep, find, findIndex, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { IProcess } from '@main/lib/process/process'
@@ -240,7 +240,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             sshIdentity: this.sshIdentity,
             collapsed: this.collapsed,
             expandFilters: this.expandFilters,
-            suites: this.suites.map(suite => suite.persist())
+            suites: this.suites.map((suite: ISuite) => suite.persist())
         }
     }
 
@@ -609,19 +609,19 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param partial The potentially incomplete result object.
      */
     protected hydrateSuiteResult (partial: object): ISuiteResult {
-        return merge(
+        return {
             // If a specific version was passed, inject it in the result.
             // This is useful for frameworks cannot pass versions from results,
             // but its framework class can figure out the version via command.
-            this.getVersion() ? { version: this.getVersion() } : {},
-            {
+            ...(this.getVersion() ? { version: this.getVersion() } : {}),
+            ...{
                 file: '',
                 tests: [],
                 meta: [],
                 testsLoaded: true
             },
-            this.decodeSuiteResult(partial)
-        )
+            ...cloneDeep(this.decodeSuiteResult(partial))
+        }
     }
 
     /**

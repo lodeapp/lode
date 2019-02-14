@@ -11,9 +11,6 @@ export default {
     },
     render (createElement, context) {
         return createElement('i', Object.assign({
-            class: {
-                octicon: true
-            },
             domProps: {
                 innerHTML: Vue.prototype.$icon[context.props.symbol].toSVG()
             }

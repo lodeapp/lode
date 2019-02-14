@@ -1,4 +1,3 @@
-import { get } from 'lodash'
 import { ISuiteResult, Suite } from '@main/lib/frameworks/suite'
 
 export class PHPUnitSuite extends Suite {
@@ -12,7 +11,7 @@ export class PHPUnitSuite extends Suite {
      */
     protected build (result: ISuiteResult): void {
         super.build(result)
-        this.class = get(result, 'meta.class')
+        this.class = this.getMeta('class', '')
     }
 
     /**

@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import { omit } from 'lodash'
+import { get, omit } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { Status, parseStatus } from '@main/lib/frameworks/status'
 import { ITest, ITestResult, Test } from '@main/lib/frameworks/test'
@@ -201,8 +201,12 @@ export class Suite extends Nugget implements ISuite {
     /**
      * Get metadata for this suite.
      */
-    public getMeta (): Array<any> {
-        return this.result.meta!
+    public getMeta (key?: string, fallback?: any): any {
+        if (!key) {
+            return this.result.meta!
+        }
+
+        return get(this.result.meta!, key, fallback)
     }
 
     /**

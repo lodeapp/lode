@@ -68,6 +68,8 @@
 
        & > i {
             margin-right: var(--spacing);
+            position: relative;
+            top: 1px;
 
             svg {
                 height: 25px;

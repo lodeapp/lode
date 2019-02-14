@@ -1,4 +1,4 @@
-import { debounce, find, merge } from 'lodash'
+import { cloneDeep, debounce, find } from 'lodash'
 import { EventEmitter } from 'events'
 import { ITest, ITestResult } from '@main/lib/frameworks/test'
 import { Status, parseStatus } from '@main/lib/frameworks/status'
@@ -27,12 +27,12 @@ export abstract class Nugget extends EventEmitter {
      * @param partial The potentially incomplete test result object.
      */
     protected hydrateTestResult (partial: object): ITestResult {
-        return merge(
+        return {
             // If a specific version was passed, inject it in the result.
             // This is useful for frameworks cannot pass versions from results,
             // but its framework class can figure out the version via command.
-            this.getVersion() ? { version: this.getVersion() } : {},
-            {
+            ...(this.getVersion() ? { version: this.getVersion() } : {}),
+            ...{
                 identifier: '',
                 name: '',
                 displayName: '',
@@ -41,8 +41,8 @@ export abstract class Nugget extends EventEmitter {
                 stats: {},
                 tests: []
             },
-            partial
-        )
+            ...cloneDeep(partial)
+        }
     }
 
     /**
