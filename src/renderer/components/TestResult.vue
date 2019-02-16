@@ -2,15 +2,15 @@
     <div class="test-result">
         <div class="tabnav">
             <nav class="tabnav-tabs">
-                <a v-if="message" @click="selected = 'message'" class="tabnav-tab" :class="{ selected: selected === 'message' }">Message</a>
+                <a v-if="content" @click="selected = 'content'" class="tabnav-tab" :class="{ selected: selected === 'content' }">Feedback</a>
                 <a v-if="stats" @click="selected = 'stats'" class="tabnav-tab" :class="{ selected: selected === 'stats' }">Statistics</a>
             </nav>
         </div>
         <div class="test-result-breakdown">
-            <div v-if="message">
-                <div v-show="selected === 'message'">
-                    <KeyValue v-if="result.feedback.type === 'object'" :object="message || {}" />
-                    <Ansi v-else-if="result.feedback.type === 'ansi'" :content="message" />
+            <div v-if="content">
+                <div v-show="selected === 'content'">
+                    <KeyValue v-if="result.feedback.type === 'object'" :object="content || {}" />
+                    <Ansi v-else-if="result.feedback.type === 'ansi'" :content="content" />
                 </div>
             </div>
             <div v-if="stats">
@@ -43,11 +43,11 @@ export default {
     },
     data () {
         const stats = this.test.result && this.test.result.stats
-        const message = this.test.result && this.test.result.feedback && this.test.result.feedback.message
+        const content = this.test.result && this.test.result.feedback && this.test.result.feedback.content
         return {
             stats,
-            message,
-            selected: message ? 'message' : 'stats'
+            content,
+            selected: content ? 'content' : 'stats'
         }
     },
     computed: {
@@ -55,7 +55,7 @@ export default {
             return this.test.result || {}
         },
         empty () {
-            return !this.message && !this.stats
+            return !this.content && !this.stats
         }
     }
 }

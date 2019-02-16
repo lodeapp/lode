@@ -63,6 +63,11 @@ export class PHPUnit extends Framework {
                         reject('The PHPUnit package returned unexpected results.')
                     }
                 })
+                .on('success', ({ process }) => {
+                    // Resolve the promise as empty if `report` event was
+                    // never emitted by the process.
+                    resolve('empty')
+                })
                 .on('killed', ({ process }) => {
                     resolve('killed')
                 })

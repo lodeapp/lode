@@ -151,6 +151,7 @@ export default new Vue({
                 .then(options => {
                     // Stop current project before adding a new one.
                     (this.project ? this.project.stop() : Promise.resolve()).then(() => {
+                        this.resetActiveTest()
                         this.handleAddProject(new Project(options))
                         this.$nextTick(() => {
                             this.addRepositories()
@@ -176,6 +177,7 @@ export default new Vue({
             this.$modal.confirm('RemoveProject')
                 .then(() => {
                     this.project.stop().then(() => {
+                        this.resetActiveTest()
                         this.handleRemoveProject()
                     })
                 })
@@ -203,6 +205,7 @@ export default new Vue({
                         Config.set('confirm.switchProject', false)
                     }
                     this.project.stop().then(() => {
+                        this.resetActiveTest()
                         this.handleSwitchProject(projectId)
                     })
                 })

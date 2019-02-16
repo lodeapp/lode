@@ -14,6 +14,7 @@
                 font-weight: var(--font-weight-light);
                 line-height: 1em;
                 overflow: hidden;
+                white-space: nowrap;
 
                 & > i {
                     margin: 0 var(--spacing-half) 0 var(--spacing);
@@ -25,6 +26,7 @@
                     overflow: hidden;
                     padding-right: var(--spacing-half);
                     text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
             }
         }

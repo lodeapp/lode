@@ -1,0 +1,10 @@
+{
+    "process": {
+        "rawChunks": [
+            "\n<<<REPORT{",
+            "\n{",
+            "\n  hey: 'ho'",
+            "\n}"
+        ]
+    }
+}

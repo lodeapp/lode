@@ -460,8 +460,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected handleRefresh (): Promise<void> {
         this.updateStatus('refreshing')
+        this.suites.forEach(suite => {
+            suite.setFresh(false)
+        })
         return this.reload()
-            .then(() => {
+            .then(outcome => {
                 this.cleanStaleSuites()
                 this.updateStatus()
                 this.emit('change', this)
@@ -544,12 +547,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected cleanStaleSuites (): void {
         this.suites = this.suites.filter(suite => {
-            if (!suite.fresh) {
+            if (!suite.isFresh()) {
                 this.updateLedger(null, suite.getStatus())
                 return false
             }
-            // After checking, reset "freshness" marker.
-            suite.fresh = false
             return true
         })
     }
@@ -679,6 +680,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         rebuild: boolean = false
     ): ISuite {
         let suite: ISuite | undefined = this.findSuite(result.file)
+
         if (!suite) {
             suite = this.newSuite(result)
             suite.on('selective', this.updateSelected.bind(this))
@@ -686,12 +688,15 @@ export abstract class Framework extends EventEmitter implements IFramework {
             this.updateLedger(suite.getStatus())
             this.suites.push(suite)
         }
+
         // Mark suite as freshly made before returning,
         // in case we need to clear out stale ones.
-        suite.fresh = true
+        suite.setFresh(true)
+
         if (rebuild) {
             suite.buildTests(result, false)
         }
+
         return suite
     }
 

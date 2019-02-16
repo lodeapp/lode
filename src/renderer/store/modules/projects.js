@@ -75,15 +75,12 @@ export default {
     },
     actions: {
         addProject: ({ commit, dispatch }, project) => {
-            dispatch('tests/reset', null, { root: true })
             commit('ADD_PROJECT', project)
         },
         removeProject: ({ commit, dispatch }, project) => {
-            dispatch('tests/reset', null, { root: true })
             commit('REMOVE_PROJECT', project)
         },
         switchProject: ({ commit, dispatch }, projectId) => {
-            dispatch('tests/reset', null, { root: true })
             commit('SWITCH_PROJECT', projectId)
         },
         projectChange: ({ commit }, project) => {

@@ -6,6 +6,7 @@ import { compact, flattenDeep, get } from 'lodash'
 import { spawn, ChildProcess } from 'child_process'
 import { Logger } from '../logger'
 import { SSHOptions, SSH } from './ssh'
+import { BufferedSearch } from './search'
 import { ErrorWithCode, ProcessError } from './errors'
 
 export type ProcessOptions = {
@@ -26,6 +27,9 @@ export interface IProcess extends EventEmitter {
 
 export class DefaultProcess extends EventEmitter implements IProcess {
     static readonly type: string = 'default'
+    protected readonly startDelimiter: string = '<<<REPORT{'
+    protected readonly endDelimiter: string = '}REPORT>>>'
+    search: BufferedSearch
     command!: string
     binary: string = ''
     args: Array<string> = []
@@ -45,6 +49,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
 
     constructor (options: ProcessOptions) {
         super()
+
+        // Create a new multi-line search object to parse delimiters
+        this.search = new BufferedSearch()
 
         // We can re-process stored streams by running FROM_FILE=${file} yarn dev.
         // If set, all processes will output chunks from the stored file.
@@ -173,16 +180,15 @@ export class DefaultProcess extends EventEmitter implements IProcess {
 
         Logger.debug.log('Process closing.', { code, signal })
 
-        // If exit code was non-zero but we were running a report
-        // that finished successfully, we should ignore the error,
-        // assuming it relates to a failure in the tests for which
-        // we'll give appropriate feedback on in the interface.
-        if (code === 0 || (this.reports && this.reportClosed)) {
-            Logger.debug.log('Process successfully exited.')
-            this.emit('success', { process: this })
-        } else if (this.process && this.process.killed || this.killed) {
+        if (this.process && this.process.killed || this.killed) {
             Logger.debug.log('Process killed.')
             this.emit('killed', { process: this })
+        } else if (code === 0 || (this.reports && this.reportClosed)) {
+            // If exit code was non-zero but we were running a report that finished
+            // successfully, ignore the error, assuming it relates to a failure in the
+            // tests for which we'll give appropriate feedback in the interface.
+            Logger.debug.log('Process successfully exited.')
+            this.emit('success', { process: this })
         } else {
             Logger.debug.log('Process errored.', this)
 
@@ -237,42 +243,29 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         })
 
         let storeChunk: boolean = true
-        const lines: Array<string> = chunk.split('\n')
-        if (lines.length) {
 
-            // Look for report prefix in the first line
-            // of this chunk. If found, start report mode.
-            if (!this.reports && !this.reportClosed) {
-                if (lines.filter(line => line.match(/\s*\{\s*/m)).length) {
-                    this.reports = true
+        if (!this.reports && !this.reportClosed) {
+            // Look for start delimiter. If found, start report mode.
+            this.reports = this.search.term(this.startDelimiter, chunk)
+        }
 
-                    // Remove delimiter from chunk, in case need to we store it.
-                    chunk = chunk.replace(/\s*\{\s*/m, '')
+        if (this.reports && !this.reportClosed) {
+            // Only add to buffer if it's full or partial base64 string,
+            // as some reporters might occasionally output stray content.
+            if ((/^[A-Za-z0-9\/\+=\(\)]+$/im).test(chunk)) {
+                this.reportBuffer += chunk
+                // Test if buffer is now a complete report and, if so, extract it
+                if ((/\((?:(?!\)).)+\)/).test(this.reportBuffer)) {
+                    this.reportBuffer = this.reportBuffer.replace(/\s*({\s*)?\((?:(?!\)).)+\)\s*}?/g, (match, offset, string) => {
+                        this.report(match)
+                        return ''
+                    })
                 }
+                storeChunk = false
             }
 
-            if (this.reports && !this.reportClosed) {
-                // Only add to buffer if it's full or partial base64 string,
-                // as some reporters might occasionally output stray content.
-                if ((/^[A-Za-z0-9\/\+=\(\)]+$/im).test(chunk)) {
-                    this.reportBuffer += chunk
-                    // Test if buffer is now a complete report and, if so, extract it
-                    if ((/\((?:(?!\)).)+\)/).test(this.reportBuffer)) {
-                        this.reportBuffer = this.reportBuffer.replace(/\s*({\s*)?\((?:(?!\)).)+\)\s*}?/g, (match, offset, string) => {
-                            this.report(match)
-                            return ''
-                        })
-                    }
-                    storeChunk = false
-                }
-
-                if (lines.filter(line => line.match(/\s*\}\s*/m)).length) {
-                    this.reportClosed = true
-
-                    // Remove delimiter from raw chunk, in case need to we store it.
-                    chunk = chunk.replace(/\s*\}\s*/m, '')
-                }
-            }
+            // Look for end delimiter. If found, close report.
+            this.reportClosed = this.search.term(this.endDelimiter, chunk)
         }
 
         // If reporting hasn't overridden store directive and if there's still

@@ -35,6 +35,8 @@ export interface ISuite extends Nugget {
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
     persist (): ISuiteResult
     refresh (options: SuiteOptions): void
+    setFresh (fresh: boolean): void
+    isFresh (): boolean
 }
 
 export interface ISuiteResult {

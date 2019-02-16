@@ -22,7 +22,7 @@
             :key="test.id"
             :model="test"
             :running="running"
-            :selectable="suite.canToggleTests"
+            :selectable="canToggleTests"
             @open="openFile"
             @activate="onChildActivation"
             @deactivate="onChildDeactivation"
@@ -72,6 +72,9 @@ export default {
             set (checked) {
                 this.suite.toggleSelected(checked)
             }
+        },
+        canToggleTests () {
+            return this.suite.canToggleTests
         },
         testsLoaded () {
             return this.suite.testsLoaded()

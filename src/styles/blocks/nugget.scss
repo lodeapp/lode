@@ -247,7 +247,7 @@
             .status {
                 background-color: theme-color('idle', 'step', -200);
                 border-color: darken(theme-color('idle'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('idle'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('idle', 'step', -200);
 
                 &::before {
                     border-left: 1px solid darken(theme-color('idle'), 10%);

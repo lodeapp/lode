@@ -13,8 +13,9 @@ export abstract class Nugget extends EventEmitter {
     public selected: boolean = false
     public partial: boolean = false
     public canToggleTests: boolean = false
-    public fresh: boolean = false
     public updateCountsListener: any
+
+    protected fresh: boolean = false
 
     constructor () {
         super()
@@ -213,12 +214,29 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
+     * Set the freshness state of a nugget.
+     *
+     * @param fresh The freshness state to set.
+     */
+    public setFresh (fresh: boolean): void {
+        this.fresh = fresh
+    }
+
+
+    /**
+     * Get the freshness state of a nugget.
+     */
+    public isFresh (): boolean {
+        return this.fresh
+    }
+
+    /**
      * Reset this nugget to its initial state.
      *
      * @param selective Whether we're currently in selective mode or not.
      */
     public reset (selective: boolean): void {
-        this.fresh = false
+        this.setFresh(false)
         this.updateStatus('idle')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
             .forEach(test => {
@@ -233,7 +251,7 @@ export abstract class Nugget extends EventEmitter {
      * @param selective Whether we're currently in selective mode or not.
      */
     public queue (selective: boolean): void {
-        this.fresh = false
+        this.setFresh(false)
         this.updateStatus('queued')
         this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
             .forEach(test => {

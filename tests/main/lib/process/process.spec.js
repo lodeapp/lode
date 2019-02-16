@@ -229,7 +229,7 @@ describe('main/lib/process/DefaultProcess', () => {
         })
     })
 
-    it('stores only stray content, not reports', (done) => {
+    it('stores only stray content, not report content', (done) => {
         process.env.FROM_FILE = Path.join(fixtures, '19.json')
         const spy = jest.fn()
         const spawned = new DefaultProcess()
@@ -239,6 +239,8 @@ describe('main/lib/process/DefaultProcess', () => {
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
             expect(spawned.chunks).toEqual([
                 'Starting...',
+                '\n<<<REPORT{\n',
+                '\n}REPORT>>>',
                 'Ended!'
             ])
             done()
@@ -255,6 +257,7 @@ describe('main/lib/process/DefaultProcess', () => {
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
             expect(spawned.chunks).toEqual([
                 'Starting...',
+                '\n<<<REPORT{\n',
                 'Ended!'
             ])
             expect(spawned.reportClosed).toBe(false)
@@ -264,7 +267,7 @@ describe('main/lib/process/DefaultProcess', () => {
             expect(() => {
                 spawned.close(-1)
             }).toThrow()
-            expect(spawned.error).toBe('Starting...Ended!')
+            expect(spawned.error).toBe('Starting...\n<<<REPORT{\nEnded!')
             done()
         })
     })
@@ -281,7 +284,8 @@ describe('main/lib/process/DefaultProcess', () => {
             // mixed with the report chunk itself, but we *should* still be
             // capable of outputting it in the error message.
             expect(spawned.chunks).toEqual([
-                'Starting...'
+                'Starting...',
+                '\n<<<REPORT{\n'
             ])
             expect(spawned.reportClosed).toBe(false)
 
@@ -291,7 +295,7 @@ describe('main/lib/process/DefaultProcess', () => {
 
             // Even though it isn't in the raw chunk store, final message must
             // show in the error property after process closes with non-zero code.
-            expect(spawned.error).toBe('Starting...Ended!')
+            expect(spawned.error).toBe('Starting...\n<<<REPORT{\nEnded!')
             done()
         })
     })
@@ -314,6 +318,82 @@ describe('main/lib/process/DefaultProcess', () => {
 
     it('can parse lines with carriage returns', (done) => {
         process.env.FROM_FILE = Path.join(fixtures, '23.json')
+        const spy = jest.fn()
+        const spawned = new DefaultProcess()
+            .on('report', spy)
+        process.nextTick(() => {
+            expect(spy.mock.calls.length).toBe(1)
+            expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            expect(spawned.reportClosed).toBe(true)
+            done()
+        })
+    })
+
+    it('does not confuse object notations with delimiters', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '24.json')
+        const spy = jest.fn()
+        const spawned = new DefaultProcess()
+            .on('report', spy)
+        process.nextTick(() => {
+            expect(spy.mock.calls.length).toBe(0)
+            expect(spawned.reportClosed).toBe(false)
+
+            expect(() => {
+                spawned.close(-1)
+            }).toThrow()
+
+            // Even though it isn't in the raw chunk store, final message must
+            // show in the error property after process closes with non-zero code.
+            expect(spawned.error).toBe(`
+<<<REPORT{
+{
+  hey: 'ho'
+}`)
+            done()
+        })
+    })
+
+    it('can detect start delimiters accross multiple lines regardless of whitespace', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '25.json')
+        const spy = jest.fn()
+        const spawned = new DefaultProcess()
+            .on('report', spy)
+        process.nextTick(() => {
+            expect(spy.mock.calls.length).toBe(1)
+            expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            expect(spawned.reportClosed).toBe(true)
+            done()
+        })
+    })
+
+    it('can detect end delimiters accross multiple lines regardless of whitespace', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '26.json')
+        const spy = jest.fn()
+        const spawned = new DefaultProcess()
+            .on('report', spy)
+        process.nextTick(() => {
+            expect(spy.mock.calls.length).toBe(1)
+            expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            expect(spawned.reportClosed).toBe(true)
+            done()
+        })
+    })
+
+    it('can detect start delimiters within gibberish strings', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '27.json')
+        const spy = jest.fn()
+        const spawned = new DefaultProcess()
+            .on('report', spy)
+        process.nextTick(() => {
+            expect(spy.mock.calls.length).toBe(1)
+            expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            expect(spawned.reportClosed).toBe(true)
+            done()
+        })
+    })
+
+    it('can detect end delimiters within gibberish strings', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '28.json')
         const spy = jest.fn()
         const spawned = new DefaultProcess()
             .on('report', spy)

@@ -1,7 +1,8 @@
 <template>
-    <div class="ansi">
-        <pre v-if="content" v-html="raw ? content : html"></pre>
-        <button type="button" title="Show raw output" @click="raw = !raw">
+    <div v-if="content" class="ansi">
+        <pre v-if="showRaw">{{ content }}</pre>
+        <pre v-else v-html="html"></pre>
+        <button type="button" title="Show raw output" @click="showRaw = !showRaw">
             <Icon symbol="code" />
         </button>
     </div>
@@ -27,7 +28,8 @@ export default {
         // If content is an error, don't try to parse it
         if (this.content instanceof Error && !(this.content instanceof ProcessError)) {
             return {
-                raw: false,
+                showRaw: false,
+                raw: this.content.toString(),
                 html: this.content.toString()
             }
         }
@@ -37,12 +39,27 @@ export default {
         // Create a new Terminal instance with plenty of space for our output.
         // We'll trim the unsused space when rendering the html.
         const terminal = new Terminal({ columns: 20000, rows: 20000 })
-        terminal.write(content.replace(/\n/g, '\r\n') + '\r\n')
+        terminal.write(this.processContent(content))
         return {
-            raw: false,
+            showRaw: false,
+            raw: content,
             html: terminal
                 .toString('html')
                 .replace(/(<div style='overflow:hidden'><br \/><\/div>)*(<div style='line-height:0;visibility:hidden;'>)(&nbsp;)*<\/div>$/gm, '')
+        }
+    },
+    methods: {
+        processContent (content) {
+            [
+                [/\n/g, '\r\n'],
+                [/<<<REPORT\{\s+/, ''],
+                [/Connection to .+ closed\.\s*$/, ''],
+                [/PHPUnit .+ by Sebastian Bergmann and contributors\.\s+/, '']
+            ].forEach(replace => {
+                content = content.replace(replace[0], replace[1])
+            })
+
+            return content + '\r\n'
         }
     }
 }

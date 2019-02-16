@@ -14,6 +14,12 @@ export function parseStatus (components: Array<Status>): Status {
         return 'empty'
     }
 
+    // Exclude empty status before parsing all parts (e.g. all idle parts with
+    // the occasional empty part should result in idle status, not partial).
+    // We assume, therefore, than an empty part has no effect on the total
+    // result. This goes against assuming empty parts should trigger a warning.
+    components = components.filter(component => component !== 'empty')
+
     components = uniq(components)
     if (components.length === 1) {
         return components[0]
