@@ -114,6 +114,7 @@ export default {
                     this.onAddContext()
                 })
                 .add({
+                    id: 'reveal',
                     label: __DARWIN__
                         ? 'Reveal in Finder'
                         : __WIN32__
@@ -125,6 +126,7 @@ export default {
                     enabled: this.fileExists
                 })
                 .add({
+                    id: 'copy-local',
                     label: __DARWIN__
                         ? this.remoteFilePath ? 'Copy Local File Path' : 'Copy File Path'
                         : this.remoteFilePath ? 'Copy local file path' : 'Copy file path',
@@ -134,6 +136,7 @@ export default {
                     enabled: this.fileExists
                 })
                 .addIf(this.remoteFilePath, {
+                    id: 'copy-remote',
                     label: __DARWIN__
                         ? 'Copy Remote File Path'
                         : 'Copy Remote file path',
@@ -142,6 +145,7 @@ export default {
                     }
                 })
                 .add({
+                    id: 'open',
                     label: __DARWIN__
                         ? 'Open with Default Program'
                         : 'Open with default program',
@@ -150,6 +154,7 @@ export default {
                     },
                     enabled: this.canOpen()
                 })
+                .addMultiple(this.suite.contextMenu())
                 .after(() => {
                     this.onRemoveContext()
                 })

@@ -290,4 +290,12 @@ export abstract class Nugget extends EventEmitter {
             this.updateStatus()
         }
     }
+
+    /**
+     * A chance for nuggets to append items to the context menus of
+     * their representation in the renderer.
+     */
+    public contextMenu (): Array<Electron.MenuItemConstructorOptions> {
+        return []
+    }
 }

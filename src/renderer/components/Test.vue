@@ -67,8 +67,7 @@ export default {
     },
     data () {
         return {
-            show: false,
-            isActive: false
+            show: false
         }
     },
     computed: {
@@ -91,6 +90,9 @@ export default {
         },
         originalName () {
             return this.test.getName() !== this.displayName ? this.test.getName() : false
+        },
+        isActive () {
+            return this.test.isActive || false
         }
     },
     watch: {
@@ -149,12 +151,12 @@ export default {
         activate () {
             this.$root.setActiveTest(this.test)
             this.$nextTick(() => {
-                this.isActive = true
+                this.test.activate()
                 this.$emit('activate')
             })
         },
         deactivate () {
-            this.isActive = false
+            this.test.deactivate()
             this.$emit('deactivate')
         },
         refresh () {

@@ -156,6 +156,10 @@ export default {
         this.framework.on('change', framework => {
             this.$emit('change', framework)
         })
+
+        this.framework.on('suiteRemoved', suite => {
+            this.$root.onModelRemove(suite.id)
+        })
     },
     methods: {
         toggle () {

@@ -543,9 +543,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param status The status by which to clean the suites.
      */
     protected cleanSuitesByStatus (status: Status): void {
-        this.suites = this.suites.filter(suite => {
+        this.suites = this.suites.filter((suite: ISuite) => {
             if (suite.getStatus() === status) {
-                this.updateLedger(null, status)
+                this.onSuiteRemove(suite)
                 return false
             }
             return true
@@ -556,13 +556,24 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Clean currently loaded suites that are not marked as "fresh".
      */
     protected cleanStaleSuites (): void {
-        this.suites = this.suites.filter(suite => {
+        this.suites = this.suites.filter((suite: ISuite) => {
             if (!suite.isFresh()) {
-                this.updateLedger(null, suite.getStatus())
+                this.onSuiteRemove(suite)
                 return false
             }
             return true
         })
+    }
+
+    /**
+     * Clean-up actions before removing a suite from this framework.
+     *
+     * @param suite The suite being removed.
+     */
+    protected onSuiteRemove (suite: ISuite): void {
+        this.updateLedger(null, suite.getStatus())
+        this.updateSelected(suite)
+        this.emit('suiteRemoved', suite)
     }
 
     /**

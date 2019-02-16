@@ -2,15 +2,15 @@ import { remote } from 'electron'
 
 export class Menu {
 
-    protected menu: Electron.Menu
+    protected built: boolean = false
+    protected menu: Electron.Menu | null = null
     protected options: object = {}
-
-    constructor () {
-        this.menu = new remote.Menu()
-    }
+    protected template: Array<Electron.MenuItemConstructorOptions> = []
+    protected beforeCallbacks: Array<Function> = []
+    protected afterCallbacks: Array<Function> = []
 
     add (item: Electron.MenuItemConstructorOptions): this {
-        this.menu.append(new remote.MenuItem(item))
+        this.template.push(item)
         return this
     }
 
@@ -24,22 +24,25 @@ export class Menu {
         return this
     }
 
+    addMultiple (items: Array<Electron.MenuItemConstructorOptions>): this {
+        items.forEach((item: Electron.MenuItemConstructorOptions) => {
+            this.add(item)
+        })
+        return this
+    }
+
     separator (): this {
         this.add({ type: 'separator' })
         return this
     }
 
     before (callback: Function): this {
-        this.menu.on('menu-will-show', () => {
-            callback()
-        })
+        this.beforeCallbacks.push(callback)
         return this
     }
 
     after (callback: Function): this {
-        this.menu.on('menu-will-close', () => {
-            callback()
-        })
+        this.afterCallbacks.push(callback)
         return this
     }
 
@@ -55,8 +58,36 @@ export class Menu {
         return this
     }
 
+    build (): this {
+        this.menu = remote.Menu.buildFromTemplate(this.template)
+
+        if (this.beforeCallbacks.length) {
+            this.beforeCallbacks.forEach(callback => {
+                this.menu!.on('menu-will-show', () => {
+                    callback()
+                })
+            })
+        }
+
+        if (this.afterCallbacks.length) {
+            this.afterCallbacks.forEach(callback => {
+                this.menu!.on('menu-will-close', () => {
+                    callback()
+                })
+            })
+        }
+
+        this.built = true
+        return this
+    }
+
     open (options?: object): this {
-        this.menu.popup({
+
+        if (!this.built) {
+            this.build()
+        }
+
+        this.menu!.popup({
             ...this.options,
             ...{ window: remote.getCurrentWindow() },
             ...(options || {})

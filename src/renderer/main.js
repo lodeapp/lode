@@ -258,10 +258,7 @@ export default new Vue({
             this.active.test = null
         },
         breadcrumb (breadcrumb) {
-            this.active.breadcrumbs.unshift({
-                id: breadcrumb.id,
-                name: breadcrumb.getDisplayName()
-            })
+            this.active.breadcrumbs.unshift(breadcrumb)
         },
         onModelRemove (modelId) {
             this.active.breadcrumbs.forEach(breadcrumb => {

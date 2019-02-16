@@ -61,6 +61,11 @@
                 transform: scale(0);
                 transition: transform 340ms cubic-bezier(.18, 1.4, .4, 1);
             }
+
+            i {
+                position: relative;
+                top: 4px;
+            }
         }
 
         .header-inner {
@@ -166,8 +171,7 @@
         }
     }
 
-    &.status--failed,
-    &.status--error {
+    &.status--failed {
 
         & > .seam::before,
         & > .seam::after {
@@ -180,13 +184,6 @@
                 background-color: theme-color('failed');
                 border-color: darken(theme-color('failed'), 10%);
                 box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('failed'), .5);
-
-                i {
-                    color: $white;
-                    opacity: .9;
-                    position: relative;
-                    top: 4px;
-                }
             }
         }
     }
@@ -303,6 +300,27 @@
                 background-color: theme-color('idle');
                 border-color: darken(theme-color('idle'), 3%);
                 box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('idle'), .5);
+            }
+        }
+    }
+
+    &.status--error {
+
+        & > .seam::before,
+        & > .seam::after {
+            border-color: theme-color('failed');
+        }
+
+        & > .header {
+
+            .status {
+                background-color: theme-color('failed', 400);
+                border-color: darken(theme-color('failed'), 10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('failed'), .5);
+
+                i {
+                    color: $white;
+                }
             }
         }
     }

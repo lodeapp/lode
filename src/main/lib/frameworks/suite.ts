@@ -37,6 +37,7 @@ export interface ISuite extends Nugget {
     refresh (options: SuiteOptions): void
     setFresh (fresh: boolean): void
     isFresh (): boolean
+    contextMenu (): Array<Electron.MenuItemConstructorOptions>
 }
 
 export interface ISuiteResult {

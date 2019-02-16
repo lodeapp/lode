@@ -8,18 +8,21 @@ export interface ITest extends Nugget {
     readonly identifier: string
     result?: ITestResult
     selected: boolean
+    isActive: boolean
 
     getStatus (): Status
     getName (): string
     getDisplayName (): string
     toggleSelected (toggle?: boolean, cascade?: boolean): void
-    debrief (result: ITestResult, selective: boolean): Promise<void>
+    activate (): void
+    deactivate (): void
     reset (selective: boolean): void
     resetResult (): void
     queue (selective: boolean): void
     resetQueued (): void
     debrief (result: ITestResult, cleanup: boolean): Promise<void>
     persist (): ITestResult
+    contextMenu (): Array<Electron.MenuItemConstructorOptions>
 }
 
 export interface ITestResult {
@@ -39,6 +42,7 @@ export class Test extends Nugget implements ITest {
     public readonly id: string
     public readonly identifier: string
     public result!: ITestResult
+    public isActive: boolean = false
 
     constructor (result: ITestResult) {
         super()
@@ -114,6 +118,20 @@ export class Test extends Nugget implements ITest {
      */
     public getVersion (): string | undefined {
         return this.result.version
+    }
+
+    /**
+     * Activate this test (i.e. reveal details in test pane).
+     */
+    public activate (): void {
+        this.isActive = true
+    }
+
+    /**
+     * Deactivate this test.
+     */
+    public deactivate (): void {
+        this.isActive = false
     }
 
     /**

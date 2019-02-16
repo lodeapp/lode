@@ -1,3 +1,4 @@
+import { clipboard } from 'electron'
 import { ISuiteResult, Suite } from '@main/lib/frameworks/suite'
 
 export class PHPUnitSuite extends Suite {
@@ -21,5 +22,21 @@ export class PHPUnitSuite extends Suite {
      */
     public static escapeClassName (className: string): string {
         return className.replace(/\\/g, '\\\\')
+    }
+
+    /**
+     * Append items to a PHPUnit suite's context menu.
+     */
+    public contextMenu (): Array<Electron.MenuItemConstructorOptions> {
+        return [{
+            label: __DARWIN__
+                ? 'Copy Class Name'
+                : 'Copy class name',
+            click: () => {
+                clipboard.writeText(this.class || '')
+            },
+            enabled: !!this.class,
+            before: ['copy-local']
+        }]
     }
 }
