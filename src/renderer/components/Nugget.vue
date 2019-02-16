@@ -11,7 +11,9 @@
     >
         <div class="seam"></div>
         <div class="header">
-            <div class="status" :aria-label="displayStatus(status)" :title="displayStatus(status)"></div>
+            <div class="status" :aria-label="displayStatus(status)" :title="displayStatus(status)">
+                <Icon v-if="status === 'error'" symbol="issue-opened" />
+            </div>
             <div class="header-inner">
                 <slot name="header"></slot>
             </div>

@@ -5,6 +5,7 @@
         border-bottom-color: $primary-border;
         padding: 0 15px;
         margin-bottom: 0;
+        min-height: 2px;
 
         .tabnav-tabs {
 
@@ -17,6 +18,10 @@
                 }
             }
         }
+    }
+
+    .test-result-general {
+        user-select: text;
     }
 
     .test-result-breakdown {

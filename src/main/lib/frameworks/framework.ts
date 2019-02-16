@@ -123,7 +123,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
         warning: 0,
         partial: 0,
         empty: 0,
-        idle: 0
+        idle: 0,
+        error: 0
     }
 
     protected version?: string
@@ -520,6 +521,15 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * selectively.
      */
     protected afterRun () {
+        // If a selected suite didn't run, mark their status as "error".
+        if (this.selective) {
+            this.selected.suites.forEach(suite => {
+                if (suite.getStatus() === 'queued') {
+                    suite.error(true)
+                }
+            })
+        }
+
         // Suites which remain queued after a run are stale
         // and should be removed.
         this.cleanSuitesByStatus('queued')

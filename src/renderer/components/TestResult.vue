@@ -18,7 +18,10 @@
                     <TestStatistics :stats="stats" />
                 </div>
             </div>
-            <div v-if="empty">Awaiting test data.</div>
+            <div class="test-result-general" v-if="empty">
+                <span v-if="status === 'error'">An unexpected error prevented this test from running.</span>
+                <span v-else>Awaiting test data.</span>
+            </div>
         </div>
     </div>
 </template>
@@ -51,6 +54,9 @@ export default {
         }
     },
     computed: {
+        status () {
+            return this.test.getStatus()
+        },
         result () {
             return this.test.result || {}
         },

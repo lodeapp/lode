@@ -1,8 +1,8 @@
 import { uniq } from 'lodash'
 
-export type Status = 'queued' | 'running' | 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle'
+export type Status = 'queued' | 'running' | 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle' | 'error'
 
-export type FrameworkStatus = Status | 'refreshing' | 'error'
+export type FrameworkStatus = Status | 'refreshing'
 
 /**
  * Compute an overarching generic status based on a set of statuses.
@@ -23,6 +23,10 @@ export function parseStatus (components: Array<Status>): Status {
     components = uniq(components)
     if (components.length === 1) {
         return components[0]
+    }
+
+    if (components.includes('error')) {
+        return 'error'
     }
 
     if (components.includes('failed')) {
@@ -67,10 +71,6 @@ export function parseFrameworkStatus (components: Array<FrameworkStatus>): Frame
 
     if (components.includes('running')) {
         return 'running'
-    }
-
-    if (components.includes('error')) {
-        return 'error'
     }
 
     if (components.includes('refreshing')) {

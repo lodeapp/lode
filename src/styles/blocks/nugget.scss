@@ -166,7 +166,8 @@
         }
     }
 
-    &.status--failed {
+    &.status--failed,
+    &.status--error {
 
         & > .seam::before,
         & > .seam::after {
@@ -179,6 +180,13 @@
                 background-color: theme-color('failed');
                 border-color: darken(theme-color('failed'), 10%);
                 box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('failed'), .5);
+
+                i {
+                    color: $white;
+                    opacity: .9;
+                    position: relative;
+                    top: 4px;
+                }
             }
         }
     }

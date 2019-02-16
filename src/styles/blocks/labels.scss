@@ -113,7 +113,8 @@
     }
 
     &--failed,
-    &--removed {
+    &--removed,
+    &--error {
         border-color: theme-color('failed');
         color: theme-color('failed');
 

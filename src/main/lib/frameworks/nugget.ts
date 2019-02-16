@@ -261,6 +261,21 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
+     * Mark this nugget as having an error.
+     *
+     * @param selective Whether we're currently in selective mode or not.
+     */
+    public error (selective: boolean): void {
+        this.setFresh(false)
+        this.updateStatus('error')
+        this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
+            .forEach(test => {
+                test.resetResult()
+                test.error(selective)
+            })
+    }
+
+    /**
      * Reset this nugget or any of its children if they are
      * on a queued status.
      */

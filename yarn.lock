@@ -129,10 +129,10 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@lodeapp/jest@^0.8.2":
-  version "0.8.2"
-  resolved "https://registry.yarnpkg.com/@lodeapp/jest/-/jest-0.8.2.tgz#c5366cc58ab26ab8d76abb7f8bbf76c462f5beeb"
-  integrity sha512-v4dKNGkxhkfAEA3EBkXOY4JwGtfe3y4sfTHZ7ELthBpEzhgKSZWk73McLcBKhoG8gi9GY2JHAKT4DCXgmX5dOg==
+"@lodeapp/jest@^0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@lodeapp/jest/-/jest-0.9.0.tgz#6f8c3cfebb106a0f0ba01553a5e495f856e86835"
+  integrity sha512-ZSG+hWvNBlg1aJVbQL1wl49R8W2b+5qMNDSKSi0+6aQ8EFQKFBRBrFPc30gbK2rSBKvkqKzL6O62RVDywtczlQ==
   dependencies:
     lodash "^4.17.11"
     strip-ansi "^5.0.0"

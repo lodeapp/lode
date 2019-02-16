@@ -35,7 +35,8 @@ export default {
                 warning: 'warning|warning',
                 partial: 'partial|partial',
                 empty: 'empty|empty',
-                idle: 'idle|idle'
+                idle: 'idle|idle',
+                error: 'error|error'
             }
         }
     },

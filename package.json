@@ -79,7 +79,7 @@
     }
   },
   "dependencies": {
-    "@lodeapp/jest": "^0.8.2",
+    "@lodeapp/jest": "^0.9.0",
     "bottleneck": "^2.13.0",
     "child_process": "^1.0.2",
     "electron-log": "^2.2.17",
