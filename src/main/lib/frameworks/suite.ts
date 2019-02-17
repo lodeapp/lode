@@ -26,6 +26,7 @@ export interface ISuite extends Nugget {
     getRelativePath (): string
     getDisplayName (): string
     getMeta (): Array<any>
+    getConsole (): Array<any>
     testsLoaded (): boolean
     buildTests (result: ISuiteResult, force: boolean): void
     toggleSelected (toggle?: boolean, cascade?: boolean): void
@@ -44,6 +45,7 @@ export interface ISuiteResult {
     file: string
     tests?: Array<ITestResult>
     meta?: Array<any>
+    console?: Array<any>
     testsLoaded?: boolean
     version?: string
 }
@@ -210,6 +212,13 @@ export class Suite extends Nugget implements ISuite {
         }
 
         return get(this.result.meta!, key, fallback)
+    }
+
+    /**
+     * Get this nugget's console output.
+     */
+    public getConsole (): Array<any> {
+        return this.result.console!
     }
 
     /**

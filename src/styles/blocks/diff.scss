@@ -1,0 +1,12 @@
+.diff {
+    margin-bottom: var(--spacing-double);
+
+    pre {
+
+        .hljs {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 0;
+        }
+    }
+}

@@ -2,7 +2,7 @@
 @import 'definitions';
 @import 'mixins';
 @import 'breakpoints';
-@import 'bootstrap';
+@import 'vendor';
 @import 'animations';
 @import 'variables';
 @import 'globals';
@@ -10,7 +10,10 @@
 @import 'blocks/ansi';
 @import 'blocks/breadcrumbs';
 @import 'blocks/buttons';
+@import 'blocks/console';
 @import 'blocks/contents';
+@import 'blocks/diff';
+@import 'blocks/feedback';
 @import 'blocks/filename';
 @import 'blocks/forms';
 @import 'blocks/framework';

@@ -85,6 +85,7 @@ export class Jest extends Framework {
      */
     protected runArgs (): Array<string> {
         const args = [
+            '--verbose=false', // This is required for console to "buffer"
             '--forceExit',
             '--expand',
             '--colors',
@@ -95,7 +96,7 @@ export class Jest extends Framework {
         ]
 
         if (__DEV__) {
-            args.push('--verbose')
+            args.push('--useStderr')
         }
 
         return args

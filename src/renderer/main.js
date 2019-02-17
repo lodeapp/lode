@@ -10,14 +10,17 @@ import { queue } from '@main/lib/process/queue'
 // Styles
 import '../styles/app.scss'
 
-// Plugins and directives
-import Icons from './plugins/icons'
-import Modals from './plugins/modals'
+// Plugins
 import Alerts from './plugins/alerts'
-import Strings from './plugins/strings'
-import Input from './plugins/input'
 import Filesystem from './plugins/filesystem'
 import Filters from './plugins/filters'
+import Highlight from './plugins/highlight'
+import Icons from './plugins/icons'
+import Input from './plugins/input'
+import Modals from './plugins/modals'
+import Strings from './plugins/strings'
+
+// Directives
 import Markdown from './directives/markdown'
 
 // Global / recursive components
@@ -27,13 +30,14 @@ import Test from '@/components/Test'
 Vue.config.productionTip = false
 
 // Register plugins
-Vue.use(new Icons())
-Vue.use(new Modals(store))
 Vue.use(new Alerts(store))
-Vue.use(new Strings('en-US'))
 Vue.use(new Filesystem())
-Vue.use(new Input())
 Vue.use(new Filters())
+Vue.use(new Highlight())
+Vue.use(new Icons())
+Vue.use(new Input())
+Vue.use(new Modals(store))
+Vue.use(new Strings('en-US'))
 
 // Register directives
 Vue.directive('markdown', Markdown(Vue))

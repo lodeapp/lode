@@ -39,6 +39,7 @@ export abstract class Nugget extends EventEmitter {
                 displayName: '',
                 status: <Status>'idle',
                 feedback: '',
+                console: [],
                 stats: {},
                 tests: []
             },

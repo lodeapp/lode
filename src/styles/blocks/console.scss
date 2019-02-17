@@ -1,0 +1,22 @@
+.console {
+    margin-bottom: var(--spacing-double);
+
+    .Box-header {
+        padding: var(--spacing);
+    }
+
+    &.console--ansi {
+
+        .Box-body {
+            padding: 0;
+
+            .ansi {
+
+                pre {
+                    border: 0;
+                    background-color: $white;
+                }
+            }
+        }
+    }
+}

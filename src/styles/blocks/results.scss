@@ -10,21 +10,24 @@
         color: rgba($gray-600, .3);
     }
 
-    .header {
-        background-color: $secondary;
-        padding-bottom: 15px;
+    & > .parent {
 
-        h2 {
-            font-size: 1.7rem;
-            line-height: 1.9rem;
-            user-select: text;
-        }
+        & > .header {
+            background-color: $secondary;
+            padding-bottom: 15px;
 
-        .breadcrumbs {
-            padding: 0 15px 0;
-
-            li {
+            h2 {
+                font-size: 1.7rem;
+                line-height: 1.9rem;
                 user-select: text;
+            }
+
+            .breadcrumbs {
+                padding: 0 15px 0;
+
+                li {
+                    user-select: text;
+                }
             }
         }
     }

@@ -13,6 +13,7 @@ export interface ITest extends Nugget {
     getStatus (): Status
     getName (): string
     getDisplayName (): string
+    getConsole (): Array<any>
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     activate (): void
     deactivate (): void
@@ -31,6 +32,7 @@ export interface ITestResult {
     displayName: string
     status: Status
     feedback?: string | object
+    console?: Array<any>
     stats?: object
     isLast?: boolean
     tests?: Array<ITestResult>
@@ -118,6 +120,13 @@ export class Test extends Nugget implements ITest {
      */
     public getVersion (): string | undefined {
         return this.result.version
+    }
+
+    /**
+     * Get this nugget's console output.
+     */
+    public getConsole (): Array<any> {
+        return this.result.console!
     }
 
     /**

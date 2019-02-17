@@ -639,6 +639,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             ...{
                 file: '',
                 tests: [],
+                console: [],
                 meta: [],
                 testsLoaded: true
             },
