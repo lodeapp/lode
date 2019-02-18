@@ -1,0 +1,70 @@
+body {
+
+    &.light {
+
+        pre {
+
+            .hljs {
+                background-color: transparent;
+                margin: calc(var(--spacing) * -1);
+                padding: var(--spacing);
+
+                .has-lines {
+                    margin: calc(var(--spacing) * -1);
+
+                    tbody {
+
+                        tr {
+
+                            .line-number,
+                            .blob {
+                                border-radius: 0;
+                                padding-left: var(--spacing);
+                            }
+
+                            .line-number {
+                                border-right: 1px solid var(--color-gray-300);
+                                color: var(--color-gray-500);
+                                min-width: var(--spacing-double);
+                                padding-right: var(--spacing);
+                                text-align: right;
+                                user-select: none;
+                                vertical-align: top;
+                                white-space: nowrap;
+                                width: 1%;
+                            }
+
+                            .blob {
+                                min-width: 100%;
+                            }
+
+                            &.highlight {
+                                background-color: var(--color-blue-100);
+
+                                .line-number {
+                                    color: var(--color-gray-600);
+                                }
+                            }
+                        }
+
+                        :first-child {
+
+                            .line-number,
+                            .blob {
+                                padding-top: var(--spacing);
+                            }
+                        }
+
+                        :last-child {
+
+                            .line-number,
+                            .blob {
+                                padding-bottom: var(--spacing);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

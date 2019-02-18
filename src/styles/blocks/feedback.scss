@@ -1,7 +1,15 @@
 .feedback {
 
-    .lead {
-        color: var(--color-gray-800);
-        margin-bottom: var(--spacing)
+    h4,
+    .message {
+        user-select: text;
+        word-break: break-all;
+    }
+
+    .message {
+        color: var(--color-gray-700);
+        font-size: 1.2rem;
+        margin-top: var(--spacing-half);
+        margin-bottom: var(--spacing-and-half);
     }
 }

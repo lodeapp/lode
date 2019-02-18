@@ -1,0 +1,9 @@
+.trace {
+
+    & > .collapsible {
+
+        & > .header {
+            font-weight: var(--font-weight-semibold);
+        }
+    }
+}

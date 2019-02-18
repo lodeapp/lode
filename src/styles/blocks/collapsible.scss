@@ -1,0 +1,71 @@
+.collapsible {
+    border: 1px solid var(--color-gray-300);
+    border-radius: 3px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+
+    & > .header {
+        background-color: var(--color-gray-100);
+        border-radius: inherit;
+        position: relative;
+        padding: var(--spacing);
+
+        .btn {
+            height: 1.8rem;
+            line-height: 0;
+            margin: 0;
+            padding: 0;
+            position: absolute;
+            right: calc(var(--spacing) - 2px);
+            text-align: center;
+            top: calc(var(--spacing) - 2px);
+            width: 1.8rem;
+
+            i {
+                transform: scale(.6);
+            }
+        }
+    }
+
+    & > .content {
+        padding: var(--spacing);
+
+        & > .snippet {
+            margin: calc(var(--spacing) * -1);
+
+            pre {
+                border: 0;
+                background-color: $white;
+            }
+        }
+    }
+
+    &.has-content {
+
+        & > .header {
+            padding-right: 35px;
+        }
+    }
+
+    &.is-expanded {
+
+        & > .header {
+            border-bottom: 1px solid var(--color-gray-300);
+            border-radius: 0;
+        }
+    }
+
+    & + .collapsible {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        border-top: 0;
+    }
+}
+
+.collapsible-group {
+
+    :last-child {
+        border-bottom-left-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }
+}

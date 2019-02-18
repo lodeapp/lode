@@ -31,7 +31,7 @@
                 <button
                     v-if="alerts.length === 1 || isLast"
                     type="button"
-                    class="btn btn-sm btn-primary"
+                    class="btn btn-sm btn-primary autofocus"
                     @click="$emit('hide')"
                 >
                     Close
@@ -39,7 +39,7 @@
                 <button
                     v-if="alerts.length > 1 && !isLast"
                     type="button"
-                    class="btn btn-sm btn-primary"
+                    class="btn btn-sm btn-primary autofocus"
                     @click="next"
                 >
                     Next

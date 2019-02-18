@@ -1,6 +1,7 @@
 <template>
     <div class="feedback">
-        <p class="lead">{{ content.message }}</p>
+        <h4>{{ content.class }}</h4>
+        <p class="message">{{ content.message }}</p>
         <Diff v-if="content.diff" :diff="content.diff" />
         <Trace v-if="content.trace" :trace="content.trace" />
     </div>
