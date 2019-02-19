@@ -1,12 +1,12 @@
 <template>
     <div class="collapsible" :class="[content ? 'has-content' : '', `is-${expanded ? 'expanded' : 'collapsed'}`]">
-        <div class="header">
-            <button v-if="content" class="btn btn-sm" @click.prevent="toggle">
+        <div class="header" @dblclick.prevent="toggle">
+            <button v-if="content" class="btn btn-sm" @click.stop.prevent="toggle">
                 <Icon :symbol="expanded ? 'dash' : 'plus'" />
             </button>
             <slot name="header"></slot>
         </div>
-        <div class="content" v-show="expanded">
+        <div class="content" v-if="expanded">
             <slot></slot>
         </div>
     </div>

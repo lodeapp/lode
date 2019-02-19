@@ -1,9 +1,56 @@
 .trace {
+    margin-bottom: var(--spacing-double);
 
-    & > .collapsible {
+    &.collapsible-group,
+    .collapsible-group {
 
-        & > .header {
-            font-weight: var(--font-weight-semibold);
+        & > .collapsible {
+
+            & > .header {
+                font-weight: var(--font-weight-semibold);
+
+                .filename {
+                    display: inline-block;
+                    margin-right: var(--spacing);
+                    user-select: text;
+                }
+            }
+        }
+    }
+}
+
+.trace-group {
+
+    .trace {
+        margin-bottom: 0;
+    }
+
+    .trace-link {
+        border-left: 2px solid var(--color-gray-300);
+        display: block;
+        height: 35px;
+        left: var(--spacing-double);
+        position: relative;
+
+        i {
+            background-color: $white;
+            border-radius: 22px;
+            color: var(--color-gray-500);
+            height: 20px;
+            left: -11px;
+            line-height: 21px;
+            position: absolute;
+            text-align: center;
+            top: 7px;
+            width: 20px;
+        }
+
+        span {
+            color: var(--color-gray-700);
+            font-family: var(--font-family-monospace);
+            left: 13px;
+            position: relative;
+            top: 9px;
         }
     }
 }

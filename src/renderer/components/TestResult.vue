@@ -3,29 +3,27 @@
         <div class="tabnav">
             <nav class="tabnav-tabs">
                 <a v-if="feedback" @click="setTab('feedback')" class="tabnav-tab" :class="{ selected: tab === 'feedback' }">Feedback</a>
+                <a v-if="console" @click="setTab('console')" class="tabnav-tab" :class="{ selected: tab === 'console' }">Console</a>
                 <a v-if="suiteConsole" @click="setTab('suiteConsole')" class="tabnav-tab" :class="{ selected: tab === 'suiteConsole' }">Suite Console</a>
                 <a v-if="stats" @click="setTab('stats')" class="tabnav-tab" :class="{ selected: tab === 'stats' }">Statistics</a>
             </nav>
         </div>
         <div class="test-result-breakdown">
-            <div v-if="feedback">
-                <div v-show="tab === 'feedback'">
-                    <Feedback v-if="feedback.type === 'feedback'" :content="feedback.content || {}" />
-                    <KeyValue v-else-if="feedback.type === 'object'" :object="feedback.content || {}" />
-                    <Ansi v-else-if="feedback.type === 'ansi'" :content="feedback.content" />
-                    <!-- Catch-all for unknown content -->
-                    <pre v-else><code>{{ feedback.content }}</code></pre>
-                </div>
+            <div v-if="feedback && tab === 'feedback'">
+                <Feedback v-if="feedback.type === 'feedback'" :content="feedback.content || {}" />
+                <KeyValue v-else-if="feedback.type === 'object'" :object="feedback.content || {}" />
+                <Ansi v-else-if="feedback.type === 'ansi'" :content="feedback.content" />
+                <!-- Catch-all for unknown content -->
+                <pre v-else><code>{{ feedback.content }}</code></pre>
             </div>
-            <div v-if="suiteConsole">
-                <div v-show="tab === 'suiteConsole'">
-                    <Console v-for="output in suiteConsole" :key="$string.from(output)" :output="output" />
-                </div>
+            <div v-if="console && tab === 'console'">
+                <Console v-for="output in console" :key="$string.from(output)" :output="output" />
             </div>
-            <div v-if="stats">
-                <div v-show="tab === 'stats'">
-                    <TestStatistics :stats="stats" />
-                </div>
+            <div v-if="suiteConsole && tab === 'suiteConsole'">
+                <Console v-for="output in suiteConsole" :key="$string.from(output)" :output="output" />
+            </div>
+            <div v-if="stats && tab === 'stats'">
+                <TestStatistics :stats="stats" />
             </div>
             <div class="test-result-general" v-if="empty">
                 <div v-if="status === 'error'">
@@ -76,6 +74,8 @@ export default {
             }
             if (this.feedback) {
                 return 'feedback'
+            } else if (this.console) {
+                return 'console'
             } else if (this.suiteConsole) {
                 return 'suiteConsole'
             } else if (this.stats) {
@@ -93,6 +93,9 @@ export default {
         },
         feedback () {
             return this.result && this.result.feedback && this.result.feedback.content ? this.result.feedback : false
+        },
+        console () {
+            return this.result && this.result.console && this.result.console.length ? this.result.console : false
         },
         stats () {
             return this.result && this.result.stats && !_isEmpty(this.result.stats) ? this.result.stats : false

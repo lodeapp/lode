@@ -7,10 +7,9 @@
             `is-${expandStatus}`,
             hasChildren ? 'has-children' : ''
         ]"
-        @click.stop="onClick"
     >
         <div class="seam"></div>
-        <div class="header">
+        <div class="header" @click.stop="onClick">
             <div class="status" :aria-label="displayStatus(status)" :title="displayStatus(status)">
                 <Icon v-if="status === 'error'" symbol="issue-opened" />
             </div>

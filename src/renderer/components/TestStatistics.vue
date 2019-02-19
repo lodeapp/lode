@@ -4,7 +4,7 @@
         <table v-else>
             <colgroup>
                 <col width="1%">
-                <col width="100%">
+                <col width="99%">
             </colgroup>
             <tbody>
                 <tr v-if="typeof stats.duration !== 'undefined'">

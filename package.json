@@ -1,4 +1,5 @@
 {
+  "private": true,
   "name": "Lode",
   "version": "0.9.0",
   "author": "Tomas Buteler <tbuteler@me.com>",

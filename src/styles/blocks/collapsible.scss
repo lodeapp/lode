@@ -30,6 +30,7 @@
     & > .content {
         padding: var(--spacing);
 
+        & > .ansi,
         & > .snippet {
             margin: calc(var(--spacing) * -1);
 

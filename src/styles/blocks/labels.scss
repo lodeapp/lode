@@ -1,6 +1,17 @@
 .Label {
     position: relative;
 
+    // Italics inside labels should be numbers and
+    // we'll render them with monospaced font.
+    em {
+        font-style: normal;
+        font-family: var(--font-family-monospace);
+    }
+
+    & + .Label {
+        margin-left: var(--spacing-half);
+    }
+
     &.is-active {
 
         &::before {

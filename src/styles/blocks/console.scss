@@ -1,16 +1,17 @@
 .console {
     margin-bottom: var(--spacing-double);
 
-    .Box-header {
-        padding: var(--spacing);
+    .Box-body {
+        word-break: break-all;
     }
 
-    &.console--ansi {
+    &.console--ansi,
+    &.console--snippet {
 
-        .Box-body {
-            padding: 0;
+        .content {
 
-            .ansi {
+            .ansi,
+            .snippet {
 
                 pre {
                     border: 0;

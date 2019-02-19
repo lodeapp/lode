@@ -138,9 +138,21 @@ export default class Strings {
      */
     markdown (string, breaks = true) {
         return markdown({
-            breaks: breaks,
+            breaks: false,
             typographer: true
         }).render(string)
+    }
+
+    /**
+     * Turn a markdown string into inline HTML
+     *
+     * @param  {String} string
+     * @return {String}
+     */
+    markdownInline (string) {
+        return markdown({
+            typographer: true
+        }).renderInline(string)
     }
 
     /**
@@ -189,7 +201,7 @@ export default class Strings {
      */
     set (string) {
         const replace = typeof arguments[1] === 'object' ? arguments[1] : Array.prototype.slice.call(arguments, 1)
-        return string.replace(/:(\d+|\w+)/g, function (match, index) {
+        return string.replace(/:(\d+|[a-z]+)/gi, function (match, index) {
             return typeof replace[index] !== 'undefined' ? replace[index] : match
         })
     }
