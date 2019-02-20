@@ -32,9 +32,6 @@ export default {
                 return {}
             }
         }
-    },
-    created () {
-        console.log(this.content.meta)
     }
 }
 </script>
