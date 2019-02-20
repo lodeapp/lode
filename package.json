@@ -7,9 +7,9 @@
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
-    "build": "yarn run clean && yarn run icons && yarn run licenses && node .electron-vue/build.js && electron-builder",
-    "build:all": "yarn run clean && yarn run icons && yarn run licenses && node .electron-vue/build.js && electron-builder --m --l --w",
-    "build:dev": "yarn run clean && cross-env IS_DEV=true yarn run build",
+    "build": "yarn run clean && yarn run icons && yarn run licenses && yarn run pack:reporters && node .electron-vue/build.js && electron-builder",
+    "build:all": "yarn run clean && yarn run icons && yarn run licenses && yarn run pack:reporters && node .electron-vue/build.js && electron-builder --m --l --w",
+    "build:dev": "cross-env IS_DEV=true yarn run build",
     "clean": "rm -rf build/* && rm -rf dist/* && mkdir dist/electron && touch dist/electron/.gitkeep",
     "coverage": "yarn run tests --coverage",
     "dev": "yarn run icons && cross-env IS_DEV=true node .electron-vue/dev-runner.js",
