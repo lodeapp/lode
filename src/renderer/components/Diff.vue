@@ -1,6 +1,6 @@
 <template>
     <div class="diff">
-        <Snippet :snippet="diff" language="diff" />
+        <Snippet :code="diff" language="diff" />
     </div>
 </template>
 

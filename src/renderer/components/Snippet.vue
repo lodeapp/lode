@@ -8,7 +8,7 @@
 export default {
     name: 'Snippet',
     props: {
-        snippet: {
+        code: {
             type: [String, Object],
             required: true
         },
@@ -23,25 +23,21 @@ export default {
     },
     computed: {
         isObject () {
-            return typeof this.snippet === 'object'
+            return typeof this.code === 'object'
         },
         parsed () {
             if (!this.isObject) {
-                return this.$highlight.normalize(this.snippet)
+                return this.$highlight.normalize(this.code)
             }
 
-            return this.$highlight.normalize([].concat(
-                this.snippet.pre,
-                this.snippet.highlight,
-                this.snippet.post
-            ).join('\n'))
+            return this.$highlight.normalize(Object.values(this.code).join('\n'))
         }
     },
     mounted () {
         const code = this.$highlight.element(this.$el.querySelector('pre code'))
 
         if (this.line) {
-            code.lines(this.line - this.snippet.pre.length, this.line)
+            code.lines(Object.keys(this.code)[0] || 1, this.line)
         }
     }
 }

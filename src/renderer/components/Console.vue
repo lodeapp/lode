@@ -6,7 +6,7 @@
                 <span v-if="output.line" class="Label Label--outline Label--idle">{{ 'Line :0' | set(output.line) }}</span>
             </template>
             <Ansi v-if="output.render === 'ansi'" :content="output.content" />
-            <Snippet v-else-if="output.render === 'snippet'" :snippet="output.content" :language="output.language" />
+            <Snippet v-else-if="output.render === 'code'" :code="output.content" :language="output.language" />
             <div v-else-if="output.render === 'html'" v-html="output.content"></div>
             <div v-else>{{ output.content }}</div>
         </Collapsible>

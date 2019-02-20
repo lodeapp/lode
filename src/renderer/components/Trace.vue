@@ -23,7 +23,7 @@
                         </template>
                     </template>
                     <template v-if="typeof item === 'object'">
-                        <Snippet :snippet="item.snippet" :line="item.line" :language="item.lang" />
+                        <Snippet :code="item.code" :line="item.line" :language="item.lang" />
                     </template>
                 </Collapsible>
             </div>
