@@ -51,6 +51,31 @@ export class Jest extends Framework {
     }
 
     /**
+     * Prepare this framework for running.
+     */
+    protected assemble (): void {
+        if (this.runsInRemote) {
+            const reporter = process.env.NODE_ENV === 'development'
+                ? Path.resolve(__dirname, '../../reporters/jest')
+                : unpacked(Path.join(__static, './reporters/jest'))
+            Fs.copySync(reporter, Path.join(this.repositoryPath, '.lode/jest'))
+        }
+    }
+
+    /**
+     * Clean-up after running a process for this framework.
+     */
+    protected disassemble (): void {
+        if (this.runsInRemote) {
+            Fs.removeSync(Path.join(this.repositoryPath, '.lode/jest'))
+            const files = Fs.readdirSync(Path.join(this.repositoryPath, '.lode'))
+            if (!files.length) {
+                Fs.removeSync(Path.join(this.repositoryPath, '.lode'));
+            }
+        }
+    }
+
+    /**
      * Reload this framework's suites and tests.
      */
     protected reload (): Promise<string> {

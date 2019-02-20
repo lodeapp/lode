@@ -10,12 +10,19 @@ const addendum = {
     packages: [
         {
             id: 'desktop@1.6.1',
+            repository: 'https://github.com/desktop/desktop',
             override: 'MIT'
         },
         {
             id: 'electron@2.0.8',
+            repository: 'https://github.com/electron/electron',
             override: 'MIT'
         },
+        {
+            id: 'bugsnag/bugsnag-php@3.16.0',
+            repository: 'https://github.com/bugsnag/bugsnag-php',
+            override: 'MIT'
+        }
     ],
     // Package license information, in case it's missing.
     licenses: {
@@ -24,7 +31,7 @@ const addendum = {
         'latinize@0.4.0': 'BSD'
     },
     // Author information for copyright notices, in case we don't have the
-    // actuallicense text and need to generate it on-the-fly.
+    // actual license text and need to generate it on-the-fly.
     authors: {
         'latinize@0.4.0': 'Jakub Dundalek <dundalek@gmail.com> (http://dundalek.com/)',
         'desktop@1.6.1': 'GitHub, Inc',
@@ -138,3 +145,9 @@ nlf.find({
     console.log(`${chalk.bgBlue.white(' LICENSES ')} Licenses written to ${file}`)
 })
 
+// Copy Lode's license into each reporter package that might get
+// placed inside remote machines during runs.
+Fs.readdirSync(Path.join(__dirname, '../static/reporters'))
+    .map(name => Path.join(__dirname, '../static/reporters', name))
+    .filter(source => Fs.lstatSync(source).isDirectory())
+    .forEach(reporter => Fs.copySync(Path.join(__dirname, '../static/LICENSE'), Path.join(reporter, 'LICENSE')))

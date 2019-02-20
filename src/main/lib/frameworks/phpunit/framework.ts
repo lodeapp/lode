@@ -1,5 +1,6 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
+import { unpacked } from '@main/lib/helpers'
 import { ParsedRepository } from '@main/lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@main/lib/frameworks/framework'
 import { Suite } from '@main/lib/frameworks/suite'
@@ -47,6 +48,31 @@ export class PHPUnit extends Framework {
     }
 
     /**
+     * Prepare this framework for running.
+     */
+    protected assemble (): void {
+        if (this.runsInRemote) {
+            const reporter = process.env.NODE_ENV === 'development'
+                ? Path.resolve(__dirname, '../../reporters/phpunit')
+                : unpacked(Path.join(__static, './reporters/phpunit'))
+            Fs.copySync(reporter, Path.join(this.repositoryPath, '.lode/phpunit'))
+        }
+    }
+
+    /**
+     * Clean-up after running a process for this framework.
+     */
+    protected disassemble (): void {
+        if (this.runsInRemote) {
+            Fs.removeSync(Path.join(this.repositoryPath, '.lode/phpunit'))
+            const files = Fs.readdirSync(Path.join(this.repositoryPath, '.lode'))
+            if (!files.length) {
+                Fs.removeSync(Path.join(this.repositoryPath, '.lode'));
+            }
+        }
+    }
+
+    /**
      * Reload this framework's suites and tests.
      */
     protected reload (): Promise<string> {
@@ -81,11 +107,23 @@ export class PHPUnit extends Framework {
      * The command arguments for running this framework.
      */
     protected runArgs (): Array<string> {
+        // @TODO: Allow users to configure their autoload location.
+        const root = (this.runsInRemote ? this.remotePath : this.repositoryPath)
+        const autoload = Path.join(root, 'vendor/autoload.php')
         const args = [
+            `-d lode_bootstrap=${autoload}`,
+            '--bootstrap',
+            this.runsInRemote
+                ? Path.join(this.remotePath, '.lode/phpunit/bootstrap.php')
+                : process.env.NODE_ENV === 'development'
+                    ? Path.resolve(__dirname, '../../reporters/phpunit/bootstrap.php')
+                    : unpacked(Path.join(__static, './reporters/phpunit/bootstrap.php')),
             '--color=always',
             '--printer',
             '\\LodeApp\\PHPUnit\\LodeReporter'
         ]
+
+        unpacked('')
 
         if (__DEV__) {
             args.push('--verbose')

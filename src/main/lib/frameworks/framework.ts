@@ -173,6 +173,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * Prepare this framework for running.
+     */
+    protected abstract assemble (): void
+
+    /**
+     * Clean-up after running a process for this framework.
+     */
+    protected abstract disassemble (): void
+
+    /**
      * The command arguments for running this framework.
      */
     protected abstract runArgs (): Array<string>
@@ -332,13 +342,20 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Run this framework's test suites, either fully or selectively.
      */
     protected handleRun (): Promise<void> {
+        this.assemble()
         if (this.selective) {
             return this.runSelective()
+                .then(() => {
+                    this.disassemble()
+                })
                 .catch(error => {
                     this.onError(error)
                 })
         }
         return this.run()
+            .then(() => {
+                this.disassemble()
+            })
             .catch(error => {
                 this.onError(error)
             })
@@ -374,6 +391,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             this.resetQueued()
             this.updateStatus()
             this.emit('change', this)
+            this.disassemble()
         })
         .catch(error => {
             this.onError(error)
@@ -460,6 +478,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Refresh the list of suites inside this framework.
      */
     protected handleRefresh (): Promise<void> {
+        this.assemble()
         this.updateStatus('refreshing')
         this.suites.forEach(suite => {
             suite.setFresh(false)
@@ -469,6 +488,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 this.cleanStaleSuites()
                 this.updateStatus()
                 this.emit('change', this)
+                this.disassemble()
             })
             .catch(error => {
                 this.onError(error)
@@ -586,6 +606,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.updateStatus('error')
         this.emit('error', message)
         this.emit('change', this)
+        this.disassemble()
     }
 
     /**
