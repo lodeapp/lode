@@ -55,20 +55,7 @@ export class PHPUnit extends Framework {
             const reporter = process.env.NODE_ENV === 'development'
                 ? Path.resolve(__dirname, '../../reporters/phpunit')
                 : unpacked(Path.join(__static, './reporters/phpunit'))
-            Fs.copySync(reporter, Path.join(this.repositoryPath, '.lode/phpunit'))
-        }
-    }
-
-    /**
-     * Clean-up after running a process for this framework.
-     */
-    protected disassemble (): void {
-        if (this.runsInRemote) {
-            Fs.removeSync(Path.join(this.repositoryPath, '.lode/phpunit'))
-            const files = Fs.readdirSync(Path.join(this.repositoryPath, '.lode'))
-            if (!files.length) {
-                Fs.removeSync(Path.join(this.repositoryPath, '.lode'));
-            }
+            Fs.copySync(reporter, this.injectPath())
         }
     }
 
@@ -118,12 +105,13 @@ export class PHPUnit extends Framework {
                 : process.env.NODE_ENV === 'development'
                     ? Path.resolve(__dirname, '../../reporters/phpunit/bootstrap.php')
                     : unpacked(Path.join(__static, './reporters/phpunit/bootstrap.php')),
+            // Sometimes writing to stdout will fail (on remote machines?). If we
+            // can ever figure out why, we should revert back to default.
+            '--stderr',
             '--color=always',
             '--printer',
             '\\LodeApp\\PHPUnit\\LodeReporter'
         ]
-
-        unpacked('')
 
         if (__DEV__) {
             args.push('--verbose')
@@ -161,7 +149,7 @@ export class PHPUnit extends Framework {
      * Provide setup instructions for using Lode with Jest.
      */
     public static instructions (): string {
-        return "Install the Lode PHPUnit reporter package by running `composer require lodeapp/phpunit --dev` inside your repository\'s directory."
+        return ''
     }
 
     /**
@@ -172,14 +160,6 @@ export class PHPUnit extends Framework {
     protected troubleshoot (error: Error | string): string {
         if (error instanceof Error) {
             error = error.toString()
-        }
-
-        if ((new RegExp('Could not use ".*" as printer: class does not exist', 'gi')).test(error)) {
-            return 'Make sure to include the Lode PHPUnit reporter package as a dependency in your repository. You can do this by running `composer require lodeapp/phpunit --dev` inside your repository\'s directory. If you already have, try running `composer dump-autoload`.'
-        }
-
-        if (error.includes('The PHPUnit package returned unexpected results.')) {
-            return 'Your Lode PHPUnit package might be out of date. Please try running `composer update lodeapp/phpunit` and try again. You might want to check if there are updates available for the Lode app, too.'
         }
 
         return super.troubleshoot(error)

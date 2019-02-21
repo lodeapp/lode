@@ -3,8 +3,6 @@ const _find = require('lodash/find')
 const _findIndex = require('lodash/findIndex')
 const stripAnsi = require('strip-ansi')
 
-const SCHEMA_VERSION = '1.0'
-
 class Base64TestReporter {
     constructor (globalConfig, options) {
         this._globalConfig = globalConfig
@@ -66,8 +64,7 @@ class Base64TestReporter {
             },
             // Console output is per-suite, not per-test. We only get the file
             // and line number from Jest, so it can't be otherwise for now.
-            console: [],
-            schema: SCHEMA_VERSION
+            console: []
         }
     }
 
@@ -115,8 +112,7 @@ class Base64TestReporter {
                             displayName: ancestor,
                             status: result.status,
                             console: [],
-                            tests: [],
-                            schema: SCHEMA_VERSION
+                            tests: []
                         }
                         group.push(test)
                         index = _findIndex(group, { identifier: test.identifier })
@@ -142,8 +138,7 @@ class Base64TestReporter {
         const results = {
             file: test.path,
             tests,
-            console: this.transformConsole(testResult.console),
-            schema: SCHEMA_VERSION
+            console: this.transformConsole(testResult.console)
         }
 
         // Use the `useStderr` CLI option to determine whether we're in development

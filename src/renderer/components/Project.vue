@@ -5,20 +5,22 @@
             <button class="btn btn-primary" @click="$modal.open('AddRepositories', { project })">Add repositories</button>
         </div>
         <template v-else>
-            <Pane>
-                <div class="project">
-                    <Repository
-                        v-for="repository in project.repositories"
-                        :model="repository"
-                        :key="repository.id"
-                        @remove="removeRepository"
-                        @change="storeRepositoryState"
-                    />
-                </div>
-            </Pane>
-            <Pane>
-                <Results :test="$root.active.test" />
-            </Pane>
+            <Split>
+                <Pane>
+                    <div class="project">
+                        <Repository
+                            v-for="repository in project.repositories"
+                            :model="repository"
+                            :key="repository.id"
+                            @remove="removeRepository"
+                            @change="storeRepositoryState"
+                        />
+                    </div>
+                </Pane>
+                <Pane id="results">
+                    <Results :test="$root.active.test" />
+                </Pane>
+            </Split>
         </template>
     </main>
 </template>
@@ -28,13 +30,15 @@ import { mapActions } from 'vuex'
 import Pane from '@/components/Pane'
 import Repository from '@/components/Repository'
 import Results from '@/components/Results'
+import Split from '@/components/Split'
 
 export default {
     name: 'Project',
     components: {
         Pane,
         Repository,
-        Results
+        Results,
+        Split
     },
     props: {
         project: {

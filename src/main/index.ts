@@ -14,16 +14,16 @@ if (process.env.NODE_ENV !== 'development') {
 let mainWindow: Window | null = null
 
 function createWindow() {
-  const window = new Window()
+    const window = new Window()
 
-  window.onClose(() => {
-    mainWindow = null
-    app.quit()
-  })
+    window.onClose(() => {
+        mainWindow = null
+        app.quit()
+    })
 
-  window.load()
+    window.load()
 
-  mainWindow = window
+    mainWindow = window
 }
 
 function buildMenu(options = {}) {
@@ -51,6 +51,14 @@ ipcMain.on('update-menu', (event: any, options = {}) => {
     buildMenu(options)
 })
 
+// @TODO: support multiple windows.
+ipcMain.on('did-close', () => {
+    if (mainWindow) {
+        mainWindow!.close()
+    }
+})
+
+
 /**
  * Auto Updater
  *
@@ -63,10 +71,10 @@ ipcMain.on('update-menu', (event: any, options = {}) => {
 import { autoUpdater } from 'electron-updater'
 
 autoUpdater.on('update-downloaded', () => {
-  autoUpdater.quitAndInstall()
+    autoUpdater.quitAndInstall()
 })
 
 app.on('ready', () => {
-  if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
+    if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
 })
- */
+*/

@@ -15,6 +15,24 @@ use Throwable;
 class LodeReporter extends ResultPrinter
 {
     /**
+     * If true, flush output after every write.
+     *
+     * @var bool
+     */
+    protected $autoFlush = true;
+
+    /**
+     * The maximum chunk size. We'll break them into
+     * smaller chunks if above the limit, but it's not
+     * guaranteed that PHPUnit will flush them as needed.
+     *
+     * Leave null to avoid splitting.
+     *
+     * @var bool
+     */
+    protected $chunkLimit = null;
+
+    /**
      * Whether the reporter has printed any output
      *
      * @var bool
@@ -259,7 +277,15 @@ class LodeReporter extends ResultPrinter
             $this->printStartDelimiter();
         }
 
-        $this->write($progress);
+        // Split large chunks, if necessary.
+        if ($this->chunkLimit && strlen($progress) > $this->chunkLimit) {
+            foreach(explode("\r\n", chunk_split($progress, $this->chunkLimit)) as $chunk) {
+                $this->write($chunk);
+            }
+        } else {
+            $this->write($progress);
+        }
+
         $this->writeNewLine();
     }
 

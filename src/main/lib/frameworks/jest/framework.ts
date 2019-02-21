@@ -58,20 +58,7 @@ export class Jest extends Framework {
             const reporter = process.env.NODE_ENV === 'development'
                 ? Path.resolve(__dirname, '../../reporters/jest')
                 : unpacked(Path.join(__static, './reporters/jest'))
-            Fs.copySync(reporter, Path.join(this.repositoryPath, '.lode/jest'))
-        }
-    }
-
-    /**
-     * Clean-up after running a process for this framework.
-     */
-    protected disassemble (): void {
-        if (this.runsInRemote) {
-            Fs.removeSync(Path.join(this.repositoryPath, '.lode/jest'))
-            const files = Fs.readdirSync(Path.join(this.repositoryPath, '.lode'))
-            if (!files.length) {
-                Fs.removeSync(Path.join(this.repositoryPath, '.lode'));
-            }
+            Fs.copySync(reporter, this.injectPath())
         }
     }
 
@@ -116,7 +103,7 @@ export class Jest extends Framework {
             '--colors',
             '--reporters',
             this.runsInRemote
-                ? '@lodeapp/jest'
+                ? Path.join(this.remotePath, '.lode/jest/index.js')
                 : process.env.NODE_ENV === 'development'
                     ? Path.resolve(__dirname, '../../reporters/jest/index.js')
                     : unpacked(Path.join(__static, './reporters/jest/index.js'))
@@ -146,7 +133,7 @@ export class Jest extends Framework {
      * Provide setup instructions for using Lode with Jest.
      */
     public static instructions (): string {
-        return "Install the Lode Jest reporter package by running `yarn add --dev @lodeapp/jest` or `npm install --save-dev @lodeapp/jest` inside your repository\'s directory."
+        return ''
     }
 
     /**
@@ -157,14 +144,6 @@ export class Jest extends Framework {
     protected troubleshoot (error: Error | string): string {
         if (error instanceof Error) {
             error = error.toString()
-        }
-
-        if (error.includes('Error: Could not resolve a module for a custom reporter.')) {
-            return 'Make sure to include the Lode Jest reporter package as a dependency in your repository. You can do this by running `yarn add --dev @lodeapp/jest` or `npm install --save-dev @lodeapp/jest` inside your repository\'s directory.'
-        }
-
-        if (error.includes('The Jest package returned unexpected results.')) {
-            return 'Your Lode Jest package might be out of date. Please try running `yarn upgrade lodeapp/jest` and try again. You might want to check if there are updates available for the Lode app, too.'
         }
 
         return super.troubleshoot(error)

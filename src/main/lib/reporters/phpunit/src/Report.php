@@ -12,8 +12,6 @@ use Throwable;
 
 class Report
 {
-    const SCHEMA_VERSION = '1.0';
-
     /**
      * A map of PHPUnit vs. Lode string statuses
      *
@@ -256,12 +254,8 @@ class Report
      */
     protected function transformContainer(array $attributes)
     {
-        // Attach common attributes like PHPUnit version and schema version,
-        // so we can process the results in the consuming app accordingly.
-        return array_merge($attributes, [
-            'version' => Version::id(),
-            'schema' => self::SCHEMA_VERSION,
-        ]);
+        // Attach common attributes, if any
+        return $attributes;
     }
 
     /**

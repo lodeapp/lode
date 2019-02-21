@@ -1,4 +1,5 @@
 import * as Path from 'path'
+import * as Fs from 'fs-extra'
 import { cloneDeep, find, findIndex, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
@@ -178,9 +179,29 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected abstract assemble (): void
 
     /**
+     * Prepare this framework for running.
+     */
+    protected injectPath (): string {
+        return Path.join(this.repositoryPath, '.lode', this.type)
+    }
+
+    /**
      * Clean-up after running a process for this framework.
      */
-    protected abstract disassemble (): void
+    protected disassemble (): void {
+        if (this.runsInRemote) {
+            try {
+                Fs.removeSync(this.injectPath())
+                const files = Fs.readdirSync(Path.join(this.repositoryPath, '.lode'))
+                if (!files.length) {
+                    Fs.removeSync(Path.join(this.repositoryPath, '.lode'));
+                }
+            } catch (error) {
+                // Fail silently if folder is not found
+                // or can't be removed.
+            }
+        }
+    }
 
     /**
      * The command arguments for running this framework.

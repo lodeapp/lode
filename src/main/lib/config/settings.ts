@@ -12,6 +12,7 @@ export class Settings extends EventEmitter {
             switchProject: true
         },
         currentProject: null,
+        paneSizes: null,
         projects: []
     }
 
@@ -35,6 +36,9 @@ export class Settings extends EventEmitter {
 
                 case 'concurrency':
                     return this.store.get('concurrency', 3)
+
+                case 'paneSizes':
+                    return this.store.get('paneSizes', [40, 60])
 
                 default:
                     return this.store.get(key)

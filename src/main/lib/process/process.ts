@@ -53,7 +53,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         // Create a new multi-line search object to parse delimiters
         this.search = new BufferedSearch()
 
-        // We can re-process stored streams by running FROM_FILE=${file} yarn dev.
+        // We can re-process stored streams by running `FROM_FILE=${file} yarn dev`.
         // If set, all processes will output chunks from the stored file.
         if (__DEV__ && process.env.FROM_FILE) {
             process.nextTick(() => {

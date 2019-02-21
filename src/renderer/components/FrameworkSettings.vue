@@ -82,16 +82,16 @@
             </dl>
             <dl>
                 <dt>
-                    <label>Runs in local machine</label>
+                    <label>Runs in remote machine</label>
                 </dt>
                 <dd>
                     <label>
                         <input type="radio" :value="false" v-model="fields.runsInRemote">
-                        Yes
+                        No
                     </label>
                     <label>
                         <input type="radio" :value="true" v-model="fields.runsInRemote">
-                        No
+                        Yes
                     </label>
                 </dd>
             </dl>
@@ -170,7 +170,7 @@
                     </dd>
                 </dl>
             </div>
-            <div v-if="!dedicated" class="instructions" v-show="instructions">
+            <div v-if="!dedicated" class="instructions" v-show="instructions && currentFrameworkInstructions">
                 <div>
                     <h6>{{ 'How to setup :0 testing with Lode' | set(currentFrameworkName) }}</h6>
                     <p v-markdown>{{ currentFrameworkInstructions }}</p>

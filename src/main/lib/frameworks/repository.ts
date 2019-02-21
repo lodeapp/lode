@@ -40,6 +40,9 @@ export interface IRepository extends EventEmitter {
     start (): void
     refresh (): void
     stop (): Promise<void>
+    isRunning (): boolean
+    isRrefreshing (): boolean
+    isBusy (): boolean
     persist (): RepositoryOptions
     scan (): Promise<Array<FrameworkOptions>>
     getDisplayName (): string
@@ -101,6 +104,27 @@ export class Repository extends EventEmitter implements IRepository {
                 resolve()
             })
         })
+    }
+
+    /**
+     * Whether this repository is running.
+     */
+    public isRunning (): boolean {
+        return this.frameworks.some((framework: IFramework) => framework.isRunning())
+    }
+
+    /**
+     * Whether this repository is refreshing.
+     */
+    public isRrefreshing (): boolean {
+        return this.frameworks.some((framework: IFramework) => framework.isRrefreshing())
+    }
+
+    /**
+     * Whether this repository is busy.
+     */
+    public isBusy (): boolean {
+        return this.frameworks.some((framework: IFramework) => framework.isBusy())
     }
 
     /**

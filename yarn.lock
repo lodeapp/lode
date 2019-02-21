@@ -10263,6 +10263,11 @@ split-string@^3.0.1, split-string@^3.0.2:
   dependencies:
     extend-shallow "^3.0.0"
 
+split.js@^1.5.10:
+  version "1.5.10"
+  resolved "https://registry.yarnpkg.com/split.js/-/split.js-1.5.10.tgz#11f63a7ea21780a6022e6dffe8f8eaa18c9c819e"
+  integrity sha512-/J52X5c4ZypVwu4WAhD8E1T9uXQtNokvG6mIBHauzyA1aKH6bmETVSv3RPjBXEz6Gcc4mIThgmjGQL39LD16jQ==
+
 split@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/split/-/split-1.0.1.tgz#605bd9be303aa59fb35f9229fbea0ddec9ea07d9"

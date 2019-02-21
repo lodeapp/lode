@@ -36,7 +36,9 @@
     }
 
     .filters {
-        padding: var(--spacing-third) var(--spacing);
+        // Padding bottom needs to be spacing or spacing-half to prevent
+        // glitches with sticky header (e.g. disappearing bottom border).
+        padding: var(--spacing-third) var(--spacing) var(--spacing-half);
 
         .progress-breakdown {
             @include clearfix;

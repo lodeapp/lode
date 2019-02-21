@@ -74,6 +74,15 @@ export default new Vue({
     created () {
         this.refreshProject()
 
+        window.onbeforeunload = (e) => {
+            if (this.project.isBusy()) {
+                this.project.stop().then(() => {
+                    ipcRenderer.send('did-close')
+                })
+                e.returnValue = false
+            }
+        }
+
         // Register ipcRenderer event handling
         ipcRenderer
             .on('blur', () => {
@@ -226,6 +235,7 @@ export default new Vue({
             const result = await shell.openExternal(`file://${path}`)
 
             if (!result) {
+                // @TODO: Alert this error
                 // const error = {
                 //     name: 'no-external-program',
                 //     message: `Unable to open file ${path} in an external program. Please check you have a program associated with this file extension`,
