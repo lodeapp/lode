@@ -2,7 +2,7 @@ import { uniq } from 'lodash'
 
 export type Status = 'queued' | 'running' | 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle' | 'error'
 
-export type FrameworkStatus = Status | 'refreshing'
+export type FrameworkStatus = Status | 'refreshing' | 'loading'
 
 /**
  * Compute an overarching generic status based on a set of statuses.
@@ -67,6 +67,10 @@ export function parseFrameworkStatus (components: Array<FrameworkStatus>): Frame
     components = uniq(components)
     if (components.length === 1) {
         return components[0]
+    }
+
+    if (components.includes('loading')) {
+        return 'loading'
     }
 
     if (components.includes('running')) {

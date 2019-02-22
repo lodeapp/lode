@@ -1,8 +1,18 @@
 import { v4 as uuid } from 'uuid'
 import { findIndex } from 'lodash'
 import { EventEmitter } from 'events'
+import { state } from '@main/lib/state'
+import { Project as ProjectState } from '@main/lib/state/project'
 import { FrameworkStatus, parseFrameworkStatus } from '@main/lib/frameworks/status'
 import { RepositoryOptions, IRepository, Repository } from '@main/lib/frameworks/repository'
+
+/**
+ * The minimal options to identify a project by.
+ */
+export type ProjectIdentifier = {
+    id: string
+    name: string
+}
 
 /**
  * Options to instantiate a Project with.
@@ -17,6 +27,7 @@ export interface IProject extends EventEmitter {
     readonly id: string
     name: string
     repositories: Array<IRepository>
+    repositoryCount: number
     status: FrameworkStatus
     selected: boolean
 
@@ -27,8 +38,9 @@ export interface IProject extends EventEmitter {
     isRrefreshing (): boolean
     isBusy (): boolean
     persist (): ProjectOptions
+    save (): void
     updateOptions (options: ProjectOptions): void
-    addRepository (options: RepositoryOptions): IRepository
+    addRepository (options: RepositoryOptions): Promise<IRepository>
     removeRepository (id: string): void
 }
 
@@ -36,19 +48,26 @@ export class Project extends EventEmitter implements IProject {
     public readonly id: string
     public name: string
     public repositories: Array<IRepository> = []
-    public status: FrameworkStatus = 'idle'
+    public repositoryCount = 0
+    public status: FrameworkStatus = 'loading'
     public selected: boolean = false
+
+    protected state: ProjectState
+    protected ready: boolean = false
 
     constructor (options: ProjectOptions) {
         super()
         this.name = options.name
         this.id = options.id || uuid()
+        this.state = state.project(this.id)
+        this.repositoryCount = (options.repositories || []).length
 
         // If options include repositories already (i.e. persisted state), add them.
-        if (options.repositories) {
-            options.repositories.forEach((repository: RepositoryOptions) => {
-                this.addRepository(repository)
-            })
+        this.loadRepositories(options.repositories || [])
+
+        // If this project doesn't yet exist, create it.
+        if (!options.id) {
+            this.save()
         }
     }
 
@@ -73,12 +92,11 @@ export class Project extends EventEmitter implements IProject {
     /**
      * Stop any repository in this project that might be running.
      */
-    public stop (): Promise<void> {
+    public async stop (): Promise<void> {
         return new Promise((resolve, reject) => {
-            const stopping = this.repositories.map((repository: IRepository) => {
+            Promise.all(this.repositories.map((repository: IRepository) => {
                 return repository.stop()
-            })
-            Promise.all(stopping).then(() => {
+            })).then(() => {
                 resolve()
             })
         })
@@ -117,6 +135,13 @@ export class Project extends EventEmitter implements IProject {
     }
 
     /**
+     * Save this project in the persistent store.
+     */
+    public save (): void {
+        this.state.update(this.persist())
+    }
+
+    /**
      * Update this project's options.
      *
      * @param options The new set of options.
@@ -134,6 +159,30 @@ export class Project extends EventEmitter implements IProject {
     }
 
     /**
+     * A function to run when a child repository changes its state (i.e. runs, stops, etc).
+     */
+    protected stateListener (): void {
+        this.state.set('busy', this.isBusy())
+    }
+
+    /**
+     * A function to run when a child repository requests saving.
+     */
+    protected saveListener (): void {
+        console.log('repository saved, saving')
+        this.save()
+    }
+
+    /**
+     * Prepare the project for ready state.
+     */
+    protected onReady (): void {
+        console.log('project ready!')
+        this.ready = true
+        this.emit('ready', this)
+    }
+
+    /**
      * Update this project's status.
      *
      * @param to The status we're updating to.
@@ -145,15 +194,39 @@ export class Project extends EventEmitter implements IProject {
     }
 
     /**
+     * Load a group of repositories to this project on first instantiation.
+     *
+     * @param repositories The repositories to add to this project.
+     */
+    protected async loadRepositories (repositories: Array<RepositoryOptions>): Promise<void> {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                Promise.all(repositories.map((repository: RepositoryOptions) => {
+                    // @TODO: granular repository loaded notifications
+                    return this.addRepository(repository)
+                })).then(() => {
+                    this.onReady()
+                    resolve()
+                })
+            })
+        })
+    }
+
+    /**
      * Add a child repository to this project.
      *
      * @param options The options with which to instantiate the new repository.
      */
-    public addRepository (options: RepositoryOptions): IRepository {
-        const repository = new Repository(options)
-        repository.on('status', this.statusListener.bind(this))
-        this.repositories.push(repository)
-        return repository
+    public async addRepository (options: RepositoryOptions): Promise<IRepository> {
+        return new Promise((resolve, reject) => {
+            const repository = new Repository(options)
+            repository.on('status', this.statusListener.bind(this))
+            repository.on('state', this.stateListener.bind(this))
+            repository.on('save', this.saveListener.bind(this))
+            this.repositories.push(repository)
+            this.repositoryCount++
+            resolve(repository)
+        })
     }
 
     /**
@@ -165,6 +238,7 @@ export class Project extends EventEmitter implements IProject {
         const index = findIndex(this.repositories, { id })
         if (index > -1) {
             this.repositories.splice(index, 1)
+            this.repositoryCount--
         }
     }
 }

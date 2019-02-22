@@ -1,5 +1,5 @@
 import Bottleneck from 'bottleneck'
-import { Config } from '@main/lib/config'
+import { state } from '@main/lib/state'
 
 export interface IQueue {
     add (job: any): void
@@ -14,11 +14,11 @@ class Queue implements IQueue {
 
     constructor () {
         this.limiter = new Bottleneck({
-            maxConcurrent: Config.get('concurrency')
+            maxConcurrent: state.get('concurrency')
         })
 
         // Listen for config changes on concurrency to update the limiter
-        Config.on('set:concurrency', (value: number) => {
+        state.on('set:concurrency', (value: number) => {
             this.limiter.updateSettings({
                 maxConcurrent: value
             })

@@ -51,6 +51,7 @@ export class PHPUnit extends Framework {
      * Prepare this framework for running.
      */
     protected assemble (): void {
+        super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
                 ? Path.resolve(__dirname, '../../reporters/phpunit')
@@ -67,10 +68,11 @@ export class PHPUnit extends Framework {
             this.spawn(['--columns=42'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
                     try {
-                        report.forEach((result: object) => {
-                            this.makeSuite(this.hydrateSuiteResult(result), true)
+                        Promise.all(report.map((result: object) => {
+                            return this.makeSuite(this.hydrateSuiteResult(result), true)
+                        })).then(() => {
+                            resolve('success')
                         })
-                        resolve('success')
                     } catch (error) {
                         this.stop()
                         reject('The PHPUnit package returned unexpected results.')

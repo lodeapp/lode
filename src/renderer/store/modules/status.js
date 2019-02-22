@@ -7,10 +7,12 @@ export default {
             failed: 'Failed',
             idle: 'Idle',
             incomplete: 'Incomplete',
+            loading: 'Loading',
             partial: 'Partial',
             passed: 'Passed',
             refreshing: 'Refreshing',
             running: 'Running',
+            skipped: 'Skipped',
             stopped: 'Stopped',
             warning: 'Warning'
         }

@@ -190,10 +190,11 @@ export default {
                             })
                             return true
                         }
-                        this.addFramework({ repositoryId: this.repository.id, framework: this.repository.addFramework(framework) })
+                        this.repository.addFramework(framework).then(framework => framework.refresh())
                     })
 
                 this.removeFrameworks()
+                this.repository.save()
 
                 this.$emit('hide')
             }
@@ -209,7 +210,6 @@ export default {
             })
         },
         ...mapActions({
-            addFramework: 'projects/addFramework',
             removeFramework: 'projects/removeFramework',
             repositoryChange: 'projects/repositoryChange'
         })

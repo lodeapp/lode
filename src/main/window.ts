@@ -1,12 +1,29 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow as BaseBrowserWindow } from 'electron'
 import { MenuEvent } from './menu'
+import { state } from '@main/lib/state'
+import { Project as ProjectState } from '@main/lib/state/project'
+import { ProjectOptions } from '@main/lib/frameworks/project'
 
 let windowStateKeeper: any | null = null
 
-export class Window {
-    protected deferredClose = false
+class BrowserWindow extends BaseBrowserWindow {
+    protected projectState: ProjectState | null = null
+    public setProject(projectId: string): void {
+        this.projectState = state.project(projectId)
+    }
 
-    protected window: Electron.BrowserWindow
+    public getProjectOptions (): ProjectOptions | undefined {
+        return this.projectState ? this.projectState.get('options') : {}
+    }
+
+    public isBusy (): boolean {
+        return !!this.projectState && this.projectState.isBusy()
+    }
+}
+
+export class Window {
+
+    protected window: BrowserWindow
 
     protected winUrl = process.env.NODE_ENV === 'development'
         ? `http://localhost:9080`
@@ -15,12 +32,11 @@ export class Window {
     protected minWidth = 900
     protected minHeight = 600
 
-    public constructor() {
+    public constructor(projectId: string | null) {
 
         if (!windowStateKeeper) {
             // `electron-window-state` requires Electron's `screen` module, which can
-            // only be required after the app has emitted `ready`. So require it
-            // lazily.
+            // only be required after the app has emitted `ready`. So require it lazily.
             windowStateKeeper = require('electron-window-state')
         }
 
@@ -62,6 +78,10 @@ export class Window {
 
         // Remember window state on change
         savedWindowState.manage(this.window)
+
+        if (projectId) {
+            this.setProject(projectId)
+        }
     }
 
     public load() {
@@ -82,15 +102,31 @@ export class Window {
         this.window.loadURL(this.winUrl)
     }
 
-    public onClose(fn: () => void) {
+    public onClose(fn: (event: any) => void) {
+        this.window.on('close', fn)
+    }
+
+    public onClosed(fn: (event: any) => void) {
         this.window.on('closed', fn)
+    }
+
+    public setProject (projectId: string) {
+        this.window.setProject(projectId)
+    }
+
+    public getProjectOptions (): ProjectOptions | undefined {
+        return this.window.getProjectOptions()
+    }
+
+    public isBusy() {
+        return this.window.isBusy()
     }
 
     public isMinimized() {
         return this.window.isMinimized()
     }
 
-    /** Is the window currently visible? */
+    // Is the window currently visible?
     public isVisible() {
         return this.window.isVisible()
     }
@@ -110,6 +146,10 @@ export class Window {
     // Show the window
     public show() {
         this.window.show()
+    }
+
+    public send(channel: string) {
+        this.window.webContents.send(channel)
     }
 
     // Send the menu event to the renderer

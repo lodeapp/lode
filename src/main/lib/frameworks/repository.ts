@@ -32,6 +32,7 @@ export interface IRepository extends EventEmitter {
     readonly path: string
     readonly name: string
     frameworks: Array<IFramework>
+    frameworkCount: number
     status: FrameworkStatus
     selected: boolean
     scanning: boolean
@@ -44,9 +45,12 @@ export interface IRepository extends EventEmitter {
     isRrefreshing (): boolean
     isBusy (): boolean
     persist (): RepositoryOptions
+    save (): void
     scan (): Promise<Array<FrameworkOptions>>
     getDisplayName (): string
     toggle (): void
+    addFramework (options: FrameworkOptions): Promise<IFramework>
+    removeFramework (id: string): void
 }
 
 export class Repository extends EventEmitter implements IRepository {
@@ -54,10 +58,13 @@ export class Repository extends EventEmitter implements IRepository {
     public readonly path: string
     public readonly name: string
     public frameworks: Array<IFramework> = []
-    public status: FrameworkStatus = 'idle'
+    public frameworkCount: number = 0
+    public status: FrameworkStatus = 'loading'
     public selected: boolean = false
     public scanning: boolean = false
     public collapsed: boolean
+
+    protected ready: boolean = false
 
     constructor (options: RepositoryOptions) {
         super()
@@ -65,13 +72,10 @@ export class Repository extends EventEmitter implements IRepository {
         this.path = options.path
         this.name = options.name || this.path.split('/').pop() || 'untitled'
         this.collapsed = options.collapsed || false
+        this.frameworkCount = (options.frameworks || []).length
 
         // If options include frameworks already (i.e. persisted state), add them.
-        if (options.frameworks) {
-            options.frameworks.forEach((framework: FrameworkOptions) => {
-                this.addFramework(framework)
-            })
-        }
+        this.loadFrameworks(options.frameworks || [])
     }
 
     /**
@@ -97,10 +101,9 @@ export class Repository extends EventEmitter implements IRepository {
      */
     public stop (): Promise<void> {
         return new Promise((resolve, reject) => {
-            const stopping = this.frameworks.map((framework: IFramework) => {
+            Promise.all(this.frameworks.map((framework: IFramework) => {
                 return framework.stop()
-            })
-            Promise.all(stopping).then(() => {
+            })).then(() => {
                 resolve()
             })
         })
@@ -138,6 +141,13 @@ export class Repository extends EventEmitter implements IRepository {
             collapsed: this.collapsed,
             frameworks: this.frameworks.map(framework => framework.persist())
         }
+    }
+
+    /**
+     * Save this repository in the persistent store.
+     */
+    public save (): void {
+        this.emit('save')
     }
 
     /**
@@ -182,10 +192,34 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
-     * A function to run when a child framwork changes its status.
+     * A function to run when a child framework changes its status.
      */
     protected statusListener (): void {
         this.updateStatus(parseFrameworkStatus(this.frameworks.map(framework => framework.status)))
+    }
+
+    /**
+     * A function to run when a child framework changes its state (i.e. runs, stops, etc).
+     */
+    protected stateListener (): void {
+        // Cascade the event up to the project.
+        this.emit('state')
+    }
+
+    /**
+     * A function to run when a child framework requests saving.
+     */
+    protected saveListener (): void {
+        this.save()
+    }
+
+    /**
+     * Prepare the repository for ready state.
+     */
+    protected onReady (): void {
+        console.log('repository ready!')
+        this.ready = true
+        this.emit('ready', this)
     }
 
     /**
@@ -200,15 +234,39 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
+     * Load a group of frameworks to this project on first instantiation.
+     *
+     * @param frameworks The frameworks to add to this project.
+     */
+    protected async loadFrameworks (frameworks: Array<FrameworkOptions>): Promise<void> {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                Promise.all(frameworks.map((framework: FrameworkOptions) => {
+                    // @TODO: granular framework loaded notifications
+                    return this.addFramework(framework)
+                })).then(() => {
+                    this.onReady()
+                    resolve()
+                })
+            })
+        })
+    }
+
+    /**
      * Add a child framework to this repository.
      *
      * @param options The options of the framework we're adding.
      */
-    public addFramework (options: FrameworkOptions): IFramework {
-        const framework: IFramework = FrameworkFactory.make({ ...options, ...{ repositoryPath: this.path }})
-        framework.on('status', this.statusListener.bind(this))
-        this.frameworks.push(framework)
-        return framework
+    public async addFramework (options: FrameworkOptions): Promise<IFramework> {
+        return new Promise((resolve, reject) => {
+            const framework: IFramework = FrameworkFactory.make({ ...options, ...{ repositoryPath: this.path }})
+            framework.on('status', this.statusListener.bind(this))
+            framework.on('state', this.stateListener.bind(this))
+            framework.on('save', this.saveListener.bind(this))
+            this.frameworks.push(framework)
+            this.frameworkCount++
+            resolve(framework)
+        })
     }
 
     /**
@@ -220,6 +278,7 @@ export class Repository extends EventEmitter implements IRepository {
         const index = findIndex(this.frameworks, { id })
         if (index > -1) {
             this.frameworks.splice(index, 1)
+            this.frameworkCount--
         }
     }
 }

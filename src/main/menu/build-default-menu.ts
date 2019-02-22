@@ -1,7 +1,8 @@
 import { Menu, ipcMain } from 'electron'
 import { ensureItemIds } from './ensure-item-ids'
 import { MenuEvent } from './menu-event'
-import { Config } from '@main/lib/config'
+import { state } from '@main/lib/state'
+import { ProjectIdentifier } from '@main/lib/frameworks/project'
 
 // import { log } from '../log'
 // import { ensureDir } from 'fs-extra'
@@ -9,11 +10,6 @@ import { Config } from '@main/lib/config'
 // We seem to be unable to simple declare menu items as "radio" without TS
 // raising an alert, so we need to forcibly cast types when defining them.
 type MenuItemType = ('normal' | 'separator' | 'submenu' | 'checkbox' | 'radio')
-
-export type ProjectSettings = {
-    id: string
-    name: string
-}
 
 export type ApplicationMenuOptions = {
     latestJobName?: string
@@ -23,8 +19,8 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
     const template = new Array<Electron.MenuItemConstructorOptions>()
     const separator: Electron.MenuItemConstructorOptions = { type: 'separator' }
 
-    const currentProject: string = Config.get('currentProject')
-    const projects: Array<ProjectSettings> = Config.get('projects')
+    const currentProject: string | null = state.getCurrentProject()
+    const projects: Array<ProjectIdentifier> = state.getAvailableProjects()
 
     if (__DARWIN__) {
         template.push({

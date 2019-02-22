@@ -1,11 +1,12 @@
 <template>
-    <main :class="{ 'no-repositories': !project.repositories.length }">
-        <div v-if="!project.repositories.length">
+    <main :class="{ 'no-repositories': !project.repositoryCount }">
+        <div v-if="!project.repositoryCount">
             <h2>{{ 'Add repositories to :0 to start testing.' | set(project.name) }}</h2>
             <button class="btn btn-primary" @click="$modal.open('AddRepositories', { project })">Add repositories</button>
         </div>
         <template v-else>
-            <Split>
+            <!-- @TODO: Loading state -->
+            <Split v-if="!loading">
                 <Pane>
                     <div class="project">
                         <Repository
@@ -26,7 +27,6 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
 import Pane from '@/components/Pane'
 import Repository from '@/components/Repository'
 import Results from '@/components/Results'
@@ -46,19 +46,25 @@ export default {
             required: true
         }
     },
+    data () {
+        return {
+            loading: true
+        }
+    },
+    created () {
+        this.project.on('ready', () => {
+            this.loading = false
+        })
+    },
     methods: {
         removeRepository (repository) {
             this.$root.onModelRemove(repository.id)
             this.project.removeRepository(repository.id)
-            this.handleRemoveRepository(repository)
+            this.project.save()
         },
         storeRepositoryState (repository) {
-            this.repositoryChange(repository)
-        },
-        ...mapActions({
-            handleRemoveRepository: 'projects/removeRepository',
-            repositoryChange: 'projects/repositoryChange'
-        })
+            this.repository.save()
+        }
     }
 }
 </script>

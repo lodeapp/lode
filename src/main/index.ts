@@ -2,6 +2,7 @@ import { app, ipcMain, Menu } from 'electron'
 import { buildDefaultMenu } from './menu'
 import { Window } from './window'
 import { mergeEnvFromShell } from '@main/lib/process/shell'
+import { state } from '@main/lib/state'
 
 // Merge environment variables from shell, if needed.
 mergeEnvFromShell()
@@ -13,16 +14,22 @@ if (process.env.NODE_ENV !== 'development') {
 
 let mainWindow: Window | null = null
 
-function createWindow() {
-    const window = new Window()
+function createWindow(projectId: string | null) {
+    const window = new Window(projectId)
 
-    window.onClose(() => {
+    window.onClose((event: any) => {
+        if (window.isBusy()) {
+            event.preventDefault()
+            window.send('close')
+        }
+    })
+
+    window.onClosed(() => {
         mainWindow = null
         app.quit()
     })
 
     window.load()
-
     mainWindow = window
 }
 
@@ -31,7 +38,7 @@ function buildMenu(options = {}) {
 }
 
 app.on('ready', () => {
-    createWindow()
+    createWindow(state.getCurrentProject())
     buildMenu()
 })
 
@@ -43,7 +50,7 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
     if (mainWindow === null) {
-        createWindow()
+        createWindow(state.getCurrentProject())
     }
 })
 
@@ -51,13 +58,21 @@ ipcMain.on('update-menu', (event: any, options = {}) => {
     buildMenu(options)
 })
 
-// @TODO: support multiple windows.
-ipcMain.on('did-close', () => {
-    if (mainWindow) {
-        mainWindow!.close()
-    }
+ipcMain.on('window-should-close', () => {
+    process.nextTick(() => {
+        if (mainWindow) {
+            mainWindow.close()
+        }
+    })
 })
 
+ipcMain.on('switch-project', (event: any, projectId: string) => {
+    state.set('currentProject', projectId)
+    if (mainWindow) {
+        mainWindow.setProject(projectId)
+        event.sender.send('project-switched', mainWindow.getProjectOptions())
+    }
+})
 
 /**
  * Auto Updater

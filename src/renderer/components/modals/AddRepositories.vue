@@ -16,10 +16,10 @@
             </dl>
         </form>
         <div slot="footer" class="modal-footer tertiary separated">
-            <button type="button" class="btn btn-sm" @click="$emit('hide')">
+            <button type="button" class="btn btn-sm" @click="$emit('hide')" :disabled="loading">
                 Cancel
             </button>
-            <button type="button" class="btn btn-sm btn-primary" :disabled="empty" @click="add">
+            <button type="button" class="btn btn-sm btn-primary" :disabled="empty || loading" @click="add">
                 Add repositories
             </button>
         </div>
@@ -28,7 +28,6 @@
 
 <script>
 import _uniqBy from 'lodash/uniqBy'
-import { mapActions } from 'vuex'
 import { RepositoryValidator } from '@main/lib/frameworks/validator'
 
 import Modal from '@/components/modals/Modal'
@@ -48,6 +47,7 @@ export default {
     },
     data () {
         return {
+            loading: false,
             slots: []
         }
     },
@@ -93,15 +93,16 @@ export default {
             })
 
             if (!this.hasErrors) {
-                _uniqBy(this.slots, 'path').forEach((slot, index) => {
-                    this.addRepository(this.project.addRepository({ path: slot.path }))
+                this.loading = true
+                const adding = _uniqBy(this.slots, 'path').map((slot, index) => {
+                    this.project.addRepository({ path: slot.path })
                 })
-                this.$emit('hide')
+                Promise.all(adding).then(() => {
+                    this.project.save()
+                    this.$emit('hide')
+                })
             }
-        },
-        ...mapActions({
-            addRepository: 'projects/addRepository'
-        })
+        }
     }
 }
 </script>

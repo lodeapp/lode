@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import store from './store'
-import { mapActions, mapGetters } from 'vuex'
+import { isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
-import { Config } from '@main/lib/config'
+import { state } from '@main/lib/state'
 import { Logger } from '@main/lib/logger'
 import { Project } from '@main/lib/frameworks/project'
 import { queue } from '@main/lib/process/queue'
@@ -59,29 +59,9 @@ export default new Vue({
             }
         }
     },
-    computed: {
-        ...mapGetters({
-            currentProject: 'projects/currentProject'
-        })
-    },
-    watch: {
-        currentProject (value) {
-            this.$modal.clear()
-            this.refreshProject()
-            this.updateApplicationMenu()
-        }
-    },
     created () {
-        this.refreshProject()
-
-        window.onbeforeunload = (e) => {
-            if (this.project.isBusy()) {
-                this.project.stop().then(() => {
-                    ipcRenderer.send('did-close')
-                })
-                e.returnValue = false
-            }
-        }
+        console.log('renderer created...')
+        this.loadProject(remote.getCurrentWindow().getProjectOptions())
 
         // Register ipcRenderer event handling
         ipcRenderer
@@ -90,6 +70,14 @@ export default new Vue({
             })
             .on('focus', () => {
                 document.body.classList.add('is-focused')
+            })
+            .on('close', () => {
+                this.project.stop().then(() => {
+                    ipcRenderer.send('window-should-close')
+                })
+            })
+            .on('project-switched', (event, projectOptions) => {
+                this.loadProject(projectOptions)
             })
             .on('menu-event', (event, { name, properties }) => {
                 switch (name) {
@@ -134,8 +122,8 @@ export default new Vue({
                         break
                     case 'log-settings':
                         Logger.info.log({
-                            object: Config.get(),
-                            json: JSON.stringify(Config.get())
+                            object: state.get(),
+                            json: JSON.stringify(state.get())
                         })
                         break
                     case 'crash':
@@ -147,7 +135,7 @@ export default new Vue({
                     case 'reset-settings':
                         this.$modal.confirm('ResetSettings')
                             .then(() => {
-                                Config.clear()
+                                state.clear()
                                 remote.getCurrentWindow().reload()
                             })
                             .catch(() => {})
@@ -156,8 +144,9 @@ export default new Vue({
             })
     },
     methods: {
-        refreshProject () {
-            this.project = !this.currentProject ? null : new Project(this.currentProject)
+        loadProject (projectOptions) {
+            this.project = isEmpty(projectOptions) ? null : new Project(projectOptions)
+            console.log('project loaded...')
         },
         addProject () {
             this.$modal.confirm('EditProject')
@@ -165,10 +154,12 @@ export default new Vue({
                     // Stop current project before adding a new one.
                     (this.project ? this.project.stop() : Promise.resolve()).then(() => {
                         this.resetActiveTest()
-                        this.handleAddProject(new Project(options))
-                        this.$nextTick(() => {
+                        const project = new Project(options)
+                        // @TODO: show "add repositories" modal after adding a new project.
+                        ipcRenderer.once('switch-project', () => {
                             this.addRepositories()
                         })
+                        this.handleSwitchProject(project.id)
                     })
                 })
                 .catch(() => {})
@@ -177,7 +168,7 @@ export default new Vue({
             this.$modal.confirm('EditProject', { project: this.project })
                 .then(options => {
                     this.project.updateOptions(options)
-                    this.projectChange(this.project)
+                    this.project.save()
 
                     // Since current project hasn't changed, just been updated,
                     // we need to forcibly emit the change to the main process,
@@ -191,18 +182,17 @@ export default new Vue({
                 .then(() => {
                     this.project.stop().then(() => {
                         this.resetActiveTest()
-                        this.handleRemoveProject()
+                        const switchTo = state.removeProject(this.project.id)
+                        // Switch information should be available only
+                        // if there are still projects to switch to.
+                        if (switchTo) {
+                            this.handleSwitchProject(switchTo)
+                        } else {
+                            this.loadProject(null)
+                        }
                     })
                 })
                 .catch(() => {})
-        },
-        addRepositories () {
-            this.$modal.open('AddRepositories', { project: this.project })
-        },
-        updateApplicationMenu () {
-            ipcRenderer.send('update-menu', {
-                latestJobName: queue.getLatestJobName()
-            })
         },
         switchProject (projectId) {
             // Clicking on current project doesn't have any effect.
@@ -211,11 +201,11 @@ export default new Vue({
             }
 
             this.$modal.confirmIf(() => {
-                return this.project.status === 'idle' ? false : Config.get('confirm.switchProject')
+                return this.project.status === 'idle' ? false : state.get('confirm.switchProject')
             }, 'ConfirmSwitchProject')
                 .then(disableConfirm => {
                     if (disableConfirm) {
-                        Config.set('confirm.switchProject', false)
+                        state.set('confirm.switchProject', false)
                     }
                     this.project.stop().then(() => {
                         this.resetActiveTest()
@@ -223,6 +213,17 @@ export default new Vue({
                     })
                 })
                 .catch(() => {})
+        },
+        handleSwitchProject (projectId) {
+            ipcRenderer.send('switch-project', projectId)
+        },
+        addRepositories () {
+            this.$modal.open('AddRepositories', { project: this.project })
+        },
+        updateApplicationMenu () {
+            ipcRenderer.send('update-menu', {
+                latestJobName: queue.getLatestJobName()
+            })
         },
         latest (name, job) {
             queue.latest(name, job)
@@ -282,13 +283,7 @@ export default new Vue({
                     this.resetActiveTest()
                 }
             })
-        },
-        ...mapActions({
-            projectChange: 'projects/projectChange',
-            handleAddProject: 'projects/addProject',
-            handleRemoveProject: 'projects/removeProject',
-            handleSwitchProject: 'projects/switchProject'
-        })
+        }
     },
     store,
     render (createElement) {

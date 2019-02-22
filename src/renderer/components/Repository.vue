@@ -54,9 +54,14 @@
                 </div>
             </div>
         </div>
-        <template v-if="!repository.frameworks.length">
+        <template v-if="!repository.frameworkCount">
             <div class="empty-cta" v-show="show">
                 No test frameworks loaded. <a href="#" @click.prevent="scan">Scan repository</a>.
+            </div>
+        </template>
+        <template v-if="loading">
+            <div class="empty-cta" v-show="show">
+                Loading frameworks…
             </div>
         </template>
         <template v-else>
@@ -76,7 +81,6 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
 import { Menu } from '@main/menu'
 import Framework from '@/components/Framework'
 import Indicator from '@/components/Indicator'
@@ -99,6 +103,7 @@ export default {
     },
     data () {
         return {
+            loading: true,
             menu: new Menu()
                 .add({
                     label: 'Manage frameworks',
@@ -136,9 +141,13 @@ export default {
         }
     },
     created () {
-        this.repository.on('change', repository => {
-            this.$emit('change', repository)
-        })
+        this.repository
+            .on('ready', () => {
+                this.loading = false
+            })
+            .on('change', repository => {
+                this.$emit('change', repository)
+            })
     },
     methods: {
         toggle () {
@@ -193,15 +202,12 @@ export default {
         },
         removeFramework (framework) {
             this.$root.onModelRemove(framework.id)
-            this.handleRemoveFramework({ repository: this.repository, frameworkId: framework.id })
+            this.repository.removeFramework(framework.id)
+            this.repository.save()
         },
         storeFrameworkState (framework) {
-            this.frameworkChange({ repositoryId: this.repository.id, framework })
-        },
-        ...mapActions({
-            handleRemoveFramework: 'projects/removeFramework',
-            frameworkChange: 'projects/frameworkChange'
-        })
+            framework.save()
+        }
     }
 }
 </script>

@@ -63,6 +63,7 @@ export interface IFramework extends EventEmitter {
     runner: string | null
     process?: number
     suites: Array<ISuite>
+    initialSuiteCount: number
     status: FrameworkStatus
     selective: boolean
     selected: SuiteList
@@ -78,6 +79,7 @@ export interface IFramework extends EventEmitter {
     isRrefreshing (): boolean
     isBusy (): boolean
     persist (): FrameworkOptions
+    save (): void
     updateOptions (options: FrameworkOptions): void
     getDisplayName (): string
     toggle (): void
@@ -105,8 +107,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public sshIdentity!: string | null
     public process?: number
     public suites: Array<ISuite> = []
+    public initialSuiteCount: number = 0
     public running: Array<Promise<void>> = []
-    public status: FrameworkStatus = 'idle'
+    public status: FrameworkStatus = 'loading'
     public selective: boolean = false
     public selected: SuiteList = {
         suites: []
@@ -129,6 +132,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     protected version?: string
+    protected ready: boolean = false
 
     static readonly defaults?: FrameworkOptions
 
@@ -164,19 +168,19 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.collapsed = options.collapsed || false
         this.expandFilters = options.expandFilters || false
 
+        this.initialSuiteCount = (options.suites || []).length
+
         // If options include suites already (i.e. persisted state), add them.
-        if (options.suites) {
-            options.suites.forEach((result: object) => {
-                // Hydrate results in case schema has changed from previously saved state
-                this.makeSuite(this.hydrateSuiteResult(result), true)
-            })
-        }
+        this.loadSuites(options.suites || [])
     }
 
     /**
      * Prepare this framework for running.
      */
-    protected abstract assemble (): void
+    protected assemble (): void {
+        this.emit('state')
+        this.emit('assembled')
+    }
 
     /**
      * Prepare this framework for running.
@@ -201,6 +205,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 // or can't be removed.
             }
         }
+        this.emit('state')
+        this.emit('disassembled')
     }
 
     /**
@@ -274,6 +280,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
             expandFilters: this.expandFilters,
             suites: this.suites.map((suite: ISuite) => suite.persist())
         }
+    }
+
+    /**
+     * Save this framework in the persistent store.
+     */
+    public save (): void {
+        this.emit('save')
     }
 
     /**
@@ -437,7 +450,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Whether this framework is busy.
      */
     public isBusy (): boolean {
-        return this.isRunning() || this.isRrefreshing()
+        return this.isRunning() || this.isRrefreshing() || this.status === 'queued'
     }
 
     /**
@@ -739,29 +752,31 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param result An object representing a suite's test results.
      * @param rebuild Whether to rebuild the tests inside the suite, regardless of them being built already.
      */
-    protected makeSuite (
+    protected async makeSuite (
         result: ISuiteResult,
         rebuild: boolean = false
-    ): ISuite {
-        let suite: ISuite | undefined = this.findSuite(result.file)
+    ): Promise<ISuite> {
+        return new Promise((resolve, reject) => {
+            let suite: ISuite | undefined = this.findSuite(result.file)
 
-        if (!suite) {
-            suite = this.newSuite(result)
-            suite.on('selective', this.updateSelected.bind(this))
-            suite.on('status', this.updateLedger.bind(this))
-            this.updateLedger(suite.getStatus())
-            this.suites.push(suite)
-        }
+            if (!suite) {
+                suite = this.newSuite(result)
+                suite.on('selective', this.updateSelected.bind(this))
+                suite.on('status', this.updateLedger.bind(this))
+                this.updateLedger(suite.getStatus())
+                this.suites.push(suite)
+            }
 
-        // Mark suite as freshly made before returning,
-        // in case we need to clear out stale ones.
-        suite.setFresh(true)
+            // Mark suite as freshly made before returning,
+            // in case we need to clear out stale ones.
+            suite.setFresh(true)
 
-        if (rebuild) {
-            suite.buildTests(result, false)
-        }
+            if (rebuild) {
+                suite.buildTests(result, false)
+            }
 
-        return suite
+            resolve(suite)
+        })
     }
 
     /**
@@ -786,6 +801,36 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 root: this.fullPath,
                 runsInRemote: this.runsInRemote,
                 remotePath: this.remotePath
+            })
+        })
+    }
+
+    /**
+     * Prepare the framework for ready state.
+     */
+    protected onReady (): void {
+        console.log('framework ready!')
+        this.ready = true
+        this.updateStatus('idle')
+        this.emit('ready', this)
+    }
+
+    /**
+     * Load a group of suites to this project on first instantiation.
+     *
+     * @param suites The suites to add to this project.
+     */
+    protected async loadSuites (suites: Array<object>): Promise<void> {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                // @TODO: granular suite loaded notifications
+                Promise.all(suites.map((result: object) => {
+                    // Hydrate results in case schema has changed from previously saved state
+                    return this.makeSuite(this.hydrateSuiteResult(result), true)
+                })).then(() => {
+                    this.onReady()
+                    resolve()
+                })
             })
         })
     }
@@ -844,10 +889,15 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param partial The suite's run results (potentially incomplete)
      */
-    protected debriefSuite (partial: object): Promise<void> {
-        const result: ISuiteResult = this.hydrateSuiteResult(partial)
-        const suite: ISuite = this.makeSuite(result)
-        return suite.debrief(result, this.shouldCleanup(suite))
+    protected async debriefSuite (partial: object): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const result: ISuiteResult = this.hydrateSuiteResult(partial)
+            this.makeSuite(result).then((suite: ISuite) => {
+                suite.debrief(result, this.shouldCleanup(suite)).then(() => {
+                    resolve()
+                })
+            })
+        })
     }
 
     /**

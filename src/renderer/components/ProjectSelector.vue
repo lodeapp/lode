@@ -16,7 +16,7 @@
 
 <script>
 import { Menu } from '@main/menu'
-import { Config } from '@main/lib/config'
+import { state } from '@main/lib/state'
 
 export default {
     name: 'ProjectSelector',
@@ -32,7 +32,7 @@ export default {
         buildMenu () {
             this.menu = new Menu()
 
-            Config.get('projects').forEach(project => {
+            state.get('projects').forEach(project => {
                 this.menu.add({
                     label: project.name,
                     type: 'checkbox',

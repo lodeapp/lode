@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { state } from '@main/lib/state'
 import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
 
@@ -51,9 +51,9 @@ export default {
         }
     },
     computed: {
-        ...mapGetters({
-            hasProjects: 'projects/hasProjects'
-        })
+        hasProjects () {
+            return state.hasProjects()
+        }
     },
     methods: {
         handleSubmit (event) {

@@ -1,0 +1,97 @@
+import latinize from 'latinize'
+import { find, findIndex, sortBy, uniqBy } from 'lodash'
+import { EventEmitter } from 'events'
+import ElectronStore from 'electron-store'
+import { Project } from '@main/lib/state/project'
+import { ProjectIdentifier } from '@main/lib/frameworks/project'
+
+class State extends EventEmitter {
+    protected store: any
+    protected defaultSettings: object = {
+        concurrency: 3,
+        confirm: {
+            switchProject: true
+        },
+        currentProject: null,
+        paneSizes: [40, 60],
+        projects: []
+    }
+
+    constructor () {
+        super()
+        this.store = new ElectronStore({
+            defaults: this.defaultSettings
+        })
+    }
+
+    public get (key?: string, fallback?: any): any {
+        return this.store.get(key, fallback)
+    }
+
+    public set (key: string, value?: any): void {
+        console.log('setting something')
+        this.emit('set:' + key, value)
+        return this.store.set(key, value)
+    }
+
+    public save (state: object, overwrite = false): void {
+        if (!overwrite) {
+            state = { ...this.get(), ...state}
+        }
+        this.emit('save', state)
+        this.store.set(state)
+    }
+
+    public clear (): void {
+        this.emit('clear', this.get())
+        this.store.clear()
+    }
+
+    public hasProjects (): boolean {
+        return this.store.get('projects', []).length > 0
+    }
+
+    public getCurrentProject (): string | null {
+        const currentProject = this.store.get('currentProject', null)
+        // If current project is not set or it doesn't exist in the full list of projects, return null.
+        if (!currentProject || !find(this.store.get('projects'), { id: currentProject })) {
+            return null
+        }
+        return currentProject
+    }
+
+    public getAvailableProjects (): Array<ProjectIdentifier> {
+        return sortBy(this.store.get('projects'), [(project: ProjectIdentifier) => {
+            return latinize(project.name).toLowerCase()
+        }])
+    }
+
+    public removeProject (projectId: string): string | null {
+        const projects = this.store.get('projects', [])
+        const projectIndex = findIndex(projects, { id: projectId })
+        if (projectIndex > -1) {
+            projects.splice(projectIndex, 1)
+            this.store.set('projects', projects)
+            // After removing project, switch to left adjacent project, or reset
+            const index = Math.max(0, (projectIndex - 1))
+            const switchTo = typeof projects[index] !== 'undefined' ? projects[index].id : null
+            this.store.set('currentProject', switchTo)
+            return switchTo
+        }
+        return projectId
+    }
+
+    public project (id: string): Project {
+        const project = new Project(id)
+        // If project already has a name, add it to the available projects list.
+        if (project.get('options.name')) {
+            this.store.set('projects', uniqBy(this.store.get('projects', []).concat([{
+                id,
+                name: project.get('options.name')
+            }]), 'id'))
+        }
+        return project
+    }
+}
+
+export const state = new State()

@@ -54,6 +54,7 @@ export class Jest extends Framework {
      * Prepare this framework for running.
      */
     protected assemble (): void {
+        super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
                 ? Path.resolve(__dirname, '../../reporters/jest')
