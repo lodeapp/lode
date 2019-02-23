@@ -60,7 +60,7 @@ export default new Vue({
         }
     },
     created () {
-        console.log('renderer created...')
+        // Grab initial state from window object.
         this.loadProject(remote.getCurrentWindow().getProjectOptions())
 
         // Register ipcRenderer event handling
@@ -145,8 +145,8 @@ export default new Vue({
     },
     methods: {
         loadProject (projectOptions) {
+            projectOptions = JSON.parse(projectOptions)
             this.project = isEmpty(projectOptions) ? null : new Project(projectOptions)
-            console.log('project loaded...')
         },
         addProject () {
             this.$modal.confirm('EditProject')

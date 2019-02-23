@@ -1,4 +1,4 @@
-import { cloneDeep, debounce, find } from 'lodash'
+import { debounce, find } from 'lodash'
 import { EventEmitter } from 'events'
 import { ITest, ITestResult } from '@main/lib/frameworks/test'
 import { Status, parseStatus } from '@main/lib/frameworks/status'
@@ -20,31 +20,6 @@ export abstract class Nugget extends EventEmitter {
     constructor () {
         super()
         this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 100)
-    }
-
-    /**
-     * Create a full test result object from a potentially incomplete one.
-     *
-     * @param partial The potentially incomplete test result object.
-     */
-    protected hydrateTestResult (partial: object): ITestResult {
-        return {
-            // If a specific version was passed, inject it in the result.
-            // This is useful for frameworks cannot pass versions from results,
-            // but its framework class can figure out the version via command.
-            ...(this.getVersion() ? { version: this.getVersion() } : {}),
-            ...{
-                identifier: '',
-                name: '',
-                displayName: '',
-                status: <Status>'idle',
-                feedback: '',
-                console: [],
-                stats: {},
-                tests: []
-            },
-            ...cloneDeep(partial)
-        }
     }
 
     /**
@@ -140,10 +115,8 @@ export abstract class Nugget extends EventEmitter {
                 cleanup = false
             }
 
-            tests.forEach((partial: ITestResult) => {
-                const result = this.hydrateTestResult(partial)
-                let test: ITest = this.makeTest(result)
-                running.push(test.debrief(result, cleanup))
+            tests.forEach((result: ITestResult) => {
+                running.push(this.makeTest(result).debrief(result, cleanup))
             })
 
             Promise.all(running).then(() => {

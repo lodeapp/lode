@@ -123,9 +123,9 @@ export class Suite extends Nugget implements ISuite {
         result: ISuiteResult,
         force: boolean = false
     ): void {
-        this.tests = result.tests!.map((result: ITestResult) => {
-            return this.makeTest(this.hydrateTestResult(result), force)
-        })
+        this.tests = result.tests ? result.tests.map((result: ITestResult) => {
+            return this.makeTest(result, force)
+        }) : []
         this.updateStatus()
     }
 

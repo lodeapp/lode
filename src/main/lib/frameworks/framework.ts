@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { cloneDeep, find, findIndex, trimStart } from 'lodash'
+import { find, findIndex, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { EventEmitter } from 'events'
 import { IProcess } from '@main/lib/process/process'
@@ -64,6 +64,7 @@ export interface IFramework extends EventEmitter {
     process?: number
     suites: Array<ISuite>
     initialSuiteCount: number
+    initialSuiteReady: number
     status: FrameworkStatus
     selective: boolean
     selected: SuiteList
@@ -108,6 +109,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public process?: number
     public suites: Array<ISuite> = []
     public initialSuiteCount: number = 0
+    public initialSuiteReady: number = 0
     public running: Array<Promise<void>> = []
     public status: FrameworkStatus = 'loading'
     public selective: boolean = false
@@ -132,6 +134,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     protected version?: string
+    protected parsed: boolean = false
     protected ready: boolean = false
 
     static readonly defaults?: FrameworkOptions
@@ -681,35 +684,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
-     * Create a full suite result object from a potentially incomplete one.
-     *
-     * @param partial The potentially incomplete result object.
-     */
-    protected hydrateSuiteResult (partial: object): ISuiteResult {
-        return {
-            // If a specific version was passed, inject it in the result.
-            // This is useful for frameworks cannot pass versions from results,
-            // but its framework class can figure out the version via command.
-            ...(this.getVersion() ? { version: this.getVersion() } : {}),
-            ...{
-                file: '',
-                tests: [],
-                console: [],
-                meta: [],
-                testsLoaded: true
-            },
-            ...cloneDeep(this.decodeSuiteResult(partial))
-        }
-    }
-
-    /**
-     * Decode the results of a suite run. This is a chance
+     * Hydrate the results of a suite run. This is a chance
      * for each framework to process content from their
      * respective reporters.
      *
-     * @param partial The suite's run results (potentially incomplete)
+     * @param partial The suite's run results
      */
-    protected decodeSuiteResult (partial: object): object {
+    protected hydrateSuiteResult (partial: ISuiteResult): ISuiteResult {
         return partial
     }
 
@@ -761,8 +742,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
             if (!suite) {
                 suite = this.newSuite(result)
-                suite.on('selective', this.updateSelected.bind(this))
-                suite.on('status', this.updateLedger.bind(this))
+                suite
+                    .on('selective', this.updateSelected.bind(this))
+                    .on('status', this.updateLedger.bind(this))
                 this.updateLedger(suite.getStatus())
                 this.suites.push(suite)
             }
@@ -775,6 +757,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 suite.buildTests(result, false)
             }
 
+            this.onSuiteReady()
             resolve(suite)
         })
     }
@@ -809,10 +792,17 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Prepare the framework for ready state.
      */
     protected onReady (): void {
-        console.log('framework ready!')
         this.ready = true
         this.updateStatus('idle')
         this.emit('ready', this)
+    }
+
+    /**
+     * Listener for when a child suite is ready.
+     */
+    protected onSuiteReady (): void {
+        this.emit('progress')
+        this.initialSuiteReady++
     }
 
     /**
@@ -820,11 +810,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param suites The suites to add to this project.
      */
-    protected async loadSuites (suites: Array<object>): Promise<void> {
+    protected async loadSuites (suites: Array<ISuiteResult>): Promise<void> {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                // @TODO: granular suite loaded notifications
-                Promise.all(suites.map((result: object) => {
+                Promise.all(suites.map((result: ISuiteResult) => {
                     // Hydrate results in case schema has changed from previously saved state
                     return this.makeSuite(this.hydrateSuiteResult(result), true)
                 })).then(() => {
@@ -889,7 +878,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param partial The suite's run results (potentially incomplete)
      */
-    protected async debriefSuite (partial: object): Promise<void> {
+    protected async debriefSuite (partial: ISuiteResult): Promise<void> {
         return new Promise((resolve, reject) => {
             const result: ISuiteResult = this.hydrateSuiteResult(partial)
             this.makeSuite(result).then((suite: ISuite) => {

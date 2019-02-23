@@ -2,7 +2,6 @@ import { BrowserWindow as BaseBrowserWindow } from 'electron'
 import { MenuEvent } from './menu'
 import { state } from '@main/lib/state'
 import { Project as ProjectState } from '@main/lib/state/project'
-import { ProjectOptions } from '@main/lib/frameworks/project'
 
 let windowStateKeeper: any | null = null
 
@@ -12,8 +11,8 @@ class BrowserWindow extends BaseBrowserWindow {
         this.projectState = state.project(projectId)
     }
 
-    public getProjectOptions (): ProjectOptions | undefined {
-        return this.projectState ? this.projectState.get('options') : {}
+    public getProjectOptions (): string {
+        return JSON.stringify(this.projectState ? this.projectState.get('options', {}) : {})
     }
 
     public isBusy (): boolean {
@@ -114,7 +113,7 @@ export class Window {
         this.window.setProject(projectId)
     }
 
-    public getProjectOptions (): ProjectOptions | undefined {
+    public getProjectOptions (): string {
         return this.window.getProjectOptions()
     }
 

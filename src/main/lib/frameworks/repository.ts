@@ -32,7 +32,8 @@ export interface IRepository extends EventEmitter {
     readonly path: string
     readonly name: string
     frameworks: Array<IFramework>
-    frameworkCount: number
+    initialFrameworkCount: number
+    initialFrameworkReady: number
     status: FrameworkStatus
     selected: boolean
     scanning: boolean
@@ -58,12 +59,14 @@ export class Repository extends EventEmitter implements IRepository {
     public readonly path: string
     public readonly name: string
     public frameworks: Array<IFramework> = []
-    public frameworkCount: number = 0
+    public initialFrameworkCount: number = 0
+    public initialFrameworkReady: number = 0
     public status: FrameworkStatus = 'loading'
     public selected: boolean = false
     public scanning: boolean = false
     public collapsed: boolean
 
+    protected parsed: boolean = false
     protected ready: boolean = false
 
     constructor (options: RepositoryOptions) {
@@ -72,7 +75,7 @@ export class Repository extends EventEmitter implements IRepository {
         this.path = options.path
         this.name = options.name || this.path.split('/').pop() || 'untitled'
         this.collapsed = options.collapsed || false
-        this.frameworkCount = (options.frameworks || []).length
+        this.initialFrameworkCount = (options.frameworks || []).length
 
         // If options include frameworks already (i.e. persisted state), add them.
         this.loadFrameworks(options.frameworks || [])
@@ -214,12 +217,43 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
+     * Prepare the repository for parsed state.
+     */
+    protected onParsed (): void {
+        this.parsed = true
+        if (!this.initialFrameworkCount) {
+            this.onReady()
+        }
+        this.emit('parsed', this)
+    }
+
+    /**
      * Prepare the repository for ready state.
      */
     protected onReady (): void {
-        console.log('repository ready!')
         this.ready = true
+        if (!this.initialFrameworkCount) {
+            this.updateStatus('idle')
+        }
         this.emit('ready', this)
+    }
+
+    /**
+     * Register loading progress.
+     */
+    protected onProgress (): void {
+        this.emit('progress')
+    }
+
+    /**
+     * Listener for when a child framework is ready.
+     */
+    protected onFrameworkReady (): void {
+        this.emit('progress')
+        this.initialFrameworkReady++
+        if (this.initialFrameworkReady >= this.initialFrameworkCount) {
+            this.onReady()
+        }
     }
 
     /**
@@ -242,10 +276,9 @@ export class Repository extends EventEmitter implements IRepository {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 Promise.all(frameworks.map((framework: FrameworkOptions) => {
-                    // @TODO: granular framework loaded notifications
                     return this.addFramework(framework)
                 })).then(() => {
-                    this.onReady()
+                    this.onParsed()
                     resolve()
                 })
             })
@@ -260,11 +293,13 @@ export class Repository extends EventEmitter implements IRepository {
     public async addFramework (options: FrameworkOptions): Promise<IFramework> {
         return new Promise((resolve, reject) => {
             const framework: IFramework = FrameworkFactory.make({ ...options, ...{ repositoryPath: this.path }})
-            framework.on('status', this.statusListener.bind(this))
-            framework.on('state', this.stateListener.bind(this))
-            framework.on('save', this.saveListener.bind(this))
+            framework
+                .on('progress', this.onProgress.bind(this))
+                .on('ready', this.onFrameworkReady.bind(this))
+                .on('status', this.statusListener.bind(this))
+                .on('state', this.stateListener.bind(this))
+                .on('save', this.saveListener.bind(this))
             this.frameworks.push(framework)
-            this.frameworkCount++
             resolve(framework)
         })
     }
@@ -278,7 +313,6 @@ export class Repository extends EventEmitter implements IRepository {
         const index = findIndex(this.frameworks, { id })
         if (index > -1) {
             this.frameworks.splice(index, 1)
-            this.frameworkCount--
         }
     }
 }

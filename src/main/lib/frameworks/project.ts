@@ -5,6 +5,7 @@ import { state } from '@main/lib/state'
 import { Project as ProjectState } from '@main/lib/state/project'
 import { FrameworkStatus, parseFrameworkStatus } from '@main/lib/frameworks/status'
 import { RepositoryOptions, IRepository, Repository } from '@main/lib/frameworks/repository'
+import { FrameworkOptions } from '@main/lib/frameworks/framework'
 
 /**
  * The minimal options to identify a project by.
@@ -27,7 +28,10 @@ export interface IProject extends EventEmitter {
     readonly id: string
     name: string
     repositories: Array<IRepository>
-    repositoryCount: number
+    initialRepositoryCount: number
+    initialRepositoryReady: number
+    modelsToLoad: number
+    progress: number
     status: FrameworkStatus
     selected: boolean
 
@@ -48,11 +52,15 @@ export class Project extends EventEmitter implements IProject {
     public readonly id: string
     public name: string
     public repositories: Array<IRepository> = []
-    public repositoryCount = 0
+    public initialRepositoryCount: number = 0
+    public initialRepositoryReady: number = 0
     public status: FrameworkStatus = 'loading'
     public selected: boolean = false
+    public modelsToLoad: number = 0
+    public progress: number = 0
 
     protected state: ProjectState
+    protected parsed: boolean = false
     protected ready: boolean = false
 
     constructor (options: ProjectOptions) {
@@ -60,7 +68,16 @@ export class Project extends EventEmitter implements IProject {
         this.name = options.name
         this.id = options.id || uuid()
         this.state = state.project(this.id)
-        this.repositoryCount = (options.repositories || []).length
+        this.initialRepositoryCount = (options.repositories || []).length
+        this.modelsToLoad =
+            this.initialRepositoryCount
+            + (options.repositories || []).reduce((rsum: number, repository: RepositoryOptions) => {
+                return rsum
+                    + (repository.frameworks || []).length
+                    + (repository.frameworks || []).reduce((fsum: number, framework: FrameworkOptions) => {
+                        return fsum + (framework.suites || []).length
+                    }, 0)
+            }, 0)
 
         // If options include repositories already (i.e. persisted state), add them.
         this.loadRepositories(options.repositories || [])
@@ -169,17 +186,47 @@ export class Project extends EventEmitter implements IProject {
      * A function to run when a child repository requests saving.
      */
     protected saveListener (): void {
-        console.log('repository saved, saving')
         this.save()
+    }
+
+    /**
+     * Prepare the project for parsed state.
+     */
+    protected onParsed (): void {
+        this.parsed = true
+        if (!this.initialRepositoryCount) {
+            this.onReady()
+        }
+        this.emit('parsed', this)
     }
 
     /**
      * Prepare the project for ready state.
      */
     protected onReady (): void {
-        console.log('project ready!')
         this.ready = true
+        if (!this.initialRepositoryCount) {
+            this.updateStatus('idle')
+        }
         this.emit('ready', this)
+    }
+
+    /**
+     * Register loading progress.
+     */
+    protected onProgress (): void {
+        this.progress++
+    }
+
+    /**
+     * Listener for when a child framework is ready.
+     */
+    protected onRepositoryReady (): void {
+        this.progress++
+        this.initialRepositoryReady++
+        if (this.initialRepositoryReady >= this.initialRepositoryCount) {
+            this.onReady()
+        }
     }
 
     /**
@@ -202,10 +249,9 @@ export class Project extends EventEmitter implements IProject {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 Promise.all(repositories.map((repository: RepositoryOptions) => {
-                    // @TODO: granular repository loaded notifications
                     return this.addRepository(repository)
                 })).then(() => {
-                    this.onReady()
+                    this.onParsed()
                     resolve()
                 })
             })
@@ -220,11 +266,13 @@ export class Project extends EventEmitter implements IProject {
     public async addRepository (options: RepositoryOptions): Promise<IRepository> {
         return new Promise((resolve, reject) => {
             const repository = new Repository(options)
-            repository.on('status', this.statusListener.bind(this))
-            repository.on('state', this.stateListener.bind(this))
-            repository.on('save', this.saveListener.bind(this))
+            repository
+                .on('progress', this.onProgress.bind(this))
+                .on('ready', this.onRepositoryReady.bind(this))
+                .on('status', this.statusListener.bind(this))
+                .on('state', this.stateListener.bind(this))
+                .on('save', this.saveListener.bind(this))
             this.repositories.push(repository)
-            this.repositoryCount++
             resolve(repository)
         })
     }
@@ -238,7 +286,6 @@ export class Project extends EventEmitter implements IProject {
         const index = findIndex(this.repositories, { id })
         if (index > -1) {
             this.repositories.splice(index, 1)
-            this.repositoryCount--
         }
     }
 }

@@ -24,17 +24,14 @@ export class Project implements IProjectState {
     }
 
     public get (key: string, fallback?: any): any {
-        console.log('getting key from state', key)
         return this.store.get(key, fallback)
     }
 
     public set (key: string, value?: any): void {
-        console.log('setting project state')
         this.store.set(key, value)
     }
 
     public update (options: ProjectOptions): void {
-        console.log('updating project state')
         this.store.set('options', {...this.store.get('options'), ...options})
     }
 

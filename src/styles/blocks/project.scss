@@ -1,0 +1,91 @@
+main {
+    display: flex;
+    flex-grow: 1;
+
+    &.no-repositories {
+
+        & > div {
+            padding: 210px 0 0;
+            text-align: center;
+            width: 100%;
+
+            h2 {
+                margin-bottom: var(--spacing-double);
+            }
+        }
+    }
+
+    &:not(.no-repositories) > .split {
+
+        & > :first-child {
+            border-right: 1px solid $primary-border;
+        }
+
+        & > :last-child {
+            margin-left: -10px; // Split gutter width
+        }
+    }
+
+    & > .loading {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        padding-top: 15%;
+
+        & > .loading-group {
+            animation: fade-in-top .4s forwards;
+            animation-delay: .2s; // Reduce flicker when loading quickly.
+            opacity: 0;
+
+            .spinner,
+            .spinner:after {
+                border-radius: 50%;
+                width: 30em;
+                height: 30em;
+            }
+
+            .spinner {
+                animation: rotate .6s infinite linear;
+                border-bottom: 1em solid var(--color-blue-200);
+                border-left: 1em solid var(--color-blue-400);
+                border-right: 1em solid var(--color-blue-200);
+                border-top: 1em solid var(--color-blue-200);
+                display: block;
+                font-size: 2px;
+                left: 0;
+                margin: 0 auto var(--spacing);
+                position: relative;
+                text-indent: -9999em;
+                transform: translateZ(0);
+            }
+
+            h2 {
+                color: var(--color-gray-600);
+                font-weight: var(--font-weight-semibold);
+            }
+        }
+    }
+
+    .split {
+        display: flex;
+        flex-grow: 1;
+
+        .pane {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+            width: 50%;
+
+            & + .gutter {
+                cursor: col-resize !important;
+                margin: 0;
+                z-index: 2;
+            }
+        }
+    }
+}

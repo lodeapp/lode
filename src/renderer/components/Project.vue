@@ -1,11 +1,16 @@
 <template>
-    <main :class="{ 'no-repositories': !project.repositoryCount }">
-        <div v-if="!project.repositoryCount">
+    <main :class="{ 'no-repositories': !project.initialRepositoryCount }">
+        <div v-if="!project.initialRepositoryCount">
             <h2>{{ 'Add repositories to :0 to start testing.' | set(project.name) }}</h2>
             <button class="btn btn-primary" @click="$modal.open('AddRepositories', { project })">Add repositories</button>
         </div>
         <template v-else>
-            <!-- @TODO: Loading state -->
+            <div v-if="loading" class="loading">
+                <div class="loading-group">
+                    <div class="spinner"></div>
+                    <h2>{{ 'Loading :0…' | set(project.name) }}</h2>
+                </div>
+            </div>
             <Split v-if="!loading">
                 <Pane>
                     <div class="project">

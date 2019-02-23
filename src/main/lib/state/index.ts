@@ -13,7 +13,7 @@ class State extends EventEmitter {
             switchProject: true
         },
         currentProject: null,
-        paneSizes: [40, 60],
+        paneSizes: [50, 50],
         projects: []
     }
 
@@ -29,7 +29,6 @@ class State extends EventEmitter {
     }
 
     public set (key: string, value?: any): void {
-        console.log('setting something')
         this.emit('set:' + key, value)
         return this.store.set(key, value)
     }
