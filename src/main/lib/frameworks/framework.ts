@@ -801,7 +801,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Listener for when a child suite is ready.
      */
     protected onSuiteReady (): void {
-        this.emit('progress')
         this.initialSuiteReady++
     }
 

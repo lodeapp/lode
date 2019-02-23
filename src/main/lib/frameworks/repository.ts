@@ -239,17 +239,9 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
-     * Register loading progress.
-     */
-    protected onProgress (): void {
-        this.emit('progress')
-    }
-
-    /**
      * Listener for when a child framework is ready.
      */
     protected onFrameworkReady (): void {
-        this.emit('progress')
         this.initialFrameworkReady++
         if (this.initialFrameworkReady >= this.initialFrameworkCount) {
             this.onReady()
@@ -294,7 +286,6 @@ export class Repository extends EventEmitter implements IRepository {
         return new Promise((resolve, reject) => {
             const framework: IFramework = FrameworkFactory.make({ ...options, ...{ repositoryPath: this.path }})
             framework
-                .on('progress', this.onProgress.bind(this))
                 .on('ready', this.onFrameworkReady.bind(this))
                 .on('status', this.statusListener.bind(this))
                 .on('state', this.stateListener.bind(this))
