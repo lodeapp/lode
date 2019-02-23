@@ -27,8 +27,6 @@ export interface IProject extends EventEmitter {
     readonly id: string
     name: string
     repositories: Array<IRepository>
-    initialRepositoryCount: number
-    initialRepositoryReady: number
     status: FrameworkStatus
     selected: boolean
 
@@ -38,6 +36,7 @@ export interface IProject extends EventEmitter {
     isRunning (): boolean
     isRrefreshing (): boolean
     isBusy (): boolean
+    empty (): boolean
     persist (): ProjectOptions
     save (): void
     updateOptions (options: ProjectOptions): void
@@ -49,14 +48,15 @@ export class Project extends EventEmitter implements IProject {
     public readonly id: string
     public name: string
     public repositories: Array<IRepository> = []
-    public initialRepositoryCount: number = 0
-    public initialRepositoryReady: number = 0
     public status: FrameworkStatus = 'loading'
     public selected: boolean = false
 
     protected state: ProjectState
     protected parsed: boolean = false
     protected ready: boolean = false
+    protected hasRepositories: boolean = false
+    protected initialRepositoryCount: number = 0
+    protected initialRepositoryReady: number = 0
 
     constructor (options: ProjectOptions) {
         super()
@@ -64,6 +64,7 @@ export class Project extends EventEmitter implements IProject {
         this.id = options.id || uuid()
         this.state = state.project(this.id)
         this.initialRepositoryCount = (options.repositories || []).length
+        this.hasRepositories = this.initialRepositoryCount > 0
 
         // If options include repositories already (i.e. persisted state), add them.
         this.loadRepositories(options.repositories || [])
@@ -124,6 +125,13 @@ export class Project extends EventEmitter implements IProject {
      */
     public isBusy (): boolean {
         return this.repositories.some((repository: IRepository) => repository.isBusy())
+    }
+
+    /**
+     * Whether this project has any repositories.
+     */
+    public empty (): boolean {
+        return !this.hasRepositories
     }
 
     /**
@@ -250,6 +258,7 @@ export class Project extends EventEmitter implements IProject {
                 .on('state', this.stateListener.bind(this))
                 .on('save', this.saveListener.bind(this))
             this.repositories.push(repository)
+            this.hasRepositories = true
             resolve(repository)
         })
     }
@@ -263,6 +272,9 @@ export class Project extends EventEmitter implements IProject {
         const index = findIndex(this.repositories, { id })
         if (index > -1) {
             this.repositories.splice(index, 1)
+        }
+        if (!this.repositories.length) {
+            this.hasRepositories = false
         }
     }
 }

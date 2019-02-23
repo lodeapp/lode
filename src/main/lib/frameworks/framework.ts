@@ -63,8 +63,6 @@ export interface IFramework extends EventEmitter {
     runner: string | null
     process?: number
     suites: Array<ISuite>
-    initialSuiteCount: number
-    initialSuiteReady: number
     status: FrameworkStatus
     selective: boolean
     selected: SuiteList
@@ -108,8 +106,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public sshIdentity!: string | null
     public process?: number
     public suites: Array<ISuite> = []
-    public initialSuiteCount: number = 0
-    public initialSuiteReady: number = 0
     public running: Array<Promise<void>> = []
     public status: FrameworkStatus = 'loading'
     public selective: boolean = false
@@ -136,6 +132,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected version?: string
     protected parsed: boolean = false
     protected ready: boolean = false
+    protected initialSuiteCount: number = 0
+    protected initialSuiteReady: number = 0
 
     static readonly defaults?: FrameworkOptions
 

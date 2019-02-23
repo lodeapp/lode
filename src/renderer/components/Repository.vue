@@ -54,7 +54,7 @@
                 </div>
             </div>
         </div>
-        <template v-if="!repository.initialFrameworkCount">
+        <template v-if="!repository.frameworks.length">
             <div class="empty-cta" v-show="show">
                 No test frameworks loaded. <a href="#" @click.prevent="scan">Scan repository</a>.
             </div>

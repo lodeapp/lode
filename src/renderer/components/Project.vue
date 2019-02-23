@@ -1,6 +1,6 @@
 <template>
-    <main :class="{ 'no-repositories': !project.initialRepositoryCount }">
-        <div v-if="!project.initialRepositoryCount">
+    <main :class="{ 'no-repositories': project.empty() }">
+        <div v-if="project.empty()">
             <h2>{{ 'Add repositories to :0 to start testing.' | set(project.name) }}</h2>
             <button class="btn btn-primary" @click="$modal.open('AddRepositories', { project })">Add repositories</button>
         </div>

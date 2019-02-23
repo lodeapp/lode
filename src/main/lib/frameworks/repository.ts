@@ -32,8 +32,6 @@ export interface IRepository extends EventEmitter {
     readonly path: string
     readonly name: string
     frameworks: Array<IFramework>
-    initialFrameworkCount: number
-    initialFrameworkReady: number
     status: FrameworkStatus
     selected: boolean
     scanning: boolean
@@ -59,8 +57,6 @@ export class Repository extends EventEmitter implements IRepository {
     public readonly path: string
     public readonly name: string
     public frameworks: Array<IFramework> = []
-    public initialFrameworkCount: number = 0
-    public initialFrameworkReady: number = 0
     public status: FrameworkStatus = 'loading'
     public selected: boolean = false
     public scanning: boolean = false
@@ -68,6 +64,8 @@ export class Repository extends EventEmitter implements IRepository {
 
     protected parsed: boolean = false
     protected ready: boolean = false
+    protected initialFrameworkCount: number = 0
+    protected initialFrameworkReady: number = 0
 
     constructor (options: RepositoryOptions) {
         super()
