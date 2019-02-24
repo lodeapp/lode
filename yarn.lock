@@ -129,14 +129,6 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@lodeapp/jest@^0.9.0":
-  version "0.9.2"
-  resolved "https://registry.yarnpkg.com/@lodeapp/jest/-/jest-0.9.2.tgz#3051eba388a22b3b86caf80c3de1f4e5fb9c6b85"
-  integrity sha512-No+O9BZIY5O8sTspug7NrKIGGi37YAH2V3ijrUDrd4rkXnTiM2wkQdUZQG0Zq0IjMLGNzf5giu14QHypUDelgA==
-  dependencies:
-    lodash "^4.17.11"
-    strip-ansi "^5.0.0"
-
 "@types/events@*":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/events/-/events-3.0.0.tgz#2862f3f58a9a7f7c3e78d79f130dd4d71c25c2a7"
@@ -8092,11 +8084,6 @@ p-try@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/p-try/-/p-try-2.0.0.tgz#85080bb87c64688fa47996fe8f7dfbe8211760b1"
   integrity sha512-hMp0onDKIajHfIkdRk3P4CdCmErkYAxxDtP3Wx/4nZ3aGlau2VKh3mZpcuFkH27WQkL/3WBCPOktzA9ZOAnMQQ==
-
-pace-progressbar@^1.0.8:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/pace-progressbar/-/pace-progressbar-1.0.8.tgz#49b5c25b5a3c6c77b3f96cd975edb30d9515a1a4"
-  integrity sha512-qEOkKwBFABlUYpY5VNoOcgTHAnaqwFoP4ib1dIjoDjc16aBgdoSy2J4sUXLYI/4vmouNs7bRnQBKIDR8SBlrjA==
 
 package-json@^2.0.0:
   version "2.4.0"

@@ -83,7 +83,6 @@
     }
   },
   "dependencies": {
-    "@lodeapp/jest": "^0.9.0",
     "bottleneck": "^2.13.0",
     "child_process": "^1.0.2",
     "electron-log": "^2.2.17",
@@ -98,7 +97,6 @@
     "lodash": "^4.17.10",
     "markdown-it": "^8.4.2",
     "octicons": "^8.4.1",
-    "pace-progressbar": "^1.0.8",
     "sha1-es": "^1.8.2",
     "shell-env": "^2.2.0",
     "shell-escape": "^0.2.0",

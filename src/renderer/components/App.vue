@@ -1,7 +1,7 @@
 <template>
     <div id="app" :class="[`platform--${platform}`]">
         <div class="contents" v-if="empty !== null">
-            <Titlebar :project="project" />
+            <Titlebar :has-project="!!project" />
             <div v-if="empty" class="no-projects">
                 <h1>Welcome to Lode.</h1>
                 <button class="btn btn-primary" @click="$root.addProject">Add your first project</button>
