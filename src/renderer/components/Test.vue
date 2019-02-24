@@ -65,11 +65,6 @@ export default {
             default: false
         }
     },
-    data () {
-        return {
-            show: false
-        }
-    },
     computed: {
         test () {
             return this.model

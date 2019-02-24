@@ -23,7 +23,7 @@ export class Project implements IProjectState {
         })
     }
 
-    public get (key: string, fallback?: any): any {
+    public get (key?: string, fallback?: any): any {
         return this.store.get(key, fallback)
     }
 
@@ -31,7 +31,7 @@ export class Project implements IProjectState {
         this.store.set(key, value)
     }
 
-    public update (options: ProjectOptions): void {
+    public save (options: ProjectOptions): void {
         this.store.set('options', {...this.store.get('options'), ...options})
     }
 

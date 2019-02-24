@@ -145,7 +145,7 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
             {
                 label: '&Reload',
                 id: 'reload-window',
-                accelerator: 'CmdOrCtrl+R',
+                accelerator: 'CmdOrCtrl+0',
                 click(item: any, focusedWindow: Electron.BrowserWindow) {
                     if (focusedWindow) {
                         focusedWindow.reload()
@@ -160,14 +160,19 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         label: __DARWIN__ ? 'Project' : '&Project',
         submenu: [
             {
-                label: 'Run',
+                label: __DARWIN__ ? 'Run First' : 'Run first',
+                click: emit('run-selected'),
+                accelerator: 'CmdOrCtrl+R'
+            },
+            {
+                label: __DARWIN__ ? 'Run All' : 'Run all',
                 click: emit('run-project'),
-                accelerator: 'CmdOrCtrl+Shift+D'
+                accelerator: 'CmdOrCtrl+Shift+R'
             },
             {
                 label: 'Refresh',
                 click: emit('refresh-project'),
-                accelerator: 'CmdOrCtrl+Shift+R'
+                accelerator: 'CmdOrCtrl+Shift+I'
             },
             {
                 label: 'Stop',
@@ -190,12 +195,14 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
             separator,
             {
                 id: 'rename-project',
-                label: __DARWIN__ ? 'Rename' : 'Rename',
+                label: __DARWIN__ ? 'Rename Project' : 'Rename project',
+                accelerator: 'CmdOrCtrl+Shift+E',
                 click: emit('rename-project')
             },
             {
                 id: 'remove-project',
-                label: __DARWIN__ ? 'Remove' : 'Remove',
+                label: __DARWIN__ ? 'Remove Project' : 'Remove project',
+                accelerator: 'CmdOrCtrl+Shift+Backspace',
                 click: emit('remove-project')
             },
             separator,
@@ -212,6 +219,10 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         template.push({
             label: __DARWIN__ ? 'Development' : '&Development',
             submenu: [
+                {
+                    label: __DARWIN__ ? 'Log Project' : 'Log project',
+                    click: emit('log-project')
+                },
                 {
                     label: __DARWIN__ ? 'Log Settings' : 'Log settings',
                     click: emit('log-settings')

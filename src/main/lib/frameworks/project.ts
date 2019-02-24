@@ -149,7 +149,7 @@ export class Project extends EventEmitter implements IProject {
      * Save this project in the persistent store.
      */
     public save (): void {
-        this.state.update(this.persist())
+        this.state.save(this.persist())
     }
 
     /**
@@ -177,9 +177,9 @@ export class Project extends EventEmitter implements IProject {
     }
 
     /**
-     * A function to run when a child repository requests saving.
+     * A function to run when a child repository changes.
      */
-    protected saveListener (): void {
+    protected changeListener (): void {
         this.save()
     }
 
@@ -256,7 +256,7 @@ export class Project extends EventEmitter implements IProject {
                 .on('ready', this.onRepositoryReady.bind(this))
                 .on('status', this.statusListener.bind(this))
                 .on('state', this.stateListener.bind(this))
-                .on('save', this.saveListener.bind(this))
+                .on('change', this.changeListener.bind(this))
             this.repositories.push(repository)
             this.hasRepositories = true
             resolve(repository)

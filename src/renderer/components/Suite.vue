@@ -7,7 +7,7 @@
             'has-context': hasContext,
             'child-has-context': childHasContext
         }"
-        :has-children="suite.testsLoaded && suite.tests.length > 0"
+        :has-children="suite.testsLoaded() && suite.hasChildren()"
         @contextmenu.native.stop.prevent="onContextMenu"
     >
         <template slot="header">

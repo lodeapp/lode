@@ -116,13 +116,6 @@ export class Test extends Nugget implements ITest {
     }
 
     /**
-     * Get the framework version from this test, if any.
-     */
-    public getVersion (): string | undefined {
-        return this.result.version
-    }
-
-    /**
      * Get this nugget's console output.
      */
     public getConsole (): Array<any> {

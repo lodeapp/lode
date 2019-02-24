@@ -66,7 +66,6 @@
                 :key="framework.id"
                 :model="framework"
                 @remove="removeFramework"
-                @change="storeFrameworkState"
                 @manage="manageFramework"
                 @activate="onChildActivation"
                 @deactivate="onChildDeactivation"
@@ -98,7 +97,6 @@ export default {
     },
     data () {
         return {
-            loading: true,
             menu: new Menu()
                 .add({
                     label: 'Manage frameworks',
@@ -134,15 +132,6 @@ export default {
         expandStatus () {
             return this.show ? 'expanded' : 'collapsed'
         }
-    },
-    created () {
-        this.repository
-            .on('ready', () => {
-                this.loading = false
-            })
-            .on('change', repository => {
-                this.$emit('change', repository)
-            })
     },
     methods: {
         toggle () {
@@ -199,9 +188,6 @@ export default {
             this.$root.onModelRemove(framework.id)
             this.repository.removeFramework(framework.id)
             this.repository.save()
-        },
-        storeFrameworkState (framework) {
-            framework.save()
         }
     }
 }

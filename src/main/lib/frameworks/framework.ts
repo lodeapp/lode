@@ -745,15 +745,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
                     .on('status', this.updateLedger.bind(this))
                 this.updateLedger(suite.getStatus())
                 this.suites.push(suite)
+            } else if (rebuild) {
+                suite.buildTests(result, false)
             }
 
             // Mark suite as freshly made before returning,
             // in case we need to clear out stale ones.
             suite.setFresh(true)
-
-            if (rebuild) {
-                suite.buildTests(result, false)
-            }
 
             this.onSuiteReady()
             resolve(suite)
@@ -836,7 +834,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param suite The suite which triggered this update.
      */
     protected updateSelected (suite: ISuite): void {
-        const index = findIndex(this.selected.suites, { 'id': suite.id })
+        const index = findIndex(this.selected.suites, selected => selected.getId() === suite.getId())
         if (suite.selected && index === -1) {
             this.selected.suites.push(suite)
         } else if (index > -1) {

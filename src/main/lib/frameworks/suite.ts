@@ -13,7 +13,6 @@ export type SuiteOptions = {
 }
 
 export interface ISuite extends Nugget {
-    readonly id: string
     readonly file: string
     readonly path: string
     readonly root: string
@@ -21,6 +20,7 @@ export interface ISuite extends Nugget {
     selected: boolean
     canToggleTests: boolean
 
+    getId (): string
     getStatus (): Status
     getFilePath (): string
     getRelativePath (): string
@@ -51,13 +51,14 @@ export interface ISuiteResult {
 }
 
 export class Suite extends Nugget implements ISuite {
-    public readonly id: string
     public path: string
     public root: string
     public runsInRemote: boolean
     public remotePath: string
     public file!: string
     public result!: ISuiteResult
+
+    protected readonly id: string
 
     constructor (options: SuiteOptions, result: ISuiteResult) {
         super()
@@ -157,6 +158,20 @@ export class Suite extends Nugget implements ISuite {
     }
 
     /**
+     * Whether this suite has children.
+     */
+    public hasChildren (): boolean {
+        return this.tests.length > 0
+    }
+
+    /**
+     * Get this suite's id.
+     */
+    getId (): string {
+        return this.id
+    }
+
+    /**
      * Get this suite's status.
      */
     public getStatus (): Status {
@@ -194,13 +209,6 @@ export class Suite extends Nugget implements ISuite {
      */
     public getDisplayName (): string {
         return this.getRelativePath()
-    }
-
-    /**
-     * Get the framework version from this suite, if any.
-     */
-    public getVersion (): string | undefined {
-        return this.result.version
     }
 
     /**

@@ -1,6 +1,9 @@
+import * as Path from 'path'
+import * as Fs from 'fs-extra'
 import latinize from 'latinize'
 import { find, findIndex, sortBy, uniqBy } from 'lodash'
 import { EventEmitter } from 'events'
+import { app } from 'electron'
 import ElectronStore from 'electron-store'
 import { Project } from '@main/lib/state/project'
 import { ProjectIdentifier } from '@main/lib/frameworks/project'
@@ -41,9 +44,13 @@ class State extends EventEmitter {
         this.store.set(state)
     }
 
-    public clear (): void {
+    public reset (): void {
         this.emit('clear', this.get())
         this.store.clear()
+        const userData = app.getPath('userData')
+        if (userData) {
+            Fs.removeSync(Path.join(userData, 'Projects'))
+        }
     }
 
     public hasProjects (): boolean {

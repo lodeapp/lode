@@ -45,6 +45,9 @@ export default class Input {
     hasModifierKey (event) {
         return event.ctrlKey || event.metaKey || event.altKey || event.shiftKey
     }
+    hasAltKey (event) {
+        return event.altKey
+    }
     isCopying (event) {
         return (event.ctrlKey || event.metaKey) && event.code === 'KeyC'
     }

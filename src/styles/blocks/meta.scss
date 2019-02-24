@@ -29,7 +29,6 @@
         }
     }
 
-    // @TODO: Should meta tables collapse?
     &.is-collapsed {
         border: 1px solid var(--color-gray-200);
         max-height: 150px;

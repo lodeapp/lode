@@ -14,7 +14,7 @@ export type RepositoryOptions = {
     id?: string,
     name?: string,
     path: string
-    collapsed?: boolean
+    expanded?: boolean
     frameworks?: Array<FrameworkOptions>
 }
 
@@ -35,7 +35,7 @@ export interface IRepository extends EventEmitter {
     status: FrameworkStatus
     selected: boolean
     scanning: boolean
-    collapsed: boolean
+    expanded: boolean
 
     start (): void
     refresh (): void
@@ -60,7 +60,7 @@ export class Repository extends EventEmitter implements IRepository {
     public status: FrameworkStatus = 'loading'
     public selected: boolean = false
     public scanning: boolean = false
-    public collapsed: boolean
+    public expanded: boolean
 
     protected parsed: boolean = false
     protected ready: boolean = false
@@ -72,7 +72,7 @@ export class Repository extends EventEmitter implements IRepository {
         this.id = options.id || uuid()
         this.path = options.path
         this.name = options.name || this.path.split('/').pop() || 'untitled'
-        this.collapsed = options.collapsed || false
+        this.expanded = options.expanded || true
         this.initialFrameworkCount = (options.frameworks || []).length
 
         // If options include frameworks already (i.e. persisted state), add them.
@@ -139,7 +139,7 @@ export class Repository extends EventEmitter implements IRepository {
             id: this.id,
             name: this.name,
             path: this.path,
-            collapsed: this.collapsed,
+            expanded: this.expanded,
             frameworks: this.frameworks.map(framework => framework.persist())
         }
     }
@@ -148,7 +148,7 @@ export class Repository extends EventEmitter implements IRepository {
      * Save this repository in the persistent store.
      */
     public save (): void {
-        this.emit('save')
+        this.emit('change')
     }
 
     /**
@@ -188,7 +188,7 @@ export class Repository extends EventEmitter implements IRepository {
      * Toggle this repository's visibility.
      */
     public toggle (): void {
-        this.collapsed = !this.collapsed
+        this.expanded = !this.expanded
         this.emit('change', this)
     }
 
@@ -208,9 +208,9 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
-     * A function to run when a child framework requests saving.
+     * A function to run when a child framework changes.
      */
-    protected saveListener (): void {
+    protected changeListener (): void {
         this.save()
     }
 
@@ -287,7 +287,7 @@ export class Repository extends EventEmitter implements IRepository {
                 .on('ready', this.onFrameworkReady.bind(this))
                 .on('status', this.statusListener.bind(this))
                 .on('state', this.stateListener.bind(this))
-                .on('save', this.saveListener.bind(this))
+                .on('change', this.changeListener.bind(this))
             this.frameworks.push(framework)
             resolve(framework)
         })

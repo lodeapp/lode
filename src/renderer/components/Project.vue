@@ -19,7 +19,6 @@
                             :model="repository"
                             :key="repository.id"
                             @remove="removeRepository"
-                            @change="storeRepositoryState"
                         />
                     </div>
                 </Pane>
@@ -66,9 +65,6 @@ export default {
             this.$root.onModelRemove(repository.id)
             this.project.removeRepository(repository.id)
             this.project.save()
-        },
-        storeRepositoryState (repository) {
-            this.repository.save()
         }
     }
 }

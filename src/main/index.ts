@@ -37,42 +37,44 @@ function buildMenu(options = {}) {
     Menu.setApplicationMenu(buildDefaultMenu(options))
 }
 
-app.on('ready', () => {
-    createWindow(state.getCurrentProject())
-    buildMenu()
-})
-
-app.on('window-all-closed', () => {
-    if (__DARWIN__) {
-        app.quit()
-    }
-})
-
-app.on('activate', () => {
-    if (mainWindow === null) {
+app
+    .on('ready', () => {
         createWindow(state.getCurrentProject())
-    }
-})
-
-ipcMain.on('update-menu', (event: any, options = {}) => {
-    buildMenu(options)
-})
-
-ipcMain.on('window-should-close', () => {
-    process.nextTick(() => {
-        if (mainWindow) {
-            mainWindow.close()
+        buildMenu()
+    })
+    .on('window-all-closed', () => {
+        if (__DARWIN__) {
+            app.quit()
         }
     })
-})
+    .on('activate', () => {
+        if (mainWindow === null) {
+            createWindow(state.getCurrentProject())
+        }
+    })
 
-ipcMain.on('switch-project', (event: any, projectId: string) => {
-    state.set('currentProject', projectId)
-    if (mainWindow) {
-        mainWindow.setProject(projectId)
-        event.sender.send('project-switched', mainWindow.getProjectOptions())
-    }
-})
+ipcMain
+    .on('update-menu', (event: any, options = {}) => {
+        buildMenu(options)
+    })
+    .on('window-should-close', () => {
+        process.nextTick(() => {
+            if (mainWindow) {
+                mainWindow.close()
+            }
+        })
+    })
+    .on('switch-project', (event: any, projectId: string) => {
+        state.set('currentProject', projectId)
+        if (mainWindow) {
+            mainWindow.setProject(projectId)
+            event.sender.send('project-switched', mainWindow.getProjectOptions())
+        }
+    })
+    .on('reset-settings', (event: any) => {
+        state.reset()
+        event.returnValue = true
+    })
 
 /**
  * Auto Updater

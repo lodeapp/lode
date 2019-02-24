@@ -11,6 +11,7 @@ export abstract class Nugget extends EventEmitter {
     protected status: Status = 'idle'
     public tests: Array<ITest> = []
     public selected: boolean = false
+    public expanded: boolean = false
     public partial: boolean = false
     public canToggleTests: boolean = false
     public updateCountsListener: any
@@ -21,11 +22,6 @@ export abstract class Nugget extends EventEmitter {
         super()
         this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 100)
     }
-
-    /**
-     * Get the framework version from this nugget, if any.
-     */
-    public abstract getVersion (): string | undefined
 
     /**
      * Instantiate a new test.
@@ -76,6 +72,17 @@ export abstract class Nugget extends EventEmitter {
             this.toggleSelected(false, false)
         }
         this.partial = filtered > 0 && total > 0 && total > filtered
+    }
+
+    /**
+     * Load the nugget's tests from an array of results.
+     *
+     * @param results The array of results from which to load tests.
+     */
+    protected loadTests (results: Array<ITestResult>): void {
+        this.tests = results.map((result: ITestResult) => {
+            return this.makeTest(result, true)
+        })
     }
 
     /**
@@ -188,6 +195,22 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
+     * Toggle this nugget's expanded state.
+     *
+     * @param toggle Whether it should be expanded or collapsed. Leave blank for inverting toggle.
+     * @param cascade Whether toggling should apply to nugget's children.
+     */
+    public toggleExpanded (toggle?: boolean, cascade?: boolean): void {
+        const expanded = typeof toggle === 'undefined' ? !this.expanded : toggle
+        if (cascade !== false) {
+            this.tests.forEach(test => {
+                test.toggleExpanded(expanded)
+            })
+        }
+        this.expanded = expanded
+    }
+
+    /**
      * Set the freshness state of a nugget.
      *
      * @param fresh The freshness state to set.
@@ -195,7 +218,6 @@ export abstract class Nugget extends EventEmitter {
     public setFresh (fresh: boolean): void {
         this.fresh = fresh
     }
-
 
     /**
      * Get the freshness state of a nugget.

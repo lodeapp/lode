@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import store from './store'
-import { isEmpty } from 'lodash'
+import { get, isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@main/lib/state'
 import { Logger } from '@main/lib/logger'
@@ -96,6 +96,14 @@ export default new Vue({
                     case 'select-all':
                         this.selectAll()
                         break
+                    case 'run-selected':
+                        // @TODO: When we have keyboard navigation, run the
+                        // actual selected framework, not the first one.
+                        const framework = get(this.project, 'repositories.0.frameworks.0')
+                        if (framework) {
+                            framework.start()
+                        }
+                        break
                     case 'run-project':
                         this.latest(
                             this.$string.set(':0 project run', this.project.name),
@@ -120,6 +128,13 @@ export default new Vue({
                     case 'add-repositories':
                         this.addRepositories()
                         break
+                    case 'log-project':
+                        const projectState = state.project(this.project.id)
+                        Logger.info.log({
+                            object: projectState.get(),
+                            json: JSON.stringify(projectState.get())
+                        })
+                        break
                     case 'log-settings':
                         Logger.info.log({
                             object: state.get(),
@@ -135,7 +150,7 @@ export default new Vue({
                     case 'reset-settings':
                         this.$modal.confirm('ResetSettings')
                             .then(() => {
-                                state.clear()
+                                ipcRenderer.sendSync('reset-settings')
                                 remote.getCurrentWindow().reload()
                             })
                             .catch(() => {})

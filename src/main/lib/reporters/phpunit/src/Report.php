@@ -191,6 +191,7 @@ class Report
         return $this->transformContainer([
             'file' => $this->getFileName(),
             'tests' => $children,
+            'testsLoaded' => true,
             // Since we can't really know when a suite and not a test has logged an entry
             // we'll just pull the remainder of the console if this is the suite's last entry.
             'console' => $this->isLast ? $this->console->pullSuiteLogs($this->getFileName()) : [],

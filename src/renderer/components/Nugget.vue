@@ -49,12 +49,10 @@ export default {
             default: null
         }
     },
-    data () {
-        return {
-            show: this.expanded
-        }
-    },
     computed: {
+        show () {
+            return this.model.expanded
+        },
         status () {
             return this.model.getStatus()
         },
@@ -69,19 +67,19 @@ export default {
         })
     },
     methods: {
-        onClick () {
+        onClick (event) {
             if (this.handler) {
                 if (this.handler.call() === false) {
                     return
                 }
             }
-            this.toggleChildren()
+            this.toggleChildren(event)
         },
-        toggleChildren () {
+        toggleChildren (event) {
             if (!this.hasChildren) {
                 return
             }
-            this.show = !this.show
+            this.model.toggleExpanded(!this.model.expanded, this.$input.hasAltKey(event))
         },
 
         /**
