@@ -84,7 +84,7 @@ export class Jest extends Framework {
                         reject('The Jest package returned unexpected results.')
                     }
                 })
-                .on('killed', ({ process }) => {
+                .on('killed', () => {
                     resolve('killed')
                 })
                 .on('error', error => {

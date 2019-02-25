@@ -63,7 +63,7 @@
             <Framework
                 v-show="show"
                 v-for="framework in repository.frameworks"
-                :key="framework.id"
+                :key="framework.getId()"
                 :model="framework"
                 @remove="removeFramework"
                 @manage="manageFramework"
@@ -185,8 +185,8 @@ export default {
             this.repository.stop()
         },
         removeFramework (framework) {
-            this.$root.onModelRemove(framework.id)
-            this.repository.removeFramework(framework.id)
+            this.$root.onModelRemove(framework.getId())
+            this.repository.removeFramework(framework.getId())
             this.repository.save()
         }
     }

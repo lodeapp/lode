@@ -93,7 +93,7 @@ export default {
             if (!this.singleFramework) {
                 return this.frameworks
             }
-            return this.frameworks.filter(framework => framework.id === this.framework.id)
+            return this.frameworks.filter(framework => framework.id === this.framework.getId())
         },
         amountActive () {
             return this.frameworks.filter(framework => !framework.scanStatus).length
@@ -119,7 +119,7 @@ export default {
                 // triggered scan again, continue. This means the existing
                 // framework object will be removed, while a new, pristine
                 // object will be added.
-                if (this.removed.includes(framework.id)) {
+                if (this.removed.includes(framework.getId())) {
                     return false
                 }
 
@@ -182,9 +182,10 @@ export default {
                 this.frameworks
                     .filter(framework => framework.scanStatus === 'pending' || framework.dirty)
                     .forEach(framework => {
+                        // If the framework has an id (i.e. exists), update it, otherwise add.
                         if (framework.id) {
-                            const frameworkIndex = _findIndex(this.repository.frameworks, { id: framework.id })
-                            this.repository.frameworks[frameworkIndex].updateOptions({
+                            const index = _findIndex(this.repository.frameworks, existing => existing.getId() === framework.id)
+                            this.repository.frameworks[index].updateOptions({
                                 ...framework,
                                 ...{ repositoryPath: this.repository.path }
                             })

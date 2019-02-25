@@ -22,7 +22,7 @@
         <template v-if="hasChildren">
             <Test
                 v-for="test in test.tests"
-                :key="test.id"
+                :key="test.getId()"
                 :model="test"
                 :running="running"
                 :selectable="selectable"
@@ -92,7 +92,7 @@ export default {
     },
     watch: {
         '$root.active.test' (active) {
-            if (this.isActive && active.id !== this.test.id) {
+            if (this.isActive && active.getId() !== this.test.getId()) {
                 this.deactivate()
             }
         }

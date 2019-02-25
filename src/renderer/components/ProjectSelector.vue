@@ -1,13 +1,13 @@
 <template>
     <div
-        v-if="$root.project"
-        :key="$string.from({ id: $root.project.id, name: $root.project.name })"
+        v-if="project"
+        :key="$string.from({ id: project.id, name: project.name })"
         class="titlebar-button"
         @click.prevent="openMenu"
     >
         <button type="button">
             <div class="text">
-                <div class="title">{{ $root.project.name }}</div>
+                <div class="title">{{ project.name }}</div>
             </div>
             <Icon symbol="code" class="rotate-90" />
         </button>
@@ -20,6 +20,12 @@ import { state } from '@main/lib/state'
 
 export default {
     name: 'ProjectSelector',
+    props: {
+        project: {
+            type: [Object, Boolean],
+            default: false
+        }
+    },
     data () {
         return {
             menu: null
@@ -36,12 +42,12 @@ export default {
                 this.menu.add({
                     label: project.name,
                     type: 'checkbox',
-                    checked: project.id === this.$root.project.id,
+                    checked: project.id === this.project.id,
                     click: (menuItem) => {
                         // Don't toggle the item, unless it's the current project,
                         // as the switch might still be cancelled by the user. If
                         // switch project is confirmed, menu will be rebuilt anyway.
-                        menuItem.checked = project.id === this.$root.project.id
+                        menuItem.checked = project.id === this.project.id
                         this.$root.switchProject(project.id)
                     }
                 })

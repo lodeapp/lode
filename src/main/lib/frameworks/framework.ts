@@ -47,7 +47,6 @@ export type FrameworkOptions = {
  * The Framework interface.
  */
 export interface IFramework extends EventEmitter {
-    id: string
     name: string
     type: string
     command: string
@@ -71,6 +70,8 @@ export interface IFramework extends EventEmitter {
     queue: { [index: string]: Function }
     ledger: { [key in Status]: number }
 
+    getId (): string
+    getDisplayName (): string
     start (): void
     refresh (): void
     stop (): Promise<void>
@@ -80,7 +81,6 @@ export interface IFramework extends EventEmitter {
     persist (): FrameworkOptions
     save (): void
     updateOptions (options: FrameworkOptions): void
-    getDisplayName (): string
     toggle (): void
     toggleFilters (): void
 }
@@ -90,7 +90,6 @@ export interface IFramework extends EventEmitter {
  * and contains a set of test suites (files).
  */
 export abstract class Framework extends EventEmitter implements IFramework {
-    public id!: string
     public name!: string
     public type!: string
     public command!: string
@@ -129,6 +128,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         error: 0
     }
 
+    protected id!: string
     protected version?: string
     protected parsed: boolean = false
     protected ready: boolean = false
@@ -150,7 +150,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param options The options to build the framework with.
      */
     protected build (options: FrameworkOptions) {
-
         this.id = options.id || uuid()
         this.name = options.name
         this.type = options.type
@@ -311,8 +310,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
             options.sshIdentity = null
         }
 
-        // Rebuild the options, except id if not enforced
-        this.build({ ...options, ...{ id: options.id || this.id || uuid() }})
+        // Rebuild the options, except id (if not enforced) and suites.
+        this.build({
+            ...options,
+            ...{ id: options.id || this.id || uuid() },
+            ...{ suites: [] }
+        })
 
         if (initChanged) {
             // If framework initialization has changed, we need to remove the
@@ -327,6 +330,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         this.emit('change', this)
+    }
+
+    /**
+     * Get this framework's id.
+     */
+    public getId (): string {
+        return this.id
     }
 
     /**
@@ -423,7 +433,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 .stop()
         })
         .then(() => {
-            this.resetQueued()
+            this.idleQueued()
             this.updateStatus()
             this.emit('change', this)
             this.disassemble()
@@ -557,13 +567,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
                     Logger.info.log('Failed to debrief suite results.', { report })
                 }
             })
-            .on('success', ({ process }) => {
+            .on('success', () => {
                 Promise.all(this.running).then(() => {
                     this.afterRun()
                     resolve()
                 })
             })
-            .on('killed', ({ process }) => {
+            .on('killed', () => {
                 resolve()
             })
             .on('error', error => {
@@ -637,7 +647,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param message The error message
      */
     protected onError (message: string): void {
-        this.resetQueued()
+        this.idleQueued()
         this.updateStatus('error')
         this.emit('error', message)
         this.emit('change', this)
@@ -647,9 +657,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Reset all previously queued suites.
      */
-    protected resetQueued (): void {
+    protected idleQueued (): void {
         this.suites.forEach(suite => {
-            suite.resetQueued()
+            suite.idleQueued()
         })
     }
 
@@ -746,7 +756,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 this.updateLedger(suite.getStatus())
                 this.suites.push(suite)
             } else if (rebuild) {
-                suite.buildTests(result, false)
+                suite.rebuildTests(result)
             }
 
             // Mark suite as freshly made before returning,

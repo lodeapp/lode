@@ -1,15 +1,13 @@
 import { omit } from 'lodash'
-import { v4 as uuid } from 'uuid'
 import { Status } from '@main/lib/frameworks/status'
 import { Nugget } from '@main/lib/frameworks/nugget'
 
 export interface ITest extends Nugget {
-    readonly id: string
-    readonly identifier: string
     result?: ITestResult
     selected: boolean
     isActive: boolean
 
+    getId (): string
     getStatus (): Status
     getName (): string
     getDisplayName (): string
@@ -17,12 +15,13 @@ export interface ITest extends Nugget {
     toggleSelected (toggle?: boolean, cascade?: boolean): void
     activate (): void
     deactivate (): void
-    reset (selective: boolean): void
-    resetResult (): void
-    queue (selective: boolean): void
-    resetQueued (): void
-    debrief (result: ITestResult, cleanup: boolean): Promise<void>
     persist (): ITestResult
+    resetResult (): void
+    idle (selective: boolean): void
+    queue (selective: boolean): void
+    error (selective: boolean): void
+    idleQueued (): void
+    debrief (result: ITestResult, cleanup: boolean): Promise<void>
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
 }
 
@@ -41,29 +40,44 @@ export interface ITestResult {
 
 export class Test extends Nugget implements ITest {
     protected status!: Status
-    public readonly id: string
-    public readonly identifier: string
     public result!: ITestResult
     public isActive: boolean = false
 
     constructor (result: ITestResult) {
         super()
-        this.id = uuid()
-        this.identifier = result.identifier
         this.build(result, false)
     }
 
     /**
-     * Prepares the test for persistence.
+     * Prepare a given test result for persistence.
+     *
+     * @param result The result object that will be persisted.
+     */
+    public static defaults (result: ITestResult): ITestResult {
+        return {
+            identifier: result.identifier,
+            name: result.name,
+            displayName: result.displayName || result.name,
+            status: 'idle'
+        }
+    }
+
+    /**
+     * Prepare this test for persistence.
      */
     public persist (): ITestResult {
         return {
-            identifier: this.result.identifier,
-            name: this.getName(),
-            displayName: this.getDisplayName(),
-            status: 'idle',
-            tests: this.tests.map((test: ITest) => test.persist())
+            ...Test.defaults(this.result),
+            ...{ tests: (this.result.tests || []).map((test: ITestResult) => Test.defaults(test)) }
         }
+    }
+
+    /**
+     * Reset this test's result (i.e. remove feedback etc, as if the
+     * test never ran, but persist its identifying data).
+     */
+    public resetResult (): void {
+        this.result = Test.defaults(this.result)
     }
 
     /**
@@ -81,18 +95,6 @@ export class Test extends Nugget implements ITest {
     }
 
     /**
-     * Reset this test's result
-     */
-    public resetResult (): void {
-        this.result = {
-            identifier: this.result.identifier,
-            name: this.getName(),
-            displayName: this.getDisplayName(),
-            status: this.status
-        }
-    }
-
-    /**
      * Instantiate a new test.
      *
      * @param result The test result with which to instantiate a new test.
@@ -100,6 +102,14 @@ export class Test extends Nugget implements ITest {
     protected newTest (result: ITestResult): ITest {
         return new Test(result)
     }
+
+    /**
+     * Get this test's id.
+     */
+    getId (): string {
+        return this.result.identifier!
+    }
+
 
     /**
      * Get this test's display name.

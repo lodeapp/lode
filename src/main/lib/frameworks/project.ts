@@ -24,12 +24,12 @@ export type ProjectOptions = {
 }
 
 export interface IProject extends EventEmitter {
-    readonly id: string
     name: string
     repositories: Array<IRepository>
     status: FrameworkStatus
     selected: boolean
 
+    getId (): string
     start (): void
     refresh (): void
     stop (): Promise<void>
@@ -45,12 +45,12 @@ export interface IProject extends EventEmitter {
 }
 
 export class Project extends EventEmitter implements IProject {
-    public readonly id: string
     public name: string
     public repositories: Array<IRepository> = []
     public status: FrameworkStatus = 'loading'
     public selected: boolean = false
 
+    protected readonly id: string
     protected state: ProjectState
     protected parsed: boolean = false
     protected ready: boolean = false
@@ -150,6 +150,13 @@ export class Project extends EventEmitter implements IProject {
      */
     public save (): void {
         this.state.save(this.persist())
+    }
+
+    /**
+     * Get this project's id.
+     */
+    public getId (): string {
+        return this.id
     }
 
     /**
@@ -269,7 +276,7 @@ export class Project extends EventEmitter implements IProject {
      * @param id The id of the repository to remove.
      */
     public removeRepository (id: string): void {
-        const index = findIndex(this.repositories, { id })
+        const index = findIndex(this.repositories, repository => repository.getId() === id)
         if (index > -1) {
             this.repositories.splice(index, 1)
         }

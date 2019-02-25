@@ -1,7 +1,7 @@
 <template>
-    <div id="app" :class="[`platform--${platform}`]">
+    <div id="app">
         <div class="contents" v-if="empty !== null">
-            <Titlebar :has-project="!!project" />
+            <Titlebar :project="project" />
             <div v-if="empty" class="no-projects">
                 <h1>Welcome to Lode.</h1>
                 <button class="btn btn-primary" @click="$root.addProject">Add your first project</button>
@@ -9,7 +9,7 @@
             <Project
                 v-if="project"
                 :project="project"
-                :key="project.id"
+                :key="project.getId()"
             />
             <ModalController />
         </div>
@@ -35,9 +35,6 @@ export default {
         }
     },
     computed: {
-        platform () {
-            return process.platform
-        },
         empty () {
             return !this.project
         }

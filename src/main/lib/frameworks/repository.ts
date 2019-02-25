@@ -28,7 +28,6 @@ export type ParsedRepository = {
 }
 
 export interface IRepository extends EventEmitter {
-    readonly id: string
     readonly path: string
     readonly name: string
     frameworks: Array<IFramework>
@@ -37,6 +36,8 @@ export interface IRepository extends EventEmitter {
     scanning: boolean
     expanded: boolean
 
+    getId (): string
+    getDisplayName (): string
     start (): void
     refresh (): void
     stop (): Promise<void>
@@ -46,14 +47,12 @@ export interface IRepository extends EventEmitter {
     persist (): RepositoryOptions
     save (): void
     scan (): Promise<Array<FrameworkOptions>>
-    getDisplayName (): string
     toggle (): void
     addFramework (options: FrameworkOptions): Promise<IFramework>
     removeFramework (id: string): void
 }
 
 export class Repository extends EventEmitter implements IRepository {
-    public readonly id: string
     public readonly path: string
     public readonly name: string
     public frameworks: Array<IFramework> = []
@@ -62,6 +61,7 @@ export class Repository extends EventEmitter implements IRepository {
     public scanning: boolean = false
     public expanded: boolean
 
+    protected id: string
     protected parsed: boolean = false
     protected ready: boolean = false
     protected initialFrameworkCount: number = 0
@@ -175,6 +175,13 @@ export class Repository extends EventEmitter implements IRepository {
             resolve(scanned)
             this.scanning = false
         })
+    }
+
+    /**
+     * Get this repository's id.
+     */
+    public getId (): string {
+        return this.id
     }
 
     /**
@@ -299,7 +306,7 @@ export class Repository extends EventEmitter implements IRepository {
      * @param id The id of the framework to remove.
      */
     public removeFramework (id: string): void {
-        const index = findIndex(this.frameworks, { id })
+        const index = findIndex(this.frameworks, framework => framework.getId() === id)
         if (index > -1) {
             this.frameworks.splice(index, 1)
         }

@@ -15,8 +15,10 @@ export abstract class Nugget extends EventEmitter {
     public partial: boolean = false
     public canToggleTests: boolean = false
     public updateCountsListener: any
+    public result?: any
 
     protected fresh: boolean = false
+    protected bloomed: boolean = false
 
     constructor () {
         super()
@@ -31,12 +33,20 @@ export abstract class Nugget extends EventEmitter {
     protected abstract newTest (result: ITestResult): ITest
 
     /**
+     * Get this nugget's tests' results, if any.
+     */
+    public getTestResults (): Array<ITestResult> {
+        return this.result.tests || []
+    }
+
+
+    /**
      * Find the test by a given identifier in the nugget's current children.
      *
      * @param identifier The identifier of the test to try to find.
      */
     protected findTest (identifier: string): ITest | undefined {
-        return find(this.tests, { identifier })
+        return find(this.tests, test => test.getId() === identifier)
     }
 
     /**
@@ -75,17 +85,6 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
-     * Load the nugget's tests from an array of results.
-     *
-     * @param results The array of results from which to load tests.
-     */
-    protected loadTests (results: Array<ITestResult>): void {
-        this.tests = results.map((result: ITestResult) => {
-            return this.makeTest(result, true)
-        })
-    }
-
-    /**
      * Debrief the tests inside this nugget.
      *
      * @param tests An array of test results.
@@ -93,7 +92,6 @@ export abstract class Nugget extends EventEmitter {
      */
     protected debriefTests (tests: Array<ITestResult>, cleanup: boolean) {
         return new Promise((resolve, reject) => {
-            const running: Array<Promise<void>> = []
 
             // Attempt to find out if this is the last test to run.
             //
@@ -122,12 +120,10 @@ export abstract class Nugget extends EventEmitter {
                 cleanup = false
             }
 
-            tests.forEach((result: ITestResult) => {
-                running.push(this.makeTest(result).debrief(result, cleanup))
-            })
-
-            Promise.all(running).then(() => {
-                this.afterDebrief(cleanup, isLast)
+            Promise.all(tests.map((result: ITestResult) => {
+                return this.makeTest(result).debrief(result, cleanup)
+            })).then(() => {
+                this.afterDebrief(cleanup)
                 resolve()
             })
         })
@@ -137,13 +133,16 @@ export abstract class Nugget extends EventEmitter {
      * A function that runs after debriefing this nugget.
      *
      * @param cleanup Whether we should clean-up idle children (i.e. obsolete)
-     * @param isLast Last child indicator. See @debriefTests
      */
-    protected afterDebrief (cleanup: boolean, isLast: number): void {
+    protected afterDebrief (cleanup: boolean): void {
         if (cleanup) {
             this.cleanTestsByStatus('queued')
         }
         this.updateStatus()
+
+        if (!this.expanded) {
+            this.wither()
+        }
     }
 
     /**
@@ -164,7 +163,10 @@ export abstract class Nugget extends EventEmitter {
      */
     protected updateStatus (to?: Status): void {
         if (typeof to === 'undefined') {
-            to = parseStatus(this.tests.map(test => test.getStatus()))
+            const statuses = this.bloomed
+                ? this.tests.map((test: ITest) => test.getStatus())
+                : this.getTestResults().map((test: ITestResult) => test.status)
+            to = parseStatus(statuses)
         }
         const from = this.getStatus()
         this.status = to
@@ -186,6 +188,14 @@ export abstract class Nugget extends EventEmitter {
      */
     public toggleSelected (toggle?: boolean, cascade?: boolean): void {
         this.selected = typeof toggle === 'undefined' ? !this.selected : toggle
+
+        // Selected nuggets should always bloom its tests.
+        if (this.selected) {
+            this.bloom()
+        } else if (!this.expanded) {
+            this.wither()
+        }
+
         this.emit('selective', this)
         if (this.canToggleTests && cascade !== false) {
             this.tests.forEach(test => {
@@ -202,12 +212,27 @@ export abstract class Nugget extends EventEmitter {
      */
     public toggleExpanded (toggle?: boolean, cascade?: boolean): void {
         const expanded = typeof toggle === 'undefined' ? !this.expanded : toggle
+
+        if (expanded) {
+            this.bloom()
+        } else {
+            this.wither()
+        }
+
         if (cascade !== false) {
             this.tests.forEach(test => {
                 test.toggleExpanded(expanded)
             })
         }
         this.expanded = expanded
+    }
+
+    protected bloom (): void {
+        this.bloomed = true
+    }
+
+    protected wither (): void {
+        this.bloomed = false
     }
 
     /**
@@ -227,18 +252,27 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
-     * Reset this nugget to its initial state.
+     * Mark this nugget as idle.
      *
      * @param selective Whether we're currently in selective mode or not.
      */
-    public reset (selective: boolean): void {
+    public idle (selective: boolean): void {
         this.setFresh(false)
         this.updateStatus('idle')
-        this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
-            .forEach(test => {
-                test.resetResult()
-                test.reset(selective)
-            })
+        if (this.bloomed) {
+            this.tests
+                .filter(test => selective && this.canToggleTests ? test.selected : true)
+                .forEach(test => {
+                    test.resetResult()
+                    test.idle(selective)
+                })
+        }
+        // If not bloomed, then granular selecting is not possible, so we
+        // can go ahead and update all the nugget's children's status.
+        this.getTestResults().forEach((test: ITestResult) => {
+            // @TODO: Update this recursively (test could have children tests)...
+            test.status = 'idle'
+        })
     }
 
     /**
@@ -249,11 +283,20 @@ export abstract class Nugget extends EventEmitter {
     public queue (selective: boolean): void {
         this.setFresh(false)
         this.updateStatus('queued')
-        this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
-            .forEach(test => {
-                test.resetResult()
-                test.queue(selective)
-            })
+        if (this.bloomed) {
+            this.tests
+                .filter(test => selective && this.canToggleTests ? test.selected : true)
+                .forEach(test => {
+                    test.resetResult()
+                    test.queue(selective)
+                })
+        }
+        // If not bloomed, then granular selecting is not possible, so we
+        // can go ahead and update all the nugget's children's status.
+        this.getTestResults().forEach((test: ITestResult) => {
+            // @TODO: Update this recursively (test could have children tests)...
+            test.status = 'queued'
+        })
     }
 
     /**
@@ -264,24 +307,41 @@ export abstract class Nugget extends EventEmitter {
     public error (selective: boolean): void {
         this.setFresh(false)
         this.updateStatus('error')
-        this.tests.filter(test => selective && this.canToggleTests ? test.selected : true)
-            .forEach(test => {
-                test.resetResult()
-                test.error(selective)
-            })
+        if (this.bloomed) {
+            this.tests
+                .filter(test => selective && this.canToggleTests ? test.selected : true)
+                .forEach(test => {
+                    test.resetResult()
+                    test.error(selective)
+                })
+        }
+        // If not bloomed, then granular selecting is not possible, so we
+        // can go ahead and update all the nugget's children's status.
+        this.getTestResults().forEach((test: ITestResult) => {
+            // @TODO: Update this recursively (test could have children tests)...
+            test.status = 'error'
+        })
     }
 
     /**
      * Reset this nugget or any of its children if they are
-     * on a queued status.
+     * on a queued status (i.e. from an interrupted run).
      */
-    public resetQueued (): void {
+    public idleQueued (): void {
         if (this.getStatus() === 'queued') {
-            this.reset(false)
+            this.idle(false)
             return
         } else if (this.getStatus() === 'running') {
-            this.tests.forEach(test => {
-                test.resetQueued()
+            if (this.bloomed) {
+                this.tests.forEach(test => {
+                    test.idleQueued()
+                })
+            }
+            this.getTestResults().forEach((test: ITestResult) => {
+                // @TODO: Update this recursively (test could have children tests)...
+                if (test.status === 'queued') {
+                    test.status = 'idle'
+                }
             })
             this.updateStatus()
         }

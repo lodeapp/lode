@@ -17,7 +17,7 @@
                         <Repository
                             v-for="repository in project.repositories"
                             :model="repository"
-                            :key="repository.id"
+                            :key="repository.getId()"
                             @remove="removeRepository"
                         />
                     </div>
@@ -62,8 +62,8 @@ export default {
     },
     methods: {
         removeRepository (repository) {
-            this.$root.onModelRemove(repository.id)
-            this.project.removeRepository(repository.id)
+            this.$root.onModelRemove(repository.getId())
+            this.project.removeRepository(repository.getId())
             this.project.save()
         }
     }

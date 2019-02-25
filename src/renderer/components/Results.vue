@@ -11,7 +11,7 @@
                     <ol>
                         <li
                             v-for="breadcrumb in breadcrumbs"
-                            :key="breadcrumb.id"
+                            :key="breadcrumb.getId()"
                             class="breadcrumb-item text-small"
                         >{{ breadcrumb.getDisplayName() }}</li>
                     </ol>

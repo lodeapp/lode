@@ -19,7 +19,7 @@
         </template>
         <Test
             v-for="test in suite.tests"
-            :key="test.id"
+            :key="test.getId()"
             :model="test"
             :running="running"
             :selectable="canToggleTests"

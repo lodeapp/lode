@@ -71,7 +71,7 @@
                 v-for="suite in framework.suites"
                 :model="suite"
                 :running="running"
-                :key="suite.id"
+                :key="suite.getId()"
                 @activate="onChildActivation"
                 @deactivate="onChildDeactivation"
             />
@@ -154,7 +154,7 @@ export default {
         })
 
         this.framework.on('suiteRemoved', suite => {
-            this.$root.onModelRemove(suite.id)
+            this.$root.onModelRemove(suite.getId())
         })
     },
     methods: {

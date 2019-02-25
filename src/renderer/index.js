@@ -129,7 +129,7 @@ export default new Vue({
                         this.addRepositories()
                         break
                     case 'log-project':
-                        const projectState = state.project(this.project.id)
+                        const projectState = state.project(this.project.getId())
                         Logger.info.log({
                             object: projectState.get(),
                             json: JSON.stringify(projectState.get())
@@ -174,7 +174,7 @@ export default new Vue({
                         ipcRenderer.once('switch-project', () => {
                             this.addRepositories()
                         })
-                        this.handleSwitchProject(project.id)
+                        this.handleSwitchProject(project.getId())
                     })
                 })
                 .catch(() => {})
@@ -197,7 +197,7 @@ export default new Vue({
                 .then(() => {
                     this.project.stop().then(() => {
                         this.resetActiveTest()
-                        const switchTo = state.removeProject(this.project.id)
+                        const switchTo = state.removeProject(this.project.getId())
                         // Switch information should be available only
                         // if there are still projects to switch to.
                         if (switchTo) {
@@ -211,7 +211,7 @@ export default new Vue({
         },
         switchProject (projectId) {
             // Clicking on current project doesn't have any effect.
-            if (projectId === this.project.id) {
+            if (projectId === this.project.getId()) {
                 return false
             }
 
@@ -294,7 +294,7 @@ export default new Vue({
             this.active.breadcrumbs.forEach(breadcrumb => {
                 // If a test within the model to remove is currently
                 // in focus, reset the active test pane.
-                if (breadcrumb.id === modelId) {
+                if (breadcrumb.getId() === modelId) {
                     this.resetActiveTest()
                 }
             })
