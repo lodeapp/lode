@@ -31,6 +31,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import { Project as ProjectModel } from '@main/lib/frameworks/project'
 import Pane from '@/components/Pane'
 import Repository from '@/components/Repository'
 import Results from '@/components/Results'
@@ -44,20 +46,21 @@ export default {
         Results,
         Split
     },
-    props: {
-        project: {
-            type: Object,
-            required: true
-        }
-    },
     data () {
+        const project = new ProjectModel(this.$store.getters['project/options'])
+        project.on('ready', () => {
+            this.loading = false
+        })
+
         return {
+            project,
             loading: true
         }
     },
-    created () {
-        this.project.on('ready', () => {
-            this.loading = false
+    computed: {
+        ...mapGetters({
+            empty: 'project/empty',
+            projectId: 'project/id'
         })
     },
     methods: {

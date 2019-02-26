@@ -4,6 +4,9 @@ import { Window } from './window'
 import { mergeEnvFromShell } from '@main/lib/process/shell'
 import { state } from '@main/lib/state'
 
+// Expose garbage collector
+app.commandLine.appendSwitch('js-flags', '--expose_gc')
+
 // Merge environment variables from shell, if needed.
 mergeEnvFromShell()
 

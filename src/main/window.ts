@@ -1,3 +1,4 @@
+import { pick } from 'lodash'
 import { BrowserWindow as BaseBrowserWindow } from 'electron'
 import { MenuEvent } from './menu'
 import { state } from '@main/lib/state'
@@ -12,7 +13,7 @@ class BrowserWindow extends BaseBrowserWindow {
     }
 
     public getProjectOptions (): string {
-        return JSON.stringify(this.projectState ? this.projectState.get('options', {}) : {})
+        return JSON.stringify(this.projectState ? pick(this.projectState.get('options', {}), ['id', 'name']) : {})
     }
 
     public isBusy (): boolean {

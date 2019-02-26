@@ -40,8 +40,8 @@ class State extends EventEmitter {
         if (!overwrite) {
             state = { ...this.get(), ...state}
         }
-        this.emit('save', state)
         this.store.set(state)
+        this.emit('save', state)
     }
 
     public reset (): void {

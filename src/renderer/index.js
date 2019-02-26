@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import store from './store'
-import { get, isEmpty } from 'lodash'
+import { get } from 'lodash'
+import { mapGetters } from 'vuex'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@main/lib/state'
 import { Logger } from '@main/lib/logger'
@@ -15,7 +16,6 @@ import Alerts from './plugins/alerts'
 import Filesystem from './plugins/filesystem'
 import Filters from './plugins/filters'
 import Highlight from './plugins/highlight'
-import Icons from './plugins/icons'
 import Input from './plugins/input'
 import Modals from './plugins/modals'
 import Strings from './plugins/strings'
@@ -26,6 +26,7 @@ import Markdown from './directives/markdown'
 // Global / recursive components
 import App from '@/components/App'
 import Test from '@/components/Test'
+import Icon from '@/components/Icon'
 
 Vue.config.productionTip = false
 
@@ -34,7 +35,6 @@ Vue.use(new Alerts(store))
 Vue.use(new Filesystem())
 Vue.use(new Filters())
 Vue.use(new Highlight())
-Vue.use(new Icons())
 Vue.use(new Input())
 Vue.use(new Modals(store))
 Vue.use(new Strings('en-US'))
@@ -43,6 +43,7 @@ Vue.use(new Strings('en-US'))
 Vue.directive('markdown', Markdown(Vue))
 
 // Register global or recursive components
+Vue.component('Icon', Icon)
 Vue.component('Test', Test)
 
 export default new Vue({
@@ -59,10 +60,12 @@ export default new Vue({
             }
         }
     },
+    computed: {
+        ...mapGetters({
+            projectId: 'project/id'
+        })
+    },
     created () {
-        // Grab initial state from window object.
-        this.loadProject(remote.getCurrentWindow().getProjectOptions())
-
         // Register ipcRenderer event handling
         ipcRenderer
             .on('blur', () => {
@@ -77,7 +80,14 @@ export default new Vue({
                 })
             })
             .on('project-switched', (event, projectOptions) => {
-                this.loadProject(projectOptions)
+                store.commit('project/REFRESH')
+                try {
+                    if (global.gc) {
+                        global.gc()
+                    }
+                } catch (error) {
+                    // ...
+                }
             })
             .on('menu-event', (event, { name, properties }) => {
                 switch (name) {
@@ -129,7 +139,7 @@ export default new Vue({
                         this.addRepositories()
                         break
                     case 'log-project':
-                        const projectState = state.project(this.project.getId())
+                        const projectState = state.project(this.projectId)
                         Logger.info.log({
                             object: projectState.get(),
                             json: JSON.stringify(projectState.get())
@@ -159,10 +169,6 @@ export default new Vue({
             })
     },
     methods: {
-        loadProject (projectOptions) {
-            projectOptions = JSON.parse(projectOptions)
-            this.project = isEmpty(projectOptions) ? null : new Project(projectOptions)
-        },
         addProject () {
             this.$modal.confirm('EditProject')
                 .then(options => {
@@ -210,24 +216,26 @@ export default new Vue({
                 .catch(() => {})
         },
         switchProject (projectId) {
-            // Clicking on current project doesn't have any effect.
-            if (projectId === this.project.getId()) {
-                return false
-            }
+            this.handleSwitchProject(projectId)
 
-            this.$modal.confirmIf(() => {
-                return this.project.status === 'idle' ? false : state.get('confirm.switchProject')
-            }, 'ConfirmSwitchProject')
-                .then(disableConfirm => {
-                    if (disableConfirm) {
-                        state.set('confirm.switchProject', false)
-                    }
-                    this.project.stop().then(() => {
-                        this.resetActiveTest()
-                        this.handleSwitchProject(projectId)
-                    })
-                })
-                .catch(() => {})
+            // Clicking on current project doesn't have any effect.
+            // if (projectId === this.project.getId()) {
+            //     return false
+            // }
+
+            // this.$modal.confirmIf(() => {
+            //     return this.project.status === 'idle' ? false : state.get('confirm.switchProject')
+            // }, 'ConfirmSwitchProject')
+            //     .then(disableConfirm => {
+            //         if (disableConfirm) {
+            //             state.set('confirm.switchProject', false)
+            //         }
+            //         this.project.stop().then(() => {
+            //             this.resetActiveTest()
+            //             this.handleSwitchProject(projectId)
+            //         })
+            //     })
+            //     .catch(() => {})
         },
         handleSwitchProject (projectId) {
             ipcRenderer.send('switch-project', projectId)
@@ -302,10 +310,6 @@ export default new Vue({
     },
     store,
     render (createElement) {
-        return createElement(App, {
-            props: {
-                project: this.project
-            }
-        })
+        return createElement(App)
     }
 }).$mount('#app')

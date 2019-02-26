@@ -95,10 +95,9 @@ export default {
             if (!this.hasErrors) {
                 this.loading = true
                 Promise.all(_uniqBy(this.slots, 'path').map((slot, index) => {
-                    this.project.addRepository({ path: slot.path }).then(repository => {
-                        repository.save()
-                    })
+                    this.project.addRepository({ path: slot.path })
                 })).then(() => {
+                    this.project.save()
                     this.$emit('hide')
                 })
             }

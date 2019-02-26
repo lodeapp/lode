@@ -58,11 +58,14 @@ export class Project extends EventEmitter implements IProject {
     protected initialRepositoryCount: number = 0
     protected initialRepositoryReady: number = 0
 
-    constructor (options: ProjectOptions) {
+    constructor (identifier: ProjectIdentifier) {
         super()
-        this.name = options.name
-        this.id = options.id || uuid()
+        this.name = identifier.name
+        this.id = identifier.id || uuid()
         this.state = state.project(this.id)
+
+        // Load options from the persistent project state.
+        const options = this.state.get('options')
         this.initialRepositoryCount = (options.repositories || []).length
         this.hasRepositories = this.initialRepositoryCount > 0
 
@@ -70,7 +73,7 @@ export class Project extends EventEmitter implements IProject {
         this.loadRepositories(options.repositories || [])
 
         // If this project doesn't yet exist, create it.
-        if (!options.id) {
+        if (!identifier.id) {
             this.save()
         }
     }

@@ -1,7 +1,7 @@
 <template>
-    <div class="titlebar" :class="{ 'empty': !project }">
-        <div v-if="project" class="titlebar-section">
-            <ProjectSelector :project="project" class="titlebar-button" />
+    <div class="titlebar" :class="{ 'empty': !hasProject }">
+        <div v-if="hasProject" class="titlebar-section">
+            <ProjectSelector class="titlebar-button" />
         </div>
     </div>
 </template>
@@ -14,8 +14,8 @@ export default {
         ProjectSelector
     },
     props: {
-        project: {
-            type: [Object, Boolean],
+        hasProject: {
+            type: Boolean,
             default: false
         }
     }

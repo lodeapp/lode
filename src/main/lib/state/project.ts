@@ -1,11 +1,8 @@
 import ElectronStore from 'electron-store'
+import { ipcRenderer } from 'electron'
 import { ProjectOptions } from '@main/lib/frameworks/project'
 
-export interface IProjectState {
-    isBusy (): boolean
-}
-
-export class Project implements IProjectState {
+export class Project {
 
     protected store: any
 
@@ -32,7 +29,11 @@ export class Project implements IProjectState {
     }
 
     public save (options: ProjectOptions): void {
-        this.store.set('options', {...this.store.get('options'), ...options})
+        options = {...this.store.get('options'), ...options}
+        this.store.set('options', options)
+        if (ipcRenderer) {
+            ipcRenderer.emit('project-saved', JSON.stringify(options))
+        }
     }
 
     public toJSON (): ProjectOptions {
