@@ -1,20 +1,20 @@
 <script>
-import Vue from 'vue'
+import octicons from 'octicons'
+
 export default {
     name: 'Icon',
-    functional: true,
     props: {
         symbol: {
             type: String,
             required: true
         }
     },
-    render (createElement, context) {
-        return createElement('i', Object.assign({
+    render (createElement) {
+        return createElement('i', {
             domProps: {
-                innerHTML: Vue.prototype.$icon[context.props.symbol].toSVG()
+                innerHTML: octicons[this.symbol].toSVG()
             }
-        }, context.data))
+        })
     }
 }
 </script>
