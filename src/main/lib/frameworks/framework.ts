@@ -530,9 +530,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
         })
         return this.reload()
             .then(outcome => {
-                this.cleanStaleSuites()
-                this.updateStatus()
-                this.emit('change', this)
+                if (outcome !== 'killed') {
+                    this.cleanStaleSuites()
+                    this.updateStatus()
+                    this.emit('change', this)
+                }
                 this.disassemble()
             })
             .catch(error => {

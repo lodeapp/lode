@@ -253,6 +253,10 @@ export abstract class Nugget extends EventEmitter {
     }
 
     protected wither (): void {
+        // Never wither a selected nugget.
+        if (this.selected) {
+            return
+        }
         this.result.tests = this.tests.map((test: ITest) => test.persist(false))
         this.tests = []
         this.bloomed = false
