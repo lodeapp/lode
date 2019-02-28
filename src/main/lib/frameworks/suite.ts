@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import { get, find } from 'lodash'
+import { get } from 'lodash'
 import { Status, parseStatus } from '@main/lib/frameworks/status'
 import { ITest, ITestResult, Test } from '@main/lib/frameworks/test'
 import { Nugget } from '@main/lib/frameworks/nugget'
@@ -82,7 +82,7 @@ export class Suite extends Nugget implements ISuite {
             ...{
                 tests: this.bloomed
                     ? this.tests.map((test: ITest) => test.persist())
-                    : this.getTestResults().map((test: ITestResult) => Test.defaults(test)),
+                    : this.getTestResults().map((test: ITestResult) => this.defaults(test)),
             }
         }
     }
@@ -112,21 +112,6 @@ export class Suite extends Nugget implements ISuite {
             this.bloom()
         }
         this.updateStatus()
-    }
-
-    protected bloom (): void {
-        if (this.bloomed) {
-            return
-        }
-        this.tests = this.getTestResults().map((result: ITestResult) => {
-            return this.makeTest(result, true)
-        })
-        this.bloomed = true
-    }
-
-    protected wither (): void {
-        this.tests = []
-        this.bloomed = false
     }
 
     /**
@@ -267,19 +252,9 @@ export class Suite extends Nugget implements ISuite {
      */
     public debrief (result: ISuiteResult, cleanup: boolean): Promise<void> {
         this.file = result.file
-
-        this.result = {
-            ...result,
-            ...{
-                // Since frameworks can send test results in piecemeal suites, we need
-                // to update the result by merging with existing test results, or risk
-                // misinterpreting the suite as a whole.
-                tests: this.getTestResults().map((test: ITestResult) => {
-                    return { ...test, ...find(result.tests, { identifier: test.identifier }) }
-                })
-            }
-        }
-
+        this.result.meta = result.meta
+        this.result.console = result.console
+        this.result.testsLoaded = result.testsLoaded
         return new Promise((resolve, reject) => {
             this.debriefTests(result.tests!, cleanup)
                 .then(() => {

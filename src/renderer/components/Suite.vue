@@ -2,18 +2,21 @@
     <Nugget
         :model="suite"
         class="suite"
-        :class="{
-            'is-child-active': isChildActive,
-            'has-context': hasContext,
-            'child-has-context': childHasContext
-        }"
+        :class="{ 'is-child-active': isChildActive }"
         :has-children="suite.testsLoaded() && suite.hasChildren()"
         @contextmenu.native.stop.prevent="onContextMenu"
     >
         <template slot="header">
-            <div class="selective-toggle" :class="{ disabled: running }" @click.stop="onSelectiveClick">
+            <div class="selective-toggle" :class="{ disabled: running }" @mousedown.stop="onSelectiveClick">
                 <button type="button" :disabled="running"></button>
-                <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial" :disabled="running">
+                <input
+                    type="checkbox"
+                    v-model="selected"
+                    :indeterminate.prop="suite.partial"
+                    :disabled="running"
+                    @click.prevent
+                    @mousedown.stop="onSelectiveClick"
+                >
             </div>
             <Filename :path="relativePath" :key="relativePath" />
         </template>
@@ -26,8 +29,6 @@
             @open="openFile"
             @activate="onChildActivation"
             @deactivate="onChildDeactivation"
-            @add-context="onChildAddContext"
-            @remove-context="onChildRemoveContext"
         />
     </Nugget>
 </template>
@@ -39,7 +40,6 @@ import { Menu } from '@main/menu'
 import Nugget from '@/components/Nugget'
 import Filename from '@/components/Filename'
 import Breadcrumb from '@/components/mixins/breadcrumb'
-import Context from '@/components/mixins/context'
 
 export default {
     name: 'Suite',
@@ -48,8 +48,7 @@ export default {
         Filename
     },
     mixins: [
-        Breadcrumb,
-        Context
+        Breadcrumb
     ],
     props: {
         model: {
@@ -103,16 +102,10 @@ export default {
             if (this.running) {
                 return
             }
-            const input = this.$el.querySelector('.selective-toggle input')
-            if (event.target !== input && !this.suite.selected) {
-                input.click()
-            }
+            this.selected = !this.selected
         },
         onContextMenu (event) {
             new Menu()
-                .before(() => {
-                    this.onAddContext()
-                })
                 .add({
                     id: 'reveal',
                     label: __DARWIN__
@@ -155,9 +148,6 @@ export default {
                     enabled: this.canOpen()
                 })
                 .addMultiple(this.suite.contextMenu())
-                .after(() => {
-                    this.onRemoveContext()
-                })
                 .open()
         },
         canOpen () {

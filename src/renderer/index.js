@@ -288,8 +288,11 @@ export default new Vue({
             })
         },
         setActiveTest (test) {
-            this.active.breadcrumbs = []
-            this.active.test = test
+            return new Promise((resolve, reject) => {
+                this.active.breadcrumbs = []
+                this.active.test = test
+                resolve()
+            })
         },
         resetActiveTest (test) {
             this.active.breadcrumbs = []

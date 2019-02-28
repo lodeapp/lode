@@ -39,6 +39,21 @@ export abstract class Nugget extends EventEmitter {
         return this.result.tests || []
     }
 
+    /**
+     * Returns a given test result object to default values.
+     *
+     * @param result The result object that will be persisted.
+     * @param status Which status to recursively set. False will persist current status.
+     */
+    protected defaults (result: ITestResult, status: Status | false = 'idle'): ITestResult {
+        return {
+            identifier: result.identifier,
+            name: result.name,
+            displayName: result.displayName || result.name,
+            status: status ? status : result.status,
+            tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
+        }
+    }
 
     /**
      * Find the test by a given identifier in the nugget's current children.
@@ -137,12 +152,12 @@ export abstract class Nugget extends EventEmitter {
     protected afterDebrief (cleanup: boolean): void {
         if (cleanup) {
             this.cleanTestsByStatus('queued')
+            if (!this.expanded) {
+                this.wither()
+            }
         }
         this.updateStatus()
 
-        if (!this.expanded) {
-            this.wither()
-        }
     }
 
     /**
@@ -228,10 +243,18 @@ export abstract class Nugget extends EventEmitter {
     }
 
     protected bloom (): void {
+        if (this.bloomed) {
+            return
+        }
+        this.tests = this.getTestResults().map((result: ITestResult) => {
+            return this.makeTest(result, true)
+        })
         this.bloomed = true
     }
 
     protected wither (): void {
+        this.result.tests = this.tests.map((test: ITest) => test.persist(false))
+        this.tests = []
         this.bloomed = false
     }
 
@@ -269,9 +292,8 @@ export abstract class Nugget extends EventEmitter {
         }
         // If not bloomed, then granular selecting is not possible, so we
         // can go ahead and update all the nugget's children's status.
-        this.getTestResults().forEach((test: ITestResult) => {
-            // @TODO: Update this recursively (test could have children tests)...
-            test.status = 'idle'
+        this.result!.tests = this.getTestResults().map((test: ITestResult) => {
+            return this.defaults(test, 'idle')
         })
     }
 
@@ -293,9 +315,8 @@ export abstract class Nugget extends EventEmitter {
         }
         // If not bloomed, then granular selecting is not possible, so we
         // can go ahead and update all the nugget's children's status.
-        this.getTestResults().forEach((test: ITestResult) => {
-            // @TODO: Update this recursively (test could have children tests)...
-            test.status = 'queued'
+        this.result!.tests = this.getTestResults().map((test: ITestResult) => {
+            return this.defaults(test, 'queued')
         })
     }
 
@@ -317,9 +338,8 @@ export abstract class Nugget extends EventEmitter {
         }
         // If not bloomed, then granular selecting is not possible, so we
         // can go ahead and update all the nugget's children's status.
-        this.getTestResults().forEach((test: ITestResult) => {
-            // @TODO: Update this recursively (test could have children tests)...
-            test.status = 'error'
+        this.result!.tests = this.getTestResults().map((test: ITestResult) => {
+            return this.defaults(test, 'error')
         })
     }
 
@@ -337,11 +357,11 @@ export abstract class Nugget extends EventEmitter {
                     test.idleQueued()
                 })
             }
-            this.getTestResults().forEach((test: ITestResult) => {
-                // @TODO: Update this recursively (test could have children tests)...
+            this.result!.tests = this.getTestResults().map((test: ITestResult) => {
                 if (test.status === 'queued') {
-                    test.status = 'idle'
+                    return this.defaults(test, 'idle')
                 }
+                return test
             })
             this.updateStatus()
         }

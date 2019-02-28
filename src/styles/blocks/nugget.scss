@@ -325,16 +325,6 @@
         }
     }
 
-    &.has-context {
-
-        & > .header {
-
-            & > .header-inner {
-                background-color: var(--item-selected-background-color);
-            }
-        }
-    }
-
     &.is-active {
 
         & > .header {
@@ -360,9 +350,7 @@
     }
 
     &.is-active,
-    &.has-context,
-    &.is-child-active,
-    &.child-has-context {
+    &.is-child-active {
 
         & > .header {
 

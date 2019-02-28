@@ -11,7 +11,7 @@
             <div class="title">
                 <Indicator :status="framework.status" />
                 <h3 class="heading">
-                    <span class="toggle" @click="toggle">
+                    <span class="toggle" @mousedown="toggle">
                         <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
                     </span>
                     <span class="name">

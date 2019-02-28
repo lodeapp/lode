@@ -1,11 +1,9 @@
-import { omit } from 'lodash'
 import { Status } from '@main/lib/frameworks/status'
 import { Nugget } from '@main/lib/frameworks/nugget'
 
 export interface ITest extends Nugget {
     result?: ITestResult
     selected: boolean
-    isActive: boolean
 
     getId (): string
     getStatus (): Status
@@ -13,9 +11,7 @@ export interface ITest extends Nugget {
     getDisplayName (): string
     getConsole (): Array<any>
     toggleSelected (toggle?: boolean, cascade?: boolean): void
-    activate (): void
-    deactivate (): void
-    persist (): ITestResult
+    persist (status?: Status | false): ITestResult
     resetResult (): void
     idle (selective: boolean): void
     queue (selective: boolean): void
@@ -41,7 +37,6 @@ export interface ITestResult {
 export class Test extends Nugget implements ITest {
     protected status!: Status
     public result!: ITestResult
-    public isActive: boolean = false
 
     constructor (result: ITestResult) {
         super()
@@ -49,27 +44,12 @@ export class Test extends Nugget implements ITest {
     }
 
     /**
-     * Prepare a given test result for persistence.
-     *
-     * @param result The result object that will be persisted.
-     */
-    public static defaults (result: ITestResult): ITestResult {
-        return {
-            identifier: result.identifier,
-            name: result.name,
-            displayName: result.displayName || result.name,
-            status: 'idle'
-        }
-    }
-
-    /**
      * Prepare this test for persistence.
+     *
+     * @param status Which status to recursively set. False will persist current status.
      */
-    public persist (): ITestResult {
-        return {
-            ...Test.defaults(this.result),
-            ...{ tests: (this.result.tests || []).map((test: ITestResult) => Test.defaults(test)) }
-        }
+    public persist (status: Status | false = 'idle'): ITestResult {
+        return this.defaults(this.result, status)
     }
 
     /**
@@ -77,7 +57,7 @@ export class Test extends Nugget implements ITest {
      * test never ran, but persist its identifying data).
      */
     public resetResult (): void {
-        this.result = Test.defaults(this.result)
+        this.result = this.defaults(this.result)
     }
 
     /**
@@ -88,7 +68,7 @@ export class Test extends Nugget implements ITest {
      */
     protected build (result: ITestResult, cleanup: boolean): void {
         this.updateStatus(result.status || 'idle')
-        this.result = omit(result, 'tests')
+        this.result = result
         if (result.tests && result.tests.length) {
             this.debriefTests(result.tests, cleanup)
         }
@@ -130,20 +110,6 @@ export class Test extends Nugget implements ITest {
      */
     public getConsole (): Array<any> {
         return this.result.console!
-    }
-
-    /**
-     * Activate this test (i.e. reveal details in test pane).
-     */
-    public activate (): void {
-        this.isActive = true
-    }
-
-    /**
-     * Deactivate this test.
-     */
-    public deactivate (): void {
-        this.isActive = false
     }
 
     /**

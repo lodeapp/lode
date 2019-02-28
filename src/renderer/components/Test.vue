@@ -2,20 +2,21 @@
     <Nugget
         :model="test"
         class="test"
-        :class="{
-            'is-active': isActive,
-            'is-child-active': isChildActive,
-            'has-context': hasContext,
-            'child-has-context': childHasContext
-        }"
+        :class="{ 'is-active': isActive, 'is-child-active': isChildActive }"
         :has-children="hasChildren"
         :handler="onClick"
         @contextmenu.native.stop.prevent="onContextMenu"
     >
         <template slot="header">
-            <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @click.stop="selected = true">
+            <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @mousedown.stop="selected = !selected">
                 <button type="button" :disabled="running"></button>
-                <input type="checkbox" v-model="selected" :disabled="running">
+                <input
+                    type="checkbox"
+                    v-model="selected"
+                    :disabled="running"
+                    @click.prevent
+                    @mousedown.stop="selected = !selected"
+                >
             </div>
             <div class="test-name" :title="displayName">{{ displayName }}</div>
         </template>
@@ -29,18 +30,16 @@
                 @open="$emit('open')"
                 @activate="onChildActivation"
                 @deactivate="onChildDeactivation"
-                @add-context="onChildAddContext"
-                @remove-context="onChildRemoveContext"
             />
         </template>
     </Nugget>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { Menu } from '@main/menu'
 import Nugget from '@/components/Nugget'
 import Breadcrumb from '@/components/mixins/breadcrumb'
-import Context from '@/components/mixins/context'
 
 export default {
     name: 'Test',
@@ -48,8 +47,7 @@ export default {
         Nugget
     },
     mixins: [
-        Breadcrumb,
-        Context
+        Breadcrumb
     ],
     props: {
         model: {
@@ -87,15 +85,15 @@ export default {
             return this.test.getName() !== this.displayName ? this.test.getName() : false
         },
         isActive () {
-            return this.test.isActive || false
-        }
-    },
-    watch: {
-        '$root.active.test' (active) {
-            if (this.isActive && active.getId() !== this.test.getId()) {
-                this.deactivate()
+            if (this.test.getId() === this.testActive) {
+                return true
             }
-        }
+            this.deactivate()
+            return false
+        },
+        ...mapGetters({
+            testActive: 'test/active'
+        })
     },
     methods: {
         onClick () {
@@ -106,9 +104,6 @@ export default {
         },
         onContextMenu (event) {
             new Menu()
-                .before(() => {
-                    this.onAddContext()
-                })
                 .add({
                     label: __DARWIN__
                         ? 'Copy Test Name'
@@ -135,27 +130,20 @@ export default {
                     },
                     enabled: this.canOpen()
                 })
-                .after(() => {
-                    this.onRemoveContext()
-                })
                 .open()
         },
         canOpen () {
             return this.$parent.canOpen()
         },
         activate () {
-            this.$root.setActiveTest(this.test)
+            this.$store.commit('test/SET', this.test.getId())
             this.$nextTick(() => {
-                this.test.activate()
                 this.$emit('activate')
+                this.$root.setActiveTest(this.test)
             })
         },
         deactivate () {
-            this.test.deactivate()
             this.$emit('deactivate')
-        },
-        refresh () {
-            this.activate()
         }
     }
 }

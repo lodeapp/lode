@@ -182,7 +182,7 @@
                 <button class="btn btn-sm" type="button" @click="expanded = !expanded">Done</button>
             </div>
         </div>
-        <div v-else @click="expanded = !expanded">
+        <div v-else @mousedown="expanded = !expanded">
             <div class="counter"></div>
             <h6>{{ fields.name }}</h6>
             <Icon symbol="unfold" />

@@ -9,7 +9,7 @@
         ]"
     >
         <div class="seam"></div>
-        <div class="header" @click.stop="onClick">
+        <div class="header" @mousedown.stop="onClick">
             <div class="status" :aria-label="displayStatus(status)" :title="displayStatus(status)">
                 <Icon v-if="status === 'error'" symbol="issue-opened" />
             </div>

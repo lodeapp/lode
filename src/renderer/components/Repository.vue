@@ -11,7 +11,7 @@
             <div class="title">
                 <Indicator :status="repository.status" />
                 <h2 class="heading">
-                    <span class="toggle" @click="toggle">
+                    <span class="toggle" @mousedown="toggle">
                         <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
                     </span>
                     <Icon symbol="repo" />
