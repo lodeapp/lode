@@ -23,12 +23,11 @@
         <Test
             v-for="test in suite.tests"
             :key="test.getId()"
-            :model="test"
+            :test="test"
             :running="running"
             :selectable="canToggleTests"
             @open="openFile"
             @activate="onChildActivation"
-            @deactivate="onChildDeactivation"
         />
     </Nugget>
 </template>
@@ -37,9 +36,9 @@
 import * as Path from 'path'
 import { pathExistsSync } from 'fs-extra'
 import { Menu } from '@main/menu'
+import { mapGetters } from 'vuex'
 import Nugget from '@/components/Nugget'
 import Filename from '@/components/Filename'
-import Breadcrumb from '@/components/mixins/breadcrumb'
 
 export default {
     name: 'Suite',
@@ -47,11 +46,8 @@ export default {
         Nugget,
         Filename
     },
-    mixins: [
-        Breadcrumb
-    ],
     props: {
-        model: {
+        suite: {
             type: Object,
             required: true
         },
@@ -61,9 +57,6 @@ export default {
         }
     },
     computed: {
-        suite () {
-            return this.model
-        },
         selected: {
             get () {
                 return this.suite.selected
@@ -77,6 +70,9 @@ export default {
         },
         testsLoaded () {
             return this.suite.testsLoaded()
+        },
+        isChildActive () {
+            return this.breadcrumbs.indexOf(this.suite.getId()) > -1
         },
         relativePath () {
             return this.suite.getRelativePath()
@@ -95,7 +91,10 @@ export default {
         },
         fileIsSafe () {
             return this.$fileystem.isExtensionSafe(this.fileExtension)
-        }
+        },
+        ...mapGetters({
+            breadcrumbs: 'breadcrumbs/active'
+        })
     },
     methods: {
         onSelectiveClick (event) {
@@ -103,6 +102,10 @@ export default {
                 return
             }
             this.selected = !this.selected
+        },
+        onChildActivation () {
+            this.$root.breadcrumb(this.suite)
+            this.$emit('activate')
         },
         onContextMenu (event) {
             new Menu()

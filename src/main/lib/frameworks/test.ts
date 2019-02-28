@@ -19,6 +19,7 @@ export interface ITest extends Nugget {
     error (selective: boolean): void
     idleQueued (): void
     debrief (result: ITestResult, cleanup: boolean): Promise<void>
+    hasChildren(): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
 }
 
@@ -90,7 +91,6 @@ export class Test extends Nugget implements ITest {
     getId (): string {
         return this.result.identifier!
     }
-
 
     /**
      * Get this test's display name.

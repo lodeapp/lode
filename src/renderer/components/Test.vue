@@ -24,12 +24,11 @@
             <Test
                 v-for="test in test.tests"
                 :key="test.getId()"
-                :model="test"
+                :test="test"
                 :running="running"
                 :selectable="selectable"
                 @open="$emit('open')"
                 @activate="onChildActivation"
-                @deactivate="onChildDeactivation"
             />
         </template>
     </Nugget>
@@ -39,18 +38,14 @@
 import { mapGetters } from 'vuex'
 import { Menu } from '@main/menu'
 import Nugget from '@/components/Nugget'
-import Breadcrumb from '@/components/mixins/breadcrumb'
 
 export default {
     name: 'Test',
     components: {
         Nugget
     },
-    mixins: [
-        Breadcrumb
-    ],
     props: {
-        model: {
+        test: {
             type: Object,
             required: true
         },
@@ -64,11 +59,11 @@ export default {
         }
     },
     computed: {
-        test () {
-            return this.model
-        },
         hasChildren () {
-            return this.test.tests && this.test.tests.length > 0
+            return this.test.hasChildren()
+        },
+        isChildActive () {
+            return this.breadcrumbs.indexOf(this.test.getId()) > -1
         },
         selected: {
             get () {
@@ -85,14 +80,11 @@ export default {
             return this.test.getName() !== this.displayName ? this.test.getName() : false
         },
         isActive () {
-            if (this.test.getId() === this.testActive) {
-                return true
-            }
-            this.deactivate()
-            return false
+            return this.test.getId() === this.testActive
         },
         ...mapGetters({
-            testActive: 'test/active'
+            testActive: 'test/active',
+            breadcrumbs: 'breadcrumbs/active'
         })
     },
     methods: {
@@ -101,6 +93,10 @@ export default {
                 this.activate()
                 return false
             }
+        },
+        onChildActivation () {
+            this.$root.breadcrumb(this.test)
+            this.$emit('activate')
         },
         onContextMenu (event) {
             new Menu()
@@ -137,13 +133,11 @@ export default {
         },
         activate () {
             this.$store.commit('test/SET', this.test.getId())
+            this.$root.resetActiveTest()
             this.$nextTick(() => {
                 this.$emit('activate')
                 this.$root.setActiveTest(this.test)
             })
-        },
-        deactivate () {
-            this.$emit('deactivate')
         }
     }
 }

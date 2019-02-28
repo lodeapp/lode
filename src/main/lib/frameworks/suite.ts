@@ -40,6 +40,7 @@ export interface ISuite extends Nugget {
     refresh (options: SuiteOptions): void
     setFresh (fresh: boolean): void
     isFresh (): boolean
+    hasChildren(): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
 }
 
@@ -160,13 +161,6 @@ export class Suite extends Nugget implements ISuite {
             }
         }
         super.updateStatus(to)
-    }
-
-    /**
-     * Whether this suite has children.
-     */
-    public hasChildren (): boolean {
-        return (this.result!.tests || []).length > 0
     }
 
     /**

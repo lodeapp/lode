@@ -40,6 +40,13 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
+     * Whether this nugget has children.
+     */
+    public hasChildren (): boolean {
+        return this.getTestResults().length > 0
+    }
+
+    /**
      * Returns a given test result object to default values.
      *
      * @param result The result object that will be persisted.

@@ -64,11 +64,10 @@
                 v-show="show"
                 v-for="framework in repository.frameworks"
                 :key="framework.getId()"
-                :model="framework"
+                :framework="framework"
                 @remove="removeFramework"
                 @manage="manageFramework"
                 @activate="onChildActivation"
-                @deactivate="onChildDeactivation"
             />
         </template>
     </div>
@@ -78,7 +77,6 @@
 import { Menu } from '@main/menu'
 import Framework from '@/components/Framework'
 import Indicator from '@/components/Indicator'
-import Breadcrumb from '@/components/mixins/breadcrumb'
 
 export default {
     name: 'Repository',
@@ -86,11 +84,8 @@ export default {
         Framework,
         Indicator
     },
-    mixins: [
-        Breadcrumb
-    ],
     props: {
-        model: {
+        repository: {
             type: Object,
             required: true
         }
@@ -117,9 +112,6 @@ export default {
         }
     },
     computed: {
-        repository () {
-            return this.model
-        },
         show () {
             return !this.repository.collapsed
         },
@@ -188,6 +180,10 @@ export default {
             this.$root.onModelRemove(framework.getId())
             this.repository.removeFramework(framework.getId())
             this.repository.save()
+        },
+        onChildActivation () {
+            this.$root.breadcrumb(this.repository)
+            this.$emit('activate')
         }
     }
 }

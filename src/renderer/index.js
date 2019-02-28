@@ -297,9 +297,11 @@ export default new Vue({
         resetActiveTest (test) {
             this.active.breadcrumbs = []
             this.active.test = null
+            store.commit('breadcrumbs/CLEAR')
         },
         breadcrumb (breadcrumb) {
             this.active.breadcrumbs.unshift(breadcrumb)
+            store.commit('breadcrumbs/ADD', breadcrumb.getId())
         },
         onModelRemove (modelId) {
             this.active.breadcrumbs.forEach(breadcrumb => {

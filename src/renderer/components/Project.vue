@@ -16,7 +16,7 @@
                     <div class="project">
                         <Repository
                             v-for="repository in project.repositories"
-                            :model="repository"
+                            :repository="repository"
                             :key="repository.getId()"
                             @remove="removeRepository"
                         />

@@ -69,11 +69,10 @@
         <template v-if="show">
             <Suite
                 v-for="suite in framework.suites"
-                :model="suite"
+                :suite="suite"
                 :running="running"
                 :key="suite.getId()"
                 @activate="onChildActivation"
-                @deactivate="onChildDeactivation"
             />
         </template>
     </div>
@@ -84,7 +83,6 @@ import { Menu } from '@main/menu'
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
-import Breadcrumb from '@/components/mixins/breadcrumb'
 
 export default {
     name: 'Framework',
@@ -93,11 +91,8 @@ export default {
         Suite,
         Ledger
     },
-    mixins: [
-        Breadcrumb
-    ],
     props: {
-        model: {
+        framework: {
             type: Object,
             required: true
         }
@@ -124,9 +119,6 @@ export default {
         }
     },
     computed: {
-        framework () {
-            return this.model
-        },
         show () {
             return !this.framework.collapsed
         },
@@ -190,6 +182,10 @@ export default {
                     this.$emit('remove', this.framework)
                 })
                 .catch(() => {})
+        },
+        onChildActivation () {
+            this.$root.breadcrumb(this.framework)
+            this.$emit('activate')
         }
     }
 }
