@@ -10,7 +10,8 @@ export interface ITest extends Nugget {
     getName (): string
     getDisplayName (): string
     getConsole (): Array<any>
-    toggleSelected (toggle?: boolean, cascade?: boolean): void
+    toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
+    toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
     persist (status?: Status | false): ITestResult
     resetResult (): void
     idle (selective: boolean): void

@@ -29,7 +29,8 @@ export interface ISuite extends Nugget {
     getConsole (): Array<any>
     testsLoaded (): boolean
     rebuildTests (result: ISuiteResult): void
-    toggleSelected (toggle?: boolean, cascade?: boolean): void
+    toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
+    toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
     idle (selective: boolean): void
     queue (selective: boolean): void
     error (selective: boolean): void
@@ -109,9 +110,12 @@ export class Suite extends Nugget implements ISuite {
         this.file = result.file
         this.result = result
         if (this.expanded) {
-            this.bloom()
+            this.bloom().then(() => {
+                this.updateStatus()
+            })
+        } else {
+            this.updateStatus()
         }
-        this.updateStatus()
     }
 
     /**

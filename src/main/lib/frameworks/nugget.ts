@@ -201,14 +201,14 @@ export abstract class Nugget extends EventEmitter {
      * @param toggle Whether it should be toggled on or off. Leave blank for inverting toggle.
      * @param cascade Whether toggling should apply to nugget's children.
      */
-    public toggleSelected (toggle?: boolean, cascade?: boolean): void {
+    public async toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void> {
         this.selected = typeof toggle === 'undefined' ? !this.selected : toggle
 
         // Selected nuggets should always bloom its tests.
         if (this.selected) {
-            this.bloom()
+            await this.bloom()
         } else if (!this.expanded) {
-            this.wither()
+            await this.wither()
         }
 
         this.emit('selective', this)
@@ -217,6 +217,7 @@ export abstract class Nugget extends EventEmitter {
                 test.toggleSelected(this.selected)
             })
         }
+        return Promise.resolve()
     }
 
     /**
@@ -225,13 +226,13 @@ export abstract class Nugget extends EventEmitter {
      * @param toggle Whether it should be expanded or collapsed. Leave blank for inverting toggle.
      * @param cascade Whether toggling should apply to nugget's children.
      */
-    public toggleExpanded (toggle?: boolean, cascade?: boolean): void {
+    public async toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void> {
         const expanded = typeof toggle === 'undefined' ? !this.expanded : toggle
 
         if (expanded) {
-            this.bloom()
+            await this.bloom()
         } else {
-            this.wither()
+            await this.wither()
         }
 
         if (cascade !== false) {
@@ -240,19 +241,23 @@ export abstract class Nugget extends EventEmitter {
             })
         }
         this.expanded = expanded
+        return Promise.resolve()
     }
 
-    protected bloom (): void {
+    protected async bloom (): Promise<void> {
         if (this.bloomed) {
             return
         }
-        this.tests = this.getTestResults().map((result: ITestResult) => {
-            return this.makeTest(result, true)
+        return new Promise((resolve, reject) => {
+            this.tests = this.getTestResults().map((result: ITestResult) => {
+                return this.makeTest(result, true)
+            })
+            this.bloomed = true
+            resolve()
         })
-        this.bloomed = true
     }
 
-    protected wither (): void {
+    protected async wither (): Promise<void> {
         // Never wither a selected nugget.
         if (this.selected) {
             return
@@ -260,6 +265,7 @@ export abstract class Nugget extends EventEmitter {
         this.result.tests = this.tests.map((test: ITest) => test.persist(false))
         this.tests = []
         this.bloomed = false
+        return Promise.resolve()
     }
 
     /**
