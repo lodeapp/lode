@@ -1,4 +1,3 @@
-import { ipcRenderer } from 'electron'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -11,13 +10,7 @@ context.keys().forEach((key) => {
 
 Vue.use(Vuex)
 
-const store = new Vuex.Store({
+export default new Vuex.Store({
     modules,
-    strict: __DEV__
+    strict: true
 })
-
-ipcRenderer.on('project-saved', options => {
-    store.commit('project/UPDATE', options)
-})
-
-export default store

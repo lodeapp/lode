@@ -193,20 +193,23 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Clean-up after running a process for this framework.
      */
     protected disassemble (): void {
-        if (this.runsInRemote) {
-            try {
-                Fs.removeSync(this.injectPath())
-                const files = Fs.readdirSync(Path.join(this.repositoryPath, '.lode'))
-                if (!files.length) {
-                    Fs.removeSync(Path.join(this.repositoryPath, '.lode'));
+        setTimeout(() => {
+            if (this.runsInRemote) {
+                try {
+                    Fs.removeSync(this.injectPath())
+                    const files = Fs.readdirSync(Path.join(this.repositoryPath, '.lode'))
+                    if (!files.length) {
+                        Fs.removeSync(Path.join(this.repositoryPath, '.lode'));
+                    }
+                } catch (error) {
+                    // Fail silently if folder is not found
+                    // or can't be removed.
                 }
-            } catch (error) {
-                // Fail silently if folder is not found
-                // or can't be removed.
             }
-        }
-        this.emit('state')
-        this.emit('disassembled')
+            this.emit('state')
+            this.emit('disassembled')
+            Logger.debug.log(`Disassembled ${this.name}`)
+        })
     }
 
     /**

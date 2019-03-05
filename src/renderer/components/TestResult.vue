@@ -10,7 +10,7 @@
         </div>
         <div class="test-result-breakdown">
             <div v-if="feedback && tab === 'feedback'">
-                <Feedback v-if="feedback.type === 'feedback'" :content="feedback.content || {}" />
+                <Feedback v-if="feedback.type === 'feedback'" :context="context" :content="feedback.content || {}" />
                 <KeyValue v-else-if="feedback.type === 'object'" :object="feedback.content || {}" />
                 <Ansi v-else-if="feedback.type === 'ansi'" :content="feedback.content" />
                 <!-- Catch-all for unknown content -->
@@ -41,6 +41,7 @@
 <script>
 import _get from 'lodash/get'
 import _isEmpty from 'lodash/isEmpty'
+import _last from 'lodash/last'
 import Ansi from '@/components/Ansi'
 import Console from '@/components/Console'
 import Feedback from '@/components/Feedback'
@@ -57,8 +58,8 @@ export default {
         TestStatistics
     },
     props: {
-        test: {
-            type: Object,
+        context: {
+            type: Array,
             required: true
         }
     },
@@ -82,6 +83,9 @@ export default {
                 return 'stats'
             }
         },
+        test () {
+            return _last(this.context)
+        },
         status () {
             return this.test.getStatus()
         },
@@ -104,10 +108,10 @@ export default {
             return !this.feedback && !this.stats
         },
         framework () {
-            return _get(this.$root.active.breadcrumbs, 1)
+            return _get(this.context, 1)
         },
         suite () {
-            return _get(this.$root.active.breadcrumbs, 2)
+            return _get(this.context, 2)
         },
         suiteConsole () {
             // Hide suite console output until test is in a definitive state

@@ -7,9 +7,12 @@
             `is-${expandStatus}`,
             hasChildren ? 'has-children' : ''
         ]"
+        tabindex="0"
+        @keydown.stop.right="handleExpand"
+        @keydown.stop.left="handleCollapse"
     >
         <div class="seam"></div>
-        <div class="header" @mousedown.stop="onClick">
+        <div class="header" @click.prevent @mousedown.prevent.stop="handleActivate">
             <div class="status" :aria-label="displayStatus(status)" :title="displayStatus(status)">
                 <Icon v-if="status === 'error'" symbol="issue-opened" />
             </div>
@@ -67,13 +70,25 @@ export default {
         })
     },
     methods: {
-        onClick (event) {
+        handleActivate (event) {
             if (this.handler) {
                 if (this.handler.call() === false) {
                     return
                 }
             }
             this.toggleChildren(event)
+        },
+        handleExpand (event) {
+            if (!this.hasChildren || this.show) {
+                return
+            }
+            this.handleActivate(event)
+        },
+        handleCollapse (event) {
+            if (!this.hasChildren || !this.show) {
+                return
+            }
+            this.handleActivate(event)
         },
         toggleChildren (event) {
             if (!this.hasChildren) {

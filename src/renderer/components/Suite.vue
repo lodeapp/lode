@@ -7,14 +7,16 @@
         @contextmenu.native.stop.prevent="onContextMenu"
     >
         <template slot="header">
-            <div class="selective-toggle" :class="{ disabled: running }" @mousedown.stop="onSelectiveClick">
-                <button type="button" :disabled="running"></button>
+            <div class="selective-toggle" :class="{ disabled: running }" @mousedown.prevent.stop="onSelectiveClick">
+                <button tabindex="-1" type="button" :disabled="running"></button>
                 <input
                     type="checkbox"
+                    tabindex="-1"
                     v-model="selected"
                     :indeterminate.prop="suite.partial"
                     :disabled="running"
                     @click.prevent
+                    @mousedown.prevent
                     @mousedown.stop="onSelectiveClick"
                 >
             </div>
@@ -72,7 +74,7 @@ export default {
             return this.suite.testsLoaded()
         },
         isChildActive () {
-            return this.breadcrumbs.indexOf(this.suite.getId()) > -1
+            return this.context.indexOf(this.suite.getId()) > -1
         },
         relativePath () {
             return this.suite.getRelativePath()
@@ -93,7 +95,7 @@ export default {
             return this.$fileystem.isExtensionSafe(this.fileExtension)
         },
         ...mapGetters({
-            breadcrumbs: 'breadcrumbs/active'
+            context: 'context/active'
         })
     },
     methods: {
@@ -103,9 +105,10 @@ export default {
             }
             this.selected = !this.selected
         },
-        onChildActivation () {
-            this.$root.breadcrumb(this.suite)
-            this.$emit('activate')
+        onChildActivation (context) {
+            context.unshift(this.suite)
+            this.$store.commit('context/ADD', this.suite.getId())
+            this.$emit('activate', context)
         },
         onContextMenu (event) {
             new Menu()

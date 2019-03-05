@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import store from './store'
 import { get } from 'lodash'
-import { mapGetters } from 'vuex'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@main/lib/state'
 import { Logger } from '@main/lib/logger'
@@ -22,6 +21,7 @@ import Strings from './plugins/strings'
 
 // Directives
 import Markdown from './directives/markdown'
+import Focusable from './directives/focusable'
 
 // Global / recursive components
 import App from '@/components/App'
@@ -41,6 +41,7 @@ Vue.use(new Strings('en-US'))
 
 // Register directives
 Vue.directive('markdown', Markdown(Vue))
+Vue.directive('focusable', Focusable)
 
 // Register global or recursive components
 Vue.component('Icon', Icon)
@@ -53,20 +54,12 @@ export default new Vue({
     data () {
         return {
             modals: [],
-            project: null,
-            active: {
-                test: null,
-                breadcrumbs: []
-            }
+            project: null
         }
     },
-    computed: {
-        ...mapGetters({
-            projectId: 'project/id'
-        })
-    },
     created () {
-        // Register ipcRenderer event handling
+        this.loadProject(remote.getCurrentWindow().getProjectOptions())
+
         ipcRenderer
             .on('blur', () => {
                 document.body.classList.remove('is-focused')
@@ -75,12 +68,14 @@ export default new Vue({
                 document.body.classList.add('is-focused')
             })
             .on('close', () => {
+                // @TODO: disassemble is not synchronous. Make sure it has
+                // finished running before green-lighting closing of window.
                 this.project.stop().then(() => {
                     ipcRenderer.send('window-should-close')
                 })
             })
             .on('project-switched', (event, projectOptions) => {
-                store.commit('project/REFRESH')
+                this.loadProject(projectOptions)
                 try {
                     if (global.gc) {
                         global.gc()
@@ -169,15 +164,18 @@ export default new Vue({
             })
     },
     methods: {
+        loadProject (projectOptions) {
+            this.project = projectOptions ? new Project(JSON.parse(projectOptions)) : null
+            this.updateApplicationMenu()
+        },
         addProject () {
-            this.$modal.confirm('EditProject')
+            this.$modal.confirm('EditProject', { add: true })
                 .then(options => {
                     // Stop current project before adding a new one.
                     (this.project ? this.project.stop() : Promise.resolve()).then(() => {
-                        this.resetActiveTest()
+                        store.commit('test/CLEAR')
                         const project = new Project(options)
-                        // @TODO: show "add repositories" modal after adding a new project.
-                        ipcRenderer.once('switch-project', () => {
+                        ipcRenderer.once('project-switched', () => {
                             this.addRepositories()
                         })
                         this.handleSwitchProject(project.getId())
@@ -186,7 +184,7 @@ export default new Vue({
                 .catch(() => {})
         },
         editProject () {
-            this.$modal.confirm('EditProject', { project: this.project })
+            this.$modal.confirm('EditProject')
                 .then(options => {
                     this.project.updateOptions(options)
                     this.project.save()
@@ -202,7 +200,7 @@ export default new Vue({
             this.$modal.confirm('RemoveProject')
                 .then(() => {
                     this.project.stop().then(() => {
-                        this.resetActiveTest()
+                        store.commit('test/CLEAR')
                         const switchTo = state.removeProject(this.project.getId())
                         // Switch information should be available only
                         // if there are still projects to switch to.
@@ -216,32 +214,30 @@ export default new Vue({
                 .catch(() => {})
         },
         switchProject (projectId) {
-            this.handleSwitchProject(projectId)
-
             // Clicking on current project doesn't have any effect.
-            // if (projectId === this.project.getId()) {
-            //     return false
-            // }
+            if (projectId === this.project.getId()) {
+                return false
+            }
 
-            // this.$modal.confirmIf(() => {
-            //     return this.project.status === 'idle' ? false : state.get('confirm.switchProject')
-            // }, 'ConfirmSwitchProject')
-            //     .then(disableConfirm => {
-            //         if (disableConfirm) {
-            //             state.set('confirm.switchProject', false)
-            //         }
-            //         this.project.stop().then(() => {
-            //             this.resetActiveTest()
-            //             this.handleSwitchProject(projectId)
-            //         })
-            //     })
-            //     .catch(() => {})
+            this.$modal.confirmIf(() => {
+                return this.project.status === 'idle' ? false : state.get('confirm.switchProject')
+            }, 'ConfirmSwitchProject')
+                .then(disableConfirm => {
+                    if (disableConfirm) {
+                        state.set('confirm.switchProject', false)
+                    }
+                    this.project.stop().then(() => {
+                        store.commit('test/CLEAR')
+                        this.handleSwitchProject(projectId)
+                    })
+                })
+                .catch(() => {})
         },
         handleSwitchProject (projectId) {
             ipcRenderer.send('switch-project', projectId)
         },
         addRepositories () {
-            this.$modal.open('AddRepositories', { project: this.project })
+            this.$modal.open('AddRepositories')
         },
         updateApplicationMenu () {
             ipcRenderer.send('update-menu', {
@@ -287,30 +283,8 @@ export default new Vue({
                 throw new Error('Boomtown!')
             })
         },
-        setActiveTest (test) {
-            return new Promise((resolve, reject) => {
-                this.active.breadcrumbs = []
-                this.active.test = test
-                resolve()
-            })
-        },
-        resetActiveTest (test) {
-            this.active.breadcrumbs = []
-            this.active.test = null
-            store.commit('breadcrumbs/CLEAR')
-        },
-        breadcrumb (breadcrumb) {
-            this.active.breadcrumbs.unshift(breadcrumb)
-            store.commit('breadcrumbs/ADD', breadcrumb.getId())
-        },
         onModelRemove (modelId) {
-            this.active.breadcrumbs.forEach(breadcrumb => {
-                // If a test within the model to remove is currently
-                // in focus, reset the active test pane.
-                if (breadcrumb.getId() === modelId) {
-                    this.resetActiveTest()
-                }
-            })
+            store.dispatch('context/onRemove', modelId)
         }
     },
     store,

@@ -11,6 +11,11 @@ export default {
             state.active = ''
         }
     },
+    actions: {
+        clear: ({ commit }, modelId) => {
+            commit('CLEAR')
+        }
+    },
     getters: {
         active: (state) => {
             return state.active

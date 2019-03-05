@@ -1,5 +1,5 @@
 <template>
-    <Modal :title="project ? $string.set('Add repositories to :0', project.name) : 'Add repositories'">
+    <Modal :title="$root.project ? $string.set('Add repositories to :0', $root.project.name) : 'Add repositories'">
         <form @submit.prevent="handleSubmit">
             <h5>Repositories</h5>
             <RepositoryPath
@@ -39,12 +39,6 @@ export default {
         Modal,
         RepositoryPath
     },
-    props: {
-        project: {
-            type: Object,
-            required: true
-        }
-    },
     data () {
         return {
             loading: false,
@@ -66,7 +60,7 @@ export default {
         addRow () {
             this.slots.push({
                 key: this.$string.random(),
-                validator: new RepositoryValidator(this.project.repositories.map(repository => repository.path)),
+                validator: new RepositoryValidator(this.$root.project.repositories.map(repository => repository.path)),
                 errored: false,
                 path: ''
             })
@@ -95,9 +89,9 @@ export default {
             if (!this.hasErrors) {
                 this.loading = true
                 Promise.all(_uniqBy(this.slots, 'path').map((slot, index) => {
-                    this.project.addRepository({ path: slot.path })
+                    this.$root.project.addRepository({ path: slot.path })
                 })).then(() => {
-                    this.project.save()
+                    this.$root.project.save()
                     this.$emit('hide')
                 })
             }

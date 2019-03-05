@@ -4,17 +4,20 @@
         class="test"
         :class="{ 'is-active': isActive, 'is-child-active': isChildActive }"
         :has-children="hasChildren"
-        :handler="onClick"
+        :handler="handleActivate"
+        @focus.native="handleActivate"
         @contextmenu.native.stop.prevent="onContextMenu"
     >
         <template slot="header">
-            <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @mousedown.stop="selected = !selected">
-                <button type="button" :disabled="running"></button>
+            <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @mousedown.prevent.stop="selected = !selected">
+                <button tabindex="-1" type="button" :disabled="running"></button>
                 <input
                     type="checkbox"
+                    tabindex="-1"
                     v-model="selected"
                     :disabled="running"
                     @click.prevent
+                    @mousedown.prevent
                     @mousedown.stop="selected = !selected"
                 >
             </div>
@@ -63,7 +66,7 @@ export default {
             return this.test.hasChildren()
         },
         isChildActive () {
-            return this.breadcrumbs.indexOf(this.test.getId()) > -1
+            return this.context.indexOf(this.test.getId()) > -1
         },
         selected: {
             get () {
@@ -84,19 +87,15 @@ export default {
         },
         ...mapGetters({
             testActive: 'test/active',
-            breadcrumbs: 'breadcrumbs/active'
+            context: 'context/active'
         })
     },
     methods: {
-        onClick () {
+        handleActivate () {
             if (!this.hasChildren && !this.isActive) {
                 this.activate()
                 return false
             }
-        },
-        onChildActivation () {
-            this.$root.breadcrumb(this.test)
-            this.$emit('activate')
         },
         onContextMenu (event) {
             new Menu()
@@ -132,11 +131,18 @@ export default {
             return this.$parent.canOpen()
         },
         activate () {
+            this.$el.focus()
             this.$store.commit('test/SET', this.test.getId())
-            this.$root.resetActiveTest()
+            this.$store.commit('context/CLEAR')
+            setTimeout(() => {
+                this.$emit('activate', [this.test])
+            })
+        },
+        onChildActivation (context) {
+            context.unshift(this.test)
+            this.$store.commit('context/ADD', this.test.getId())
             this.$nextTick(() => {
-                this.$emit('activate')
-                this.$root.setActiveTest(this.test)
+                this.$emit('activate', context)
             })
         }
     }

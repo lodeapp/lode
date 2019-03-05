@@ -203,7 +203,7 @@ export class Repository extends EventEmitter implements IRepository {
      * A function to run when a child framework changes its status.
      */
     protected statusListener (): void {
-        this.updateStatus(parseFrameworkStatus(this.frameworks.map(framework => framework.status)))
+        this.updateStatus()
     }
 
     /**
@@ -258,7 +258,10 @@ export class Repository extends EventEmitter implements IRepository {
      *
      * @param to The status we're updating to.
      */
-    protected updateStatus (to: FrameworkStatus): void {
+    protected updateStatus (to?: FrameworkStatus): void {
+        if (typeof to === 'undefined') {
+            to = parseFrameworkStatus(this.frameworks.map(framework => framework.status))
+        }
         const from = this.status
         this.status = to
         this.emit('status', to, from)
@@ -309,6 +312,7 @@ export class Repository extends EventEmitter implements IRepository {
         const index = findIndex(this.frameworks, framework => framework.getId() === id)
         if (index > -1) {
             this.frameworks.splice(index, 1)
+            this.updateStatus()
         }
     }
 }

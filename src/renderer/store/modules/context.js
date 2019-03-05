@@ -11,6 +11,14 @@ export default {
             state.active = []
         }
     },
+    actions: {
+        onRemove: ({ state, commit, dispatch }, modelId) => {
+            if (state.active.indexOf(modelId) > -1) {
+                dispatch('test/clear', null, { root: true })
+                commit('CLEAR')
+            }
+        }
+    },
     getters: {
         active: (state) => {
             return state.active

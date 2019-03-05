@@ -23,27 +23,7 @@
                     <button type="button" class="btn-link more-actions" @click.prevent="onMoreClick">
                         <Icon symbol="kebab-vertical" />
                     </button>
-                    <template v-if="repository.frameworks.length">
-                        <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
-                            <Icon symbol="sync" />
-                        </button>
-                        <button
-                            class="btn btn-sm btn-primary"
-                            :disabled="running || refreshing"
-                            @click="start"
-                        >
-                            Run
-                            <span v-if="repository.frameworks.length > 1" class="Counter">{{ repository.frameworks.length }}</span>
-                        </button>
-                        <button
-                            class="btn btn-sm btn-danger"
-                            :disabled="!running && !refreshing"
-                            @click="stop"
-                        >
-                            Stop
-                        </button>
-                    </template>
-                    <template v-else>
+                    <template v-if="!repository.frameworks.length">
                         <button
                             class="btn btn-sm btn-primary"
                             @click="scan"
@@ -113,7 +93,7 @@ export default {
     },
     computed: {
         show () {
-            return !this.repository.collapsed
+            return this.repository.expanded
         },
         running () {
             return this.repository.status === 'running'
@@ -181,9 +161,10 @@ export default {
             this.repository.removeFramework(framework.getId())
             this.repository.save()
         },
-        onChildActivation () {
-            this.$root.breadcrumb(this.repository)
-            this.$emit('activate')
+        onChildActivation (context) {
+            context.unshift(this.repository)
+            this.$store.commit('context/ADD', this.repository.getId())
+            this.$emit('activate', context)
         }
     }
 }

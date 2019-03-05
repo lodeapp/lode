@@ -254,7 +254,7 @@ export class Suite extends Nugget implements ISuite {
         this.result.console = result.console
         this.result.testsLoaded = result.testsLoaded
         return new Promise((resolve, reject) => {
-            this.debriefTests(result.tests!, cleanup)
+            this.debriefTests(result.tests || [], cleanup)
                 .then(() => {
                     resolve()
                 })

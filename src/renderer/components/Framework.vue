@@ -183,9 +183,10 @@ export default {
                 })
                 .catch(() => {})
         },
-        onChildActivation () {
-            this.$root.breadcrumb(this.framework)
-            this.$emit('activate')
+        onChildActivation (context) {
+            context.unshift(this.framework)
+            this.$store.commit('context/ADD', this.framework.getId())
+            this.$emit('activate', context)
         }
     }
 }

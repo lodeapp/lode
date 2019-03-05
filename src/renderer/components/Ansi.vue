@@ -52,7 +52,7 @@ export default {
         processContent (content) {
             [
                 [/\n/g, '\r\n'],
-                [/<<<REPORT\{\s+/, ''],
+                [/<<<REPORT\{?\s*/, ''],
                 [/Connection to .+ closed\.\s*$/, ''],
                 [/PHPUnit .+ by Sebastian Bergmann and contributors\.\s+/, '']
             ].forEach(replace => {

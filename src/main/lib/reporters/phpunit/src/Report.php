@@ -155,11 +155,11 @@ class Report
     }
 
     /**
-     * Return default attributes from the report's test.
+     * Get this report's class name
      *
-     * @return array
+     * @return string
      */
-    public function hydrateTest()
+    public function getName()
     {
         $name = $this->test->getName();
         if ($this->isWarning()) {
@@ -168,6 +168,18 @@ class Report
                 $name = $original;
             }
         }
+
+        return $name;
+    }
+
+    /**
+     * Return default attributes from the report's test.
+     *
+     * @return array
+     */
+    public function hydrateTest()
+    {
+        $name = $this->getName();
 
         return $this->transformContainer([
             'identifier' => $name,

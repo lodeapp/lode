@@ -145,8 +145,9 @@ export abstract class Nugget extends EventEmitter {
             Promise.all(tests.map((result: ITestResult) => {
                 return this.makeTest(result).debrief(result, cleanup)
             })).then(() => {
-                this.afterDebrief(cleanup)
-                resolve()
+                this.afterDebrief(cleanup).then(() => {
+                    resolve()
+                })
             })
         })
     }
@@ -156,15 +157,15 @@ export abstract class Nugget extends EventEmitter {
      *
      * @param cleanup Whether we should clean-up idle children (i.e. obsolete)
      */
-    protected afterDebrief (cleanup: boolean): void {
+    protected async afterDebrief (cleanup: boolean): Promise<void> {
         if (cleanup) {
             this.cleanTestsByStatus('queued')
             if (!this.expanded) {
-                this.wither()
+                await this.wither()
             }
         }
         this.updateStatus()
-
+        return Promise.resolve()
     }
 
     /**

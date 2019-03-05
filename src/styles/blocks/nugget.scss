@@ -2,6 +2,10 @@
     @include clearfix;
     position: relative;
 
+    &:focus {
+        outline: 0;
+    }
+
     & > .seam {
         display: none;
         height: 100%;
@@ -349,6 +353,7 @@
         }
     }
 
+    &:focus-within,
     &.is-active,
     &.is-child-active {
 
@@ -357,6 +362,19 @@
             & > .status {
                 border-right-color: theme-color('selected');
                 box-shadow: 4px 0 0 0 $blue-300;
+            }
+        }
+    }
+
+    // Parent nuggets can only focused by keyboard navigation.
+    // This distinguishes them from just having a child active.
+    &.has-children:focus {
+
+        & > .header {
+
+            & > .status {
+                border-right-color: red;
+                box-shadow: 4px 0 0 0 red;
             }
         }
     }

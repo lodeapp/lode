@@ -1,19 +1,18 @@
 <template>
     <div id="app">
         <div class="contents">
-            <Titlebar :has-project="!empty" />
-            <div v-if="empty" class="no-projects">
+            <Titlebar :has-project="!!$root.project" />
+            <div v-if="!$root.project" class="no-projects">
                 <h1>Welcome to Lode.</h1>
                 <button class="btn btn-primary" @click="$root.addProject">Add your first project</button>
             </div>
-            <Project v-else :key="projectId" />
+            <Project v-else :key="$root.project.id" />
             <ModalController />
         </div>
     </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import Titlebar from '@/components/Titlebar'
 import ModalController from '@/components/ModalController'
 import Project from '@/components/Project'
@@ -24,12 +23,6 @@ export default {
         Titlebar,
         ModalController,
         Project
-    },
-    computed: {
-        ...mapGetters({
-            empty: 'project/empty',
-            projectId: 'project/id'
-        })
     }
 }
 </script>

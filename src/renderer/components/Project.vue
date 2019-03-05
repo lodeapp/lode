@@ -1,29 +1,30 @@
 <template>
-    <main :class="{ 'no-repositories': project.empty() }">
-        <div v-if="project.empty()">
-            <h2>{{ 'Add repositories to :0 to start testing.' | set(project.name) }}</h2>
-            <button class="btn btn-primary" @click="$modal.open('AddRepositories', { project })">Add repositories</button>
+    <main :class="{ 'no-repositories': $root.project.empty() }">
+        <div v-if="$root.project.empty()">
+            <h2>{{ 'Add repositories to :0 to start testing.' | set($root.project.name) }}</h2>
+            <button class="btn btn-primary" @click="$modal.open('AddRepositories')">Add repositories</button>
         </div>
         <template v-else>
             <div v-if="loading" class="loading">
                 <div class="loading-group">
                     <div class="spinner"></div>
-                    <h2>{{ 'Loading :0…' | set(project.name) }}</h2>
+                    <h2>{{ 'Loading :0…' | set($root.project.name) }}</h2>
                 </div>
             </div>
             <Split v-if="!loading">
                 <Pane>
                     <div class="project">
                         <Repository
-                            v-for="repository in project.repositories"
+                            v-for="repository in $root.project.repositories"
                             :repository="repository"
                             :key="repository.getId()"
                             @remove="removeRepository"
+                            @activate="onChildActivation"
                         />
                     </div>
                 </Pane>
                 <Pane id="results">
-                    <Results :test="$root.active.test" />
+                    <Results :context="context" />
                 </Pane>
             </Split>
         </template>
@@ -31,8 +32,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { Project as ProjectModel } from '@main/lib/frameworks/project'
 import Pane from '@/components/Pane'
 import Repository from '@/components/Repository'
 import Results from '@/components/Results'
@@ -47,27 +46,24 @@ export default {
         Split
     },
     data () {
-        const project = new ProjectModel(this.$store.getters['project/options'])
-        project.on('ready', () => {
-            this.loading = false
-        })
-
         return {
-            project,
+            context: [],
             loading: true
         }
     },
-    computed: {
-        ...mapGetters({
-            empty: 'project/empty',
-            projectId: 'project/id'
+    created () {
+        this.$root.project.on('ready', () => {
+            this.loading = false
         })
     },
     methods: {
         removeRepository (repository) {
             this.$root.onModelRemove(repository.getId())
-            this.project.removeRepository(repository.getId())
-            this.project.save()
+            this.$root.project.removeRepository(repository.getId())
+            this.$root.project.save()
+        },
+        onChildActivation (context) {
+            this.context = context
         }
     }
 }
