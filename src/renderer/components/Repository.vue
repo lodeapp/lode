@@ -7,7 +7,8 @@
             repository.frameworks.length ? '' : 'is-empty'
         ]"
     >
-        <div class="header">
+        <!--
+         <div class="header">
             <div class="title">
                 <Indicator :status="repository.status" />
                 <h2 class="heading">
@@ -33,7 +34,7 @@
                     </template>
                 </div>
             </div>
-        </div>
+        </div> -->
         <template v-if="!repository.frameworks.length">
             <div class="empty-cta" v-show="show">
                 No test frameworks loaded. <a href="#" @click.prevent="scan">Scan repository</a>.

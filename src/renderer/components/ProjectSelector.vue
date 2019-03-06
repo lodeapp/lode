@@ -2,7 +2,7 @@
     <div
         v-if="!!$root.project"
         :key="$string.from({ id: $root.project.id, name: $root.project.name })"
-        class="titlebar-button"
+        class="sidebar-button"
         @click.prevent="openMenu"
     >
         <button type="button">
