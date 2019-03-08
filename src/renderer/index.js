@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import store from './store'
-import { get } from 'lodash'
+import { get, isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@lib/state'
 import { Logger } from '@lib/logger'
@@ -162,7 +162,8 @@ export default new Vue({
     },
     methods: {
         loadProject (projectOptions) {
-            this.project = projectOptions ? new Project(JSON.parse(projectOptions)) : null
+            projectOptions = JSON.parse(projectOptions)
+            this.project = isEmpty(projectOptions) ? null : new Project(projectOptions)
             this.updateApplicationMenu()
         },
         addProject () {

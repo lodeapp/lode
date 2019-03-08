@@ -45,7 +45,6 @@ class Base64TestReporter {
     }
 
     transform (result, feedbacks) {
-        console.log({ result })
         if (['skipped', 'pending'].includes(result.status)) {
             result.status = 'incomplete'
         }

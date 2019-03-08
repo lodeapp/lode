@@ -12,7 +12,7 @@ const BabiliWebpackPlugin = require('babili-webpack-plugin')
 
 let config = {
     entry: {
-        main: path.join(__dirname, '../../src/main/lib/reporters/jest/index.js')
+        main: path.join(__dirname, '../../src/lib/reporters/jest/index.js')
     },
     module: {
         rules: [

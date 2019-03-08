@@ -164,6 +164,10 @@ export class PHPUnit extends Framework {
             error = error.toString()
         }
 
+        if ((new RegExp('Cannot open file .*\/bootstrap\.php', 'gi')).test(error)) {
+            return 'If your PHPUnit tests run in a remote machine, make sure to toggle that in your framework settings.'
+        }
+
         return super.troubleshoot(error)
     }
 }

@@ -147,6 +147,10 @@ export class Jest extends Framework {
             error = error.toString()
         }
 
+        if (error.includes('Error: Could not resolve a module for a custom reporter.')) {
+            return 'If your Jest tests run in a remote machine, make sure to toggle that in your framework settings.'
+        }
+
         return super.troubleshoot(error)
     }
 }

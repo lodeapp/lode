@@ -23,6 +23,7 @@ class State extends EventEmitter {
     constructor () {
         super()
         this.store = new ElectronStore({
+            encryptionKey: 'v1',
             defaults: this.defaultSettings
         })
     }
