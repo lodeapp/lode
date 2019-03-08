@@ -24,7 +24,10 @@
                     </div>
                 </Pane>
                 <Pane id="results">
-                    <Results :context="context" />
+                    <Results
+                        :context="context"
+                        @reset="resetContext"
+                    />
                 </Pane>
             </Split>
         </template>
@@ -57,16 +60,6 @@ export default {
             storeContext: 'context/active'
         })
     },
-    watch: {
-        // Watch the store context for changes. If it's cleared, we clear local
-        // context, too. The store context will hold the model keys so we can
-        // watch it globally. Local context will hold the actual reactive models.
-        storeContext (context) {
-            if (!context.length) {
-                this.context = []
-            }
-        }
-    },
     created () {
         this.$root.project.on('ready', () => {
             this.loading = false
@@ -80,6 +73,9 @@ export default {
         },
         onChildActivation (context) {
             this.context = context
+        },
+        resetContext () {
+            this.context = []
         }
     }
 }
