@@ -19,6 +19,7 @@ export abstract class Nugget extends EventEmitter {
 
     protected fresh: boolean = false
     protected bloomed: boolean = false
+    protected active: boolean = false
 
     constructor () {
         super()
@@ -266,14 +267,30 @@ export abstract class Nugget extends EventEmitter {
     }
 
     protected async wither (): Promise<void> {
-        // Never wither a selected nugget.
-        if (this.selected) {
+        // Never wither a selected nugget or a nugget with an active test inside.
+        if (this.selected || this.tests.some((test: ITest) => test.isActive())) {
             return
         }
-        this.result.tests = this.tests.map((test: ITest) => test.persist(false))
+        this.result.tests = this.tests.map((test: ITest) => test.toJson())
         this.tests = []
         this.bloomed = false
         return Promise.resolve()
+    }
+
+    /**
+     * Set the active state of a nugget.
+     *
+     * @param active The active state to set.
+     */
+    public setActive (active: boolean): void {
+        this.active = active
+    }
+
+    /**
+     * Get the active state of a nugget.
+     */
+    public isActive (): boolean {
+        return this.active
     }
 
     /**
@@ -300,19 +317,20 @@ export abstract class Nugget extends EventEmitter {
     public idle (selective: boolean): void {
         this.setFresh(false)
         this.updateStatus('idle')
-        if (this.bloomed) {
-            this.tests
-                .filter(test => selective && this.canToggleTests ? test.selected : true)
-                .forEach(test => {
-                    test.resetResult()
-                    test.idle(selective)
-                })
+        this.tests
+            .filter(test => selective && this.canToggleTests ? test.selected : true)
+            .forEach(test => {
+                test.resetResult()
+                test.idle(selective)
+            })
+
+        if (!this.bloomed) {
+            // If not bloomed, then granular selecting is not possible, so we
+            // can go ahead and update all the nugget's children's status.
+            this.result!.tests = this.getTestResults().map((test: ITestResult) => {
+                return this.defaults(test, 'idle')
+            })
         }
-        // If not bloomed, then granular selecting is not possible, so we
-        // can go ahead and update all the nugget's children's status.
-        this.result!.tests = this.getTestResults().map((test: ITestResult) => {
-            return this.defaults(test, 'idle')
-        })
     }
 
     /**
@@ -323,19 +341,20 @@ export abstract class Nugget extends EventEmitter {
     public queue (selective: boolean): void {
         this.setFresh(false)
         this.updateStatus('queued')
-        if (this.bloomed) {
-            this.tests
-                .filter(test => selective && this.canToggleTests ? test.selected : true)
-                .forEach(test => {
-                    test.resetResult()
-                    test.queue(selective)
-                })
+        this.tests
+            .filter(test => selective && this.canToggleTests ? test.selected : true)
+            .forEach(test => {
+                test.resetResult()
+                test.queue(selective)
+            })
+
+        if (!this.bloomed) {
+            // If not bloomed, then granular selecting is not possible, so we
+            // can go ahead and update all the nugget's children's status.
+            this.result!.tests = this.getTestResults().map((test: ITestResult) => {
+                return this.defaults(test, 'queued')
+            })
         }
-        // If not bloomed, then granular selecting is not possible, so we
-        // can go ahead and update all the nugget's children's status.
-        this.result!.tests = this.getTestResults().map((test: ITestResult) => {
-            return this.defaults(test, 'queued')
-        })
     }
 
     /**
@@ -346,19 +365,20 @@ export abstract class Nugget extends EventEmitter {
     public error (selective: boolean): void {
         this.setFresh(false)
         this.updateStatus('error')
-        if (this.bloomed) {
-            this.tests
-                .filter(test => selective && this.canToggleTests ? test.selected : true)
-                .forEach(test => {
-                    test.resetResult()
-                    test.error(selective)
-                })
+        this.tests
+            .filter(test => selective && this.canToggleTests ? test.selected : true)
+            .forEach(test => {
+                test.resetResult()
+                test.error(selective)
+            })
+
+        if (!this.bloomed) {
+            // If not bloomed, then granular selecting is not possible, so we
+            // can go ahead and update all the nugget's children's status.
+            this.result!.tests = this.getTestResults().map((test: ITestResult) => {
+                return this.defaults(test, 'error')
+            })
         }
-        // If not bloomed, then granular selecting is not possible, so we
-        // can go ahead and update all the nugget's children's status.
-        this.result!.tests = this.getTestResults().map((test: ITestResult) => {
-            return this.defaults(test, 'error')
-        })
     }
 
     /**
@@ -370,11 +390,9 @@ export abstract class Nugget extends EventEmitter {
             this.idle(false)
             return
         } else if (this.getStatus() === 'running') {
-            if (this.bloomed) {
-                this.tests.forEach(test => {
-                    test.idleQueued()
-                })
-            }
+            this.tests.forEach(test => {
+                test.idleQueued()
+            })
             this.result!.tests = this.getTestResults().map((test: ITestResult) => {
                 if (test.status === 'queued') {
                     return this.defaults(test, 'idle')

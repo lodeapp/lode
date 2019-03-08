@@ -5,6 +5,7 @@
         :class="{ 'is-child-active': isChildActive }"
         :has-children="suite.testsLoaded() && suite.hasChildren()"
         @contextmenu.native.stop.prevent="onContextMenu"
+        @keydown.native.self.stop.prevent.space="onSelectiveClick"
     >
         <template slot="header">
             <div class="selective-toggle" :class="{ disabled: running }" @mousedown.prevent.stop="onSelectiveClick">

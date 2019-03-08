@@ -110,10 +110,7 @@ export default new Vue({
                         }
                         break
                     case 'run-project':
-                        this.latest(
-                            this.$string.set(':0 project run', this.project.name),
-                            () => this.project.start()
-                        )
+                        this.project.start()
                         break
                     case 'refresh-project':
                         this.project.refresh()
@@ -240,13 +237,7 @@ export default new Vue({
             this.$modal.open('AddRepositories')
         },
         updateApplicationMenu () {
-            ipcRenderer.send('update-menu', {
-                latestJobName: queue.getLatestJobName()
-            })
-        },
-        latest (name, job) {
-            queue.latest(name, job)
-            this.updateApplicationMenu()
+            ipcRenderer.send('update-menu')
         },
         openExternal (link) {
             shell.openExternal(link)

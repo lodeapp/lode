@@ -165,10 +165,7 @@ export default {
             this.framework.refresh()
         },
         start () {
-            this.$root.latest(
-                this.$string.set(':0 framework run', this.framework.name),
-                () => this.framework.start()
-            )
+            this.framework.start()
         },
         async stop () {
             await this.framework.stop()

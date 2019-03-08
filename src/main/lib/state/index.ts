@@ -87,6 +87,18 @@ class State extends EventEmitter {
         return projectId
     }
 
+    public updateProject (options: ProjectIdentifier): void {
+        const projects = this.store.get('projects', [])
+        const projectIndex = findIndex(projects, { id: options.id })
+        if (projectIndex > -1) {
+            projects[projectIndex] = {
+                ...projects[projectIndex],
+                ...options
+            }
+            this.store.set('projects', projects)
+        }
+    }
+
     public project (id: string): Project {
         const project = new Project(id)
         // If project already has a name, add it to the available projects list.

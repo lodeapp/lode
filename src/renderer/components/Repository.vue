@@ -145,10 +145,7 @@ export default {
                 .catch(() => {})
         },
         start () {
-            this.$root.latest(
-                this.$string.set(':0 repository run', this.repository.name),
-                () => this.repository.start()
-            )
+            this.repository.start()
         },
         refresh () {
             this.repository.refresh()

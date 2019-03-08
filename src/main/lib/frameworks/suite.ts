@@ -76,16 +76,12 @@ export class Suite extends Nugget implements ISuite {
      */
     public persist (): ISuiteResult {
         return {
-            ...{
-                file: this.file,
-                meta: this.getMeta(),
-                testsLoaded: this.testsLoaded()
-            },
-            ...{
-                tests: this.bloomed
-                    ? this.tests.map((test: ITest) => test.persist())
-                    : this.getTestResults().map((test: ITestResult) => this.defaults(test)),
-            }
+            file: this.file,
+            meta: this.getMeta(),
+            testsLoaded: this.testsLoaded(),
+            tests: this.bloomed
+                ? this.tests.map((test: ITest) => test.persist())
+                : this.getTestResults().map((test: ITestResult) => this.defaults(test)),
         }
     }
 

@@ -11,9 +11,7 @@ import { ProjectIdentifier } from '@main/lib/frameworks/project'
 // raising an alert, so we need to forcibly cast types when defining them.
 type MenuItemType = ('normal' | 'separator' | 'submenu' | 'checkbox' | 'radio')
 
-export type ApplicationMenuOptions = {
-    latestJobName?: string
-}
+export type ApplicationMenuOptions = {}
 
 export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electron.Menu {
     const template = new Array<Electron.MenuItemConstructorOptions>()
@@ -180,17 +178,6 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
                 accelerator: (() => {
                     return __DARWIN__ ? 'Command+Esc' : 'Ctrl+Esc'
                 })(),
-            },
-            separator,
-            {
-                label: 'Repeat Last Run',
-                click: emit('rerun-last'),
-                accelerator: 'CmdOrCtrl+D',
-                enabled: !!options.latestJobName
-            },
-            {
-                label: options.latestJobName || 'Nothing has been run',
-                enabled: false
             },
             separator,
             {

@@ -182,7 +182,7 @@ class Report
         $name = $this->getName();
 
         return $this->transformContainer([
-            'identifier' => $name,
+            'identifier' => sha1($this->getFileName().$name),
             'name' => $name,
             'displayName' => $this->transformName($name),
             'status' => 'idle',

@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const _compact = require('lodash/compact')
 const _find = require('lodash/find')
 const _findIndex = require('lodash/findIndex')
@@ -39,7 +40,12 @@ class Base64TestReporter {
             .filter(Boolean)
     }
 
+    hash (string) {
+        return crypto.createHash('sha1').update(string).digest('hex')
+    }
+
     transform (result, feedbacks) {
+        console.log({ result })
         if (['skipped', 'pending'].includes(result.status)) {
             result.status = 'incomplete'
         }
@@ -48,7 +54,7 @@ class Base64TestReporter {
 
         return {
             ancestors: result.ancestorTitles,
-            identifier: result.ancestorTitles.concat([result.title]).join('¦'),
+            identifier: this.hash(result.ancestorTitles.concat([result.title]).join('¦')),
             name: result.title,
             displayName: result.title,
             status: result.status,
@@ -95,16 +101,16 @@ class Base64TestReporter {
         }, feedbacks)
     }
 
-    group (ungrouped) {
+    group (suite, ungrouped) {
         const tests = []
         ungrouped.forEach(result => {
             let group = tests
             if (result.ancestors.length) {
-                let prefix = ''
+                let prefix = suite
                 result.ancestors.forEach(ancestor => {
-                    const identifier = `${prefix}${ancestor}`
+                    const identifier = this.hash(`${prefix}¦${ancestor}`)
                     let index = _findIndex(group, { identifier })
-                    prefix += `${ancestor}¦`
+                    prefix += `${ancestor}`
                     if (index === -1) {
                         const test = {
                             identifier,
@@ -128,7 +134,7 @@ class Base64TestReporter {
 
     onTestResult (test, testResult, aggregatedResult) {
         const feedbacks = this.parseFeedback(testResult.failureMessage)
-        const tests = this.group(testResult.testResults.map(result => this.transform(result, feedbacks)))
+        const tests = this.group(test.path, testResult.testResults.map(result => this.transform(result, feedbacks)))
 
         // If test suite failed to run, add a test inside it for feedback
         if (!tests.length && testResult.failureMessage) {

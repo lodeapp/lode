@@ -170,6 +170,7 @@ export class Project extends EventEmitter implements IProject {
     public updateOptions (options: ProjectOptions): void {
         // Currently only the name is editable
         this.name = options.name
+        state.updateProject({ id: this.id, name: this.name })
     }
 
     /**
