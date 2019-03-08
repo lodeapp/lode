@@ -10,7 +10,7 @@
 
 <script>
 import Terminal from 'terminal.js'
-import { ProcessError } from '@main/lib/process/errors'
+import { ProcessError } from '@lib/process/errors'
 import Icon from '@/components/Icon'
 
 export default {

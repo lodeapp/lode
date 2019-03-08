@@ -2,10 +2,10 @@ import { Glob } from 'glob'
 import { v4 as uuid } from 'uuid'
 import { findIndex } from 'lodash'
 import { EventEmitter } from 'events'
-import { Frameworks } from '@main/lib/frameworks'
-import { FrameworkStatus, parseFrameworkStatus } from '@main/lib/frameworks/status'
-import { FrameworkFactory } from '@main/lib/frameworks/factory'
-import { FrameworkOptions, IFramework } from '@main/lib/frameworks/framework'
+import { Frameworks } from '@lib/frameworks'
+import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
+import { FrameworkFactory } from '@lib/frameworks/factory'
+import { FrameworkOptions, IFramework } from '@lib/frameworks/framework'
 
 /**
  * Options to instantiate a Project with.

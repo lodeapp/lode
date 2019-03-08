@@ -6,7 +6,7 @@
 
 <script>
 import Split from 'split.js'
-import { state } from '@main/lib/state'
+import { state } from '@lib/state'
 
 export default {
     name: 'Split',

@@ -1,6 +1,6 @@
 import ElectronStore from 'electron-store'
 import { ipcRenderer } from 'electron'
-import { ProjectOptions } from '@main/lib/frameworks/project'
+import { ProjectOptions } from '@lib/frameworks/project'
 
 export class Project {
 

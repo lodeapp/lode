@@ -5,8 +5,8 @@ import { find, findIndex, sortBy, uniqBy } from 'lodash'
 import { EventEmitter } from 'events'
 import { app } from 'electron'
 import ElectronStore from 'electron-store'
-import { Project } from '@main/lib/state/project'
-import { ProjectIdentifier } from '@main/lib/frameworks/project'
+import { Project } from '@lib/state/project'
+import { ProjectIdentifier } from '@lib/frameworks/project'
 
 class State extends EventEmitter {
     protected store: any

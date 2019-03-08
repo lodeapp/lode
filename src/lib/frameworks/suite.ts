@@ -1,8 +1,8 @@
 import * as Path from 'path'
 import { get } from 'lodash'
-import { Status, parseStatus } from '@main/lib/frameworks/status'
-import { ITest, ITestResult, Test } from '@main/lib/frameworks/test'
-import { Nugget } from '@main/lib/frameworks/nugget'
+import { Status, parseStatus } from '@lib/frameworks/status'
+import { ITest, ITestResult, Test } from '@lib/frameworks/test'
+import { Nugget } from '@lib/frameworks/nugget'
 
 export type SuiteOptions = {
     path: string,

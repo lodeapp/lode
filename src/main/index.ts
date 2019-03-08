@@ -1,8 +1,8 @@
 import { app, ipcMain, Menu } from 'electron'
 import { buildDefaultMenu } from './menu'
 import { Window } from './window'
-import { mergeEnvFromShell } from '@main/lib/process/shell'
-import { state } from '@main/lib/state'
+import { mergeEnvFromShell } from '@lib/process/shell'
+import { state } from '@lib/state'
 
 // Expose garbage collector
 app.commandLine.appendSwitch('js-flags', '--expose_gc')

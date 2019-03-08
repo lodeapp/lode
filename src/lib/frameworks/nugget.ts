@@ -1,7 +1,7 @@
 import { debounce, find } from 'lodash'
 import { EventEmitter } from 'events'
-import { ITest, ITestResult } from '@main/lib/frameworks/test'
-import { Status, parseStatus } from '@main/lib/frameworks/status'
+import { ITest, ITestResult } from '@lib/frameworks/test'
+import { Status, parseStatus } from '@lib/frameworks/status'
 
 /**
  * Nuggets are the testable elements inside a repository

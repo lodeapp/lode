@@ -1,8 +1,8 @@
 import { Menu, ipcMain } from 'electron'
 import { ensureItemIds } from './ensure-item-ids'
 import { MenuEvent } from './menu-event'
-import { state } from '@main/lib/state'
-import { ProjectIdentifier } from '@main/lib/frameworks/project'
+import { state } from '@lib/state'
+import { ProjectIdentifier } from '@lib/frameworks/project'
 
 // import { log } from '../log'
 // import { ensureDir } from 'fs-extra'

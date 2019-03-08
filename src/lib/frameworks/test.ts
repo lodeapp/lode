@@ -1,5 +1,5 @@
-import { Status } from '@main/lib/frameworks/status'
-import { Nugget } from '@main/lib/frameworks/nugget'
+import { Status } from '@lib/frameworks/status'
+import { Nugget } from '@lib/frameworks/nugget'
 
 export interface ITest extends Nugget {
     result?: ITestResult

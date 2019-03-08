@@ -1,5 +1,5 @@
 import Bottleneck from 'bottleneck'
-import { state } from '@main/lib/state'
+import { state } from '@lib/state'
 
 export interface IQueue {
     add (job: any): void

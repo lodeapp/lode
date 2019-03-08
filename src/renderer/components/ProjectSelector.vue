@@ -16,7 +16,7 @@
 
 <script>
 import { Menu } from '@main/menu'
-import { state } from '@main/lib/state'
+import { state } from '@lib/state'
 
 export default {
     name: 'ProjectSelector',

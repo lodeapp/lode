@@ -1,10 +1,10 @@
 import { v4 as uuid } from 'uuid'
 import { findIndex } from 'lodash'
 import { EventEmitter } from 'events'
-import { state } from '@main/lib/state'
-import { Project as ProjectState } from '@main/lib/state/project'
-import { FrameworkStatus, parseFrameworkStatus } from '@main/lib/frameworks/status'
-import { RepositoryOptions, IRepository, Repository } from '@main/lib/frameworks/repository'
+import { state } from '@lib/state'
+import { Project as ProjectState } from '@lib/state/project'
+import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
+import { RepositoryOptions, IRepository, Repository } from '@lib/frameworks/repository'
 
 /**
  * The minimal options to identify a project by.

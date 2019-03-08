@@ -1,8 +1,8 @@
 import * as Path from 'path'
 import * as Fs from 'fs'
-import { RepositoryOptions } from '@main/lib/frameworks/repository'
-import { FrameworkOptions } from '@main/lib/frameworks/framework'
-import { Frameworks } from '@main/lib/frameworks'
+import { RepositoryOptions } from '@lib/frameworks/repository'
+import { FrameworkOptions } from '@lib/frameworks/framework'
+import { Frameworks } from '@lib/frameworks'
 
 export type ValidationErrors = { [index: string]: Array<string> }
 
