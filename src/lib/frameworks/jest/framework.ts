@@ -11,7 +11,8 @@ export class Jest extends Framework {
         name: 'Jest',
         type: 'jest',
         command: 'yarn test',
-        path: ''
+        path: '',
+        proprietary: {}
     }
 
     /**
@@ -148,7 +149,7 @@ export class Jest extends Framework {
         }
 
         if (error.includes('Error: Could not resolve a module for a custom reporter.')) {
-            return 'If your Jest tests run in a remote machine, make sure to toggle that in your framework settings.'
+            return 'If your Jest tests run in a remote machine, make sure to toggle that in your framework settings and set the absolute path to the repository inside the remote machine.'
         }
 
         return super.troubleshoot(error)

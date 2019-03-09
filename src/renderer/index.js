@@ -131,7 +131,7 @@ export default new Vue({
                         this.addRepositories()
                         break
                     case 'log-project':
-                        const projectState = state.project(this.projectId)
+                        const projectState = state.project(this.project.getId())
                         Logger.info.log({
                             object: projectState.get(),
                             json: JSON.stringify(projectState.get())

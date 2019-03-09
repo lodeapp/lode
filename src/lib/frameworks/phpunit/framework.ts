@@ -6,6 +6,7 @@ import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
 import { ISuiteResult, Suite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
 import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
+import { FrameworkValidator } from '@lib/frameworks/validator'
 
 export class PHPUnit extends Framework {
 
@@ -13,13 +14,15 @@ export class PHPUnit extends Framework {
         name: 'PHPUnit',
         type: 'phpunit',
         command: './vendor/bin/phpunit',
-        path: ''
+        path: '',
+        proprietary: {
+            autoloadPath: ''
+        }
     }
 
     // Suites are defined in the parent constructor (albeit a different class),
     // so we'll just inherit the default value from it (or risk overriding it).
     public suites!: Array<PHPUnitSuite>
-
 
     /**
      * The class of suite we use for this framework. Overrides the default
@@ -96,9 +99,8 @@ export class PHPUnit extends Framework {
      * The command arguments for running this framework.
      */
     protected runArgs (): Array<string> {
-        // @TODO: Allow users to configure their autoload location.
         const root = (this.runsInRemote ? this.remotePath : this.repositoryPath)
-        const autoload = Path.join(root, 'vendor/autoload.php')
+        const autoload = Path.join(root, this.proprietary.autoloadPath || 'vendor/autoload.php')
         const args = [
             `-d lode_bootstrap=${autoload}`,
             '--bootstrap',
@@ -148,6 +150,18 @@ export class PHPUnit extends Framework {
     }
 
     /**
+     * Validate PHPUnit specific options.
+     */
+    public static validate (validator: FrameworkValidator, options: any): void {
+        const autoload = options.proprietary.autoloadPath
+        if (autoload) {
+            if (Path.isAbsolute(autoload) || !validator.isFile(Path.join(validator.repositoryPath, autoload))) {
+                validator.addError('autoloadPath', 'Please enter a valid file inside the repository directory.')
+            }
+        }
+    }
+
+    /**
      * Provide setup instructions for using Lode with Jest.
      */
     public static instructions (): string {
@@ -165,7 +179,7 @@ export class PHPUnit extends Framework {
         }
 
         if ((new RegExp('Cannot open file .*\/bootstrap\.php', 'gi')).test(error)) {
-            return 'If your PHPUnit tests run in a remote machine, make sure to toggle that in your framework settings.'
+            return 'If your PHPUnit tests run in a remote machine, make sure to toggle that in your framework settings and set the absolute path to the repository inside the remote machine.'
         }
 
         return super.troubleshoot(error)

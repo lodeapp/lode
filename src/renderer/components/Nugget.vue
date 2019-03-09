@@ -76,6 +76,11 @@ export default {
                     return
                 }
             }
+            // Don't toggle children on right-clicks.
+            if (this.$input.isRightButton(event)) {
+                this.$el.focus()
+                return
+            }
             this.toggleChildren(event)
         },
         handleExpand (event) {

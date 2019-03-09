@@ -126,7 +126,6 @@ export class Window {
         return this.window.isMinimized()
     }
 
-    // Is the window currently visible?
     public isVisible() {
         return this.window.isVisible()
     }

@@ -2,7 +2,7 @@ import * as Path from 'path'
 import * as Fs from 'fs'
 import { RepositoryOptions } from '@lib/frameworks/repository'
 import { FrameworkOptions } from '@lib/frameworks/framework'
-import { Frameworks } from '@lib/frameworks'
+import { getFrameworkByType } from '@lib/frameworks'
 
 export type ValidationErrors = { [index: string]: Array<string> }
 
@@ -46,6 +46,22 @@ export class Validator {
     public isDirectory (path: string): boolean {
         try {
             return Fs.statSync(path).isDirectory()
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                return false
+            }
+            throw error
+        }
+    }
+
+    /**
+     * Check if a given path is a file.
+     *
+     * @param path The path to check.
+     */
+    public isFile (path: string): boolean {
+        try {
+            return Fs.statSync(path).isFile()
         } catch (error) {
             if (error.code === 'ENOENT') {
                 return false
@@ -110,7 +126,7 @@ export class Validator {
      * @param path The error key.
      * @param path The error message to add.
      */
-    protected addError (key: string, message: string): void {
+    public addError (key: string, message: string): void {
         if (typeof this.errors[key] === 'undefined') {
             this.errors[key] = []
         }
@@ -152,7 +168,7 @@ export class RepositoryValidator extends Validator {
 }
 
 export class FrameworkValidator extends Validator {
-    readonly repositoryPath: string
+    public readonly repositoryPath: string
 
     constructor (options: FrameworkValidatorOptions) {
         super()
@@ -183,7 +199,7 @@ export class FrameworkValidator extends Validator {
 
         if (!options.type) {
             this.addError('type', 'Please select a framework type.')
-        } else if (Frameworks.map(framework => framework.defaults.type).indexOf(options.type) === -1) {
+        } else if (!getFrameworkByType(options.type)) {
             this.addError('type', 'Framework type "' + options.type  + '" is invalid.')
         }
 
@@ -203,6 +219,11 @@ export class FrameworkValidator extends Validator {
             if (!String(options.sshPort).match(/^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/)) {
                 this.addError('sshPort', 'Please enter a valid port number.')
             }
+        }
+
+        const framework = getFrameworkByType(options.type)
+        if (framework) {
+            framework.validate(this, options)
         }
 
         return this

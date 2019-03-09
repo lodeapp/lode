@@ -1,6 +1,5 @@
-import { find } from 'lodash'
 import { FrameworkOptions, IFramework } from './framework'
-import { Frameworks } from '@lib/frameworks'
+import { getFrameworkByType } from '@lib/frameworks'
 
 export class FrameworkFactory {
 
@@ -8,7 +7,7 @@ export class FrameworkFactory {
         options: FrameworkOptions
     ): IFramework {
 
-        const framework = find(Frameworks, framework => framework.defaults.type === options.type)
+        const framework = getFrameworkByType(options.type)
 
         if (framework) {
             // Create a new framework with hydrated options, in case defaults

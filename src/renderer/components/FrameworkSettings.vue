@@ -64,6 +64,21 @@
                     >
                 </dd>
             </dl>
+            <dl v-if="fields.type === 'phpunit'">
+                <dt>
+                    <label>Autoload path</label>
+                </dt>
+                <dd :class="{ errored: validator.hasErrors('autoloadPath') }">
+                    <div v-if="validator.hasErrors('autoloadPath')" class="form-error">{{ validator.getErrors('autoloadPath') }}</div>
+                    <input
+                        type="text"
+                        class="form-control input-sm"
+                        v-model="fields.proprietary.autoloadPath"
+                        placeholder="vendor/autoload.php"
+                    >
+                    <button class="btn btn-sm" type="button" @click="chooseAutoloadPath">Choose</button>
+                </dd>
+            </dl>
             <dl>
                 <dt>
                     <label>Tests path</label>
@@ -77,7 +92,7 @@
                         v-model="fields.path"
                         placeholder="(Optional)"
                     >
-                    <button class="btn btn-sm" type="button" @click="choose">Choose</button>
+                    <button class="btn btn-sm" type="button" @click="chooseTestsPath">Choose</button>
                 </dd>
             </dl>
             <dl>
@@ -170,14 +185,16 @@
                     </dd>
                 </dl>
             </div>
-            <div v-if="!dedicated" class="instructions" v-show="instructions && currentFrameworkInstructions">
+            <div class="instructions" v-show="instructions && currentFrameworkInstructions">
                 <div>
                     <h6>{{ 'How to setup :0 testing with Lode' | set(currentFrameworkName) }}</h6>
                     <p v-markdown>{{ currentFrameworkInstructions }}</p>
                 </div>
             </div>
-            <div v-if="!dedicated" class="form-actions">
-                <button class="btn btn-outline btn-sm" type="button" @click="instructions = !instructions"><Icon symbol="question" /></button>
+            <div class="form-actions">
+                <button v-if="currentFrameworkInstructions" class="btn btn-outline btn-sm" type="button" @click="instructions = !instructions">
+                    <Icon symbol="question" />
+                </button>
                 <button class="btn btn-sm btn-danger" type="button" @click="remove">Remove</button>
                 <button class="btn btn-sm" type="button" @click="expanded = !expanded">Done</button>
             </div>
@@ -191,10 +208,9 @@
 </template>
 
 <script>
-import _find from 'lodash/find'
 import * as Path from 'path'
 import { remote } from 'electron'
-import { Frameworks } from '@lib/frameworks'
+import { getFrameworkByType, Frameworks } from '@lib/frameworks'
 
 export default {
     name: 'FrameworkSettings',
@@ -228,7 +244,8 @@ export default {
                 sshHost: this.framework.sshHost,
                 sshUser: this.framework.sshUser,
                 sshPort: this.framework.sshPort,
-                sshIdentity: this.framework.sshIdentity
+                sshIdentity: this.framework.sshIdentity,
+                proprietary: this.framework.proprietary
             },
             expanded: this.dedicated || ['pending', 'removed'].includes(this.framework.scanStatus),
             instructions: this.framework.scanStatus === 'pending'
@@ -244,13 +261,14 @@ export default {
         availableFrameworks () {
             return Frameworks
         },
+        frameworkType () {
+            return getFrameworkByType(this.fields.type)
+        },
         currentFrameworkName () {
-            const framework = _find(Frameworks, framework => framework.defaults.type === this.fields.type)
-            return framework ? framework.defaults.name : ''
+            return this.frameworkType ? this.frameworkType.defaults.name : ''
         },
         currentFrameworkInstructions () {
-            const framework = _find(Frameworks, framework => framework.defaults.type === this.fields.type)
-            return framework ? framework.instructions() : ''
+            return this.frameworkType ? this.frameworkType.instructions() : ''
         }
     },
     watch: {
@@ -270,7 +288,20 @@ export default {
         }
     },
     methods: {
-        async choose () {
+        async chooseAutoloadPath () {
+            const file = remote.dialog.showOpenDialog({
+                defaultPath: this.repository.path,
+                properties: ['openFile']
+            })
+
+            if (!file) {
+                return
+            }
+
+            this.fields.proprietary.autoloadPath = Path.relative(this.repository.path, file[0])
+            this.validator.reset('autoloadPath')
+        },
+        async chooseTestsPath () {
             const directory = remote.dialog.showOpenDialog({
                 defaultPath: this.repository.path,
                 properties: ['createDirectory', 'openDirectory']

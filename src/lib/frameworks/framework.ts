@@ -9,6 +9,7 @@ import { queue } from '@lib/process/queue'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
+import { FrameworkValidator } from '@lib/frameworks/validator'
 import { SSHOptions } from '@lib/process/ssh'
 import { Logger } from '@lib/logger'
 import pool from '@lib/process/pool'
@@ -41,6 +42,7 @@ export type FrameworkOptions = {
     expandFilters?: boolean
     suites?: Array<ISuiteResult>
     scanStatus?: 'pending' | 'removed'
+    proprietary: any
 }
 
 /**
@@ -134,6 +136,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected ready: boolean = false
     protected initialSuiteCount: number = 0
     protected initialSuiteReady: number = 0
+    protected proprietary: any = {}
 
     static readonly defaults?: FrameworkOptions
 
@@ -164,6 +167,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.sshPort = options.sshPort || null
         this.sshIdentity = options.sshIdentity || null
         this.runner = options.runner || ''
+        this.proprietary = options.proprietary || {
+            ...(this.constructor as typeof Framework).defaults!.proprietary
+        }
 
         this.collapsed = options.collapsed || false
         this.expandFilters = options.expandFilters || false
@@ -208,7 +214,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             }
             this.emit('state')
             this.emit('disassembled')
-            Logger.debug.log(`Disassembled ${this.name}`)
+            Logger.main.log(`Disassembled ${this.name}`)
         })
     }
 
@@ -253,7 +259,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 type: '',
                 command: '',
                 path: '',
-                runsInRemote: false
+                runsInRemote: false,
+                proprietary: {}
             },
             ...(this.defaults || {})
         }
@@ -281,6 +288,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             sshIdentity: this.sshIdentity,
             collapsed: this.collapsed,
             expandFilters: this.expandFilters,
+            proprietary: this.proprietary,
             suites: this.suites.map((suite: ISuite) => suite.persist())
         }
     }
@@ -440,6 +448,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             this.updateStatus()
             this.emit('change', this)
             this.disassemble()
+            Logger.main.log(`Stopping ${this.name}`)
         })
         .catch(error => {
             this.onError(error)
@@ -840,7 +849,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param file The path of the file being checked.
      */
     protected fileInPath (file: string): boolean {
-        return file.startsWith(this.remotePath || this.fullPath)
+        return file.startsWith(this.runsInRemote ? this.remotePath : this.fullPath)
     }
 
     /**
@@ -962,6 +971,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
         const job = this.queue[id]
         delete this.queue[id]
         return job()
+    }
+
+    /**
+     * Validate framework specific options.
+     */
+    public static validate (validator: FrameworkValidator, options: any): void {
+        // For generic framework validation see @lib/frameworks/validator.
     }
 
     /**

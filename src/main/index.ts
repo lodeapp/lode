@@ -57,6 +57,9 @@ app
     })
 
 ipcMain
+    .on('console', (event: any, ...data: Array<any>) => {
+        console.log(...data)
+    })
     .on('update-menu', (event: any, options = {}) => {
         buildMenu(options)
     })
