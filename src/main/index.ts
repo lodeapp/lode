@@ -41,8 +41,8 @@ function createWindow(projectId: string | null) {
     mainWindow = window
 }
 
-function buildMenu(options = {}) {
-    Menu.setApplicationMenu(buildDefaultMenu(options))
+function buildMenu() {
+    Menu.setApplicationMenu(buildDefaultMenu())
 }
 
 app
@@ -63,11 +63,13 @@ app
 
 ipcMain
     .on('log', (event: Electron.IpcMessageEvent, level: LogLevel, message: string) => {
+        // Write renderer messages to log, if they meet the level threshold.
+        // We're using the main log function directly so that they are not
+        // marked as being from the "main" process.
         writeLog(level, message)
     })
-
-    .on('update-menu', (event: any, options = {}) => {
-        buildMenu(options)
+    .on('update-menu', (event: any) => {
+        buildMenu()
     })
     .on('window-should-close', () => {
         process.nextTick(() => {
