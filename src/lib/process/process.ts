@@ -4,7 +4,6 @@ import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { compact, flattenDeep, get } from 'lodash'
 import { spawn, ChildProcess } from 'child_process'
-import { Logger } from '../logger'
 import { SSHOptions, SSH } from './ssh'
 import { BufferedSearch } from './search'
 import { ErrorWithCode, ProcessError } from './errors'
@@ -61,10 +60,10 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                     ? process.env.FROM_FILE!
                     : Path.join(__dirname, `./debug/${process.env.FROM_FILE}.json`)
 
-                Logger.debug.log(`Re-running process from file ${file}.`)
+                log.debug(`Re-running process from file ${file}.`)
 
                 if (!Fs.existsSync(file)) {
-                    Logger.debug.log(`File ${file} does not exist.`)
+                    log.debug(`File ${file} does not exist.`)
                 }
 
                 const stored = Fs.readJsonSync(file, { throws: false }) || []
@@ -97,8 +96,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             this.binary = this.args.shift()!
         }
 
-        Logger.debug.log('Spawning command', { spawn: this.binary, args: this.args, path: this.path })
-        Logger.debug.log(`Command: ${this.binary} ${this.args.join(' ')}`)
+        log.debug(['Spawning child process', JSON.stringify({ spawn: this.binary, args: this.args, path: this.path })].join(' '))
+        log.info(`Executing command: ${this.binary} ${this.args.join(' ')}`)
 
         const spawnedProcess = spawn(this.binary, this.args, {
             cwd: this.path,
@@ -155,7 +154,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     protected onError (err: ErrorWithCode): void {
 
-        Logger.debug.log('Process error', err)
+        log.debug('Process error', err)
 
         // If the error's code is a string then it means the code isn't the
         // process's exit code but rather an error coming from Node's bowels,
@@ -178,20 +177,18 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     protected onClose(code: number, signal: string | null) {
 
-        Logger.debug.log('Process closing.', { code, signal })
+        log.debug(['Process closing.', JSON.stringify({ code, signal })].join(' '))
 
         if (this.process && this.process.killed || this.killed) {
-            Logger.debug.log('Process killed.')
+            log.debug('Process killed.')
             this.emit('killed', { process: this })
         } else if (code === 0 || (this.reports && this.reportClosed)) {
             // If exit code was non-zero but we were running a report that finished
             // successfully, ignore the error, assuming it relates to a failure in the
             // tests for which we'll give appropriate feedback in the interface.
-            Logger.debug.log('Process successfully exited.')
+            log.debug('Process successfully exited.')
             this.emit('success', { process: this })
         } else {
-            Logger.debug.log('Process errored.', this)
-
             // If process errored out but did not emit an error event, we'll
             // compose it from the chunks we received. If error occurred while
             // we were building a report buffer, output that, too, as it could
@@ -208,16 +205,19 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 .setProcess(this)
                 .setCode(code)
 
-            Logger.debug.log('Process errored without throwing.', { error })
-
+            log.error('Process errored without throwing.', error)
             this.emit('error', error)
         }
 
         if (this.writeToFile) {
-            Logger.debug
-                .withError(this.error)
-                .withProcess(this)
-                .save(Path.join(__dirname, 'debug'))
+            Fs.writeFileSync(
+                Path.join(Path.join(__dirname, 'debug'), 'log-' + Math.floor(new Date().getTime() / 1000) + '.json'),
+                JSON.stringify({
+                    error: this.error.toString(),
+                    process: this.toString(),
+                    env: Object.keys(process.env)
+                }, null, 4)
+            )
         }
 
         this.closed = true
@@ -272,7 +272,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         // chunk left to store, add it to our output array.
         if (storeChunk && chunk) {
             this.chunks.push(chunk)
-            Logger.info.log(chunk)
+            log.debug(chunk)
         }
     }
 
@@ -287,8 +287,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             process: this,
             report
         })
-        Logger.info.log('[encoded]')
-        Logger.debug.dir(report)
+        if (__DEV__) {
+            console.log(report)
+        }
     }
 
     /**
@@ -301,7 +302,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         try {
             return JSON.parse(chunk)
         } catch (SyntaxError) {
-            Logger.info.log('Failed to decode report.')
+            log.warn(`Failed to decode report ${chunk}.`)
             return chunk
         }
     }

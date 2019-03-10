@@ -3,7 +3,6 @@
 process.env.BABEL_ENV = 'renderer'
 
 const { getReplacements } = require('./app-info')
-const replacements = getReplacements()
 
 const path = require('path')
 const { dependencies } = require('../package.json')
@@ -184,7 +183,9 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 rendererConfig.plugins.push(
-  new webpack.DefinePlugin(replacements)
+  new webpack.DefinePlugin(Object.assign({}, getReplacements(), {
+      __PROCESS_KIND__: JSON.stringify('renderer'),
+  }))
 )
 
 /**

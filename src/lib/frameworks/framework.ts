@@ -11,7 +11,6 @@ import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 import { SSHOptions } from '@lib/process/ssh'
-import { Logger } from '@lib/logger'
 import pool from '@lib/process/pool'
 
 /**
@@ -186,6 +185,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected assemble (): void {
         this.emit('state')
         this.emit('assembled')
+        log.info(`Assembled ${this.name}`)
     }
 
     /**
@@ -214,7 +214,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             }
             this.emit('state')
             this.emit('disassembled')
-            Logger.main.log(`Disassembled ${this.name}`)
+            log.info(`Disassembled ${this.name}`)
         })
     }
 
@@ -448,7 +448,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             this.updateStatus()
             this.emit('change', this)
             this.disassemble()
-            Logger.main.log(`Stopping ${this.name}`)
+            log.info(`Stopping ${this.name}`)
         })
         .catch(error => {
             this.onError(error)
@@ -494,7 +494,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                         // interrupted the run while reloading, make sure the
                         // run does not go ahead.
                         if (outcome === 'killed') {
-                            Logger.debug.log(`Process was killed while reloading before run.`)
+                            log.debug(`Process was killed while reloading before run.`)
                             resolve()
                             return
                         }
@@ -578,7 +578,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                     this.running.push(this.debriefSuite(report))
                 } catch (error) {
                     // @TODO: Notify user of error (i.e. add to alert stack)
-                    Logger.info.log('Failed to debrief suite results.', { report })
+                    log.error('Failed to debrief suite results.', error)
                 }
             })
             .on('success', () => {
@@ -962,10 +962,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected handleQueued (id: string): Function {
         if (typeof this.queue[id] === 'undefined') {
-            Logger.debug.log(`Queued job with id ${id} was cancelled before execution.`)
+            log.debug(`Queued job with id ${id} was cancelled before execution.`)
             return () => Promise.resolve()
         }
-        Logger.debug.log(`Running queued job with id ${id}.`)
+        log.debug(`Running queued job with id ${id}.`)
 
         // Pluck job from the queue before returning
         const job = this.queue[id]

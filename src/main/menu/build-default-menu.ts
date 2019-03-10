@@ -1,11 +1,10 @@
-import { Menu, ipcMain } from 'electron'
+import { ensureDir } from 'fs-extra'
+import { Menu, ipcMain, shell } from 'electron'
 import { ensureItemIds } from './ensure-item-ids'
 import { MenuEvent } from './menu-event'
+import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
 import { ProjectIdentifier } from '@lib/frameworks/project'
-
-// import { log } from '../log'
-// import { ensureDir } from 'fs-extra'
 
 // We seem to be unable to simple declare menu items as "radio" without TS
 // raising an alert, so we need to forcibly cast types when defining them.
@@ -291,8 +290,30 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         },
         separator,
         {
-            label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
-            click: emit('reset-settings')
+            label: 'Troubleshooting',
+            submenu: [
+                {
+                    label: __DARWIN__
+                        ? 'Show Logs in Finder'
+                        : __WIN32__
+                            ? 'S&how logs in Explorer'
+                            : 'S&how logs in your File Manager',
+                    click() {
+                        const logPath = getLogDirectoryPath()
+                        ensureDir(logPath)
+                            .then(() => {
+                                shell.openItem(logPath)
+                            })
+                            .catch(error => {
+                                log.error('Failed to opened logs directory from menu.', error)
+                            })
+                    }
+                },
+                {
+                    label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
+                    click: emit('reset-settings')
+                }
+            ]
         }
     ]
 

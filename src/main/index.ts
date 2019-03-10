@@ -1,8 +1,12 @@
+import '@lib/logger/main'
+
 import { app, ipcMain, Menu } from 'electron'
 import { buildDefaultMenu } from './menu'
 import { Window } from './window'
+import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
+import { log as writeLog } from '@lib/logger'
 
 // Expose garbage collector
 app.commandLine.appendSwitch('js-flags', '--expose_gc')
@@ -22,6 +26,7 @@ function createWindow(projectId: string | null) {
 
     window.onClose((event: any) => {
         if (window.isBusy()) {
+            log.info('Window is busy. Attempting teardown of pending renderer processes.')
             event.preventDefault()
             window.send('close')
         }
@@ -57,9 +62,10 @@ app
     })
 
 ipcMain
-    .on('console', (event: any, ...data: Array<any>) => {
-        console.log(...data)
+    .on('log', (event: Electron.IpcMessageEvent, level: LogLevel, message: string) => {
+        writeLog(level, message)
     })
+
     .on('update-menu', (event: any, options = {}) => {
         buildMenu(options)
     })

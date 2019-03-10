@@ -1,9 +1,10 @@
+import '@lib/logger/renderer'
+
 import Vue from 'vue'
 import store from './store'
 import { get, isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@lib/state'
-import { Logger } from '@lib/logger'
 import { Project } from '@lib/frameworks/project'
 import { queue } from '@lib/process/queue'
 
@@ -132,13 +133,13 @@ export default new Vue({
                         break
                     case 'log-project':
                         const projectState = state.project(this.project.getId())
-                        Logger.info.log({
+                        log.info({
                             object: projectState.get(),
                             json: JSON.stringify(projectState.get())
                         })
                         break
                     case 'log-settings':
-                        Logger.info.log({
+                        log.info({
                             object: state.get(),
                             json: JSON.stringify(state.get())
                         })
