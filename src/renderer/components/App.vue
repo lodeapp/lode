@@ -1,16 +1,12 @@
 <template>
-    <div id="app" :class="[`platform--${platform}`]">
-        <div class="contents" v-if="empty !== null">
-            <Titlebar :project="project" />
-            <div v-if="empty" class="no-projects">
+    <div id="app">
+        <div class="contents">
+            <Titlebar :has-project="!!$root.project" />
+            <div v-if="!$root.project" class="no-projects">
                 <h1>Welcome to Lode.</h1>
                 <button class="btn btn-primary" @click="$root.addProject">Add your first project</button>
             </div>
-            <Project
-                v-if="project"
-                :project="project"
-                :key="project.id"
-            />
+            <Project v-else :key="$root.project.id" />
             <ModalController />
         </div>
     </div>
@@ -27,20 +23,6 @@ export default {
         Titlebar,
         ModalController,
         Project
-    },
-    props: {
-        project: {
-            type: [Object, null],
-            default: null
-        }
-    },
-    computed: {
-        platform () {
-            return process.platform
-        },
-        empty () {
-            return !this.project
-        }
     }
 }
 </script>

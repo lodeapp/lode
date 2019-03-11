@@ -45,6 +45,9 @@ export default class Input {
     hasModifierKey (event) {
         return event.ctrlKey || event.metaKey || event.altKey || event.shiftKey
     }
+    hasAltKey (event) {
+        return event.altKey
+    }
     isCopying (event) {
         return (event.ctrlKey || event.metaKey) && event.code === 'KeyC'
     }
@@ -56,6 +59,9 @@ export default class Input {
     }
     isAuxiliaryAction (event) {
         return this.isCopying(event) || this.isSelectingAll(event) || this.isRefreshing(event)
+    }
+    isRightButton (event) {
+        return event.which === 3 || event.button === 2
     }
     modifiesContent (event) {
         return !this.isAuxiliaryAction(event) && !this.isAuxiliaryKey(event)

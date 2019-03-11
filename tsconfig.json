@@ -24,7 +24,7 @@
         "build"
     ],
     "include": [
-        "src/main/**/*.ts"
+        "src/**/*.ts"
     ],
     "compileOnSave": false
 }

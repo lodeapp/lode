@@ -1,5 +1,5 @@
 <template>
-    <Modal :title="project ? $string.set('Add repositories to :0', project.name) : 'Add repositories'">
+    <Modal :title="$root.project ? $string.set('Add repositories to :0', $root.project.name) : 'Add repositories'">
         <form @submit.prevent="handleSubmit">
             <h5>Repositories</h5>
             <RepositoryPath
@@ -16,10 +16,10 @@
             </dl>
         </form>
         <div slot="footer" class="modal-footer tertiary separated">
-            <button type="button" class="btn btn-sm" @click="$emit('hide')">
+            <button type="button" class="btn btn-sm" @click="$emit('hide')" :disabled="loading">
                 Cancel
             </button>
-            <button type="button" class="btn btn-sm btn-primary" :disabled="empty" @click="add">
+            <button type="button" class="btn btn-sm btn-primary" :disabled="empty || loading" @click="add">
                 Add repositories
             </button>
         </div>
@@ -28,8 +28,7 @@
 
 <script>
 import _uniqBy from 'lodash/uniqBy'
-import { mapActions } from 'vuex'
-import { RepositoryValidator } from '@main/lib/frameworks/validator'
+import { RepositoryValidator } from '@lib/frameworks/validator'
 
 import Modal from '@/components/modals/Modal'
 import RepositoryPath from '@/components/RepositoryPath'
@@ -40,14 +39,9 @@ export default {
         Modal,
         RepositoryPath
     },
-    props: {
-        project: {
-            type: Object,
-            required: true
-        }
-    },
     data () {
         return {
+            loading: false,
             slots: []
         }
     },
@@ -66,7 +60,7 @@ export default {
         addRow () {
             this.slots.push({
                 key: this.$string.random(),
-                validator: new RepositoryValidator(this.project.repositories.map(repository => repository.path)),
+                validator: new RepositoryValidator(this.$root.project.repositories.map(repository => repository.path)),
                 errored: false,
                 path: ''
             })
@@ -93,15 +87,15 @@ export default {
             })
 
             if (!this.hasErrors) {
-                _uniqBy(this.slots, 'path').forEach((slot, index) => {
-                    this.addRepository(this.project.addRepository({ path: slot.path }))
+                this.loading = true
+                Promise.all(_uniqBy(this.slots, 'path').map((slot, index) => {
+                    this.$root.project.addRepository({ path: slot.path })
+                })).then(() => {
+                    this.$root.project.save()
+                    this.$emit('hide')
                 })
-                this.$emit('hide')
             }
-        },
-        ...mapActions({
-            addRepository: 'projects/addRepository'
-        })
+        }
     }
 }
 </script>

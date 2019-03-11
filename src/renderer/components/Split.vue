@@ -6,18 +6,18 @@
 
 <script>
 import Split from 'split.js'
-import { Config } from '@main/lib/config'
+import { state } from '@lib/state'
 
 export default {
     name: 'Split',
     mounted () {
         Split([...this.$el.querySelectorAll('.pane')], {
-            sizes: Config.get('paneSizes'),
+            sizes: state.get('paneSizes'),
             gutterAlign: 'center',
             minSize: 350,
             snapOffset: 0,
             onDragEnd (sizes) {
-                Config.set('paneSizes', sizes)
+                state.set('paneSizes', sizes)
             }
         })
     }

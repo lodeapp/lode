@@ -3,7 +3,6 @@
 process.env.BABEL_ENV = 'renderer'
 
 const { getReplacements } = require('./app-info')
-const replacements = getReplacements()
 
 const path = require('path')
 const { dependencies } = require('../package.json')
@@ -28,7 +27,7 @@ let whiteListedModules = ['vue']
 let rendererConfig = {
   devtool: '#cheap-module-eval-source-map',
   entry: {
-    renderer: path.join(__dirname, '../src/renderer/main.js')
+    renderer: path.join(__dirname, '../src/renderer/index.js')
   },
   externals: [
     ...Object.keys(dependencies || {}).filter(d => !whiteListedModules.includes(d))
@@ -163,6 +162,7 @@ let rendererConfig = {
   resolve: {
     alias: {
       '@': path.join(__dirname, '../src/renderer'),
+      '@lib': path.join(__dirname, '../src/lib'),
       '@main': path.join(__dirname, '../src/main'),
       'vue$': 'vue/dist/vue.esm.js'
     },
@@ -183,7 +183,9 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 rendererConfig.plugins.push(
-  new webpack.DefinePlugin(replacements)
+  new webpack.DefinePlugin(Object.assign({}, getReplacements(), {
+      __PROCESS_KIND__: JSON.stringify('renderer'),
+  }))
 )
 
 /**

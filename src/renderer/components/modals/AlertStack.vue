@@ -3,11 +3,6 @@
         <template slot="header">
             <Icon v-if="type === 'error'" class="type--error" symbol="issue-opened" />
             <h3 class="modal-title" v-html="title"></h3>
-            <div class="more-actions">
-                <button type="button" class="btn-link" @click.prevent="onMoreClick">
-                    <Icon symbol="kebab-vertical" />
-                </button>
-            </div>
         </template>
         <div :key="$string.from(current)">
             <p v-markdown>{{ message }}</p>
@@ -51,11 +46,7 @@
 
 <script>
 import _get from 'lodash/get'
-import { remote } from 'electron'
 import { mapGetters } from 'vuex'
-import { Menu } from '@main/menu'
-import { Logger } from '@main/lib/logger'
-import { ProcessError } from '@main/lib/process/errors'
 import Modal from '@/components/modals/Modal'
 import Ansi from '@/components/Ansi'
 
@@ -67,17 +58,7 @@ export default {
     },
     data () {
         return {
-            index: 0,
-            menu: new Menu()
-                .add({
-                    label: 'Save Error Report…',
-                    click: () => {
-                        this.save(_get(this.current, 'error', null))
-                    }
-                })
-                .after(() => {
-                    this.$el.querySelector('.more-actions button').blur()
-                })
+            index: 0
         }
     },
     computed: {
@@ -121,26 +102,6 @@ export default {
         },
         previous () {
             this.index--
-        },
-        onMoreClick (event) {
-            this.menu.attachTo(this.$el.querySelector('.more-actions button'))
-                .open()
-        },
-        async save (error) {
-            const directory = remote.dialog.showOpenDialog({
-                properties: ['openDirectory'],
-                message: 'Select directory to save the file',
-                buttonLabel: 'Save Error Report'
-            })
-
-            if (!directory) {
-                return
-            }
-
-            Logger.debug
-                .withError(error)
-                .withProcess(error instanceof ProcessError ? error.process : null)
-                .save(directory[0])
         }
     }
 }

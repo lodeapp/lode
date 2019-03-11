@@ -3,7 +3,6 @@
 process.env.BABEL_ENV = 'main'
 
 const { getReplacements } = require('./app-info')
-const replacements = getReplacements()
 
 const path = require('path')
 const { dependencies } = require('../package.json')
@@ -64,7 +63,8 @@ let mainConfig = {
   ],
   resolve: {
     alias: {
-      '@main': path.join(__dirname, '../src/main')
+      '@main': path.join(__dirname, '../src/main'),
+      '@lib': path.join(__dirname, '../src/lib')
     },
     extensions: ['.js', '.ts', '.json', '.node']
   },
@@ -72,7 +72,9 @@ let mainConfig = {
 }
 
 mainConfig.plugins.push(
-  new webpack.DefinePlugin(replacements)
+  new webpack.DefinePlugin(Object.assign({}, getReplacements(), {
+      __PROCESS_KIND__: JSON.stringify('main'),
+  }))
 )
 
 /**

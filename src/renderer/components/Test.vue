@@ -2,57 +2,54 @@
     <Nugget
         :model="test"
         class="test"
-        :class="{
-            'is-active': isActive,
-            'is-child-active': isChildActive,
-            'has-context': hasContext,
-            'child-has-context': childHasContext
-        }"
+        :class="{ 'is-active': isActive, 'is-child-active': isChildActive }"
         :has-children="hasChildren"
-        :handler="onClick"
+        :handler="onActivate"
+        @focus.native="onActivate"
         @contextmenu.native.stop.prevent="onContextMenu"
+        @keydown.native.self.stop.prevent.space="onSelectiveClick"
     >
         <template slot="header">
-            <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @click.stop="selected = true">
-                <button type="button" :disabled="running"></button>
-                <input type="checkbox" v-model="selected" :disabled="running">
+            <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @mousedown.prevent.stop="onSelectiveClick">
+                <button tabindex="-1" type="button" :disabled="running"></button>
+                <input
+                    type="checkbox"
+                    tabindex="-1"
+                    v-model="selected"
+                    :disabled="running"
+                    @click.prevent
+                    @mousedown.prevent
+                    @mousedown.stop="selected = !selected"
+                >
             </div>
             <div class="test-name" :title="displayName">{{ displayName }}</div>
         </template>
         <template v-if="hasChildren">
             <Test
                 v-for="test in test.tests"
-                :key="test.id"
-                :model="test"
+                :key="test.getId()"
+                :test="test"
                 :running="running"
                 :selectable="selectable"
                 @open="$emit('open')"
                 @activate="onChildActivation"
-                @deactivate="onChildDeactivation"
-                @add-context="onChildAddContext"
-                @remove-context="onChildRemoveContext"
             />
         </template>
     </Nugget>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { Menu } from '@main/menu'
 import Nugget from '@/components/Nugget'
-import Breadcrumb from '@/components/mixins/breadcrumb'
-import Context from '@/components/mixins/context'
 
 export default {
     name: 'Test',
     components: {
         Nugget
     },
-    mixins: [
-        Breadcrumb,
-        Context
-    ],
     props: {
-        model: {
+        test: {
             type: Object,
             required: true
         },
@@ -65,17 +62,12 @@ export default {
             default: false
         }
     },
-    data () {
-        return {
-            show: false
-        }
-    },
     computed: {
-        test () {
-            return this.model
-        },
         hasChildren () {
-            return this.test.tests && this.test.tests.length > 0
+            return this.test.hasChildren()
+        },
+        isChildActive () {
+            return this.context.indexOf(this.test.getId()) > -1
         },
         selected: {
             get () {
@@ -92,28 +84,32 @@ export default {
             return this.test.getName() !== this.displayName ? this.test.getName() : false
         },
         isActive () {
-            return this.test.isActive || false
-        }
-    },
-    watch: {
-        '$root.active.test' (active) {
-            if (this.isActive && active.id !== this.test.id) {
-                this.deactivate()
+            if (this.test.getId() === this.testActive) {
+                return true
             }
-        }
+            this.deactivate()
+            return false
+        },
+        ...mapGetters({
+            testActive: 'test/active',
+            context: 'context/active'
+        })
     },
     methods: {
-        onClick () {
+        onActivate () {
             if (!this.hasChildren && !this.isActive) {
                 this.activate()
                 return false
             }
         },
+        onSelectiveClick (event) {
+            if (this.running) {
+                return
+            }
+            this.selected = !this.selected
+        },
         onContextMenu (event) {
             new Menu()
-                .before(() => {
-                    this.onAddContext()
-                })
                 .add({
                     label: __DARWIN__
                         ? 'Copy Test Name'
@@ -140,27 +136,29 @@ export default {
                     },
                     enabled: this.canOpen()
                 })
-                .after(() => {
-                    this.onRemoveContext()
-                })
                 .open()
         },
         canOpen () {
             return this.$parent.canOpen()
         },
         activate () {
-            this.$root.setActiveTest(this.test)
-            this.$nextTick(() => {
-                this.test.activate()
-                this.$emit('activate')
+            this.$el.focus()
+            this.$store.commit('test/SET', this.test.getId())
+            this.$store.commit('context/CLEAR')
+            this.test.setActive(true)
+            setTimeout(() => {
+                this.$emit('activate', [this.test])
             })
         },
         deactivate () {
-            this.test.deactivate()
-            this.$emit('deactivate')
+            this.test.setActive(false)
         },
-        refresh () {
-            this.activate()
+        onChildActivation (context) {
+            context.unshift(this.test)
+            this.$store.commit('context/ADD', this.test.getId())
+            this.$nextTick(() => {
+                this.$emit('activate', context)
+            })
         }
     }
 }

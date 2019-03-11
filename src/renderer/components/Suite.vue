@@ -2,32 +2,35 @@
     <Nugget
         :model="suite"
         class="suite"
-        :class="{
-            'is-child-active': isChildActive,
-            'has-context': hasContext,
-            'child-has-context': childHasContext
-        }"
-        :has-children="suite.testsLoaded && suite.tests.length > 0"
+        :class="{ 'is-child-active': isChildActive }"
+        :has-children="suite.testsLoaded() && suite.hasChildren()"
         @contextmenu.native.stop.prevent="onContextMenu"
+        @keydown.native.self.stop.prevent.space="onSelectiveClick"
     >
         <template slot="header">
-            <div class="selective-toggle" :class="{ disabled: running }" @click.stop="onSelectiveClick">
-                <button type="button" :disabled="running"></button>
-                <input type="checkbox" v-model="selected" :indeterminate.prop="suite.partial" :disabled="running">
+            <div class="selective-toggle" :class="{ disabled: running }" @mousedown.prevent.stop="onSelectiveClick">
+                <button tabindex="-1" type="button" :disabled="running"></button>
+                <input
+                    type="checkbox"
+                    tabindex="-1"
+                    v-model="selected"
+                    :indeterminate.prop="suite.partial"
+                    :disabled="running"
+                    @click.prevent
+                    @mousedown.prevent
+                    @mousedown.stop="onSelectiveClick"
+                >
             </div>
             <Filename :path="relativePath" :key="relativePath" />
         </template>
         <Test
             v-for="test in suite.tests"
-            :key="test.id"
-            :model="test"
+            :key="test.getId()"
+            :test="test"
             :running="running"
             :selectable="canToggleTests"
             @open="openFile"
             @activate="onChildActivation"
-            @deactivate="onChildDeactivation"
-            @add-context="onChildAddContext"
-            @remove-context="onChildRemoveContext"
         />
     </Nugget>
 </template>
@@ -36,10 +39,9 @@
 import * as Path from 'path'
 import { pathExistsSync } from 'fs-extra'
 import { Menu } from '@main/menu'
+import { mapGetters } from 'vuex'
 import Nugget from '@/components/Nugget'
 import Filename from '@/components/Filename'
-import Breadcrumb from '@/components/mixins/breadcrumb'
-import Context from '@/components/mixins/context'
 
 export default {
     name: 'Suite',
@@ -47,12 +49,8 @@ export default {
         Nugget,
         Filename
     },
-    mixins: [
-        Breadcrumb,
-        Context
-    ],
     props: {
-        model: {
+        suite: {
             type: Object,
             required: true
         },
@@ -62,9 +60,6 @@ export default {
         }
     },
     computed: {
-        suite () {
-            return this.model
-        },
         selected: {
             get () {
                 return this.suite.selected
@@ -78,6 +73,9 @@ export default {
         },
         testsLoaded () {
             return this.suite.testsLoaded()
+        },
+        isChildActive () {
+            return this.context.indexOf(this.suite.getId()) > -1
         },
         relativePath () {
             return this.suite.getRelativePath()
@@ -96,23 +94,25 @@ export default {
         },
         fileIsSafe () {
             return this.$fileystem.isExtensionSafe(this.fileExtension)
-        }
+        },
+        ...mapGetters({
+            context: 'context/active'
+        })
     },
     methods: {
         onSelectiveClick (event) {
             if (this.running) {
                 return
             }
-            const input = this.$el.querySelector('.selective-toggle input')
-            if (event.target !== input && !this.suite.selected) {
-                input.click()
-            }
+            this.selected = !this.selected
+        },
+        onChildActivation (context) {
+            context.unshift(this.suite)
+            this.$store.commit('context/ADD', this.suite.getId())
+            this.$emit('activate', context)
         },
         onContextMenu (event) {
             new Menu()
-                .before(() => {
-                    this.onAddContext()
-                })
                 .add({
                     id: 'reveal',
                     label: __DARWIN__
@@ -155,9 +155,6 @@ export default {
                     enabled: this.canOpen()
                 })
                 .addMultiple(this.suite.contextMenu())
-                .after(() => {
-                    this.onRemoveContext()
-                })
                 .open()
         },
         canOpen () {

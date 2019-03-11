@@ -7,9 +7,12 @@
             `is-${expandStatus}`,
             hasChildren ? 'has-children' : ''
         ]"
+        tabindex="0"
+        @keydown.stop.right="handleExpand"
+        @keydown.stop.left="handleCollapse"
     >
         <div class="seam"></div>
-        <div class="header" @click.stop="onClick">
+        <div class="header" @click.prevent @mousedown.prevent.stop="handleActivate">
             <div class="status" :aria-label="displayStatus(status)" :title="displayStatus(status)">
                 <Icon v-if="status === 'error'" symbol="issue-opened" />
             </div>
@@ -49,12 +52,10 @@ export default {
             default: null
         }
     },
-    data () {
-        return {
-            show: this.expanded
-        }
-    },
     computed: {
+        show () {
+            return this.model.expanded
+        },
         status () {
             return this.model.getStatus()
         },
@@ -69,19 +70,36 @@ export default {
         })
     },
     methods: {
-        onClick () {
+        handleActivate (event) {
             if (this.handler) {
                 if (this.handler.call() === false) {
                     return
                 }
             }
-            this.toggleChildren()
+            // Don't toggle children on right-clicks.
+            if (this.$input.isRightButton(event)) {
+                this.$el.focus()
+                return
+            }
+            this.toggleChildren(event)
         },
-        toggleChildren () {
+        handleExpand (event) {
+            if (!this.hasChildren || this.show) {
+                return
+            }
+            this.handleActivate(event)
+        },
+        handleCollapse (event) {
+            if (!this.hasChildren || !this.show) {
+                return
+            }
+            this.handleActivate(event)
+        },
+        toggleChildren (event) {
             if (!this.hasChildren) {
                 return
             }
-            this.show = !this.show
+            this.model.toggleExpanded(!this.model.expanded, this.$input.hasAltKey(event))
         },
 
         /**

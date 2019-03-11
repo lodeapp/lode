@@ -6,7 +6,11 @@
                     <Icon symbol="issue-reopened" />
                     <span>Previous Error</span>
                 </div>
-                <Trace :trace="item" />
+                <Trace
+                    :repository="repository"
+                    :framework="framework"
+                    :trace="item"
+                />
             </div>
         </template>
         <template v-else>
@@ -33,7 +37,6 @@
 
 <script>
 import * as Path from 'path'
-import _get from 'lodash/get'
 import _isArray from 'lodash/isArray'
 import Collapsible from '@/components/Collapsible'
 import Filename from '@/components/Filename'
@@ -47,6 +50,14 @@ export default {
         Snippet
     },
     props: {
+        repository: {
+            type: Object,
+            required: true
+        },
+        framework: {
+            type: Object,
+            required: true
+        },
         trace: {
             type: Array,
             required: true
@@ -55,12 +66,6 @@ export default {
     computed: {
         isNested () {
             return this.trace.length && this.trace[0] && _isArray(this.trace[0])
-        },
-        repository () {
-            return _get(this.$root.active.breadcrumbs, 0)
-        },
-        framework () {
-            return _get(this.$root.active.breadcrumbs, 1)
         }
     },
     methods: {
@@ -68,7 +73,12 @@ export default {
             if (!this.framework || !this.repository) {
                 return path
             }
-            const root = this.framework.runsInRemote ? this.framework.remotePath : this.repository.path
+            let root = this.framework.runsInRemote ? this.framework.remotePath : this.repository.path
+            if (!root) {
+                return path
+            } else if (this.framework.path) {
+                root = Path.join(root, this.framework.path)
+            }
             return Path.relative(root, path)
         }
     }

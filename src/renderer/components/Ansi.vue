@@ -10,7 +10,7 @@
 
 <script>
 import Terminal from 'terminal.js'
-import { ProcessError } from '@main/lib/process/errors'
+import { ProcessError } from '@lib/process/errors'
 import Icon from '@/components/Icon'
 
 export default {
@@ -52,7 +52,7 @@ export default {
         processContent (content) {
             [
                 [/\n/g, '\r\n'],
-                [/<<<REPORT\{\s+/, ''],
+                [/<<<REPORT\{?\s*/, ''],
                 [/Connection to .+ closed\.\s*$/, ''],
                 [/PHPUnit .+ by Sebastian Bergmann and contributors\.\s+/, '']
             ].forEach(replace => {

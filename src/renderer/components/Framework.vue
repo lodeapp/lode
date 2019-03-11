@@ -11,7 +11,7 @@
             <div class="title">
                 <Indicator :status="framework.status" />
                 <h3 class="heading">
-                    <span class="toggle" @click="toggle">
+                    <span class="toggle" @mousedown="toggle">
                         <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
                     </span>
                     <span class="name">
@@ -69,11 +69,10 @@
         <template v-if="show">
             <Suite
                 v-for="suite in framework.suites"
-                :model="suite"
+                :suite="suite"
                 :running="running"
-                :key="suite.id"
+                :key="suite.getId()"
                 @activate="onChildActivation"
-                @deactivate="onChildDeactivation"
             />
         </template>
     </div>
@@ -84,7 +83,6 @@ import { Menu } from '@main/menu'
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
-import Breadcrumb from '@/components/mixins/breadcrumb'
 
 export default {
     name: 'Framework',
@@ -93,11 +91,8 @@ export default {
         Suite,
         Ledger
     },
-    mixins: [
-        Breadcrumb
-    ],
     props: {
-        model: {
+        framework: {
             type: Object,
             required: true
         }
@@ -124,9 +119,6 @@ export default {
         }
     },
     computed: {
-        framework () {
-            return this.model
-        },
         show () {
             return !this.framework.collapsed
         },
@@ -153,12 +145,8 @@ export default {
             })
         })
 
-        this.framework.on('change', framework => {
-            this.$emit('change', framework)
-        })
-
         this.framework.on('suiteRemoved', suite => {
-            this.$root.onModelRemove(suite.id)
+            this.$root.onModelRemove(suite.getId())
         })
     },
     methods: {
@@ -177,10 +165,7 @@ export default {
             this.framework.refresh()
         },
         start () {
-            this.$root.latest(
-                this.$string.set(':0 framework run', this.framework.name),
-                () => this.framework.start()
-            )
+            this.framework.start()
         },
         async stop () {
             await this.framework.stop()
@@ -194,6 +179,11 @@ export default {
                     this.$emit('remove', this.framework)
                 })
                 .catch(() => {})
+        },
+        onChildActivation (context) {
+            context.unshift(this.framework)
+            this.$store.commit('context/ADD', this.framework.getId())
+            this.$emit('activate', context)
         }
     }
 }

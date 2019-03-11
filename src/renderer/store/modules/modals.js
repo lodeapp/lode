@@ -6,29 +6,29 @@ export default {
         modals: []
     },
     mutations: {
-        add (state, name) {
+        ADD (state, name) {
             state.modals.push(name)
         },
-        remove (state) {
+        REMOVE (state) {
             state.modals.pop()
         },
-        clear (state) {
+        CLEAR (state) {
             state.modals = []
         }
     },
     actions: {
         open: ({ state, commit, dispatch, getters }, name) => {
             if (!getters['isOpen'](name)) {
-                commit('add', name)
+                commit('ADD', name)
                 dispatch('change')
             }
         },
         close: ({ state, commit, dispatch }) => {
-            commit('remove')
+            commit('REMOVE')
             dispatch('change')
         },
         clear: ({ state, commit, dispatch }) => {
-            commit('clear')
+            commit('CLEAR')
             dispatch('change')
         },
         change: ({ state, commit }) => {

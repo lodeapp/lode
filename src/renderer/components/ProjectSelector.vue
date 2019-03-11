@@ -1,6 +1,6 @@
 <template>
     <div
-        v-if="$root.project"
+        v-if="!!$root.project"
         :key="$string.from({ id: $root.project.id, name: $root.project.name })"
         class="titlebar-button"
         @click.prevent="openMenu"
@@ -16,7 +16,7 @@
 
 <script>
 import { Menu } from '@main/menu'
-import { Config } from '@main/lib/config'
+import { state } from '@lib/state'
 
 export default {
     name: 'ProjectSelector',
@@ -32,7 +32,7 @@ export default {
         buildMenu () {
             this.menu = new Menu()
 
-            Config.get('projects').forEach(project => {
+            state.get('projects').forEach(project => {
                 this.menu.add({
                     label: project.name,
                     type: 'checkbox',

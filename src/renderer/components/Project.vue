@@ -1,24 +1,33 @@
 <template>
-    <main :class="{ 'no-repositories': !project.repositories.length }">
-        <div v-if="!project.repositories.length">
-            <h2>{{ 'Add repositories to :0 to start testing.' | set(project.name) }}</h2>
-            <button class="btn btn-primary" @click="$modal.open('AddRepositories', { project })">Add repositories</button>
+    <main :class="{ 'no-repositories': $root.project.empty() }">
+        <div v-if="$root.project.empty()">
+            <h2>{{ 'Add repositories to :0 to start testing.' | set($root.project.name) }}</h2>
+            <button class="btn btn-primary" @click="$modal.open('AddRepositories')">Add repositories</button>
         </div>
         <template v-else>
-            <Split>
+            <div v-if="loading" class="loading">
+                <div class="loading-group">
+                    <div class="spinner"></div>
+                    <h2>{{ 'Loading :0…' | set($root.project.name) }}</h2>
+                </div>
+            </div>
+            <Split v-if="!loading">
                 <Pane>
                     <div class="project">
                         <Repository
-                            v-for="repository in project.repositories"
-                            :model="repository"
-                            :key="repository.id"
+                            v-for="repository in $root.project.repositories"
+                            :repository="repository"
+                            :key="repository.getId()"
                             @remove="removeRepository"
-                            @change="storeRepositoryState"
+                            @activate="onChildActivation"
                         />
                     </div>
                 </Pane>
                 <Pane id="results">
-                    <Results :test="$root.active.test" />
+                    <Results
+                        :context="context"
+                        @reset="resetContext"
+                    />
                 </Pane>
             </Split>
         </template>
@@ -26,7 +35,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapGetters } from 'vuex'
 import Pane from '@/components/Pane'
 import Repository from '@/components/Repository'
 import Results from '@/components/Results'
@@ -40,25 +49,34 @@ export default {
         Results,
         Split
     },
-    props: {
-        project: {
-            type: Object,
-            required: true
+    data () {
+        return {
+            context: [],
+            loading: true
         }
+    },
+    computed: {
+        ...mapGetters({
+            storeContext: 'context/active'
+        })
+    },
+    created () {
+        this.$root.project.on('ready', () => {
+            this.loading = false
+        })
     },
     methods: {
         removeRepository (repository) {
-            this.$root.onModelRemove(repository.id)
-            this.project.removeRepository(repository.id)
-            this.handleRemoveRepository(repository)
+            this.$root.onModelRemove(repository.getId())
+            this.$root.project.removeRepository(repository.getId())
+            this.$root.project.save()
         },
-        storeRepositoryState (repository) {
-            this.repositoryChange(repository)
+        onChildActivation (context) {
+            this.context = context
         },
-        ...mapActions({
-            handleRemoveRepository: 'projects/removeRepository',
-            repositoryChange: 'projects/repositoryChange'
-        })
+        resetContext () {
+            this.context = []
+        }
     }
 }
 </script>

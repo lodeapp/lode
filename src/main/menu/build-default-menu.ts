@@ -1,30 +1,23 @@
-import { Menu, ipcMain } from 'electron'
+import { ensureDir } from 'fs-extra'
+import { Menu, ipcMain, shell } from 'electron'
 import { ensureItemIds } from './ensure-item-ids'
 import { MenuEvent } from './menu-event'
-import { Config } from '@main/lib/config'
-
-// import { log } from '../log'
-// import { ensureDir } from 'fs-extra'
+import { getLogDirectoryPath } from '@lib/logger'
+import { state } from '@lib/state'
+import { ProjectIdentifier } from '@lib/frameworks/project'
 
 // We seem to be unable to simple declare menu items as "radio" without TS
 // raising an alert, so we need to forcibly cast types when defining them.
 type MenuItemType = ('normal' | 'separator' | 'submenu' | 'checkbox' | 'radio')
 
-export type ProjectSettings = {
-    id: string
-    name: string
-}
-
-export type ApplicationMenuOptions = {
-    latestJobName?: string
-}
+export type ApplicationMenuOptions = {}
 
 export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electron.Menu {
     const template = new Array<Electron.MenuItemConstructorOptions>()
     const separator: Electron.MenuItemConstructorOptions = { type: 'separator' }
 
-    const currentProject: string = Config.get('currentProject')
-    const projects: Array<ProjectSettings> = Config.get('projects')
+    const currentProject: string | null = state.getCurrentProject()
+    const projects: Array<ProjectIdentifier> = state.getAvailableProjects()
 
     if (__DARWIN__) {
         template.push({
@@ -149,7 +142,7 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
             {
                 label: '&Reload',
                 id: 'reload-window',
-                accelerator: 'CmdOrCtrl+R',
+                accelerator: 'CmdOrCtrl+0',
                 click(item: any, focusedWindow: Electron.BrowserWindow) {
                     if (focusedWindow) {
                         focusedWindow.reload()
@@ -164,14 +157,19 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         label: __DARWIN__ ? 'Project' : '&Project',
         submenu: [
             {
-                label: 'Run',
+                label: __DARWIN__ ? 'Run First' : 'Run first',
+                click: emit('run-selected'),
+                accelerator: 'CmdOrCtrl+R'
+            },
+            {
+                label: __DARWIN__ ? 'Run All' : 'Run all',
                 click: emit('run-project'),
-                accelerator: 'CmdOrCtrl+Shift+D'
+                accelerator: 'CmdOrCtrl+Shift+R'
             },
             {
                 label: 'Refresh',
                 click: emit('refresh-project'),
-                accelerator: 'CmdOrCtrl+Shift+R'
+                accelerator: 'CmdOrCtrl+Shift+I'
             },
             {
                 label: 'Stop',
@@ -182,24 +180,15 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
             },
             separator,
             {
-                label: 'Repeat Last Run',
-                click: emit('rerun-last'),
-                accelerator: 'CmdOrCtrl+D',
-                enabled: !!options.latestJobName
-            },
-            {
-                label: options.latestJobName || 'Nothing has been run',
-                enabled: false
-            },
-            separator,
-            {
                 id: 'rename-project',
-                label: __DARWIN__ ? 'Rename' : 'Rename',
+                label: __DARWIN__ ? 'Rename Project' : 'Rename project',
+                accelerator: 'CmdOrCtrl+Shift+E',
                 click: emit('rename-project')
             },
             {
                 id: 'remove-project',
-                label: __DARWIN__ ? 'Remove' : 'Remove',
+                label: __DARWIN__ ? 'Remove Project' : 'Remove project',
+                accelerator: 'CmdOrCtrl+Shift+Backspace',
                 click: emit('remove-project')
             },
             separator,
@@ -216,6 +205,10 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         template.push({
             label: __DARWIN__ ? 'Development' : '&Development',
             submenu: [
+                {
+                    label: __DARWIN__ ? 'Log Project' : 'Log project',
+                    click: emit('log-project')
+                },
                 {
                     label: __DARWIN__ ? 'Log Settings' : 'Log settings',
                     click: emit('log-settings')
@@ -297,8 +290,30 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         },
         separator,
         {
-            label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
-            click: emit('reset-settings')
+            label: 'Troubleshooting',
+            submenu: [
+                {
+                    label: __DARWIN__
+                        ? 'Show Logs in Finder'
+                        : __WIN32__
+                            ? 'S&how logs in Explorer'
+                            : 'S&how logs in your File Manager',
+                    click() {
+                        const logPath = getLogDirectoryPath()
+                        ensureDir(logPath)
+                            .then(() => {
+                                shell.openItem(logPath)
+                            })
+                            .catch(error => {
+                                log.error('Failed to opened logs directory from menu.', error)
+                            })
+                    }
+                },
+                {
+                    label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
+                    click: emit('reset-settings')
+                }
+            ]
         }
     ]
 

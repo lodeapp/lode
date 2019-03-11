@@ -11,7 +11,7 @@
             <div class="title">
                 <Indicator :status="repository.status" />
                 <h2 class="heading">
-                    <span class="toggle" @click="toggle">
+                    <span class="toggle" @mousedown="toggle">
                         <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
                     </span>
                     <Icon symbol="repo" />
@@ -23,27 +23,7 @@
                     <button type="button" class="btn-link more-actions" @click.prevent="onMoreClick">
                         <Icon symbol="kebab-vertical" />
                     </button>
-                    <template v-if="repository.frameworks.length">
-                        <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
-                            <Icon symbol="sync" />
-                        </button>
-                        <button
-                            class="btn btn-sm btn-primary"
-                            :disabled="running || refreshing"
-                            @click="start"
-                        >
-                            Run
-                            <span v-if="repository.frameworks.length > 1" class="Counter">{{ repository.frameworks.length }}</span>
-                        </button>
-                        <button
-                            class="btn btn-sm btn-danger"
-                            :disabled="!running && !refreshing"
-                            @click="stop"
-                        >
-                            Stop
-                        </button>
-                    </template>
-                    <template v-else>
+                    <template v-if="!repository.frameworks.length">
                         <button
                             class="btn btn-sm btn-primary"
                             @click="scan"
@@ -63,24 +43,20 @@
             <Framework
                 v-show="show"
                 v-for="framework in repository.frameworks"
-                :key="framework.id"
-                :model="framework"
+                :key="framework.getId()"
+                :framework="framework"
                 @remove="removeFramework"
-                @change="storeFrameworkState"
                 @manage="manageFramework"
                 @activate="onChildActivation"
-                @deactivate="onChildDeactivation"
             />
         </template>
     </div>
 </template>
 
 <script>
-import { mapActions } from 'vuex'
 import { Menu } from '@main/menu'
 import Framework from '@/components/Framework'
 import Indicator from '@/components/Indicator'
-import Breadcrumb from '@/components/mixins/breadcrumb'
 
 export default {
     name: 'Repository',
@@ -88,11 +64,8 @@ export default {
         Framework,
         Indicator
     },
-    mixins: [
-        Breadcrumb
-    ],
     props: {
-        model: {
+        repository: {
             type: Object,
             required: true
         }
@@ -119,11 +92,8 @@ export default {
         }
     },
     computed: {
-        repository () {
-            return this.model
-        },
         show () {
-            return !this.repository.collapsed
+            return this.repository.expanded
         },
         running () {
             return this.repository.status === 'running'
@@ -134,11 +104,6 @@ export default {
         expandStatus () {
             return this.show ? 'expanded' : 'collapsed'
         }
-    },
-    created () {
-        this.repository.on('change', repository => {
-            this.$emit('change', repository)
-        })
     },
     methods: {
         toggle () {
@@ -180,10 +145,7 @@ export default {
                 .catch(() => {})
         },
         start () {
-            this.$root.latest(
-                this.$string.set(':0 repository run', this.repository.name),
-                () => this.repository.start()
-            )
+            this.repository.start()
         },
         refresh () {
             this.repository.refresh()
@@ -192,16 +154,15 @@ export default {
             this.repository.stop()
         },
         removeFramework (framework) {
-            this.$root.onModelRemove(framework.id)
-            this.handleRemoveFramework({ repository: this.repository, frameworkId: framework.id })
+            this.$root.onModelRemove(framework.getId())
+            this.repository.removeFramework(framework.getId())
+            this.repository.save()
         },
-        storeFrameworkState (framework) {
-            this.frameworkChange({ repositoryId: this.repository.id, framework })
-        },
-        ...mapActions({
-            handleRemoveFramework: 'projects/removeFramework',
-            frameworkChange: 'projects/frameworkChange'
-        })
+        onChildActivation (context) {
+            context.unshift(this.repository)
+            this.$store.commit('context/ADD', this.repository.getId())
+            this.$emit('activate', context)
+        }
     }
 }
 </script>
