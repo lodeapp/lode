@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { state } from '@main/lib/state'
+import { state } from '@lib/state'
 import Modal from '@/components/modals/Modal'
 
 export default {

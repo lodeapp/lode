@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { state } from '@main/lib/state'
+import { state } from '@lib/state'
 import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
 

@@ -1,11 +1,12 @@
+import '@lib/logger/renderer'
+
 import Vue from 'vue'
 import store from './store'
-import { get } from 'lodash'
+import { get, isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
-import { state } from '@main/lib/state'
-import { Logger } from '@main/lib/logger'
-import { Project } from '@main/lib/frameworks/project'
-import { queue } from '@main/lib/process/queue'
+import { state } from '@lib/state'
+import { Project } from '@lib/frameworks/project'
+import { queue } from '@lib/process/queue'
 
 // Styles
 import '../styles/app.scss'
@@ -110,10 +111,7 @@ export default new Vue({
                         }
                         break
                     case 'run-project':
-                        this.latest(
-                            this.$string.set(':0 project run', this.project.name),
-                            () => this.project.start()
-                        )
+                        this.project.start()
                         break
                     case 'refresh-project':
                         this.project.refresh()
@@ -134,14 +132,14 @@ export default new Vue({
                         this.addRepositories()
                         break
                     case 'log-project':
-                        const projectState = state.project(this.projectId)
-                        Logger.info.log({
+                        const projectState = state.project(this.project.getId())
+                        log.info({
                             object: projectState.get(),
                             json: JSON.stringify(projectState.get())
                         })
                         break
                     case 'log-settings':
-                        Logger.info.log({
+                        log.info({
                             object: state.get(),
                             json: JSON.stringify(state.get())
                         })
@@ -165,7 +163,8 @@ export default new Vue({
     },
     methods: {
         loadProject (projectOptions) {
-            this.project = projectOptions ? new Project(JSON.parse(projectOptions)) : null
+            projectOptions = JSON.parse(projectOptions)
+            this.project = isEmpty(projectOptions) ? null : new Project(projectOptions)
             this.updateApplicationMenu()
         },
         addProject () {
@@ -240,13 +239,7 @@ export default new Vue({
             this.$modal.open('AddRepositories')
         },
         updateApplicationMenu () {
-            ipcRenderer.send('update-menu', {
-                latestJobName: queue.getLatestJobName()
-            })
-        },
-        latest (name, job) {
-            queue.latest(name, job)
-            this.updateApplicationMenu()
+            ipcRenderer.send('update-menu')
         },
         openExternal (link) {
             shell.openExternal(link)

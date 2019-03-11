@@ -7,7 +7,7 @@
     }
 
     & > .dir {
-        color: $secondary-discreet-text;
+        color: var(--text-color-secondary-discreet);
         word-break: break-all;
     }
 }

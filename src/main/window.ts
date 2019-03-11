@@ -1,8 +1,8 @@
 import { pick } from 'lodash'
 import { BrowserWindow as BaseBrowserWindow } from 'electron'
 import { MenuEvent } from './menu'
-import { state } from '@main/lib/state'
-import { Project as ProjectState } from '@main/lib/state/project'
+import { state } from '@lib/state'
+import { Project as ProjectState } from '@lib/state/project'
 
 let windowStateKeeper: any | null = null
 
@@ -126,7 +126,6 @@ export class Window {
         return this.window.isMinimized()
     }
 
-    // Is the window currently visible?
     public isVisible() {
         return this.window.isVisible()
     }

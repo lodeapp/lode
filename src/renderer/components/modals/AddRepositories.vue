@@ -28,7 +28,7 @@
 
 <script>
 import _uniqBy from 'lodash/uniqBy'
-import { RepositoryValidator } from '@main/lib/frameworks/validator'
+import { RepositoryValidator } from '@lib/frameworks/validator'
 
 import Modal from '@/components/modals/Modal'
 import RepositoryPath from '@/components/RepositoryPath'

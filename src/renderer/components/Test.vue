@@ -4,12 +4,13 @@
         class="test"
         :class="{ 'is-active': isActive, 'is-child-active': isChildActive }"
         :has-children="hasChildren"
-        :handler="handleActivate"
-        @focus.native="handleActivate"
+        :handler="onActivate"
+        @focus.native="onActivate"
         @contextmenu.native.stop.prevent="onContextMenu"
+        @keydown.native.self.stop.prevent.space="onSelectiveClick"
     >
         <template slot="header">
-            <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @mousedown.prevent.stop="selected = !selected">
+            <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @mousedown.prevent.stop="onSelectiveClick">
                 <button tabindex="-1" type="button" :disabled="running"></button>
                 <input
                     type="checkbox"
@@ -83,7 +84,11 @@ export default {
             return this.test.getName() !== this.displayName ? this.test.getName() : false
         },
         isActive () {
-            return this.test.getId() === this.testActive
+            if (this.test.getId() === this.testActive) {
+                return true
+            }
+            this.deactivate()
+            return false
         },
         ...mapGetters({
             testActive: 'test/active',
@@ -91,11 +96,17 @@ export default {
         })
     },
     methods: {
-        handleActivate () {
+        onActivate () {
             if (!this.hasChildren && !this.isActive) {
                 this.activate()
                 return false
             }
+        },
+        onSelectiveClick (event) {
+            if (this.running) {
+                return
+            }
+            this.selected = !this.selected
         },
         onContextMenu (event) {
             new Menu()
@@ -134,9 +145,13 @@ export default {
             this.$el.focus()
             this.$store.commit('test/SET', this.test.getId())
             this.$store.commit('context/CLEAR')
+            this.test.setActive(true)
             setTimeout(() => {
                 this.$emit('activate', [this.test])
             })
+        },
+        deactivate () {
+            this.test.setActive(false)
         },
         onChildActivation (context) {
             context.unshift(this.test)

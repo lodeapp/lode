@@ -368,13 +368,21 @@
 
     // Parent nuggets can only focused by keyboard navigation.
     // This distinguishes them from just having a child active.
+    &.suite:focus,
     &.has-children:focus {
 
         & > .header {
 
-            & > .status {
-                border-right-color: red;
-                box-shadow: 4px 0 0 0 red;
+            & > .header-inner {
+                background-color: theme-color('selected', 100);
+
+                & > .filename {
+
+                    & > .dir {
+                        // Give a slight readability boost to discreet text.
+                        color: var(--text-color-secondary);
+                    }
+                }
             }
         }
     }

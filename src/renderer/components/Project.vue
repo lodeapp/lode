@@ -24,7 +24,10 @@
                     </div>
                 </Pane>
                 <Pane id="results">
-                    <Results :context="context" />
+                    <Results
+                        :context="context"
+                        @reset="resetContext"
+                    />
                 </Pane>
             </Split>
         </template>
@@ -32,6 +35,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Pane from '@/components/Pane'
 import Repository from '@/components/Repository'
 import Results from '@/components/Results'
@@ -51,6 +55,11 @@ export default {
             loading: true
         }
     },
+    computed: {
+        ...mapGetters({
+            storeContext: 'context/active'
+        })
+    },
     created () {
         this.$root.project.on('ready', () => {
             this.loading = false
@@ -64,6 +73,9 @@ export default {
         },
         onChildActivation (context) {
             this.context = context
+        },
+        resetContext () {
+            this.context = []
         }
     }
 }

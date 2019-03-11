@@ -17,10 +17,10 @@
                 <pre v-else><code>{{ feedback.content }}</code></pre>
             </div>
             <div v-if="console && tab === 'console'">
-                <Console v-for="(output, index) in console" :key="index" :output="output" />
+                <Console v-for="(output, index) in console" :key="`console-${index}`" :output="output" />
             </div>
             <div v-if="suiteConsole && tab === 'suiteConsole'">
-                <Console v-for="(output, index) in suiteConsole" :key="index" :output="output" />
+                <Console v-for="(output, index) in suiteConsole" :key="`suiteConsole-${index}`" :output="output" />
             </div>
             <div v-if="stats && tab === 'stats'">
                 <TestStatistics :stats="stats" />

@@ -74,7 +74,9 @@ export default {
                 return path
             }
             let root = this.framework.runsInRemote ? this.framework.remotePath : this.repository.path
-            if (this.framework.path) {
+            if (!root) {
+                return path
+            } else if (this.framework.path) {
                 root = Path.join(root, this.framework.path)
             }
             return Path.relative(root, path)

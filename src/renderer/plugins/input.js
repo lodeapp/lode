@@ -60,6 +60,9 @@ export default class Input {
     isAuxiliaryAction (event) {
         return this.isCopying(event) || this.isSelectingAll(event) || this.isRefreshing(event)
     }
+    isRightButton (event) {
+        return event.which === 3 || event.button === 2
+    }
     modifiesContent (event) {
         return !this.isAuxiliaryAction(event) && !this.isAuxiliaryKey(event)
     }

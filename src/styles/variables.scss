@@ -122,6 +122,10 @@
     --input-placeholder-text-color: #{$gray-700};
     --link-color: #{$blue-400};
 
+    --text-color: #{$black};
+    --text-color-secondary: #{$gray-600};
+    --text-color-secondary-discreet: #{lighten($gray-600, 15%)};
+
     //
     // Spacing
     //

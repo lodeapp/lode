@@ -1,6 +1,6 @@
 <template>
-    <div class="results" :class="{ blankslate: !test || loading }">
-        <h3 v-if="!test">No test selected</h3>
+    <div class="results" :class="{ blankslate: !testActive || loading }">
+        <h3 v-if="!testActive">No test selected</h3>
         <div v-if="loading" class="loading">
             <div class="loading-group">
                 <div class="spinner"></div>
@@ -65,7 +65,11 @@ export default {
         })
     },
     watch: {
-        testActive () {
+        testActive (test) {
+            if (!test) {
+                this.$emit('reset')
+                return
+            }
             this.loading = true
         },
         context () {

@@ -1,8 +1,12 @@
+import '@lib/logger/main'
+
 import { app, ipcMain, Menu } from 'electron'
 import { buildDefaultMenu } from './menu'
 import { Window } from './window'
-import { mergeEnvFromShell } from '@main/lib/process/shell'
-import { state } from '@main/lib/state'
+import { LogLevel } from '@lib/logger/levels'
+import { mergeEnvFromShell } from '@lib/process/shell'
+import { state } from '@lib/state'
+import { log as writeLog } from '@lib/logger'
 
 // Expose garbage collector
 app.commandLine.appendSwitch('js-flags', '--expose_gc')
@@ -22,6 +26,7 @@ function createWindow(projectId: string | null) {
 
     window.onClose((event: any) => {
         if (window.isBusy()) {
+            log.info('Window is busy. Attempting teardown of pending renderer processes.')
             event.preventDefault()
             window.send('close')
         }
@@ -36,8 +41,8 @@ function createWindow(projectId: string | null) {
     mainWindow = window
 }
 
-function buildMenu(options = {}) {
-    Menu.setApplicationMenu(buildDefaultMenu(options))
+function buildMenu() {
+    Menu.setApplicationMenu(buildDefaultMenu())
 }
 
 app
@@ -57,8 +62,14 @@ app
     })
 
 ipcMain
-    .on('update-menu', (event: any, options = {}) => {
-        buildMenu(options)
+    .on('log', (event: Electron.IpcMessageEvent, level: LogLevel, message: string) => {
+        // Write renderer messages to log, if they meet the level threshold.
+        // We're using the main log function directly so that they are not
+        // marked as being from the "main" process.
+        writeLog(level, message)
+    })
+    .on('update-menu', (event: any) => {
+        buildMenu()
     })
     .on('window-should-close', () => {
         process.nextTick(() => {
