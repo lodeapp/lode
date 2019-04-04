@@ -1,4 +1,4 @@
-main {
+.project {
     display: flex;
     flex-grow: 1;
 
@@ -17,12 +17,17 @@ main {
 
     &:not(.no-repositories) > .split {
 
+        & > .pane {
+            border-left: 1px solid var(--sidebar-border-color);
+            margin-left: calc(var(--split-gutter-width) * -1);
+        }
+
         & > :first-child {
-            border-right: 1px solid $primary-border;
+            margin-left: 0;
         }
 
         & > :last-child {
-            margin-left: -10px; // Split gutter width
+            border-left-color: $primary-border;
         }
     }
 
@@ -38,9 +43,10 @@ main {
             overflow-y: auto;
             position: relative;
             z-index: 1;
-            width: 50%;
+            width: 33%;
 
             & + .gutter {
+                -webkit-app-region: no-drag !important;
                 cursor: col-resize !important;
                 margin: 0;
                 z-index: 2;

@@ -14,8 +14,9 @@ export default {
         Split([...this.$el.querySelectorAll('.pane')], {
             sizes: state.get('paneSizes'),
             gutterAlign: 'center',
-            minSize: 350,
+            minSize: [200, 350, 350],
             snapOffset: 0,
+            gutterSize: 11,
             onDragEnd (sizes) {
                 state.set('paneSizes', sizes)
             }

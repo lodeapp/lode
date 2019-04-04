@@ -1,9 +1,8 @@
 <template>
     <div
-        class="framework parent"
+        class="framework has-status"
         :class="[
             `status--${framework.status}`,
-            `is-${expandStatus}`,
             framework.selective ? 'selective' : ''
         ]"
     >
@@ -11,9 +10,6 @@
             <div class="title">
                 <Indicator :status="framework.status" />
                 <h3 class="heading">
-                    <span class="toggle" @mousedown="toggle">
-                        <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
-                    </span>
                     <span class="name">
                         {{ framework.name }}
                     </span>
@@ -42,39 +38,27 @@
                     </button>
                 </div>
             </div>
-            <div class="progress">
-                <template v-if="refreshing">Refreshing...</template>
-                <template v-else-if="queued">Queued...</template>
-                <template v-else-if="!framework.suites.length && running">Preparing run...</template>
-                <template v-else-if="framework.suites.length">
-                    {{ '1 suite|:n suites' | plural(framework.suites.length) }}
-                    <button
-                        type="button"
-                        class="ellipsis-expander"
-                        :aria-expanded="framework.expandFilters"
-                        @click="toggleFilters"
-                    >&hellip;</button>
+            <div class="filters">
+                <template v-if="framework.suites.length">
+                    <Ledger :framework="framework" />
                 </template>
                 <template v-else>
                     No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
                 </template>
             </div>
             <div v-if="framework.expandFilters" class="filters">
-                <Ledger :framework="framework" />
                 <!-- <div class="search" v-if="framework.suites.length > 1">
                     <input type="search" class="form-control input-block input-sm" placeholder="Filter suites">
                 </div> -->
             </div>
         </div>
-        <template v-if="show">
-            <Suite
-                v-for="suite in framework.suites"
-                :suite="suite"
-                :running="running"
-                :key="suite.getId()"
-                @activate="onChildActivation"
-            />
-        </template>
+        <Suite
+            v-for="suite in framework.suites"
+            :suite="suite"
+            :running="running"
+            :key="suite.getId()"
+            @activate="onChildActivation"
+        />
     </div>
 </template>
 
@@ -88,8 +72,8 @@ export default {
     name: 'Framework',
     components: {
         Indicator,
-        Suite,
-        Ledger
+        Ledger,
+        Suite
     },
     props: {
         framework: {
@@ -119,9 +103,6 @@ export default {
         }
     },
     computed: {
-        show () {
-            return !this.framework.collapsed
-        },
         running () {
             return this.framework.status === 'running'
         },
@@ -130,32 +111,26 @@ export default {
         },
         queued () {
             return this.framework.status === 'queued'
-        },
-        expandStatus () {
-            return this.show ? 'expanded' : 'collapsed'
         }
     },
     created () {
-        this.framework.on('error', (error, process) => {
-            this.$alert.show({
-                message: this.$string.set('The process for **:0** terminated unexpectedly.', this.framework.name),
-                help: this.framework.troubleshoot(error),
-                type: 'error',
-                error
-            })
-        })
+        // this.framework.on('error', (error, process) => {
+        //     this.$alert.show({
+        //         message: this.$string.set('The process for **:0** terminated unexpectedly.', this.framework.name),
+        //         help: this.framework.troubleshoot(error),
+        //         type: 'error',
+        //         error
+        //     })
+        // })
 
-        this.framework.on('suiteRemoved', suite => {
-            this.$root.onModelRemove(suite.getId())
-        })
+        // this.framework.on('suiteRemoved', suite => {
+        //     this.$root.onModelRemove(suite.getId())
+        // })
+    },
+    mounted () {
+        this.$emit('mounted')
     },
     methods: {
-        toggle () {
-            this.framework.toggle()
-        },
-        toggleFilters () {
-            this.framework.toggleFilters()
-        },
         onMoreClick (event) {
             this.menu
                 .attachTo(this.$el.querySelector('.more-actions'))
@@ -181,8 +156,6 @@ export default {
                 .catch(() => {})
         },
         onChildActivation (context) {
-            context.unshift(this.framework)
-            this.$store.commit('context/ADD', this.framework.getId())
             this.$emit('activate', context)
         }
     }

@@ -22,7 +22,7 @@
     position: fixed;
     right: 0;
     top: 0;
-    z-index: calc(var(--title-bar-z-index) + 1);
+    z-index: 1001;
 
     .modal-dialog {
         flex-grow: 1;
@@ -259,7 +259,7 @@
     right: 0;
     top: 0;
     transition: opacity .3s ease;
-    z-index: calc(var(--title-bar-z-index) + 2);
+    z-index: 1002;
 }
 
 .modal-enter,

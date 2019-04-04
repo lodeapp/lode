@@ -67,7 +67,7 @@ export class Window {
         }
 
         if (__DARWIN__) {
-            // windowOptions.titleBarStyle = 'hiddenInset'
+            windowOptions.titleBarStyle = 'hiddenInset'
         } else if (__WIN32__) {
             windowOptions.frame = false
         } else if (__LINUX__) {

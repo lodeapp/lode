@@ -38,7 +38,6 @@ export type FrameworkOptions = {
     sshPort?: number | null
     sshIdentity?: string | null
     collapsed?: boolean
-    expandFilters?: boolean
     suites?: Array<ISuiteResult>
     scanStatus?: 'pending' | 'removed'
     proprietary: any
@@ -67,7 +66,6 @@ export interface IFramework extends EventEmitter {
     selective: boolean
     selected: SuiteList
     collapsed: boolean
-    expandFilters: boolean
     queue: { [index: string]: Function }
     ledger: { [key in Status]: number }
 
@@ -82,8 +80,6 @@ export interface IFramework extends EventEmitter {
     persist (): FrameworkOptions
     save (): void
     updateOptions (options: FrameworkOptions): void
-    toggle (): void
-    toggleFilters (): void
 }
 
 /**
@@ -113,7 +109,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
         suites: []
     }
     public collapsed!: boolean
-    public expandFilters!: boolean
     public queue: { [index: string]: Function } = {}
     public ledger: { [key in Status]: number } = {
         queued: 0,
@@ -171,7 +166,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         this.collapsed = options.collapsed || false
-        this.expandFilters = options.expandFilters || false
 
         this.initialSuiteCount = (options.suites || []).length
 
@@ -287,7 +281,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
             sshPort: this.sshPort,
             sshIdentity: this.sshIdentity,
             collapsed: this.collapsed,
-            expandFilters: this.expandFilters,
             proprietary: this.proprietary,
             suites: this.suites.map((suite: ISuite) => suite.persist())
         }
@@ -362,22 +355,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     public getVersion (): string | undefined {
         return this.version
-    }
-
-    /**
-     * Toggle this framework's visibility.
-     */
-    public toggle (): void {
-        this.collapsed = !this.collapsed
-        this.emit('change', this)
-    }
-
-    /**
-     * Toggle this framework's filters visibility.
-     */
-    public toggleFilters (): void {
-        this.expandFilters = !this.expandFilters
-        this.emit('change', this)
     }
 
     /**

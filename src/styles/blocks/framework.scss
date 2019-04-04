@@ -1,13 +1,18 @@
 .framework {
     background: $primary;
-    border-top: 1px solid $primary-border;
     margin-bottom: 10px;
 
     & > .header {
+        -webkit-app-region: drag;
         background-color: $primary;
         border-bottom: 1px solid $primary-border;
-        top: calc(var(--repository-header-height) - 1px);
+        position: sticky;
+        top: 0;
         z-index: var(--framework-z-index);
+
+        button {
+            -webkit-app-region: no-drag;
+        }
 
         & > .title {
 
@@ -17,10 +22,9 @@
 
                 & > .name {
                     line-height: 1.2em;
-                    margin-left: var(--spacing);
                     padding-right: var(--spacing);
                     position: relative;
-                    top: 3px;
+                    top: 2px;
                     word-break: break-word;
                 }
             }
@@ -60,7 +64,10 @@
         }
     }
 
-    & > :last-child:not(.is-expanded) {
-        border-bottom: 1px solid $primary-border;
+    & > :last-child {
+
+        &.is-collapsed {
+            border-bottom: 1px solid $primary-border;
+        }
     }
 }

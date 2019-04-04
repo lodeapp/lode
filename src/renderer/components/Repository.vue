@@ -1,71 +1,59 @@
 <template>
     <div
-        class="repository parent"
+        class="sidebar-item has-status"
         :class="[
             `status--${repository.status}`,
-            `is-${expandStatus}`,
             repository.frameworks.length ? '' : 'is-empty'
         ]"
     >
-        <!--
-         <div class="header">
+        <div class="header" @click="onMoreClick">
             <div class="title">
                 <Indicator :status="repository.status" />
-                <h2 class="heading">
-                    <span class="toggle" @mousedown="toggle">
-                        <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
-                    </span>
-                    <Icon symbol="repo" />
+                <h4 class="heading">
+                    <Icon class="toggle" symbol="chevron-down" />
                     <span class="name" :title="repository.name">
                         {{ repository.name }}
                     </span>
-                </h2>
-                <div class="actions">
-                    <button type="button" class="btn-link more-actions" @click.prevent="onMoreClick">
-                        <Icon symbol="kebab-vertical" />
-                    </button>
-                    <template v-if="!repository.frameworks.length">
-                        <button
-                            class="btn btn-sm btn-primary"
-                            @click="scan"
-                        >
-                            Scan
-                        </button>
-                    </template>
+                </h4>
+            </div>
+        </div>
+        <div
+            v-for="framework in repository.frameworks"
+            :key="framework.getId()"
+            class="sidebar-item sidebar-item--framework has-status"
+            :class="[
+                `status--${framework.status}`,
+                selectedFramework === framework.getId() ? 'is-active' : ''
+            ]"
+        >
+            <div class="header" @mousedown="selectFramework(framework.getId())">
+                <div class="title">
+                    <Indicator :status="framework.status" />
+                    <h4 class="heading">
+                        <span class="name" :title="framework.name">
+                            {{ framework.name }}
+                        </span>
+                    </h4>
                 </div>
             </div>
-        </div> -->
-        <template v-if="!repository.frameworks.length">
-            <div class="empty-cta" v-show="show">
-                No test frameworks loaded. <a href="#" @click.prevent="scan">Scan repository</a>.
-            </div>
-        </template>
-        <template v-else>
-            <Framework
-                v-show="show"
-                v-for="framework in repository.frameworks"
-                :key="framework.getId()"
-                :framework="framework"
-                @remove="removeFramework"
-                @manage="manageFramework"
-                @activate="onChildActivation"
-            />
-        </template>
+        </div>
     </div>
 </template>
 
 <script>
 import { Menu } from '@main/menu'
-import Framework from '@/components/Framework'
 import Indicator from '@/components/Indicator'
 
 export default {
     name: 'Repository',
     components: {
-        Framework,
         Indicator
     },
     props: {
+        initial: {
+            type: String,
+            required: true
+        },
         repository: {
             type: Object,
             required: true
@@ -73,6 +61,7 @@ export default {
     },
     data () {
         return {
+            selectedFramework: this.initial,
             menu: new Menu()
                 .add({
                     label: 'Manage frameworks',
@@ -93,23 +82,14 @@ export default {
         }
     },
     computed: {
-        show () {
-            return this.repository.expanded
-        },
         running () {
             return this.repository.status === 'running'
         },
         refreshing () {
             return this.repository.status === 'refreshing'
-        },
-        expandStatus () {
-            return this.show ? 'expanded' : 'collapsed'
         }
     },
     methods: {
-        toggle () {
-            this.repository.toggle()
-        },
         scan () {
             this.repository.scan()
                 .then(pending => {
@@ -122,8 +102,18 @@ export default {
         },
         onMoreClick (event) {
             this.menu
-                .attachTo(this.$el.querySelector('.more-actions'))
+                // .attachTo(this.$el.querySelector('.more-actions'))
                 .open()
+        },
+        selectFramework (frameworkId) {
+            // In order for the selection to be perceived instantly,
+            // we'll store the newly selected framework locally. After
+            // emitting the activation to parent, the same will become
+            // framework will be persisted via the context.
+            this.selectedFramework = frameworkId
+            setTimeout(() => {
+                this.$emit('activate', frameworkId)
+            })
         },
         manage () {
             this.$modal.open('ManageFrameworks', {
@@ -145,24 +135,10 @@ export default {
                 })
                 .catch(() => {})
         },
-        start () {
-            this.repository.start()
-        },
-        refresh () {
-            this.repository.refresh()
-        },
-        stop () {
-            this.repository.stop()
-        },
         removeFramework (framework) {
             this.$root.onModelRemove(framework.getId())
             this.repository.removeFramework(framework.getId())
             this.repository.save()
-        },
-        onChildActivation (context) {
-            context.unshift(this.repository)
-            this.$store.commit('context/ADD', this.repository.getId())
-            this.$emit('activate', context)
         }
     }
 }

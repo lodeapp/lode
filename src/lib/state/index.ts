@@ -16,7 +16,7 @@ class State extends EventEmitter {
             switchProject: true
         },
         currentProject: null,
-        paneSizes: [50, 50],
+        paneSizes: [24, 38, 38],
         projects: []
     }
 

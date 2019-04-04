@@ -277,7 +277,7 @@ export default new Vue({
             })
         },
         onModelRemove (modelId) {
-            store.dispatch('context/onRemove', modelId)
+            store.dispatch('test/onRemove', modelId)
         }
     },
     store,

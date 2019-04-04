@@ -92,8 +92,13 @@ export default {
         },
         ...mapGetters({
             testActive: 'test/active',
-            context: 'context/active'
+            context: 'test/context'
         })
+    },
+    mounted () {
+        if (!this.test.isActive() && this.test.getId() === this.testActive) {
+            this.activate()
+        }
     },
     methods: {
         onActivate () {
@@ -144,7 +149,6 @@ export default {
         activate () {
             this.$el.focus()
             this.$store.commit('test/SET', this.test.getId())
-            this.$store.commit('context/CLEAR')
             this.test.setActive(true)
             setTimeout(() => {
                 this.$emit('activate', [this.test])
@@ -155,7 +159,7 @@ export default {
         },
         onChildActivation (context) {
             context.unshift(this.test)
-            this.$store.commit('context/ADD', this.test.getId())
+            this.$store.commit('test/ADD_CONTEXT', this.test.getId())
             this.$nextTick(() => {
                 this.$emit('activate', context)
             })

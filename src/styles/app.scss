@@ -21,7 +21,6 @@
 @import 'blocks/forms';
 @import 'blocks/framework';
 @import 'blocks/icons';
-@import 'blocks/indicator';
 @import 'blocks/labels';
 @import 'blocks/license';
 @import 'blocks/loading';
@@ -29,11 +28,10 @@
 @import 'blocks/modals';
 @import 'blocks/nugget';
 @import 'blocks/object';
-@import 'blocks/parent';
+@import 'blocks/status';
 @import 'blocks/pre';
 @import 'blocks/preferences';
 @import 'blocks/project';
-@import 'blocks/repository';
 @import 'blocks/results';
 @import 'blocks/selective';
 @import 'blocks/settings';
@@ -42,7 +40,6 @@
 @import 'blocks/test';
 @import 'blocks/test-result';
 @import 'blocks/test-statistics';
-@import 'blocks/titlebar';
 @import 'blocks/trace';
 
 @import 'highlight/common';
