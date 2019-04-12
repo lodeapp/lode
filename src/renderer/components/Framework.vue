@@ -15,7 +15,7 @@
                     </span>
                 </h3>
                 <div class="actions">
-                    <button type="button" class="btn-link more-actions" @click.prevent="onMoreClick">
+                    <button type="button" class="btn-link more-actions" @click.prevent="openMenu">
                         <Icon symbol="kebab-vertical" />
                     </button>
                     <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
@@ -63,10 +63,10 @@
 </template>
 
 <script>
-import { Menu } from '@main/menu'
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
+import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 
 export default {
     name: 'Framework',
@@ -75,31 +75,13 @@ export default {
         Ledger,
         Suite
     },
+    mixins: [
+        HasFrameworkMenu
+    ],
     props: {
         framework: {
             type: Object,
             required: true
-        }
-    },
-    data () {
-        return {
-            menu: new Menu()
-                .add({
-                    label: 'Framework settings…',
-                    click: () => {
-                        this.manage()
-                    }
-                })
-                .separator()
-                .add({
-                    label: 'Remove',
-                    click: () => {
-                        this.remove()
-                    }
-                })
-                .after(() => {
-                    this.$el.querySelector('.more-actions').blur()
-                })
         }
     },
     computed: {
@@ -113,29 +95,10 @@ export default {
             return this.framework.status === 'queued'
         }
     },
-    created () {
-        // this.framework.on('error', (error, process) => {
-        //     this.$alert.show({
-        //         message: this.$string.set('The process for **:0** terminated unexpectedly.', this.framework.name),
-        //         help: this.framework.troubleshoot(error),
-        //         type: 'error',
-        //         error
-        //     })
-        // })
-
-        // this.framework.on('suiteRemoved', suite => {
-        //     this.$root.onModelRemove(suite.getId())
-        // })
-    },
     mounted () {
         this.$emit('mounted')
     },
     methods: {
-        onMoreClick (event) {
-            this.menu
-                .attachTo(this.$el.querySelector('.more-actions'))
-                .open()
-        },
         refresh () {
             this.framework.refresh()
         },
@@ -144,16 +107,6 @@ export default {
         },
         async stop () {
             await this.framework.stop()
-        },
-        manage () {
-            this.$emit('manage', this.framework)
-        },
-        remove () {
-            this.$modal.confirm('RemoveFramework', { framework: this.framework })
-                .then(() => {
-                    this.$emit('remove', this.framework)
-                })
-                .catch(() => {})
         },
         onChildActivation (context) {
             this.$emit('activate', context)

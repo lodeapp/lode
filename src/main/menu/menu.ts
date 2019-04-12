@@ -46,13 +46,15 @@ export class Menu {
         return this
     }
 
-    attachTo(element: Element): this {
-        const { x, y, height } = <DOMRect>element.getBoundingClientRect()
-        this.options = {
-            ...this.options,
-            ...{
-                x: Math.ceil(x),
-                y: Math.ceil(y + height + 6)
+    attachTo(element: Element | undefined): this {
+        if (element) {
+            const { x, y, height } = <DOMRect>element.getBoundingClientRect()
+            this.options = {
+                ...this.options,
+                ...{
+                    x: Math.ceil(x),
+                    y: Math.ceil(y + height + 6)
+                }
             }
         }
         return this

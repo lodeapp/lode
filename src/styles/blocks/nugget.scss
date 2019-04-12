@@ -67,6 +67,7 @@
             }
 
             i {
+                left: 1px;
                 position: relative;
                 top: 4px;
             }
@@ -170,7 +171,7 @@
             .status {
                 background-color: theme-color('passed');
                 border-color: darken(theme-color('passed'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('passed'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('passed', 200);
             }
         }
     }
@@ -186,8 +187,8 @@
 
             .status {
                 background-color: theme-color('failed');
-                border-color: darken(theme-color('failed'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('failed'), .5);
+                border-color: darken(theme-color('failed'), 15%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('failed', 200);
             }
         }
     }
@@ -204,8 +205,8 @@
 
             .status {
                 background-color: theme-color('incomplete');
-                border-color: darken(theme-color('incomplete'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('incomplete'), .5);
+                border-color: darken(theme-color('incomplete'), 14%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('incomplete', 300);
             }
         }
     }
@@ -221,8 +222,8 @@
 
             .status {
                 background-color: theme-color('warning');
-                border-color: darken(theme-color('warning'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('warning'), .5);
+                border-color: darken(theme-color('warning'), 5%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('warning', 300);
             }
         }
     }
@@ -239,7 +240,7 @@
             .status {
                 @include striped('partial');
                 border-color: darken(theme-color('partial'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('partial'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('partial', 400);
             }
         }
     }
@@ -254,9 +255,9 @@
         & > .header {
 
             .status {
-                background-color: theme-color('idle', 'step', -200);
+                background-color: theme-color('idle', 200);
                 border-color: darken(theme-color('idle'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('idle', 'step', -200);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('idle', 200);
 
                 &::before {
                     border-left: 1px solid darken(theme-color('idle'), 10%);
@@ -286,7 +287,7 @@
             .status {
                 background-color: theme-color('queued');
                 border-color: darken(theme-color('queued'), 3%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('queued'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('queued', 100);
             }
         }
     }
@@ -303,7 +304,7 @@
             .status {
                 background-color: theme-color('idle');
                 border-color: darken(theme-color('idle'), 3%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('idle'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('idle', 200);
             }
         }
     }
@@ -320,7 +321,7 @@
             .status {
                 background-color: theme-color('failed', 400);
                 border-color: darken(theme-color('failed'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 transparentize(theme-color('failed'), .5);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('failed', 200);
 
                 i {
                     color: $white;

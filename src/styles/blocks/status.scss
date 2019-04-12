@@ -88,7 +88,7 @@
 
         & > .indicator {
             background-color: theme-color('passed');
-            box-shadow: 0 0 0 4px transparentize(theme-color('passed'), .6);
+            box-shadow: 0 0 0 4px theme-color('passed', 200);
         }
     }
 
@@ -96,7 +96,7 @@
 
         & > .indicator {
             background-color: theme-color('failed');
-            box-shadow: 0 0 0 4px transparentize(theme-color('failed'), .6);
+            box-shadow: 0 0 0 4px theme-color('failed', 200);
         }
     }
 
@@ -104,7 +104,7 @@
 
         & > .indicator {
             background-color: theme-color('incomplete');
-            box-shadow: 0 0 0 4px transparentize(theme-color('incomplete'), .6);
+            box-shadow: 0 0 0 4px theme-color('incomplete', 200);
         }
     }
 
@@ -112,7 +112,7 @@
 
         & > .indicator {
             background-color: theme-color('warning');
-            box-shadow: 0 0 0 4px transparentize(theme-color('warning'), .6);
+            box-shadow: 0 0 0 4px theme-color('warning', 200);
         }
     }
 
@@ -120,7 +120,7 @@
 
         & > .indicator {
             @include striped('partial');
-            box-shadow: 0 0 0 4px transparentize(theme-color('partial'), .6);
+            box-shadow: 0 0 0 4px theme-color('partial', 400);
         }
     }
 
@@ -128,7 +128,7 @@
 
         & > .indicator {
             background-color: theme-color('queued');
-            box-shadow: 0 0 0 4px transparentize(theme-color('queued'), .6);
+            box-shadow: 0 0 0 4px theme-color('queued', 100);
         }
     }
 
@@ -136,7 +136,7 @@
 
         & > .indicator {
             background-color: $white;
-            box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .6);
+            box-shadow: 0 0 0 4px theme-color('idle', 300);
 
             i {
                 color: theme-color('idle', 'step', 200);
@@ -156,7 +156,7 @@
 
         & > .indicator {
             background-color: theme-color('failed');
-            box-shadow: 0 0 0 4px transparentize(theme-color('failed'), .6);
+            box-shadow: 0 0 0 4px theme-color('failed', 200);
 
             i {
                 color: $white;
@@ -170,7 +170,7 @@
     &.status--running {
 
         & > .indicator {
-            background-color: transparentize(theme-color('idle'), .6);
+            background-color: theme-color('idle', 300);
             box-shadow: 0 0 0 4px transparent;
         }
     }

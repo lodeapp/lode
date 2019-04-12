@@ -77,13 +77,7 @@ export default new Vue({
             })
             .on('project-switched', (event, projectOptions) => {
                 this.loadProject(projectOptions)
-                try {
-                    if (global.gc) {
-                        global.gc()
-                    }
-                } catch (error) {
-                    // ...
-                }
+                this.gc()
             })
             .on('menu-event', (event, { name, properties }) => {
                 switch (name) {
@@ -172,7 +166,7 @@ export default new Vue({
                 .then(options => {
                     // Stop current project before adding a new one.
                     (this.project ? this.project.stop() : Promise.resolve()).then(() => {
-                        store.commit('test/CLEAR')
+                        store.commit('context/CLEAR')
                         const project = new Project(options)
                         ipcRenderer.once('project-switched', () => {
                             this.addRepositories()
@@ -199,7 +193,7 @@ export default new Vue({
             this.$modal.confirm('RemoveProject')
                 .then(() => {
                     this.project.stop().then(() => {
-                        store.commit('test/CLEAR')
+                        store.commit('context/CLEAR')
                         const switchTo = state.removeProject(this.project.getId())
                         // Switch information should be available only
                         // if there are still projects to switch to.
@@ -226,7 +220,7 @@ export default new Vue({
                         state.set('confirm.switchProject', false)
                     }
                     this.project.stop().then(() => {
-                        store.commit('test/CLEAR')
+                        store.commit('context/CLEAR')
                         this.handleSwitchProject(projectId)
                     })
                 })
@@ -276,8 +270,17 @@ export default new Vue({
                 throw new Error('Boomtown!')
             })
         },
+        gc () {
+            try {
+                if (global.gc) {
+                    global.gc()
+                }
+            } catch (error) {
+                // ...
+            }
+        },
         onModelRemove (modelId) {
-            store.dispatch('test/onRemove', modelId)
+            store.dispatch('context/onRemove', modelId)
         }
     },
     store,

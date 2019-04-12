@@ -96,7 +96,7 @@ export default {
             return this.$fileystem.isExtensionSafe(this.fileExtension)
         },
         ...mapGetters({
-            context: 'test/context'
+            context: 'context/context'
         })
     },
     methods: {
@@ -108,7 +108,7 @@ export default {
         },
         onChildActivation (context) {
             context.unshift(this.suite)
-            this.$store.commit('test/ADD_CONTEXT', this.suite.getId())
+            this.$store.commit('context/ADD', this.suite.getId())
             this.$emit('activate', context)
         },
         onContextMenu (event) {

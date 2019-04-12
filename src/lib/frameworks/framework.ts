@@ -38,9 +38,10 @@ export type FrameworkOptions = {
     sshPort?: number | null
     sshIdentity?: string | null
     collapsed?: boolean
+    active?: boolean
     suites?: Array<ISuiteResult>
     scanStatus?: 'pending' | 'removed'
-    proprietary: any
+    proprietary: any,
 }
 
 /**
@@ -80,6 +81,8 @@ export interface IFramework extends EventEmitter {
     persist (): FrameworkOptions
     save (): void
     updateOptions (options: FrameworkOptions): void
+    setActive (active: boolean): void
+    isActive (): boolean
 }
 
 /**
@@ -131,6 +134,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected initialSuiteCount: number = 0
     protected initialSuiteReady: number = 0
     protected proprietary: any = {}
+    protected active: boolean = false
 
     static readonly defaults?: FrameworkOptions
 
@@ -166,6 +170,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         this.collapsed = options.collapsed || false
+        this.active = options.active || false
 
         this.initialSuiteCount = (options.suites || []).length
 
@@ -281,6 +286,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             sshPort: this.sshPort,
             sshIdentity: this.sshIdentity,
             collapsed: this.collapsed,
+            active: this.active,
             proprietary: this.proprietary,
             suites: this.suites.map((suite: ISuite) => suite.persist())
         }
@@ -951,7 +957,25 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
-     * Validate framework specific options.
+     * Set the active state of a framework.
+     *
+     * @param active The active state to set.
+     */
+    public setActive (active: boolean): void {
+        this.active = active
+        this.emit('change', this)
+    }
+
+    /**
+     * Get the active state of a framework.
+     */
+    public isActive (): boolean {
+        return this.active
+    }
+
+    /**
+     * Validate framework specific options. This is meant to be overridden
+     * by specific framework implementations (e.g. PHPUnit).
      */
     public static validate (validator: FrameworkValidator, options: any): void {
         // For generic framework validation see @lib/frameworks/validator.

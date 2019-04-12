@@ -49,11 +49,47 @@
                 & > .status {
                     margin-top: 4px;
 
-                    &.status--idle {
+                    &.status--passed {
 
                         & > .indicator {
-                            background-color: theme-color('idle', 500);
+                            box-shadow: 0 0 0 4px theme-color('passed', 200), 0 0 0 5px theme-color('passed', 100);
+                        }
+                    }
+
+                    &.status--idle,
+                    &.status--empty {
+
+                        & > .indicator {
                             box-shadow: 0 0 0 4px theme-color('idle', 400), 0 0 0 5px theme-color('idle', 200);
+                        }
+                    }
+
+                    &.status--failed,
+                    &.status--error {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 4px theme-color('failed', 200), 0 0 0 5px theme-color('failed', 100);
+                        }
+                    }
+
+                    &.status--warning {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 4px theme-color('warning', 200), 0 0 0 5px theme-color('warning', 100);
+                        }
+                    }
+
+                    &.status--incomplete {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 4px theme-color('incomplete', 200), 0 0 0 5px theme-color('incomplete', 100);
+                        }
+                    }
+
+                    &.status--partial {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 4px theme-color('partial', 400), 0 0 0 5px theme-color('partial', 200);
                         }
                     }
                 }
@@ -62,6 +98,13 @@
 
         &.is-active {
             background-color: var(--sidebar-active-color);
+        }
+
+        &.is-menu-active {
+
+            & > .header {
+                background-color: var(--color-blue-200);
+            }
         }
     }
 

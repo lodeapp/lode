@@ -5,12 +5,21 @@ export default {
         context: []
     },
     mutations: {
+        ADD (state, payload) {
+            if (state.context.indexOf(payload) === -1) {
+                state.context.unshift(payload)
+            }
+        },
         SET (state, payload) {
+            const test = payload.pop()
+            payload.forEach(context => {
+                state.context.unshift(context)
+            })
+            state.active = test
+        },
+        TEST (state, payload) {
             state.active = payload
             state.context = []
-        },
-        ADD_CONTEXT (state, payload) {
-            state.context.unshift(payload)
         },
         CLEAR (state) {
             state.active = ''
@@ -28,11 +37,14 @@ export default {
         }
     },
     getters: {
-        active: (state) => {
+        test: (state) => {
             return state.active
         },
         context: (state) => {
             return state.context
+        },
+        inContext: (state) => id => {
+            return state.context.indexOf(id) > -1
         }
     }
 }

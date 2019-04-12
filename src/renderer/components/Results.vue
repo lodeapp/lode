@@ -65,7 +65,7 @@ export default {
             return this.context.slice(2, (this.context.length - 1))
         },
         ...mapGetters({
-            testActive: 'test/active'
+            testActive: 'context/test'
         })
     },
     watch: {

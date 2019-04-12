@@ -27,13 +27,28 @@
                         </div>
                     </div>
                     <h5>Repositories</h5>
-                    <Repository
+                    <SidebarRepository
                         v-for="repository in $root.project.repositories"
                         :repository="repository"
                         :key="repository.getId()"
-                        :initial="framework.getId()"
-                        @activate="onFrameworkActivation($event, repository)"
-                    />
+                    >
+                        <div
+                            v-for="framework in repository.frameworks"
+                            :key="framework.getId()"
+                            class="sidebar-item sidebar-item--framework has-status"
+                            :class="[
+                                `status--${framework.status}`,
+                                framework.isActive() ? 'is-active' : ''
+                            ]"
+                        >
+                            <SidebarFramework
+                                :framework="framework"
+                                @activate="onFrameworkActivation($event, repository)"
+                                @manage="manageFramework"
+                                @remove="removeFramework"
+                            />
+                        </div>
+                    </SidebarRepository>
                 </Pane>
                 <Pane>
                     <div v-if="frameworkLoading" class="loading">
@@ -42,11 +57,12 @@
                         </div>
                     </div>
                     <Framework
+                        v-if="framework"
                         v-show="!frameworkLoading"
                         :key="framework.getId()"
                         :framework="framework"
-                        @remove="removeFramework"
                         @manage="manageFramework"
+                        @remove="removeFramework"
                         @activate="onTestActivation"
                         @mounted="frameworkLoading = false"
                     />
@@ -63,10 +79,9 @@
 </template>
 
 <script>
-import _get from 'lodash/get'
-import _last from 'lodash/last'
 import Pane from '@/components/Pane'
-import Repository from '@/components/Repository'
+import SidebarRepository from '@/components/SidebarRepository'
+import SidebarFramework from '@/components/SidebarFramework'
 import Indicator from '@/components/Indicator'
 import Framework from '@/components/Framework'
 import Results from '@/components/Results'
@@ -76,7 +91,8 @@ export default {
     name: 'Project',
     components: {
         Pane,
-        Repository,
+        SidebarRepository,
+        SidebarFramework,
         Indicator,
         Framework,
         Results,
@@ -89,7 +105,7 @@ export default {
             frameworkLoading: false,
             repository: null,
             framework: null,
-            persistActiveTests: {}
+            persistContext: {}
         }
     },
     computed: {
@@ -98,27 +114,49 @@ export default {
         }
     },
     created () {
+        let initialFramework = null
+        let initialRepository = null
         this.$root.project.on('ready', () => {
-            // TODO: Search for first available framework, unless a previous
-            // selection is known. Repository is chosen according to framework,
-            // not the other way around.
-            this.repository = _get(this.$root.project, 'repositories.0')
-            this.framework = _get(this.repository, 'frameworks.0')
+            this.$root.project.repositories.forEach(repository => {
+                if (!initialRepository) {
+                    initialRepository = repository
+                }
+
+                repository.frameworks.forEach(framework => {
+                    if (!initialFramework || framework.isActive()) {
+                        initialFramework = framework
+                        initialRepository = repository
+                    }
+
+                    framework.on('error', (error, process) => {
+                        this.$alert.show({
+                            message: this.$string.set('The process for **:0** terminated unexpectedly.', framework.name),
+                            help: framework.troubleshoot(error),
+                            type: 'error',
+                            error
+                        })
+                    })
+
+                    framework.on('suiteRemoved', suite => {
+                        this.$root.onModelRemove(suite.getId())
+                    })
+                })
+            })
+
+            if (initialRepository) {
+                this.repository = initialRepository
+            }
+            if (initialFramework) {
+                this.framework = initialFramework
+                if (!this.framework.isActive()) {
+                    this.framework.setActive(true)
+                }
+            }
+
             this.loading = false
         })
     },
     methods: {
-        removeRepository (repository) {
-            // TODO: Remove repository
-            this.$root.onModelRemove(repository.getId())
-            this.$root.project.removeRepository(repository.getId())
-            this.$root.project.save()
-        },
-        removeFramework (framework) {
-            this.$root.onModelRemove(framework.getId())
-            this.repository.removeFramework(framework.getId())
-            this.repository.save()
-        },
         manageFramework (framework) {
             this.$modal.open('ManageFrameworks', {
                 repository: this.repository,
@@ -126,25 +164,50 @@ export default {
                 framework
             })
         },
-        onTestActivation (context) {
-            this.context = context
+        removeFramework (framework) {
+            this.$root.onModelRemove(framework.getId())
+            this.repository.removeFramework(framework.getId())
+            this.repository.save()
+            this.framework = null
         },
         onFrameworkActivation (frameworkId, repository) {
+            // Do nothing when clicking on currently active framework
+            if (frameworkId === this.framework.getId()) {
+                return
+            }
+
+            // De-activate all other frameworks.
+            this.$root.project.repositories.forEach(repository => {
+                repository.frameworks.forEach(framework => {
+                    if (framework.getId() !== frameworkId) {
+                        framework.setActive(false)
+                    }
+                })
+            })
+
             // If there's currently an active test, remember it.
             if (this.context.length) {
-                this.persistActiveTests[this.framework.getId()] = _last(this.context).getId()
+                this.persistContext[this.framework.getId()] = this.context.map(context => context.getId())
             }
             this.resetContext()
-            this.$store.commit('test/CLEAR')
+            this.$store.commit('context/CLEAR')
             this.frameworkLoading = true
             setTimeout(() => {
-                this.repository = repository
-                this.framework = this.repository.getFrameworkById(frameworkId)
                 // Activate the test previously active for this framework.
-                if (this.persistActiveTests[frameworkId]) {
-                    this.$store.commit('test/SET', this.persistActiveTests[frameworkId])
+                if (this.persistContext[frameworkId]) {
+                    this.$store.commit('context/SET', this.persistContext[frameworkId])
                 }
+                // Only update repository and framework components
+                // once context has been set.
+                this.$nextTick(() => {
+                    this.repository = repository
+                    this.framework = this.repository.getFrameworkById(frameworkId)
+                    this.$root.gc()
+                })
             }, 10)
+        },
+        onTestActivation (context) {
+            this.context = context
         },
         resetContext () {
             this.context = []

@@ -19,10 +19,11 @@
 
         & > .pane {
             border-left: 1px solid var(--sidebar-border-color);
-            margin-left: calc(var(--split-gutter-width) * -1);
+            margin-left: calc(calc(var(--split-gutter-width) - 1px) * -1);
         }
 
         & > :first-child {
+            border-left: 0;
             margin-left: 0;
         }
 
