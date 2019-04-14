@@ -11,13 +11,13 @@ export default {
                     enabled: false
                 })
                 .add({
-                    label: 'Manage frameworks…',
+                    label: __DARWIN__ ? 'Manage Frameworks…' : 'Manage frameworks…',
                     click: () => {
                         this.manage()
                     }
                 })
                 .add({
-                    label: 'Scan for frameworks…',
+                    label: __DARWIN__ ? 'Scan for Frameworks…' : 'Scan for frameworks…',
                     click: () => {
                         this.scan()
                     }

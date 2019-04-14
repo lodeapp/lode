@@ -13,7 +13,7 @@
             </div>
             <Split v-else>
                 <Pane class="sidebar">
-                    <h5>Project</h5>
+                    <h5 class="sidebar-header">Project</h5>
                     <div class="sidebar-item has-status" :class="[`status--${$root.project.status}`]">
                         <div class="header">
                             <div class="title">
@@ -26,7 +26,12 @@
                             </div>
                         </div>
                     </div>
-                    <h5>Repositories</h5>
+                    <h5 class="sidebar-header">
+                        <span>Repositories</span>
+                        <button type="button" class="sidebar-action" @click="this.$root.addRepositories">
+                            <Icon symbol="plus" />
+                        </button>
+                    </h5>
                     <SidebarRepository
                         v-for="repository in $root.project.repositories"
                         :repository="repository"

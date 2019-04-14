@@ -10,7 +10,7 @@ export default {
                     enabled: false
                 })
                 .add({
-                    label: 'Framework settings…',
+                    label: __DARWIN__ ? 'Framework Settings…' : 'Framework settings…',
                     click: () => {
                         this.manage()
                     }

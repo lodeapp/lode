@@ -12,6 +12,41 @@
         margin: var(--spacing) 0 var(--spacing-half) var(--spacing);
     }
 
+    .sidebar-header {
+
+        & > .sidebar-action {
+            background-color: var(--sidebar-text-secondary-color);
+            border-radius: 100%;
+            border: 0;
+            color: var(--sidebar-color);
+            display: inline-block;
+            float: right;
+            height: 18px;
+            margin-right: var(--spacing);
+            opacity: .85;
+            outline: 0;
+            padding: 0;
+            text-align: center;
+            visibility: hidden;
+            width: 18px;
+
+            i {
+                transform: scale(.8);
+            }
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        &:hover {
+
+            & > .sidebar-action {
+                visibility: visible;
+            }
+        }
+    }
+
     .sidebar-item {
         -webkit-app-region: no-drag;
 

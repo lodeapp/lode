@@ -2,11 +2,10 @@ import '@lib/logger/renderer'
 
 import Vue from 'vue'
 import store from './store'
-import { get, isEmpty } from 'lodash'
+import { isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@lib/state'
 import { Project } from '@lib/frameworks/project'
-import { queue } from '@lib/process/queue'
 
 // Styles
 import '../styles/app.scss'
@@ -95,26 +94,6 @@ export default new Vue({
                         break
                     case 'select-all':
                         this.selectAll()
-                        break
-                    case 'run-selected':
-                        // @TODO: When we have keyboard navigation, run the
-                        // actual selected framework, not the first one.
-                        const framework = get(this.project, 'repositories.0.frameworks.0')
-                        if (framework) {
-                            framework.start()
-                        }
-                        break
-                    case 'run-project':
-                        this.project.start()
-                        break
-                    case 'refresh-project':
-                        this.project.refresh()
-                        break
-                    case 'stop-project':
-                        this.project.stop()
-                        break
-                    case 'rerun-last':
-                        queue.runLatest()
                         break
                     case 'rename-project':
                         this.editProject()

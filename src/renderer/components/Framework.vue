@@ -63,6 +63,7 @@
 </template>
 
 <script>
+import { ipcRenderer } from 'electron'
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
@@ -94,6 +95,32 @@ export default {
         queued () {
             return this.framework.status === 'queued'
         }
+    },
+    created () {
+        ipcRenderer
+            .on('menu-event', (event, { name, properties }) => {
+                if (!this.framework) {
+                    return
+                }
+
+                switch (name) {
+                    case 'run-framework':
+                        this.framework.start()
+                        break
+                    case 'refresh-framework':
+                        this.framework.refresh()
+                        break
+                    case 'stop-framework':
+                        this.framework.stop()
+                        break
+                    case 'framework-settings':
+                        this.manage()
+                        break
+                    case 'remove-framework':
+                        this.remove()
+                        break
+                }
+            })
     },
     mounted () {
         this.$emit('mounted')
