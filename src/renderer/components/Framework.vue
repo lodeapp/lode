@@ -97,33 +97,13 @@ export default {
         }
     },
     created () {
-        ipcRenderer
-            .on('menu-event', (event, { name, properties }) => {
-                if (!this.framework) {
-                    return
-                }
-
-                switch (name) {
-                    case 'run-framework':
-                        this.framework.start()
-                        break
-                    case 'refresh-framework':
-                        this.framework.refresh()
-                        break
-                    case 'stop-framework':
-                        this.framework.stop()
-                        break
-                    case 'framework-settings':
-                        this.manage()
-                        break
-                    case 'remove-framework':
-                        this.remove()
-                        break
-                }
-            })
+        ipcRenderer.on('menu-event', this.onAppMenuEvent)
     },
     mounted () {
         this.$emit('mounted')
+    },
+    beforeDestroy () {
+        ipcRenderer.removeListener('menu-event', this.onAppMenuEvent)
     },
     methods: {
         refresh () {
@@ -137,6 +117,29 @@ export default {
         },
         onChildActivation (context) {
             this.$emit('activate', context)
+        },
+        onAppMenuEvent (event, { name, properties }) {
+            if (!this.framework) {
+                return
+            }
+
+            switch (name) {
+                case 'run-framework':
+                    this.framework.start()
+                    break
+                case 'refresh-framework':
+                    this.framework.refresh()
+                    break
+                case 'stop-framework':
+                    this.framework.stop()
+                    break
+                case 'framework-settings':
+                    this.manage()
+                    break
+                case 'remove-framework':
+                    this.remove()
+                    break
+            }
         }
     }
 }
