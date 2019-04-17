@@ -224,7 +224,7 @@ export class Repository extends EventEmitter implements IRepository {
     protected onReady (): void {
         this.ready = true
         if (!this.initialFrameworkCount) {
-            this.updateStatus('idle')
+            this.updateStatus()
         }
         this.emit('ready', this)
     }
@@ -285,6 +285,7 @@ export class Repository extends EventEmitter implements IRepository {
                 .on('state', this.stateListener.bind(this))
                 .on('change', this.changeListener.bind(this))
             this.frameworks.push(framework)
+            this.updateStatus()
             resolve(framework)
         })
     }

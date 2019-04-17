@@ -1,17 +1,13 @@
 <template>
-    <main class="project" :class="{ 'no-repositories': $root.project.empty() }">
-        <div v-if="$root.project.empty()">
-            <h2>{{ 'Add repositories to :0 to start testing.' | set($root.project.name) }}</h2>
-            <button class="btn btn-primary" @click="$modal.open('AddRepositories')">Add repositories</button>
-        </div>
-        <template v-else>
+    <main class="project">
+        <template>
             <div v-if="loading" class="loading">
                 <div class="loading-group">
                     <div class="spinner"></div>
                     <h2>{{ 'Loading :0…' | set($root.project.name) }}</h2>
                 </div>
             </div>
-            <Split v-else>
+            <Split :class="{ 'empty': empty || frameworkLoading }" v-else>
                 <Pane class="sidebar">
                     <h5 class="sidebar-header">Project</h5>
                     <div class="sidebar-item has-status" :class="[`status--${$root.project.status}`]">
@@ -26,7 +22,7 @@
                             </div>
                         </div>
                     </div>
-                    <h5 class="sidebar-header">
+                    <h5 v-if="!empty" class="sidebar-header">
                         <span>Repositories</span>
                         <button type="button" class="sidebar-action" @click="this.$root.addRepositories">
                             <Icon symbol="plus" />
@@ -36,6 +32,7 @@
                         v-for="repository in $root.project.repositories"
                         :repository="repository"
                         :key="repository.getId()"
+                        @remove="removeRepository"
                     >
                         <div
                             v-for="framework in repository.frameworks"
@@ -56,24 +53,34 @@
                     </SidebarRepository>
                 </Pane>
                 <Pane>
-                    <div v-if="frameworkLoading" class="loading">
-                        <div class="loading-group">
-                            <div class="spinner"></div>
+                    <template v-if="empty">
+                        <div class="cta">
+                            <h2>{{ 'Add repositories to :0 to start testing.' | set($root.project.name) }}</h2>
+                            <button class="btn btn-primary" @click="$modal.open('AddRepositories')">Add repositories</button>
                         </div>
-                    </div>
-                    <Framework
-                        v-if="framework"
-                        v-show="!frameworkLoading"
-                        :key="framework.getId()"
-                        :framework="framework"
-                        @manage="manageFramework"
-                        @remove="removeFramework"
-                        @activate="onTestActivation"
-                        @mounted="frameworkLoading = false"
-                    />
+                    </template>
+                    <template v-else>
+                        <div v-if="frameworkLoading" class="loading">
+                            <div class="loading-group">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                        <Framework
+                            v-if="framework"
+                            v-show="!frameworkLoading"
+                            :key="framework.getId()"
+                            :framework="framework"
+                            @manage="manageFramework"
+                            @remove="removeFramework"
+                            @activate="onTestActivation"
+                            @mounted="frameworkLoading = false"
+                        />
+                    </template>
                 </Pane>
                 <Pane id="results">
                     <Results
+                        v-if="framework"
+                        v-show="!frameworkLoading"
                         :context="fullContext"
                         @reset="resetContext"
                     />
@@ -116,6 +123,9 @@ export default {
     computed: {
         fullContext () {
             return [this.repository, this.framework].concat(this.context)
+        },
+        empty () {
+            return this.$root.project.empty()
         }
     },
     created () {
@@ -162,6 +172,11 @@ export default {
         })
     },
     methods: {
+        removeRepository (repository) {
+            this.$root.onModelRemove(repository.getId())
+            this.$root.project.removeRepository(repository.getId())
+            this.$root.project.save()
+        },
         manageFramework (framework) {
             this.$modal.open('ManageFrameworks', {
                 repository: this.repository,

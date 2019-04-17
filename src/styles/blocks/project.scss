@@ -2,41 +2,11 @@
     display: flex;
     flex-grow: 1;
 
-    &.no-repositories {
-
-        & > div {
-            padding: 210px 0 0;
-            text-align: center;
-            width: 100%;
-
-            h2 {
-                margin-bottom: var(--spacing-double);
-            }
-        }
-    }
-
-    &:not(.no-repositories) > .split {
-
-        & > .pane {
-            border-left: 1px solid var(--sidebar-border-color);
-            margin-left: calc(calc(var(--split-gutter-width) - 1px) * -1);
-        }
-
-        & > :first-child {
-            border-left: 0;
-            margin-left: 0;
-        }
-
-        & > :last-child {
-            border-left-color: $primary-border;
-        }
-    }
-
-    .split {
+    & > .split {
         display: flex;
         flex-grow: 1;
 
-        .pane {
+        & > .pane {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
@@ -48,9 +18,48 @@
 
             & + .gutter {
                 -webkit-app-region: no-drag !important;
+                border-left: 1px solid var(--sidebar-border-color);
                 cursor: col-resize !important;
                 margin: 0;
+                margin-right: calc(calc(var(--split-gutter-width) - 1px) * -1);
+                z-index: 3;
+            }
+
+            &:not(.sidebar) + .gutter {
+                border-left-color: $primary-border;
+            }
+        }
+
+        &.empty {
+
+            & > .pane:not(.sidebar) {
+                -webkit-app-region: drag;
+                margin-left: var(--split-gutter-width);
+                background-color: $secondary;
+                overflow: visible;
+                white-space: nowrap;
                 z-index: 2;
+
+                .loading,
+                .cta {
+                    align-items: flex-start;
+                    margin-left: calc(var(--spacing-triple) - var(--split-gutter-width));
+                    padding-top: var(--spacing-double);
+
+                    .btn {
+                        margin-top: var(--spacing);
+                        -webkit-app-region: no-drag;
+                    }
+                }
+
+                & + .gutter {
+                    visibility: hidden;
+                }
+            }
+
+            & > :last-child {
+                border-left: 0;
+                z-index: 1 !important;
             }
         }
     }
