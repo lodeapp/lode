@@ -7,7 +7,7 @@
                     <h2>{{ 'Loading :0…' | set($root.project.name) }}</h2>
                 </div>
             </div>
-            <Split :class="{ 'empty': empty || frameworkLoading }" v-else>
+            <Split :class="{ 'empty': noRepositories || emptyStatus || frameworkLoading }" v-else>
                 <Pane class="sidebar">
                     <h5 class="sidebar-header">Project</h5>
                     <div class="sidebar-item has-status" :class="[`status--${$root.project.status}`]">
@@ -22,7 +22,7 @@
                             </div>
                         </div>
                     </div>
-                    <h5 v-if="!empty" class="sidebar-header">
+                    <h5 v-if="!noRepositories" class="sidebar-header">
                         <span>Repositories</span>
                         <button type="button" class="sidebar-action" @click="this.$root.addRepositories">
                             <Icon symbol="plus" />
@@ -32,6 +32,7 @@
                         v-for="repository in $root.project.repositories"
                         :repository="repository"
                         :key="repository.getId()"
+                        @scan="$root.scanRepository"
                         @remove="removeRepository"
                     >
                         <div
@@ -53,10 +54,18 @@
                     </SidebarRepository>
                 </Pane>
                 <Pane>
-                    <template v-if="empty">
+                    <template v-if="noRepositories">
                         <div class="cta">
-                            <h2>{{ 'Add repositories to :0 to start testing.' | set($root.project.name) }}</h2>
-                            <button class="btn btn-primary" @click="$modal.open('AddRepositories')">Add repositories</button>
+                            <h2>{{ 'Add repositories to :0' | set($root.project.name) }}</h2>
+                            <p>Lode can have multiple repositories and frameworks inside a project.</p>
+                            <button class="btn btn-primary" @click="this.$root.addRepositories">Add repositories</button>
+                        </div>
+                    </template>
+                    <template v-else-if="emptyStatus">
+                        <div class="cta">
+                            <h2>Scan for frameworks inside your repositories</h2>
+                            <p>Lode can scan the project's repositories for testing frameworks. If none are found, your frameworks may not be supported, yet.</p>
+                            <button class="btn btn-primary" @click="scanEmptyRepositories">Scan for frameworks</button>
                         </div>
                     </template>
                     <template v-else>
@@ -73,7 +82,7 @@
                             @manage="manageFramework"
                             @remove="removeFramework"
                             @activate="onTestActivation"
-                            @mounted="frameworkLoading = false"
+                            @mounted="onFrameworkMounted"
                         />
                     </template>
                 </Pane>
@@ -124,58 +133,46 @@ export default {
         fullContext () {
             return [this.repository, this.framework].concat(this.context)
         },
-        empty () {
+        noRepositories () {
             return this.$root.project.empty()
+        },
+        emptyStatus () {
+            return this.$root.project.status === 'empty'
         }
     },
     created () {
-        let initialFramework = null
-        let initialRepository = null
         this.$root.project.on('ready', () => {
+            // Register initial listeners once the project is fully built.
+            // Subsequent listeners will be registered when the appropriate
+            // events are emitted. All listeners are purged from the parent
+            // model when a child is removed.
+            this.$root.project.on('repositoryAdded', this.onRepositoryAdded)
             this.$root.project.repositories.forEach(repository => {
-                if (!initialRepository) {
-                    initialRepository = repository
-                }
-
+                repository.on('frameworkAdded', this.onFrameworkAdded)
                 repository.frameworks.forEach(framework => {
-                    if (!initialFramework || framework.isActive()) {
-                        initialFramework = framework
-                        initialRepository = repository
-                    }
-
-                    framework.on('error', (error, process) => {
-                        this.$alert.show({
-                            message: this.$string.set('The process for **:0** terminated unexpectedly.', framework.name),
-                            help: framework.troubleshoot(error),
-                            type: 'error',
-                            error
-                        })
-                    })
-
-                    framework.on('suiteRemoved', suite => {
-                        this.$root.onModelRemove(suite.getId())
-                    })
+                    this.onFrameworkAdded(framework)
                 })
             })
-
-            if (initialRepository) {
-                this.repository = initialRepository
-            }
-            if (initialFramework) {
-                this.framework = initialFramework
-                if (!this.framework.isActive()) {
-                    this.framework.setActive(true)
-                }
-            }
-
+            // Trigger project change to mount default model.
+            this.onProjectChange()
             this.loading = false
         })
     },
     methods: {
+        scanEmptyRepositories () {
+            this.$root.scanRepositories(
+                // Scan repositories which are currently empty.
+                this.$root.project.repositories
+                    .filter(repository => !repository.frameworks.length)
+                    .map(repository => repository.getId()),
+                0
+            )
+        },
         removeRepository (repository) {
             this.$root.onModelRemove(repository.getId())
             this.$root.project.removeRepository(repository.getId())
             this.$root.project.save()
+            this.onProjectChange()
         },
         manageFramework (framework) {
             this.$modal.open('ManageFrameworks', {
@@ -189,6 +186,66 @@ export default {
             this.repository.removeFramework(framework.getId())
             this.repository.save()
             this.framework = null
+            this.onProjectChange()
+        },
+        clearActiveFrameworks (except = null) {
+            this.$root.project.repositories.forEach(repository => {
+                repository.frameworks.forEach(framework => {
+                    if (framework.getId() !== except) {
+                        framework.setActive(false)
+                    }
+                })
+            })
+        },
+        onProjectChange () {
+            let setFramework = this.framework
+            let setRepository = this.repository
+            this.$root.project.repositories.forEach(repository => {
+                if (!setRepository) {
+                    setRepository = repository
+                }
+
+                repository.frameworks.forEach(framework => {
+                    if (!setFramework || framework.isActive()) {
+                        setFramework = framework
+                        setRepository = repository
+                    }
+                })
+            })
+
+            if (setRepository) {
+                this.repository = setRepository
+            }
+            if (setFramework) {
+                this.framework = setFramework
+                if (!this.framework.isActive()) {
+                    this.framework.setActive(true)
+                }
+            }
+        },
+        onRepositoryAdded (repository) {
+            repository.on('frameworkAdded', this.onFrameworkAdded)
+            this.onProjectChange()
+        },
+        onFrameworkAdded (framework) {
+            framework
+                .on('error', (error, process) => {
+                    this.$alert.show({
+                        message: this.$string.set('The process for **:0** terminated unexpectedly.', framework.name),
+                        help: framework.troubleshoot(error),
+                        type: 'error',
+                        error
+                    })
+                })
+                .on('suiteRemoved', suiteId => {
+                    this.$root.onModelRemove(suiteId)
+                })
+            framework.setActive(true)
+            this.clearActiveFrameworks(framework.getId())
+            this.onProjectChange()
+        },
+        onFrameworkMounted () {
+            this.frameworkLoading = false
         },
         onFrameworkActivation (frameworkId, repository) {
             // Do nothing when clicking on currently active framework
@@ -196,14 +253,7 @@ export default {
                 return
             }
 
-            // De-activate all other frameworks.
-            this.$root.project.repositories.forEach(repository => {
-                repository.frameworks.forEach(framework => {
-                    if (framework.getId() !== frameworkId) {
-                        framework.setActive(false)
-                    }
-                })
-            })
+            this.clearActiveFrameworks(frameworkId)
 
             // If there's currently an active test, remember it.
             if (this.context.length) {

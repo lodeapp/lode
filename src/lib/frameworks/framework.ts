@@ -633,9 +633,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param suite The suite being removed.
      */
     protected onSuiteRemove (suite: ISuite): void {
+        suite.removeAllListeners()
         this.updateLedger(null, suite.getStatus())
         this.updateSelected(suite)
-        this.emit('suiteRemoved', suite)
+        this.emit('suiteRemoved', suite.getId())
     }
 
     /**
@@ -795,6 +796,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Prepare the framework for ready state.
      */
     protected onReady (): void {
+        // Ready event will only trigger once.
+        if (this.ready) {
+            return
+        }
+
         this.ready = true
         this.updateStatus('idle')
         this.emit('ready', this)

@@ -16,7 +16,7 @@
             </dl>
         </form>
         <div slot="footer" class="modal-footer tertiary separated">
-            <button type="button" class="btn btn-sm" @click="$emit('hide')" :disabled="loading">
+            <button type="button" class="btn btn-sm" @click="cancel" :disabled="loading">
                 Cancel
             </button>
             <button type="button" class="btn btn-sm btn-primary" :disabled="empty || loading" @click="add">
@@ -32,6 +32,7 @@ import { RepositoryValidator } from '@lib/frameworks/validator'
 
 import Modal from '@/components/modals/Modal'
 import RepositoryPath from '@/components/RepositoryPath'
+import Confirm from '@/components/modals/mixins/confirm'
 
 export default {
     name: 'AddRepositories',
@@ -39,6 +40,7 @@ export default {
         Modal,
         RepositoryPath
     },
+    mixins: [Confirm],
     data () {
         return {
             loading: false,
@@ -89,10 +91,10 @@ export default {
             if (!this.hasErrors) {
                 this.loading = true
                 Promise.all(_uniqBy(this.slots, 'path').map((slot, index) => {
-                    this.$root.project.addRepository({ path: slot.path })
-                })).then(() => {
+                    return this.$root.project.addRepository({ path: slot.path })
+                })).then(repositories => {
                     this.$root.project.save()
-                    this.$emit('hide')
+                    this.confirm(repositories)
                 })
             }
         }

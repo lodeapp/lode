@@ -211,6 +211,11 @@ export class Project extends EventEmitter implements IProject {
      * Prepare the project for ready state.
      */
     protected onReady (): void {
+        // Ready event will only trigger once.
+        if (this.ready) {
+            return
+        }
+
         this.ready = true
         if (!this.initialRepositoryCount) {
             this.updateStatus()
@@ -276,6 +281,7 @@ export class Project extends EventEmitter implements IProject {
             this.repositories.push(repository)
             this.hasRepositories = true
             this.updateStatus()
+            this.emit('repositoryAdded', repository)
             resolve(repository)
         })
     }
@@ -288,11 +294,27 @@ export class Project extends EventEmitter implements IProject {
     public removeRepository (id: string): void {
         const index = findIndex(this.repositories, repository => repository.getId() === id)
         if (index > -1) {
+            const repositoryId = this.repositories[index].getId()
+            this.repositories[index].removeAllListeners()
             this.repositories.splice(index, 1)
             this.updateStatus()
+            this.emit('repositoryRemoved', repositoryId)
         }
         if (!this.repositories.length) {
             this.hasRepositories = false
         }
+    }
+
+    /**
+     * Retrieve a repository from this project by its id.
+     *
+     * @param id The id of the repository to retrieve.
+     */
+    public getRepositoryById (id: string): IRepository | undefined {
+        const index = findIndex(this.repositories, repository => repository.getId() === id)
+        if (index > -1) {
+            return this.repositories[index]
+        }
+        return undefined
     }
 }

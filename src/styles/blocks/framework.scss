@@ -10,10 +10,6 @@
         top: 0;
         z-index: var(--framework-z-index);
 
-        button {
-            -webkit-app-region: no-drag;
-        }
-
         & > .title {
 
             .heading {

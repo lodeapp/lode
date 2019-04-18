@@ -222,6 +222,11 @@ export class Repository extends EventEmitter implements IRepository {
      * Prepare the repository for ready state.
      */
     protected onReady (): void {
+        // Ready event will only trigger once.
+        if (this.ready) {
+            return
+        }
+
         this.ready = true
         if (!this.initialFrameworkCount) {
             this.updateStatus()
@@ -286,6 +291,7 @@ export class Repository extends EventEmitter implements IRepository {
                 .on('change', this.changeListener.bind(this))
             this.frameworks.push(framework)
             this.updateStatus()
+            this.emit('frameworkAdded', framework)
             resolve(framework)
         })
     }
@@ -298,12 +304,20 @@ export class Repository extends EventEmitter implements IRepository {
     public removeFramework (id: string): void {
         const index = findIndex(this.frameworks, framework => framework.getId() === id)
         if (index > -1) {
+            const frameworkId = this.frameworks[index].getId()
+            this.frameworks[index].removeAllListeners()
             this.frameworks.splice(index, 1)
             this.updateStatus()
+            this.emit('frameworkRemoved', frameworkId)
         }
     }
 
-    public getFrameworkById (id: string): object | undefined {
+    /**
+     * Retrieve a framework from this repository by its id.
+     *
+     * @param id The id of the framework to retrieve.
+     */
+    public getFrameworkById (id: string): IFramework | undefined {
         const index = findIndex(this.frameworks, framework => framework.getId() === id)
         if (index > -1) {
             return this.frameworks[index]

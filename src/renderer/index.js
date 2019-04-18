@@ -209,7 +209,33 @@ export default new Vue({
             ipcRenderer.send('switch-project', projectId)
         },
         addRepositories () {
-            this.$modal.open('AddRepositories')
+            this.$modal.confirm('AddRepositories', {})
+                .then(repositories => {
+                    // After repositories are added, trigger framework scan automatically.
+                    this.scanRepositories(repositories.map(repository => repository.getId()), 0)
+                })
+                .catch(() => {})
+        },
+        scanRepositories (repositoryIds, index) {
+            const id = repositoryIds[index]
+            const repository = this.project.getRepositoryById(id)
+            if (!repository) {
+                return
+            }
+            // Scan repository and queue the following one the modal callback.
+            this.scanRepository(repository, () => {
+                this.scanRepositories(repositoryIds, (index + 1))
+            })
+        },
+        scanRepository (repository, callback = null) {
+            repository.scan()
+                .then(pending => {
+                    this.$modal.open('ManageFrameworks', {
+                        repository,
+                        scanned: true,
+                        pending
+                    }, callback)
+                })
         },
         updateApplicationMenu () {
             ipcRenderer.send('update-menu')

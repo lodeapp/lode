@@ -48,14 +48,7 @@ export default {
                 .open()
         },
         scan () {
-            this.repository.scan()
-                .then(pending => {
-                    this.$modal.open('ManageFrameworks', {
-                        repository: this.repository,
-                        scanned: true,
-                        pending
-                    })
-                })
+            this.$emit('scan', this.repository)
         },
         manage () {
             this.$modal.open('ManageFrameworks', {

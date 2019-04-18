@@ -1,5 +1,5 @@
 <template>
-    <Modal :title="singleFramework ? 'Framework Settings' : 'Manage test frameworks'">
+    <Modal :title="singleFramework ? 'Framework Settings' : 'Manage test frameworks'" :key="repository.getId()">
         <div class="fluid">
             <div class="repository-settings">
                 <h5 v-if="!singleFramework">
@@ -191,7 +191,12 @@ export default {
                             })
                             return true
                         }
-                        this.repository.addFramework(framework).then(framework => framework.refresh())
+                        this.repository.addFramework(framework)
+                            .then(framework => {
+                                setTimeout(() => {
+                                    framework.refresh()
+                                }, 50)
+                            })
                     })
 
                 this.removeFrameworks()
