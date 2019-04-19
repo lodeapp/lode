@@ -152,7 +152,7 @@ export class Suite extends Nugget implements ISuite {
                 ? this.tests.map((test: ITest) => test.getStatus())
                 : this.getTestResults().map((test: ITestResult) => test.status)
             to = parseStatus(statuses)
-            if (to === 'empty' && (!this.testsLoaded() || this.hasChildren())) {
+            if (to === 'empty' && !this.testsLoaded()) {
                 to = 'idle'
             }
         }
@@ -207,7 +207,7 @@ export class Suite extends Nugget implements ISuite {
         // If tests haven't been loaded, suite status will of course come back
         // as empty. This won't be confirmed until we actually  parse the suite
         // and load its tests, so until then we'll force an "idle" status.
-        if (this.status === 'empty' && (!this.testsLoaded() || this.hasChildren())) {
+        if (this.status === 'empty' && !this.testsLoaded()) {
             return 'idle'
         }
         return this.status

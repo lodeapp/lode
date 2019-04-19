@@ -10,12 +10,14 @@ export type FrameworkStatus = Status | 'refreshing' | 'loading'
  * @param components An array of statuses with which to compute the final one.
  */
 export function parseStatus (components: Array<Status>): Status {
-    if (!components.length) {
+    // If no components were found, or every component is of status 'empty',
+    // parent should be marked and 'empty', too.
+    if (!components.length || components.every(component => component === 'empty')) {
         return 'empty'
     }
 
-    // Exclude empty status before parsing all parts (e.g. all idle parts with
-    // the occasional empty part should result in idle status, not partial).
+    // Exclude stray empty status before parsing all parts (e.g. all idle parts
+    // with the occasional empty part should result in idle status, not partial).
     // We assume, therefore, than an empty part has no effect on the total
     // result. This goes against assuming empty parts should trigger a warning.
     components = components.filter(component => component !== 'empty')
@@ -60,7 +62,7 @@ export function parseStatus (components: Array<Status>): Status {
  * @param components An array of statuses with which to compute the final one.
  */
 export function parseFrameworkStatus (components: Array<FrameworkStatus>): FrameworkStatus {
-    if (!components.length) {
+    if (!components.length || components.every(component => component === 'empty')) {
         return 'empty'
     }
 

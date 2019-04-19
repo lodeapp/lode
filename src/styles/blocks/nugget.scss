@@ -114,7 +114,7 @@
         & > .header {
 
             .status {
-                border-bottom: 0;
+                border-bottom-color: transparent !important;
             }
         }
     }
@@ -256,11 +256,11 @@
 
             .status {
                 background-color: theme-color('idle', 200);
-                border-color: darken(theme-color('idle'), 10%);
+                border-color: theme-color('idle');
                 box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('idle', 200);
 
                 &::before {
-                    border-left: 1px solid darken(theme-color('idle'), 10%);
+                    border-left: 1px solid theme-color('idle');
                     content: '';
                     display: block;
                     height: calc(100% + 10px);
