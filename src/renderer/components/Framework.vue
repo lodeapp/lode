@@ -42,6 +42,12 @@
                 <template v-if="framework.suites.length">
                     <Ledger :framework="framework" />
                 </template>
+                <template v-else-if="queued">
+                    Queued...
+                </template>
+                <template v-else-if="refreshing">
+                    Refreshing...
+                </template>
                 <template v-else>
                     No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
                 </template>

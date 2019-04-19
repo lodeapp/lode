@@ -68,10 +68,13 @@ export default new Vue({
                 document.body.classList.add('is-focused')
             })
             .on('close', () => {
-                // @TODO: disassemble is not synchronous. Make sure it has
-                // finished running before green-lighting closing of window.
+                // Disassemble is not synchronous. We're giving a small timeout
+                // to increase the lieklihood it's finished before green-lighting
+                // the closing of the window, but this is not guaranteed.
                 this.project.stop().then(() => {
-                    ipcRenderer.send('window-should-close')
+                    setTimeout(() => {
+                        ipcRenderer.send('window-should-close')
+                    }, 10)
                 })
             })
             .on('project-switched', (event, projectOptions) => {
@@ -244,11 +247,11 @@ export default new Vue({
             const result = await shell.openExternal(`file://${path}`)
 
             if (!result) {
-                // @TODO: Alert this error
-                // const error = {
-                //     name: 'no-external-program',
-                //     message: `Unable to open file ${path} in an external program. Please check you have a program associated with this file extension`,
-                // }
+                this.$alert.show({
+                    message: 'Unable to open file in an external program. Please check you have a program associated with this file extension.',
+                    help: 'The following path was attempted: `' + path + '`',
+                    type: 'error'
+                })
             }
         },
         revealFile (path) {

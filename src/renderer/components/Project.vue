@@ -137,7 +137,9 @@ export default {
             return this.$root.project.empty()
         },
         emptyStatus () {
-            return this.$root.project.status === 'empty'
+            return this.$root.project.repositories.length === this.$root.project.repositories.filter(repository => {
+                return !repository.frameworks.length
+            }).length
         }
     },
     created () {

@@ -560,7 +560,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 try {
                     this.running.push(this.debriefSuite(report))
                 } catch (error) {
-                    // @TODO: Notify user of error (i.e. add to alert stack)
+                    this.emit('error', error)
                     log.error('Failed to debrief suite results.', error)
                 }
             })
@@ -802,7 +802,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         this.ready = true
-        this.updateStatus('idle')
+        this.updateStatus()
         this.emit('ready', this)
     }
 
