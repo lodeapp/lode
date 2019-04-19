@@ -138,7 +138,7 @@ export default new Vue({
         loadProject (projectOptions) {
             projectOptions = JSON.parse(projectOptions)
             this.project = isEmpty(projectOptions) ? null : new Project(projectOptions)
-            this.updateApplicationMenu()
+            this.refreshApplicationMenu()
         },
         addProject () {
             this.$modal.confirm('EditProject', { add: true })
@@ -164,7 +164,7 @@ export default new Vue({
                     // Since current project hasn't changed, just been updated,
                     // we need to forcibly emit the change to the main process,
                     // so that the application menu gets updated.
-                    this.updateApplicationMenu()
+                    this.refreshApplicationMenu()
                 })
                 .catch(() => {})
         },
@@ -210,9 +210,10 @@ export default new Vue({
         },
         addRepositories () {
             this.$modal.confirm('AddRepositories', {})
-                .then(repositories => {
-                    // After repositories are added, trigger framework scan automatically.
-                    this.scanRepositories(repositories.map(repository => repository.getId()), 0)
+                .then(({ repositories, autoScan }) => {
+                    if (autoScan) {
+                        this.scanRepositories(repositories.map(repository => repository.getId()), 0)
+                    }
                 })
                 .catch(() => {})
         },
@@ -228,17 +229,13 @@ export default new Vue({
             })
         },
         scanRepository (repository, callback = null) {
-            repository.scan()
-                .then(pending => {
-                    this.$modal.open('ManageFrameworks', {
-                        repository,
-                        scanned: true,
-                        pending
-                    }, callback)
-                })
+            this.$modal.open('ManageFrameworks', {
+                repository,
+                scan: true
+            }, callback)
         },
-        updateApplicationMenu () {
-            ipcRenderer.send('update-menu')
+        refreshApplicationMenu (options = {}) {
+            ipcRenderer.send('update-menu', options)
         },
         openExternal (link) {
             shell.openExternal(link)

@@ -53,7 +53,7 @@ export default {
         manage () {
             this.$modal.open('ManageFrameworks', {
                 repository: this.repository,
-                scanned: false
+                scan: false
             })
         },
         remove () {

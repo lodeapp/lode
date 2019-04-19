@@ -177,7 +177,7 @@ export default {
         manageFramework (framework) {
             this.$modal.open('ManageFrameworks', {
                 repository: this.repository,
-                scanned: false,
+                scan: false,
                 framework
             })
         },
@@ -198,30 +198,41 @@ export default {
             })
         },
         onProjectChange () {
-            let setFramework = this.framework
             let setRepository = this.repository
-            this.$root.project.repositories.forEach(repository => {
-                if (!setRepository) {
-                    setRepository = repository
-                }
+            let setFramework = this.framework
 
-                repository.frameworks.forEach(framework => {
-                    if (!setFramework || framework.isActive()) {
-                        setFramework = framework
+            if (!this.$root.project.repositories.length) {
+                this.clearActiveFrameworks()
+                this.repository = null
+                this.framework = null
+            } else {
+                this.$root.project.repositories.forEach(repository => {
+                    if (!setRepository) {
                         setRepository = repository
                     }
-                })
-            })
 
-            if (setRepository) {
-                this.repository = setRepository
-            }
-            if (setFramework) {
-                this.framework = setFramework
-                if (!this.framework.isActive()) {
-                    this.framework.setActive(true)
+                    repository.frameworks.forEach(framework => {
+                        if (!setFramework || framework.isActive()) {
+                            setFramework = framework
+                            setRepository = repository
+                        }
+                    })
+                })
+
+                if (setRepository) {
+                    this.repository = setRepository
+                }
+                if (setFramework) {
+                    this.framework = setFramework
+                    if (!this.framework.isActive()) {
+                        this.framework.setActive(true)
+                    }
                 }
             }
+
+            this.$root.refreshApplicationMenu({
+                hasFramework: !!this.framework
+            })
         },
         onRepositoryAdded (repository) {
             repository.on('frameworkAdded', this.onFrameworkAdded)

@@ -9,7 +9,9 @@ import { ProjectIdentifier } from '@lib/frameworks/project'
 // raising an alert, so we need to forcibly cast types when defining them.
 type MenuItemType = ('normal' | 'separator' | 'submenu' | 'checkbox' | 'radio')
 
-export type ApplicationMenuOptions = {}
+export type ApplicationMenuOptions = {
+    hasFramework?: boolean
+}
 
 export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electron.Menu {
     const template = new Array<Electron.MenuItemConstructorOptions>()
@@ -17,6 +19,8 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
 
     const currentProject: string | null = state.getCurrentProject()
     const projects: Array<ProjectIdentifier> = state.getAvailableProjects()
+
+    const hasFramework = options.hasFramework || false
 
     if (__DARWIN__) {
         template.push({
@@ -173,12 +177,14 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
             {
                 label: __DARWIN__ ? 'Refresh Framework' : 'Refresh framework',
                 click: emit('refresh-framework'),
-                accelerator: 'CmdOrCtrl+R'
+                accelerator: 'CmdOrCtrl+R',
+                enabled: hasFramework
             },
             {
                 label: __DARWIN__ ? 'Run Framework' : 'Run framework',
                 click: emit('run-framework'),
-                accelerator: 'CmdOrCtrl+Shift+R'
+                accelerator: 'CmdOrCtrl+Shift+R',
+                enabled: hasFramework
             },
             {
                 label: __DARWIN__ ? 'Stop Framework' : 'Stop framework',
@@ -186,16 +192,19 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
                 accelerator: (() => {
                     return __DARWIN__ ? 'Command+Esc' : 'Ctrl+Esc'
                 })(),
+                enabled: hasFramework
             },
             separator,
             {
                 label: __DARWIN__ ? 'Framework Settings…' : 'Framework settings…',
-                click: emit('framework-settings')
+                click: emit('framework-settings'),
+                enabled: hasFramework
             },
             separator,
             {
                 label: __DARWIN__ ? 'Remove Framework' : 'Remove framework',
-                click: emit('remove-framework')
+                click: emit('remove-framework'),
+                enabled: hasFramework
             }
         ]
     })

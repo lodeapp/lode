@@ -17,7 +17,7 @@
                             {{ '1 removed|:n removed' | plural(amountRemoved) }}
                         </span>
                     </span>
-                    <button type="button" class="btn btn-sm" @click="scan">Scan</button>
+                    <button type="button" class="btn btn-sm" @click="handleScan" :disabled="scanning">Scan</button>
                 </h5>
                 <FrameworkSettings
                     v-for="framework in filteredFrameworks"
@@ -68,19 +68,14 @@ export default {
                 return {}
             }
         },
-        scanned: {
+        scan: {
             type: Boolean,
             default: false
-        },
-        pending: {
-            type: Array,
-            default () {
-                return []
-            }
         }
     },
     data () {
         return {
+            scanning: false,
             frameworks: [],
             removed: []
         }
@@ -109,7 +104,10 @@ export default {
         }
     },
     created () {
-        this.parseFrameworks(this.scanned, this.pending)
+        this.parseFrameworks()
+        if (this.scan) {
+            this.handleScan()
+        }
     },
     methods: {
         parseFrameworks (scanned = false, pending = []) {
@@ -151,10 +149,12 @@ export default {
                 }))
             })
         },
-        scan () {
-            this.repository.scan()
+        async handleScan () {
+            this.scanning = true
+            await this.repository.scan()
                 .then(pending => {
                     this.parseFrameworks(true, pending)
+                    this.scanning = false
                 })
         },
         handleChange (framework, values) {

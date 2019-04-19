@@ -1,3 +1,14 @@
+.add-repositories {
+
+    .auto-scan {
+        margin-top: var(--spacing-double);
+
+        label {
+            font-weight: var(--font-weight-normal);
+        }
+    }
+}
+
 .repository-settings {
     counter-reset: framework;
 

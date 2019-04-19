@@ -1,7 +1,7 @@
 import '@lib/logger/main'
 
 import { app, ipcMain, Menu } from 'electron'
-import { buildDefaultMenu } from './menu'
+import { ApplicationMenuOptions, buildDefaultMenu } from './menu'
 import { Window } from './window'
 import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
@@ -41,14 +41,14 @@ function createWindow(projectId: string | null) {
     mainWindow = window
 }
 
-function buildMenu() {
-    Menu.setApplicationMenu(buildDefaultMenu())
+function buildMenu(options: ApplicationMenuOptions) {
+    Menu.setApplicationMenu(buildDefaultMenu(options))
 }
 
 app
     .on('ready', () => {
         createWindow(state.getCurrentProject())
-        buildMenu()
+        buildMenu({})
     })
     .on('window-all-closed', () => {
         if (__DARWIN__) {
@@ -68,8 +68,8 @@ ipcMain
         // marked as being from the "main" process.
         writeLog(level, message)
     })
-    .on('update-menu', (event: any) => {
-        buildMenu()
+    .on('update-menu', (event: any, options: ApplicationMenuOptions) => {
+        buildMenu(options)
     })
     .on('window-should-close', () => {
         process.nextTick(() => {

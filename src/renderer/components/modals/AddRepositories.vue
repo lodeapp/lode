@@ -1,6 +1,6 @@
 <template>
     <Modal :title="$root.project ? $string.set('Add repositories to :0', $root.project.name) : 'Add repositories'">
-        <form @submit.prevent="handleSubmit">
+        <form class="add-repositories" @submit.prevent="handleSubmit">
             <h5>Repositories</h5>
             <RepositoryPath
                 v-for="(slot, index) in slots"
@@ -13,6 +13,12 @@
                 <button type="button" class="btn btn-sm" @click="addRow">
                     Add another repository
                 </button>
+            </dl>
+            <dl class="form-group auto-scan">
+                <label>
+                    <input type="checkbox" checked="checked" v-model="autoScan">
+                    Scan repositories for frameworks after adding
+                </label>
             </dl>
         </form>
         <div slot="footer" class="modal-footer tertiary separated">
@@ -44,6 +50,7 @@ export default {
     data () {
         return {
             loading: false,
+            autoScan: true,
             slots: []
         }
     },
@@ -94,7 +101,10 @@ export default {
                     return this.$root.project.addRepository({ path: slot.path })
                 })).then(repositories => {
                     this.$root.project.save()
-                    this.confirm(repositories)
+                    this.confirm({
+                        repositories,
+                        autoScan: this.autoScan
+                    })
                 })
             }
         }
