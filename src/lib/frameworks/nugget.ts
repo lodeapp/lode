@@ -59,6 +59,9 @@ export abstract class Nugget extends EventEmitter {
             name: result.name,
             displayName: result.displayName || result.name,
             status: status ? status : result.status,
+            feedback: result.feedback,
+            console: result.console,
+            stats: result.stats,
             tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
         }
     }
@@ -271,7 +274,7 @@ export abstract class Nugget extends EventEmitter {
         if (this.selected || this.tests.some((test: ITest) => test.isActive())) {
             return
         }
-        this.result.tests = this.tests.map((test: ITest) => test.toJson())
+        this.result.tests = this.tests.map((test: ITest) => test.persist(false))
         this.tests = []
         this.bloomed = false
         return Promise.resolve()
