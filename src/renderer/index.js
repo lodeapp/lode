@@ -237,8 +237,11 @@ export default new Vue({
                 scan: true
             }, callback)
         },
-        refreshApplicationMenu (options = {}) {
-            ipcRenderer.send('update-menu', options)
+        refreshApplicationMenu () {
+            ipcRenderer.send('refresh-menu')
+        },
+        setApplicationMenuOption (options = {}) {
+            ipcRenderer.send('set-menu-options', options)
         },
         openExternal (link) {
             shell.openExternal(link)

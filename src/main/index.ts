@@ -1,13 +1,13 @@
 import '@lib/logger/main'
 
-import { app, ipcMain, Menu } from 'electron'
-import { ApplicationMenuOptions, buildDefaultMenu } from './menu'
+import { app, ipcMain } from 'electron'
+import { applicationMenu } from './menu'
 import { Window } from './window'
+import { Updater } from './updater'
 import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
 import { log as writeLog } from '@lib/logger'
-import { autoUpdater } from 'electron-updater'
 
 // Expose garbage collector
 app.commandLine.appendSwitch('js-flags', '--expose_gc')
@@ -42,14 +42,15 @@ function createWindow(projectId: string | null) {
     mainWindow = window
 }
 
-function buildMenu(options: ApplicationMenuOptions) {
-    Menu.setApplicationMenu(buildDefaultMenu(options))
-}
-
 app
     .on('ready', () => {
         createWindow(state.getCurrentProject())
-        buildMenu({})
+        applicationMenu.build()
+
+        // Start auto-updating process.
+        if (process.env.NODE_ENV === 'production') {
+            new Updater()
+        }
     })
     .on('window-all-closed', () => {
         if (__DARWIN__) {
@@ -69,8 +70,11 @@ ipcMain
         // marked as being from the "main" process.
         writeLog(level, message)
     })
-    .on('update-menu', (event: any, options: ApplicationMenuOptions) => {
-        buildMenu(options)
+    .on('refresh-menu', (event: any) => {
+        applicationMenu.build()
+    })
+    .on('set-menu-options', (event: any, options: any) => {
+        applicationMenu.setOptions(options)
     })
     .on('window-should-close', () => {
         process.nextTick(() => {
@@ -90,38 +94,3 @@ ipcMain
         state.reset()
         event.returnValue = true
     })
-
-/**
- * Auto Updater
- *
- */
-
-autoUpdater.on('update-downloaded', () => {
-    autoUpdater.quitAndInstall()
-})
-
-app.on('ready', () => {
-    if (process.env.NODE_ENV === 'production') {
-        autoUpdater.logger = log
-        autoUpdater.checkForUpdates()
-
-        autoUpdater.on('checking-for-update', () => {
-        })
-
-        autoUpdater.on('update-available', (info) => {
-        })
-
-        autoUpdater.on('update-not-available', (info) => {
-        })
-
-        autoUpdater.on('error', (err) => {
-        })
-
-        // autoUpdater.on('download-progress', (progressObj) => {
-        // })
-
-        autoUpdater.on('update-downloaded', (info) => {
-            autoUpdater.quitAndInstall()
-        })
-    }
-})

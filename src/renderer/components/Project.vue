@@ -246,7 +246,7 @@ export default {
                 }
             }
 
-            this.$root.refreshApplicationMenu({
+            this.$root.setApplicationMenuOption({
                 hasFramework: !!this.framework
             })
         },

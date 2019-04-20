@@ -3,6 +3,7 @@
         <div class="about">
             <img :src="logo">
             <h4>Lode</h4>
+            <p>{{ $string.set('Version :0', version) }}</p>
             <p v-markdown.set="(new Date()).getFullYear()">&copy; 2018 - :0 Recontra, U.L. All rights reserved.</p>
             <p class="legal">
                 <a href="#" @click.prevent="showTerms">Terms and Conditions</a>
@@ -13,6 +14,7 @@
 </template>
 
 <script>
+import { remote } from 'electron'
 import Modal from '@/components/modals/Modal'
 
 export default {
@@ -23,6 +25,11 @@ export default {
     data () {
         return {
             logo: 'static/icons/256x256.png'
+        }
+    },
+    computed: {
+        version () {
+            return remote.app.getVersion()
         }
     },
     methods: {
