@@ -6,9 +6,6 @@
                     <slot name="header">
                         <h3 v-if="title" v-html="title" class="modal-title"></h3>
                     </slot>
-                    <button type="button" class="close" aria-label="Close" @click="$modal.close()">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
                 </div>
 
                 <div class="modal-body">

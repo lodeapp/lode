@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "Lode",
-  "version": "0.14.0",
+  "version": "0.14.7",
   "author": "Tomas Buteler <tbuteler@me.com>",
   "description": "A universal GUI for test runners",
   "license": null,
@@ -10,6 +10,7 @@
     "build": "yarn run clean:all && yarn run icons && yarn run pack:reporters && yarn run licenses && node .electron-vue/build.js && electron-builder && yarn run clean",
     "build:all": "yarn run clean:all && yarn run icons && yarn run pack:reporters && yarn run licenses && node .electron-vue/build.js && electron-builder --m --l --w && yarn run clean",
     "build:dev": "cross-env IS_DEV=true yarn run build",
+    "release": "yarn run clean:all && yarn run icons && yarn run pack:reporters && yarn run licenses && node .electron-vue/build.js && electron-builder --publish always && yarn run clean",
     "clean": "rm -rf static/reporters && rm -rf dist/* && mkdir dist/electron && touch dist/electron/.gitkeep",
     "clean:all": "yarn run clean:build && yarn run clean",
     "clean:build": "rm -rf build/*",
@@ -26,65 +27,10 @@
     "postinstall": "yarn run lint:fix",
     "tests": "jest --config .jestrc.json"
   },
-  "build": {
-    "productName": "Lode",
-    "appId": "com.example.yourapp",
-    "directories": {
-      "output": "build"
-    },
-    "files": [
-      "dist/electron/**/*"
-    ],
-    "asar": true,
-    "asarUnpack": [
-      "dist/electron/static/reporters/**/**"
-    ],
-    "dmg": {
-      "contents": [
-        {
-          "x": 410,
-          "y": 150,
-          "type": "link",
-          "path": "/Applications"
-        },
-        {
-          "x": 130,
-          "y": 150,
-          "type": "file"
-        }
-      ]
-    },
-    "mac": {
-      "icon": "build/icons/icon.icns",
-      "target": [
-        {
-          "target": "dmg"
-        }
-      ]
-    },
-    "win": {
-      "icon": "build/icons/icon.ico",
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ]
-    },
-    "linux": {
-      "icon": "build/icons",
-      "target": [
-        {
-          "target": "deb"
-        }
-      ]
-    }
-  },
   "dependencies": {
     "bottleneck": "^2.13.0",
     "electron-store": "^2.0.0",
+    "electron-updater": "^4.0.6",
     "electron-window-state": "^5.0.2",
     "fs-extra": "^7.0.0",
     "fuzzaldrin": "^2.1.0",

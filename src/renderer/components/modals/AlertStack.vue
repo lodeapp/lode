@@ -3,6 +3,9 @@
         <template slot="header">
             <Icon v-if="type === 'error'" class="type--error" symbol="issue-opened" />
             <h3 class="modal-title" v-html="title"></h3>
+            <button v-if="!dismissable" type="button" class="close" aria-label="Close" @click="$emit('hide')">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </template>
         <div :key="$string.from(current)">
             <p v-markdown>{{ message }}</p>
