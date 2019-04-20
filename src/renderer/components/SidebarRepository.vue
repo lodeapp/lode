@@ -42,15 +42,14 @@ export default {
             required: true
         }
     },
-    data () {
-        return {
-            // @TODO: remember collapsed state.
-            show: true
+    computed: {
+        show () {
+            return this.repository.isExpanded()
         }
     },
     methods: {
         toggle () {
-            this.show = !this.show
+            this.repository.toggle()
         }
     }
 }

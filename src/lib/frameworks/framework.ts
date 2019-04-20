@@ -37,7 +37,6 @@ export type FrameworkOptions = {
     sshUser?: string | null
     sshPort?: number | null
     sshIdentity?: string | null
-    collapsed?: boolean
     active?: boolean
     suites?: Array<ISuiteResult>
     scanStatus?: 'pending' | 'removed'
@@ -66,7 +65,6 @@ export interface IFramework extends EventEmitter {
     status: FrameworkStatus
     selective: boolean
     selected: SuiteList
-    collapsed: boolean
     queue: { [index: string]: Function }
     ledger: { [key in Status]: number }
 
@@ -111,7 +109,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public selected: SuiteList = {
         suites: []
     }
-    public collapsed!: boolean
     public queue: { [index: string]: Function } = {}
     public ledger: { [key in Status]: number } = {
         queued: 0,
@@ -169,7 +166,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
             ...(this.constructor as typeof Framework).defaults!.proprietary
         }
 
-        this.collapsed = options.collapsed || false
         this.active = options.active || false
 
         this.initialSuiteCount = (options.suites || []).length
@@ -285,7 +281,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
             sshUser: this.sshUser,
             sshPort: this.sshPort,
             sshIdentity: this.sshIdentity,
-            collapsed: this.collapsed,
             active: this.active,
             proprietary: this.proprietary,
             suites: this.suites.map((suite: ISuite) => suite.persist())

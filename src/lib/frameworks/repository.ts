@@ -12,8 +12,9 @@ import { FrameworkOptions, IFramework } from '@lib/frameworks/framework'
  */
 export type RepositoryOptions = {
     id?: string,
-    name?: string,
+    name?: string
     path: string
+    expanded?: boolean
     frameworks?: Array<FrameworkOptions>
 }
 
@@ -39,12 +40,14 @@ export interface IRepository extends EventEmitter {
     start (): void
     refresh (): void
     stop (): Promise<void>
+    save (): void
+    scan (): Promise<Array<FrameworkOptions>>
+    toggle (): void
     isRunning (): boolean
     isRrefreshing (): boolean
     isBusy (): boolean
+    isExpanded (): boolean
     persist (): RepositoryOptions
-    save (): void
-    scan (): Promise<Array<FrameworkOptions>>
     addFramework (options: FrameworkOptions): Promise<IFramework>
     removeFramework (id: string): void
 }
@@ -58,6 +61,7 @@ export class Repository extends EventEmitter implements IRepository {
     public scanning: boolean = false
 
     protected id: string
+    protected expanded: boolean
     protected parsed: boolean = false
     protected ready: boolean = false
     protected initialFrameworkCount: number = 0
@@ -68,6 +72,7 @@ export class Repository extends EventEmitter implements IRepository {
         this.id = options.id || uuid()
         this.path = options.path
         this.name = options.name || this.path.split('/').pop() || 'untitled'
+        this.expanded = typeof options.expanded === 'undefined' ? true : options.expanded
         this.initialFrameworkCount = (options.frameworks || []).length
 
         // If options include frameworks already (i.e. persisted state), add them.
@@ -127,6 +132,13 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
+     * Whether this repository is expanded.
+     */
+    public isExpanded (): boolean {
+        return this.expanded
+    }
+
+    /**
      * Prepares the repository for persistence.
      */
     public persist (): RepositoryOptions {
@@ -134,6 +146,7 @@ export class Repository extends EventEmitter implements IRepository {
             id: this.id,
             name: this.name,
             path: this.path,
+            expanded: this.expanded,
             frameworks: this.frameworks.map(framework => framework.persist())
         }
     }
@@ -183,6 +196,14 @@ export class Repository extends EventEmitter implements IRepository {
      */
     public getDisplayName (): string {
         return this.name
+    }
+
+    /**
+     * Toggle this repository's visibility.
+     */
+    public toggle (): void {
+        this.expanded = !this.expanded
+        this.emit('change', this)
     }
 
     /**
