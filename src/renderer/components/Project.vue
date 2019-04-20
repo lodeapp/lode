@@ -152,7 +152,7 @@ export default {
             this.$root.project.repositories.forEach(repository => {
                 repository.on('frameworkAdded', this.onFrameworkAdded)
                 repository.frameworks.forEach(framework => {
-                    this.onFrameworkAdded(framework)
+                    this.registerFrameworkListeners(framework)
                 })
             })
             // Trigger project change to mount default model.
@@ -189,6 +189,20 @@ export default {
             this.repository.save()
             this.framework = null
             this.onProjectChange()
+        },
+        registerFrameworkListeners (framework) {
+            framework
+                .on('error', (error, process) => {
+                    this.$alert.show({
+                        message: this.$string.set('The process for **:0** terminated unexpectedly.', framework.name),
+                        help: framework.troubleshoot(error),
+                        type: 'error',
+                        error
+                    })
+                })
+                .on('suiteRemoved', suiteId => {
+                    this.$root.onModelRemove(suiteId)
+                })
         },
         clearActiveFrameworks (except = null) {
             this.$root.project.repositories.forEach(repository => {
@@ -241,18 +255,7 @@ export default {
             this.onProjectChange()
         },
         onFrameworkAdded (framework) {
-            framework
-                .on('error', (error, process) => {
-                    this.$alert.show({
-                        message: this.$string.set('The process for **:0** terminated unexpectedly.', framework.name),
-                        help: framework.troubleshoot(error),
-                        type: 'error',
-                        error
-                    })
-                })
-                .on('suiteRemoved', suiteId => {
-                    this.$root.onModelRemove(suiteId)
-                })
+            this.registerFrameworkListeners(framework)
             framework.setActive(true)
             this.clearActiveFrameworks(framework.getId())
             this.onProjectChange()
