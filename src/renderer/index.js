@@ -2,11 +2,10 @@ import '@lib/logger/renderer'
 
 import Vue from 'vue'
 import store from './store'
-import { get, isEmpty } from 'lodash'
+import { isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@lib/state'
 import { Project } from '@lib/frameworks/project'
-import { queue } from '@lib/process/queue'
 
 // Styles
 import '../styles/app.scss'
@@ -69,21 +68,18 @@ export default new Vue({
                 document.body.classList.add('is-focused')
             })
             .on('close', () => {
-                // @TODO: disassemble is not synchronous. Make sure it has
-                // finished running before green-lighting closing of window.
+                // Disassemble is not synchronous. We're giving a small timeout
+                // to increase the lieklihood it's finished before green-lighting
+                // the closing of the window, but this is not guaranteed.
                 this.project.stop().then(() => {
-                    ipcRenderer.send('window-should-close')
+                    setTimeout(() => {
+                        ipcRenderer.send('window-should-close')
+                    }, 10)
                 })
             })
             .on('project-switched', (event, projectOptions) => {
                 this.loadProject(projectOptions)
-                try {
-                    if (global.gc) {
-                        global.gc()
-                    }
-                } catch (error) {
-                    // ...
-                }
+                this.gc()
             })
             .on('menu-event', (event, { name, properties }) => {
                 switch (name) {
@@ -101,26 +97,6 @@ export default new Vue({
                         break
                     case 'select-all':
                         this.selectAll()
-                        break
-                    case 'run-selected':
-                        // @TODO: When we have keyboard navigation, run the
-                        // actual selected framework, not the first one.
-                        const framework = get(this.project, 'repositories.0.frameworks.0')
-                        if (framework) {
-                            framework.start()
-                        }
-                        break
-                    case 'run-project':
-                        this.project.start()
-                        break
-                    case 'refresh-project':
-                        this.project.refresh()
-                        break
-                    case 'stop-project':
-                        this.project.stop()
-                        break
-                    case 'rerun-last':
-                        queue.runLatest()
                         break
                     case 'rename-project':
                         this.editProject()
@@ -165,14 +141,14 @@ export default new Vue({
         loadProject (projectOptions) {
             projectOptions = JSON.parse(projectOptions)
             this.project = isEmpty(projectOptions) ? null : new Project(projectOptions)
-            this.updateApplicationMenu()
+            this.refreshApplicationMenu()
         },
         addProject () {
             this.$modal.confirm('EditProject', { add: true })
                 .then(options => {
                     // Stop current project before adding a new one.
                     (this.project ? this.project.stop() : Promise.resolve()).then(() => {
-                        store.commit('test/CLEAR')
+                        store.commit('context/CLEAR')
                         const project = new Project(options)
                         ipcRenderer.once('project-switched', () => {
                             this.addRepositories()
@@ -191,7 +167,7 @@ export default new Vue({
                     // Since current project hasn't changed, just been updated,
                     // we need to forcibly emit the change to the main process,
                     // so that the application menu gets updated.
-                    this.updateApplicationMenu()
+                    this.refreshApplicationMenu()
                 })
                 .catch(() => {})
         },
@@ -199,7 +175,7 @@ export default new Vue({
             this.$modal.confirm('RemoveProject')
                 .then(() => {
                     this.project.stop().then(() => {
-                        store.commit('test/CLEAR')
+                        store.commit('context/CLEAR')
                         const switchTo = state.removeProject(this.project.getId())
                         // Switch information should be available only
                         // if there are still projects to switch to.
@@ -226,7 +202,7 @@ export default new Vue({
                         state.set('confirm.switchProject', false)
                     }
                     this.project.stop().then(() => {
-                        store.commit('test/CLEAR')
+                        store.commit('context/CLEAR')
                         this.handleSwitchProject(projectId)
                     })
                 })
@@ -236,10 +212,33 @@ export default new Vue({
             ipcRenderer.send('switch-project', projectId)
         },
         addRepositories () {
-            this.$modal.open('AddRepositories')
+            this.$modal.confirm('AddRepositories', {})
+                .then(({ repositories, autoScan }) => {
+                    if (autoScan) {
+                        this.scanRepositories(repositories.map(repository => repository.getId()), 0)
+                    }
+                })
+                .catch(() => {})
         },
-        updateApplicationMenu () {
-            ipcRenderer.send('update-menu')
+        scanRepositories (repositoryIds, index) {
+            const id = repositoryIds[index]
+            const repository = this.project.getRepositoryById(id)
+            if (!repository) {
+                return
+            }
+            // Scan repository and queue the following one the modal callback.
+            this.scanRepository(repository, () => {
+                this.scanRepositories(repositoryIds, (index + 1))
+            })
+        },
+        scanRepository (repository, callback = null) {
+            this.$modal.open('ManageFrameworks', {
+                repository,
+                scan: true
+            }, callback)
+        },
+        refreshApplicationMenu (options = {}) {
+            ipcRenderer.send('update-menu', options)
         },
         openExternal (link) {
             shell.openExternal(link)
@@ -248,11 +247,11 @@ export default new Vue({
             const result = await shell.openExternal(`file://${path}`)
 
             if (!result) {
-                // @TODO: Alert this error
-                // const error = {
-                //     name: 'no-external-program',
-                //     message: `Unable to open file ${path} in an external program. Please check you have a program associated with this file extension`,
-                // }
+                this.$alert.show({
+                    message: 'Unable to open file in an external program. Please check you have a program associated with this file extension.',
+                    help: 'The following path was attempted: `' + path + '`',
+                    type: 'error'
+                })
             }
         },
         revealFile (path) {
@@ -275,6 +274,15 @@ export default new Vue({
             window.setImmediate(() => {
                 throw new Error('Boomtown!')
             })
+        },
+        gc () {
+            try {
+                if (global.gc) {
+                    global.gc()
+                }
+            } catch (error) {
+                // ...
+            }
         },
         onModelRemove (modelId) {
             store.dispatch('context/onRemove', modelId)

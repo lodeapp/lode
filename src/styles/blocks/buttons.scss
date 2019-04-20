@@ -1,3 +1,8 @@
+button,
+.btn {
+    -webkit-app-region: no-drag !important;
+}
+
 .btn {
 
     i {
@@ -16,5 +21,28 @@
     // Our primary button is blue, not green
     &.btn-primary {
         @include btn-solid($text-white, lighten($blue-400, 8%), darken($blue-400, 2%));
+    }
+
+    &.btn-loading {
+        color: transparent;
+
+        &::after {
+            animation: rotate .6s infinite linear;
+            border-bottom: 1em solid var(--color-blue-200);
+            border-left: 1em solid var(--color-blue-400);
+            border-radius: 50%;
+            border-right: 1em solid var(--color-blue-200);
+            border-top: 1em solid var(--color-blue-200);
+            content: '';
+            display: block;
+            font-size: 2px;
+            height: 8em;
+            left: 0;
+            margin: 0 auto calc(-8em - 4px);
+            position: relative;
+            top: calc(-8em - 4px);
+            transform: translateZ(0);
+            width: 8em;
+        }
     }
 }

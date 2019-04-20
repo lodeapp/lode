@@ -96,7 +96,7 @@ export default {
             return this.$fileystem.isExtensionSafe(this.fileExtension)
         },
         ...mapGetters({
-            context: 'context/active'
+            context: 'context/context'
         })
     },
     methods: {

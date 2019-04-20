@@ -224,7 +224,7 @@ class LodeReporter extends ResultPrinter
      */
     public function addSkippedTest(Test $test, Throwable $t, float $time): void
     {
-        $this->progress();
+        $this->progress($this->render($test, $t, $time));
         $this->lastTestFailed = true;
     }
 

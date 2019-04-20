@@ -66,8 +66,17 @@ export default {
             return this.show ? 'expanded' : 'collapsed'
         },
         ...mapGetters({
-            displayStatus: 'status/display'
+            displayStatus: 'status/display',
+            inContext: 'context/inContext'
         })
+    },
+    mounted () {
+        // If nugget is already in context (i.e. persisted contexts) then expand
+        // it, because in all likelihood a child test will have to be activated,
+        // in which case it needs to be mounted first.
+        if (this.inContext(this.model.getId())) {
+            this.model.toggleExpanded()
+        }
     },
     methods: {
         handleActivate (event) {

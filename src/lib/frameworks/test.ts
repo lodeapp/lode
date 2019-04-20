@@ -12,8 +12,7 @@ export interface ITest extends Nugget {
     getConsole (): Array<any>
     toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
     toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
-    toJson (): ITestResult
-    persist (): ITestResult
+    persist (status?: Status | false): ITestResult
     resetResult (): void
     idle (selective: boolean): void
     queue (selective: boolean): void
@@ -46,26 +45,12 @@ export class Test extends Nugget implements ITest {
     }
 
     /**
-     * Returns a JSON representation of this test.
-     */
-    public toJson (): ITestResult {
-        return {
-            ...this.defaults(this.result, false),
-            ...{
-                feedback: this.result.feedback,
-                console: this.result.console,
-                stats: this.result.stats
-            }
-        }
-    }
-
-    /**
      * Prepare this test for persistence.
      *
      * @param status Which status to recursively set. False will persist current status.
      */
-    public persist (): ITestResult {
-        return this.defaults(this.result, 'idle')
+    public persist (status: Status | false = 'idle'): ITestResult {
+        return this.defaults(this.result, status)
     }
 
     /**

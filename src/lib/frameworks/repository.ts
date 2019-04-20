@@ -12,7 +12,7 @@ import { FrameworkOptions, IFramework } from '@lib/frameworks/framework'
  */
 export type RepositoryOptions = {
     id?: string,
-    name?: string,
+    name?: string
     path: string
     expanded?: boolean
     frameworks?: Array<FrameworkOptions>
@@ -34,20 +34,20 @@ export interface IRepository extends EventEmitter {
     status: FrameworkStatus
     selected: boolean
     scanning: boolean
-    expanded: boolean
 
     getId (): string
     getDisplayName (): string
     start (): void
     refresh (): void
     stop (): Promise<void>
-    isRunning (): boolean
-    isRrefreshing (): boolean
-    isBusy (): boolean
-    persist (): RepositoryOptions
     save (): void
     scan (): Promise<Array<FrameworkOptions>>
     toggle (): void
+    isRunning (): boolean
+    isRrefreshing (): boolean
+    isBusy (): boolean
+    isExpanded (): boolean
+    persist (): RepositoryOptions
     addFramework (options: FrameworkOptions): Promise<IFramework>
     removeFramework (id: string): void
 }
@@ -59,9 +59,9 @@ export class Repository extends EventEmitter implements IRepository {
     public status: FrameworkStatus = 'loading'
     public selected: boolean = false
     public scanning: boolean = false
-    public expanded: boolean
 
     protected id: string
+    protected expanded: boolean
     protected parsed: boolean = false
     protected ready: boolean = false
     protected initialFrameworkCount: number = 0
@@ -72,7 +72,7 @@ export class Repository extends EventEmitter implements IRepository {
         this.id = options.id || uuid()
         this.path = options.path
         this.name = options.name || this.path.split('/').pop() || 'untitled'
-        this.expanded = options.expanded || true
+        this.expanded = typeof options.expanded === 'undefined' ? true : options.expanded
         this.initialFrameworkCount = (options.frameworks || []).length
 
         // If options include frameworks already (i.e. persisted state), add them.
@@ -129,6 +129,13 @@ export class Repository extends EventEmitter implements IRepository {
      */
     public isBusy (): boolean {
         return this.frameworks.some((framework: IFramework) => framework.isBusy())
+    }
+
+    /**
+     * Whether this repository is expanded.
+     */
+    public isExpanded (): boolean {
+        return this.expanded
     }
 
     /**
@@ -236,9 +243,14 @@ export class Repository extends EventEmitter implements IRepository {
      * Prepare the repository for ready state.
      */
     protected onReady (): void {
+        // Ready event will only trigger once.
+        if (this.ready) {
+            return
+        }
+
         this.ready = true
         if (!this.initialFrameworkCount) {
-            this.updateStatus('idle')
+            this.updateStatus()
         }
         this.emit('ready', this)
     }
@@ -299,6 +311,8 @@ export class Repository extends EventEmitter implements IRepository {
                 .on('state', this.stateListener.bind(this))
                 .on('change', this.changeListener.bind(this))
             this.frameworks.push(framework)
+            this.updateStatus()
+            this.emit('frameworkAdded', framework)
             resolve(framework)
         })
     }
@@ -311,8 +325,24 @@ export class Repository extends EventEmitter implements IRepository {
     public removeFramework (id: string): void {
         const index = findIndex(this.frameworks, framework => framework.getId() === id)
         if (index > -1) {
+            const frameworkId = this.frameworks[index].getId()
+            this.frameworks[index].removeAllListeners()
             this.frameworks.splice(index, 1)
             this.updateStatus()
+            this.emit('frameworkRemoved', frameworkId)
         }
+    }
+
+    /**
+     * Retrieve a framework from this repository by its id.
+     *
+     * @param id The id of the framework to retrieve.
+     */
+    public getFrameworkById (id: string): IFramework | undefined {
+        const index = findIndex(this.frameworks, framework => framework.getId() === id)
+        if (index > -1) {
+            return this.frameworks[index]
+        }
+        return undefined
     }
 }

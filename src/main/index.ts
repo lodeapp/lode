@@ -1,12 +1,13 @@
 import '@lib/logger/main'
 
 import { app, ipcMain, Menu } from 'electron'
-import { buildDefaultMenu } from './menu'
+import { ApplicationMenuOptions, buildDefaultMenu } from './menu'
 import { Window } from './window'
 import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
 import { log as writeLog } from '@lib/logger'
+import { autoUpdater } from 'electron-updater'
 
 // Expose garbage collector
 app.commandLine.appendSwitch('js-flags', '--expose_gc')
@@ -41,14 +42,14 @@ function createWindow(projectId: string | null) {
     mainWindow = window
 }
 
-function buildMenu() {
-    Menu.setApplicationMenu(buildDefaultMenu())
+function buildMenu(options: ApplicationMenuOptions) {
+    Menu.setApplicationMenu(buildDefaultMenu(options))
 }
 
 app
     .on('ready', () => {
         createWindow(state.getCurrentProject())
-        buildMenu()
+        buildMenu({})
     })
     .on('window-all-closed', () => {
         if (__DARWIN__) {
@@ -68,8 +69,8 @@ ipcMain
         // marked as being from the "main" process.
         writeLog(level, message)
     })
-    .on('update-menu', (event: any) => {
-        buildMenu()
+    .on('update-menu', (event: any, options: ApplicationMenuOptions) => {
+        buildMenu(options)
     })
     .on('window-should-close', () => {
         process.nextTick(() => {
@@ -93,19 +94,34 @@ ipcMain
 /**
  * Auto Updater
  *
- * Uncomment the following code below and install `electron-updater` to
- * support auto updating. Code Signing with a valid certificate is required.
- * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-electron-builder.html#auto-updating
  */
-
-/*
-import { autoUpdater } from 'electron-updater'
 
 autoUpdater.on('update-downloaded', () => {
     autoUpdater.quitAndInstall()
 })
 
 app.on('ready', () => {
-    if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
+    if (process.env.NODE_ENV === 'production') {
+        autoUpdater.logger = log
+        autoUpdater.checkForUpdates()
+
+        autoUpdater.on('checking-for-update', () => {
+        })
+
+        autoUpdater.on('update-available', (info) => {
+        })
+
+        autoUpdater.on('update-not-available', (info) => {
+        })
+
+        autoUpdater.on('error', (err) => {
+        })
+
+        // autoUpdater.on('download-progress', (progressObj) => {
+        // })
+
+        autoUpdater.on('update-downloaded', (info) => {
+            autoUpdater.quitAndInstall()
+        })
+    }
 })
-*/

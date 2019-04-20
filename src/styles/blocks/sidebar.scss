@@ -1,0 +1,149 @@
+.sidebar {
+    -webkit-app-region: drag;
+    background-color: var(--sidebar-color);
+    display: flex;
+    flex-direction: column;
+    padding: 35px 0 0;
+
+    & > h5 {
+        -webkit-app-region: no-drag;
+        color: var(--sidebar-text-secondary-color);
+        font-size: 1rem;
+        margin: var(--spacing) 0 var(--spacing-half) var(--spacing);
+    }
+
+    .sidebar-header {
+
+        & > .sidebar-action {
+            background-color: var(--sidebar-text-secondary-color);
+            border-radius: 100%;
+            border: 0;
+            color: var(--sidebar-color);
+            display: inline-block;
+            float: right;
+            height: 18px;
+            margin-right: var(--spacing);
+            opacity: .85;
+            outline: 0;
+            padding: 0;
+            text-align: center;
+            visibility: hidden;
+            width: 18px;
+
+            i {
+                transform: scale(.8);
+            }
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        &:hover {
+
+            & > .sidebar-action {
+                visibility: visible;
+            }
+        }
+    }
+
+    .sidebar-item {
+        -webkit-app-region: no-drag;
+
+        & > .header {
+            padding: var(--spacing-half) 0 var(--spacing-half) var(--spacing);
+
+            & > .title {
+                padding: 0;
+
+                .heading {
+                    color: var(--sidebar-text-color);
+                    font-size: 15px;
+                    font-weight: var(--font-weight-normal);
+                    overflow: hidden;
+                    white-space: nowrap;
+
+                    & > i {
+                        color: var(--sidebar-text-secondary-color);
+                        margin: 0 var(--spacing-half) 0 var(--spacing-third);
+                        text-align: center;
+                        width: 14px;
+
+                        &.toggle {
+                            margin-left: calc(var(--spacing-third) * -1);
+                        }
+                    }
+
+                    & > .name {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                }
+
+                & > .status {
+                    margin-top: 4px;
+
+                    &.status--passed {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 4px theme-color('passed', 200), 0 0 0 5px theme-color('passed', 100);
+                        }
+                    }
+
+                    &.status--idle,
+                    &.status--empty {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 4px theme-color('idle', 400), 0 0 0 5px theme-color('idle', 200);
+                        }
+                    }
+
+                    &.status--failed,
+                    &.status--error {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 4px theme-color('failed', 200), 0 0 0 5px theme-color('failed', 100);
+                        }
+                    }
+
+                    &.status--warning {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 4px theme-color('warning', 200), 0 0 0 5px theme-color('warning', 100);
+                        }
+                    }
+
+                    &.status--incomplete {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 4px theme-color('incomplete', 200), 0 0 0 5px theme-color('incomplete', 100);
+                        }
+                    }
+
+                    &.status--partial {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 4px theme-color('partial', 400), 0 0 0 5px theme-color('partial', 200);
+                        }
+                    }
+                }
+            }
+        }
+
+        &.is-active {
+            background-color: var(--sidebar-active-color);
+        }
+
+        &.is-menu-active {
+
+            & > .header {
+                background-color: var(--color-blue-200);
+            }
+        }
+    }
+
+    .sidebar-item--framework {
+        padding-left: var(--spacing-double);
+    }
+}

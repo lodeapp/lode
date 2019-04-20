@@ -2,29 +2,15 @@
     <div class="test-result">
         <div class="tabnav">
             <nav class="tabnav-tabs">
-                <a v-if="feedback" @mousedown="setTab('feedback')" class="tabnav-tab" :class="{ selected: tab === 'feedback' }">Feedback</a>
-                <a v-if="console" @mousedown="setTab('console')" class="tabnav-tab" :class="{ selected: tab === 'console' }">Console</a>
-                <a v-if="suiteConsole" @mousedown="setTab('suiteConsole')" class="tabnav-tab" :class="{ selected: tab === 'suiteConsole' }">Suite Console</a>
-                <a v-if="stats" @mousedown="setTab('stats')" class="tabnav-tab" :class="{ selected: tab === 'stats' }">Statistics</a>
+                <template v-if="!empty">
+                    <a v-if="feedback" @mousedown="setTab('feedback')" class="tabnav-tab" :class="{ selected: tab === 'feedback' }">Feedback</a>
+                    <a v-if="console" @mousedown="setTab('console')" class="tabnav-tab" :class="{ selected: tab === 'console' }">Console</a>
+                    <a v-if="suiteConsole" @mousedown="setTab('suiteConsole')" class="tabnav-tab" :class="{ selected: tab === 'suiteConsole' }">Suite Console</a>
+                    <a v-if="stats" @mousedown="setTab('stats')" class="tabnav-tab" :class="{ selected: tab === 'stats' }">Statistics</a>
+                </template>
             </nav>
         </div>
         <div class="test-result-breakdown">
-            <div v-if="feedback && tab === 'feedback'">
-                <Feedback v-if="feedback.type === 'feedback'" :context="context" :content="feedback.content || {}" />
-                <KeyValue v-else-if="feedback.type === 'object'" :object="feedback.content || {}" />
-                <Ansi v-else-if="feedback.type === 'ansi'" :content="feedback.content" />
-                <!-- Catch-all for unknown content -->
-                <pre v-else><code>{{ feedback.content }}</code></pre>
-            </div>
-            <div v-if="console && tab === 'console'">
-                <Console v-for="(output, index) in console" :key="`console-${index}`" :output="output" />
-            </div>
-            <div v-if="suiteConsole && tab === 'suiteConsole'">
-                <Console v-for="(output, index) in suiteConsole" :key="`suiteConsole-${index}`" :output="output" />
-            </div>
-            <div v-if="stats && tab === 'stats'">
-                <TestStatistics :stats="stats" />
-            </div>
             <div class="test-result-general" v-if="empty">
                 <div v-if="status === 'error'">
                     <p>An unexpected error prevented this test from running.</p>
@@ -33,6 +19,22 @@
                     </p>
                 </div>
                 <div v-else>Awaiting test data.</div>
+            </div>
+            <div v-else-if="feedback && tab === 'feedback'">
+                <Feedback v-if="feedback.type === 'feedback'" :context="context" :content="feedback.content || {}" />
+                <KeyValue v-else-if="feedback.type === 'object'" :object="feedback.content || {}" />
+                <Ansi v-else-if="feedback.type === 'ansi'" :content="feedback.content" />
+                <!-- Catch-all for unknown content -->
+                <pre v-else><code>{{ feedback.content }}</code></pre>
+            </div>
+            <div v-else-if="console && tab === 'console'">
+                <Console v-for="(output, index) in console" :key="`console-${index}`" :output="output" />
+            </div>
+            <div v-else-if="suiteConsole && tab === 'suiteConsole'">
+                <Console v-for="(output, index) in suiteConsole" :key="`suiteConsole-${index}`" :output="output" />
+            </div>
+            <div v-else-if="stats && tab === 'stats'">
+                <TestStatistics :stats="stats" />
             </div>
         </div>
     </div>
@@ -105,7 +107,7 @@ export default {
             return this.result && this.result.stats && !_isEmpty(this.result.stats) ? this.result.stats : false
         },
         empty () {
-            return !this.feedback && !this.stats
+            return ['idle', 'queued', 'running'].indexOf(this.status) > -1 || (!this.feedback && !this.stats)
         },
         framework () {
             return _get(this.context, 1)

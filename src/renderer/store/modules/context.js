@@ -1,27 +1,50 @@
 export default {
     namespaced: true,
     state: {
-        active: []
+        active: '',
+        context: []
     },
     mutations: {
         ADD (state, payload) {
-            state.active.push(payload)
+            if (state.context.indexOf(payload) === -1) {
+                state.context.unshift(payload)
+            }
+        },
+        SET (state, payload) {
+            const test = payload.pop()
+            payload.forEach(context => {
+                state.context.unshift(context)
+            })
+            state.active = test
+        },
+        TEST (state, payload) {
+            state.active = payload
+            state.context = []
         },
         CLEAR (state) {
-            state.active = []
+            state.active = ''
+            state.context = []
         }
     },
     actions: {
         onRemove: ({ state, commit, dispatch }, modelId) => {
-            if (state.active.indexOf(modelId) > -1) {
-                dispatch('test/clear', null, { root: true })
+            if (state.context.indexOf(modelId) > -1) {
                 commit('CLEAR')
             }
+        },
+        clear: ({ commit }, modelId) => {
+            commit('CLEAR')
         }
     },
     getters: {
-        active: (state) => {
+        test: (state) => {
             return state.active
+        },
+        context: (state) => {
+            return state.context
+        },
+        inContext: (state) => id => {
+            return state.context.indexOf(id) > -1
         }
     }
 }

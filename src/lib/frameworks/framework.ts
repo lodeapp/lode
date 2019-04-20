@@ -37,11 +37,10 @@ export type FrameworkOptions = {
     sshUser?: string | null
     sshPort?: number | null
     sshIdentity?: string | null
-    collapsed?: boolean
-    expandFilters?: boolean
+    active?: boolean
     suites?: Array<ISuiteResult>
     scanStatus?: 'pending' | 'removed'
-    proprietary: any
+    proprietary: any,
 }
 
 /**
@@ -66,8 +65,6 @@ export interface IFramework extends EventEmitter {
     status: FrameworkStatus
     selective: boolean
     selected: SuiteList
-    collapsed: boolean
-    expandFilters: boolean
     queue: { [index: string]: Function }
     ledger: { [key in Status]: number }
 
@@ -82,8 +79,8 @@ export interface IFramework extends EventEmitter {
     persist (): FrameworkOptions
     save (): void
     updateOptions (options: FrameworkOptions): void
-    toggle (): void
-    toggleFilters (): void
+    setActive (active: boolean): void
+    isActive (): boolean
 }
 
 /**
@@ -112,8 +109,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public selected: SuiteList = {
         suites: []
     }
-    public collapsed!: boolean
-    public expandFilters!: boolean
     public queue: { [index: string]: Function } = {}
     public ledger: { [key in Status]: number } = {
         queued: 0,
@@ -136,6 +131,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected initialSuiteCount: number = 0
     protected initialSuiteReady: number = 0
     protected proprietary: any = {}
+    protected active: boolean = false
 
     static readonly defaults?: FrameworkOptions
 
@@ -170,8 +166,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             ...(this.constructor as typeof Framework).defaults!.proprietary
         }
 
-        this.collapsed = options.collapsed || false
-        this.expandFilters = options.expandFilters || false
+        this.active = options.active || false
 
         this.initialSuiteCount = (options.suites || []).length
 
@@ -286,8 +281,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             sshUser: this.sshUser,
             sshPort: this.sshPort,
             sshIdentity: this.sshIdentity,
-            collapsed: this.collapsed,
-            expandFilters: this.expandFilters,
+            active: this.active,
             proprietary: this.proprietary,
             suites: this.suites.map((suite: ISuite) => suite.persist())
         }
@@ -362,22 +356,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     public getVersion (): string | undefined {
         return this.version
-    }
-
-    /**
-     * Toggle this framework's visibility.
-     */
-    public toggle (): void {
-        this.collapsed = !this.collapsed
-        this.emit('change', this)
-    }
-
-    /**
-     * Toggle this framework's filters visibility.
-     */
-    public toggleFilters (): void {
-        this.expandFilters = !this.expandFilters
-        this.emit('change', this)
     }
 
     /**
@@ -577,7 +555,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 try {
                     this.running.push(this.debriefSuite(report))
                 } catch (error) {
-                    // @TODO: Notify user of error (i.e. add to alert stack)
+                    this.emit('error', error)
                     log.error('Failed to debrief suite results.', error)
                 }
             })
@@ -650,9 +628,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param suite The suite being removed.
      */
     protected onSuiteRemove (suite: ISuite): void {
+        suite.removeAllListeners()
         this.updateLedger(null, suite.getStatus())
         this.updateSelected(suite)
-        this.emit('suiteRemoved', suite)
+        this.emit('suiteRemoved', suite.getId())
     }
 
     /**
@@ -812,8 +791,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Prepare the framework for ready state.
      */
     protected onReady (): void {
+        // Ready event will only trigger once.
+        if (this.ready) {
+            return
+        }
+
         this.ready = true
-        this.updateStatus('idle')
+        this.updateStatus()
         this.emit('ready', this)
     }
 
@@ -974,7 +958,25 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
-     * Validate framework specific options.
+     * Set the active state of a framework.
+     *
+     * @param active The active state to set.
+     */
+    public setActive (active: boolean): void {
+        this.active = active
+        this.emit('change', this)
+    }
+
+    /**
+     * Get the active state of a framework.
+     */
+    public isActive (): boolean {
+        return this.active
+    }
+
+    /**
+     * Validate framework specific options. This is meant to be overridden
+     * by specific framework implementations (e.g. PHPUnit).
      */
     public static validate (validator: FrameworkValidator, options: any): void {
         // For generic framework validation see @lib/frameworks/validator.

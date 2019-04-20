@@ -1,12 +1,13 @@
 <template>
     <div class="results" :class="{ blankslate: !testActive || loading }">
+        <div class="draggable"></div>
         <h3 v-if="!testActive">No test selected</h3>
         <div v-if="loading" class="loading">
             <div class="loading-group">
                 <div class="spinner"></div>
             </div>
         </div>
-        <div v-if="test && !loading" class="parent" :class="[`status--${test.getStatus()}`]">
+        <div v-if="test && !loading" class="has-status" :class="[`status--${test.getStatus()}`]">
             <div class="header">
                 <div class="title">
                     <Indicator :status="test.getStatus()" />
@@ -52,7 +53,10 @@ export default {
     },
     computed: {
         test () {
-            return _last(this.context)
+            if (this.context.length > 2) {
+                return _last(this.context)
+            }
+            return null
         },
         breadcrumbs () {
             // Remove repository and framework from breadcrumbs, as it feels
@@ -61,7 +65,7 @@ export default {
             return this.context.slice(2, (this.context.length - 1))
         },
         ...mapGetters({
-            testActive: 'test/active'
+            testActive: 'context/test'
         })
     },
     watch: {

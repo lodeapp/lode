@@ -1,6 +1,7 @@
 .test-result {
 
     .tabnav {
+        -webkit-app-region: drag;
         background-color: $secondary;
         border-bottom-color: $primary-border;
         padding: 0 15px;
@@ -10,6 +11,7 @@
         .tabnav-tabs {
 
             .tabnav-tab {
+                -webkit-app-region: no-drag;
                 border-width: 3px 1px 1px;
                 border-radius: 3px 3px 0 0;
 

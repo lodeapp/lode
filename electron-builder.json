@@ -1,0 +1,61 @@
+{
+  "publish": [{
+    "provider": "s3",
+    "bucket": "lode-releases"
+  }],
+  "productName": "Lode",
+  "appId": "com.recontra.lode",
+  "directories": {
+    "output": "build"
+  },
+  "files": [
+    "dist/electron/**/*"
+  ],
+  "asar": true,
+  "asarUnpack": [
+    "dist/electron/static/reporters/**/**"
+  ],
+  "dmg": {
+    "contents": [
+      {
+        "x": 410,
+        "y": 150,
+        "type": "link",
+        "path": "/Applications"
+      },
+      {
+        "x": 130,
+        "y": 150,
+        "type": "file"
+      }
+    ]
+  },
+  "mac": {
+    "category": "public.app-category.developer-tools",
+    "icon": "build/icons/icon.icns",
+    "target": [
+      "zip",
+      "dmg"
+    ]
+  },
+  "win": {
+    "icon": "build/icons/icon.ico",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      },
+      "zip"
+    ]
+  },
+  "linux": {
+    "icon": "build/icons",
+    "target": [
+      "deb",
+      "tar.gz",
+      "appimage"
+    ]
+  }
+}

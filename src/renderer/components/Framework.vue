@@ -1,9 +1,8 @@
 <template>
     <div
-        class="framework parent"
+        class="framework has-status"
         :class="[
             `status--${framework.status}`,
-            `is-${expandStatus}`,
             framework.selective ? 'selective' : ''
         ]"
     >
@@ -11,15 +10,12 @@
             <div class="title">
                 <Indicator :status="framework.status" />
                 <h3 class="heading">
-                    <span class="toggle" @mousedown="toggle">
-                        <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
-                    </span>
                     <span class="name">
                         {{ framework.name }}
                     </span>
                 </h3>
                 <div class="actions">
-                    <button type="button" class="btn-link more-actions" @click.prevent="onMoreClick">
+                    <button type="button" class="btn-link more-actions" @click.prevent="openMenu">
                         <Icon symbol="kebab-vertical" />
                     </button>
                     <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
@@ -42,86 +38,60 @@
                     </button>
                 </div>
             </div>
-            <div class="progress">
-                <template v-if="refreshing">Refreshing...</template>
-                <template v-else-if="queued">Queued...</template>
-                <template v-else-if="!framework.suites.length && running">Preparing run...</template>
-                <template v-else-if="framework.suites.length">
-                    {{ '1 suite|:n suites' | plural(framework.suites.length) }}
-                    <button
-                        type="button"
-                        class="ellipsis-expander"
-                        :aria-expanded="framework.expandFilters"
-                        @click="toggleFilters"
-                    >&hellip;</button>
+            <div class="filters">
+                <template v-if="framework.suites.length">
+                    <Ledger :framework="framework" />
+                </template>
+                <template v-else-if="queued">
+                    Queued...
+                </template>
+                <template v-else-if="refreshing">
+                    Refreshing...
                 </template>
                 <template v-else>
                     No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
                 </template>
             </div>
             <div v-if="framework.expandFilters" class="filters">
-                <Ledger :framework="framework" />
                 <!-- <div class="search" v-if="framework.suites.length > 1">
                     <input type="search" class="form-control input-block input-sm" placeholder="Filter suites">
                 </div> -->
             </div>
         </div>
-        <template v-if="show">
-            <Suite
-                v-for="suite in framework.suites"
-                :suite="suite"
-                :running="running"
-                :key="suite.getId()"
-                @activate="onChildActivation"
-            />
-        </template>
+        <Suite
+            v-for="suite in framework.suites"
+            :suite="suite"
+            :running="running"
+            :key="suite.getId()"
+            @activate="onChildActivation"
+        />
     </div>
 </template>
 
 <script>
-import { Menu } from '@main/menu'
+import { ipcRenderer } from 'electron'
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
+import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 
 export default {
     name: 'Framework',
     components: {
         Indicator,
-        Suite,
-        Ledger
+        Ledger,
+        Suite
     },
+    mixins: [
+        HasFrameworkMenu
+    ],
     props: {
         framework: {
             type: Object,
             required: true
         }
     },
-    data () {
-        return {
-            menu: new Menu()
-                .add({
-                    label: 'Framework settings…',
-                    click: () => {
-                        this.manage()
-                    }
-                })
-                .separator()
-                .add({
-                    label: 'Remove',
-                    click: () => {
-                        this.remove()
-                    }
-                })
-                .after(() => {
-                    this.$el.querySelector('.more-actions').blur()
-                })
-        }
-    },
     computed: {
-        show () {
-            return !this.framework.collapsed
-        },
         running () {
             return this.framework.status === 'running'
         },
@@ -130,37 +100,18 @@ export default {
         },
         queued () {
             return this.framework.status === 'queued'
-        },
-        expandStatus () {
-            return this.show ? 'expanded' : 'collapsed'
         }
     },
     created () {
-        this.framework.on('error', (error, process) => {
-            this.$alert.show({
-                message: this.$string.set('The process for **:0** terminated unexpectedly.', this.framework.name),
-                help: this.framework.troubleshoot(error),
-                type: 'error',
-                error
-            })
-        })
-
-        this.framework.on('suiteRemoved', suite => {
-            this.$root.onModelRemove(suite.getId())
-        })
+        ipcRenderer.on('menu-event', this.onAppMenuEvent)
+    },
+    mounted () {
+        this.$emit('mounted')
+    },
+    beforeDestroy () {
+        ipcRenderer.removeListener('menu-event', this.onAppMenuEvent)
     },
     methods: {
-        toggle () {
-            this.framework.toggle()
-        },
-        toggleFilters () {
-            this.framework.toggleFilters()
-        },
-        onMoreClick (event) {
-            this.menu
-                .attachTo(this.$el.querySelector('.more-actions'))
-                .open()
-        },
         refresh () {
             this.framework.refresh()
         },
@@ -170,20 +121,31 @@ export default {
         async stop () {
             await this.framework.stop()
         },
-        manage () {
-            this.$emit('manage', this.framework)
-        },
-        remove () {
-            this.$modal.confirm('RemoveFramework', { framework: this.framework })
-                .then(() => {
-                    this.$emit('remove', this.framework)
-                })
-                .catch(() => {})
-        },
         onChildActivation (context) {
-            context.unshift(this.framework)
-            this.$store.commit('context/ADD', this.framework.getId())
             this.$emit('activate', context)
+        },
+        onAppMenuEvent (event, { name, properties }) {
+            if (!this.framework) {
+                return
+            }
+
+            switch (name) {
+                case 'run-framework':
+                    this.framework.start()
+                    break
+                case 'refresh-framework':
+                    this.framework.refresh()
+                    break
+                case 'stop-framework':
+                    this.framework.stop()
+                    break
+                case 'framework-settings':
+                    this.manage()
+                    break
+                case 'remove-framework':
+                    this.remove()
+                    break
+            }
         }
     }
 }

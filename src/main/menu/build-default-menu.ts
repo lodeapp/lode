@@ -1,6 +1,5 @@
 import { ensureDir } from 'fs-extra'
 import { Menu, ipcMain, shell } from 'electron'
-import { ensureItemIds } from './ensure-item-ids'
 import { MenuEvent } from './menu-event'
 import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
@@ -10,7 +9,9 @@ import { ProjectIdentifier } from '@lib/frameworks/project'
 // raising an alert, so we need to forcibly cast types when defining them.
 type MenuItemType = ('normal' | 'separator' | 'submenu' | 'checkbox' | 'radio')
 
-export type ApplicationMenuOptions = {}
+export type ApplicationMenuOptions = {
+    hasFramework?: boolean
+}
 
 export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electron.Menu {
     const template = new Array<Electron.MenuItemConstructorOptions>()
@@ -19,19 +20,19 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
     const currentProject: string | null = state.getCurrentProject()
     const projects: Array<ProjectIdentifier> = state.getAvailableProjects()
 
+    const hasFramework = options.hasFramework || false
+
     if (__DARWIN__) {
         template.push({
             label: 'Lode',
             submenu: [
                 {
                     label: 'About Lode',
-                    click: emit('show-about'),
-                    id: 'about',
+                    click: emit('show-about')
                 },
                 separator,
                 {
                     label: 'Preferences…',
-                    id: 'preferences',
                     accelerator: 'CmdOrCtrl+,',
                     click: emit('show-preferences'),
                 },
@@ -55,13 +56,11 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         submenu: [
             {
                 label: __DARWIN__ ? 'New Project' : 'New project',
-                id: 'new-project',
                 accelerator: 'CmdOrCtrl+N',
                 click: emit('new-project')
             },
             {
                 label: __DARWIN__ ? 'Switch Project' : 'Switch project',
-                id: 'switch-project',
                 enabled: projects && projects.length > 1,
                 submenu: projects && projects.length > 1 ? projects.map(project => {
                     return {
@@ -87,7 +86,6 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
             separator,
             {
                 label: '&Options…',
-                id: 'preferences',
                 accelerator: 'CmdOrCtrl+,',
                 click: emit('show-preferences'),
             },
@@ -141,7 +139,6 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
             separator,
             {
                 label: '&Reload',
-                id: 'reload-window',
                 accelerator: 'CmdOrCtrl+0',
                 click(item: any, focusedWindow: Electron.BrowserWindow) {
                     if (focusedWindow) {
@@ -157,46 +154,57 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
         label: __DARWIN__ ? 'Project' : '&Project',
         submenu: [
             {
-                label: __DARWIN__ ? 'Run First' : 'Run first',
-                click: emit('run-selected'),
-                accelerator: 'CmdOrCtrl+R'
-            },
-            {
-                label: __DARWIN__ ? 'Run All' : 'Run all',
-                click: emit('run-project'),
-                accelerator: 'CmdOrCtrl+Shift+R'
-            },
-            {
-                label: 'Refresh',
-                click: emit('refresh-project'),
-                accelerator: 'CmdOrCtrl+Shift+I'
-            },
-            {
-                label: 'Stop',
-                click: emit('stop-project'),
-                accelerator: (() => {
-                    return __DARWIN__ ? 'Command+Esc' : 'Ctrl+Esc'
-                })(),
-            },
-            separator,
-            {
-                id: 'rename-project',
                 label: __DARWIN__ ? 'Rename Project' : 'Rename project',
                 accelerator: 'CmdOrCtrl+Shift+E',
                 click: emit('rename-project')
             },
             {
-                id: 'remove-project',
                 label: __DARWIN__ ? 'Remove Project' : 'Remove project',
                 accelerator: 'CmdOrCtrl+Shift+Backspace',
                 click: emit('remove-project')
             },
             separator,
             {
-                id: 'add-repositories',
                 label: __DARWIN__ ? 'Add Repositories… ' : 'Add repositories…',
-                accelerator: 'CmdOrCtrl+O',
                 click: emit('add-repositories')
+            }
+        ]
+    })
+
+    template.push({
+        label: __DARWIN__ ? 'Framework' : '&Framework',
+        submenu: [
+            {
+                label: __DARWIN__ ? 'Refresh Framework' : 'Refresh framework',
+                click: emit('refresh-framework'),
+                accelerator: 'CmdOrCtrl+R',
+                enabled: hasFramework
+            },
+            {
+                label: __DARWIN__ ? 'Run Framework' : 'Run framework',
+                click: emit('run-framework'),
+                accelerator: 'CmdOrCtrl+Shift+R',
+                enabled: hasFramework
+            },
+            {
+                label: __DARWIN__ ? 'Stop Framework' : 'Stop framework',
+                click: emit('stop-framework'),
+                accelerator: (() => {
+                    return __DARWIN__ ? 'Command+Esc' : 'Ctrl+Esc'
+                })(),
+                enabled: hasFramework
+            },
+            separator,
+            {
+                label: __DARWIN__ ? 'Framework Settings…' : 'Framework settings…',
+                click: emit('framework-settings'),
+                enabled: hasFramework
+            },
+            separator,
+            {
+                label: __DARWIN__ ? 'Remove Framework' : 'Remove framework',
+                click: emit('remove-framework'),
+                enabled: hasFramework
             }
         ]
     })
@@ -226,7 +234,6 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
                 },
                 separator,
                 {
-                    id: 'show-devtools',
                     label: __DARWIN__
                         ? 'Toggle Developer Tools'
                         : '&Toggle developer tools',
@@ -330,14 +337,11 @@ export function buildDefaultMenu (options: ApplicationMenuOptions = {}): Electro
                 separator,
                 {
                     label: '&About Lode',
-                    click: emit('show-about'),
-                    id: 'about'
+                    click: emit('show-about')
                 }
             ]
         })
     }
-
-     ensureItemIds(template)
 
     return Menu.buildFromTemplate(template)
 }
