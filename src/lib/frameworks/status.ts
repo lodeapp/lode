@@ -43,6 +43,17 @@ export function parseStatus (components: Array<Status>): Status {
         return 'incomplete'
     }
 
+    // If components include a skipped test, we'll consider its parent as
+    // incomplete. It's not obviously skipped, as something inside might've
+    // been run. Marking it as partial, on the other hand, could be confusing,
+    // as it's something we use for things that have run partially, i.e. not
+    // activated by the user itself rather than activated and skipped by the
+    // framework itself. Not 100% sure this is the right way to go, so we can
+    // revisit this in the future with more experience and feedback.
+    if (components.includes('skipped')) {
+        return 'incomplete'
+    }
+
     // If there are mixed queued and non-queued components, we'll consider the
     // final status as running, assuming this is transient because the status
     // will update again until queued components are run or process is stopped,

@@ -244,16 +244,20 @@ export class Suite extends Nugget implements ISuite {
      * @param result The result object with which to debrief this suite.
      * @param cleanup Whether to clean obsolete children after debriefing.
      */
-    public debrief (result: ISuiteResult, cleanup: boolean): Promise<void> {
+    public async debrief (result: ISuiteResult, cleanup: boolean): Promise<void> {
         this.file = result.file
         this.result.meta = result.meta
         this.result.console = result.console
         this.result.testsLoaded = result.testsLoaded
         return new Promise((resolve, reject) => {
-            this.debriefTests(result.tests || [], cleanup)
-                .then(() => {
-                    resolve()
-                })
+            // Bloom suite before debriefing, which ensures we can find and
+            // create tests using the actual models, not plain results.
+            this.bloom().then(() => {
+                this.debriefTests(result.tests || [], cleanup)
+                    .then(() => {
+                        resolve()
+                    })
+            })
         })
     }
 }
