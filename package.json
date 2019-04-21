@@ -21,13 +21,14 @@
     "licenses": "node .electron-vue/licenses.js",
     "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter src",
     "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src",
-    "pack:jest": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/reporters/webpack.jest.config.js",
+    "pack:jest": "cross-env NODE_ENV=production webpack --mode production --progress --colors --config .electron-vue/reporters/webpack.jest.config.js",
     "pack:phpunit": ".electron-vue/reporters/phpunit.sh",
     "pack:reporters": "yarn run pack:jest && yarn run pack:phpunit",
     "postinstall": "yarn run lint:fix",
     "tests": "jest --config .jestrc.json"
   },
   "dependencies": {
+    "@primer/css": "primer/css",
     "bottleneck": "^2.13.0",
     "electron-store": "^2.0.0",
     "electron-updater": "^4.0.6",
@@ -104,7 +105,6 @@
     "node-loader": "^0.6.0",
     "node-sass": "^4.9.3",
     "parse-author": "^2.0.0",
-    "primer": "^10.8.1",
     "require-dir": "^1.1.0",
     "sass-loader": "^7.1.0",
     "spectron": "^5.0.0",
