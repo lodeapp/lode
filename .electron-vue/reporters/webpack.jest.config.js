@@ -8,7 +8,7 @@ const replacements = getReplacements()
 const path = require('path')
 const webpack = require('webpack')
 
-const BabiliWebpackPlugin = require('babili-webpack-plugin')
+const MinifyPlugin = require('babel-minify-webpack-plugin')
 
 let config = {
     entry: {
@@ -51,7 +51,7 @@ config.plugins.push(
 
 if (process.env.NODE_ENV === 'production') {
     config.plugins.push(
-        new BabiliWebpackPlugin(),
+        new MinifyPlugin(),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': '"production"'
         })
