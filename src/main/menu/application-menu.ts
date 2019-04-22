@@ -1,5 +1,5 @@
 import { ensureDir } from 'fs-extra'
-import { Menu, ipcMain, shell } from 'electron'
+import { app, Menu, ipcMain, shell } from 'electron'
 import { MenuEvent } from './menu-event'
 import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
@@ -256,6 +256,24 @@ class ApplicationMenu {
                     },
                     separator,
                     {
+                        label: __DARWIN__
+                            ? 'Show User Data Folder in Finder'
+                            : __WIN32__
+                                ? 'S&how user data folder in Explorer'
+                                : 'S&how user data folder in your File Manager',
+                        click() {
+                            const path = app.getPath('userData')
+                            ensureDir(path)
+                                .then(() => {
+                                    shell.openItem(path)
+                                })
+                                .catch(error => {
+                                    log.error('Failed to opened logs directory from menu.', error)
+                                })
+                        }
+                    },
+                    separator,
+                    {
                         label: 'Crash main process',
                         click() {
                             throw new Error('Boomtown!')
@@ -339,10 +357,10 @@ class ApplicationMenu {
                                 ? 'S&how logs in Explorer'
                                 : 'S&how logs in your File Manager',
                         click() {
-                            const logPath = getLogDirectoryPath()
-                            ensureDir(logPath)
+                            const path = getLogDirectoryPath()
+                            ensureDir(path)
                                 .then(() => {
-                                    shell.openItem(logPath)
+                                    shell.openItem(path)
                                 })
                                 .catch(error => {
                                     log.error('Failed to opened logs directory from menu.', error)

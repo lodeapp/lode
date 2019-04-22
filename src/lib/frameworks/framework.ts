@@ -359,6 +359,14 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * Get this framework's remote path, if any, forcibly prefixing
+     * it with a slash as they are used as root paths.
+     */
+    public getRemotePath (): string {
+        return this.remotePath ? '/' + trimStart(this.remotePath, '/') : ''
+    }
+
+    /**
      * Update this framework's status.
      *
      * @param to The status we're updating to.
@@ -675,7 +683,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 user: this.sshUser,
                 port: this.sshPort,
                 identity: this.sshIdentity,
-                path: this.remotePath
+                path: this.getRemotePath()
             }
         })
 
@@ -713,7 +721,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             path: this.path,
             root: this.fullPath,
             runsInRemote: this.runsInRemote,
-            remotePath: this.remotePath
+            remotePath: this.getRemotePath()
         }, result)
     }
 
@@ -782,7 +790,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 path: this.path,
                 root: this.fullPath,
                 runsInRemote: this.runsInRemote,
-                remotePath: this.remotePath
+                remotePath: this.getRemotePath()
             })
         })
     }
@@ -833,7 +841,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param file The path of the file being checked.
      */
     protected fileInPath (file: string): boolean {
-        return file.startsWith(this.runsInRemote ? this.remotePath : this.fullPath)
+        return file.startsWith(this.runsInRemote ? this.getRemotePath() : this.fullPath)
     }
 
     /**

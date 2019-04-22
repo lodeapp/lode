@@ -105,7 +105,7 @@ export class Jest extends Framework {
             '--colors',
             '--reporters',
             this.runsInRemote
-                ? Path.join(this.remotePath, '.lode/jest/index.js')
+                ? Path.join(this.getRemotePath(), '.lode/jest/index.js')
                 : process.env.NODE_ENV === 'development'
                     ? Path.resolve(__dirname, '../../reporters/jest/index.js')
                     : unpacked(Path.join(__static, './reporters/jest/index.js'))

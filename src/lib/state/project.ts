@@ -8,7 +8,7 @@ export class Project {
 
     constructor (id: string) {
         this.store = new ElectronStore({
-            encryptionKey: 'v1',
+            encryptionKey: process.env.NODE_ENV === 'production' ? 'v1' : null,
             name: id,
             defaults: {
                 busy: false,

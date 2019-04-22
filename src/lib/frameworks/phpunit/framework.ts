@@ -99,13 +99,13 @@ export class PHPUnit extends Framework {
      * The command arguments for running this framework.
      */
     protected runArgs (): Array<string> {
-        const root = (this.runsInRemote ? this.remotePath : this.repositoryPath)
+        const root = (this.runsInRemote ? this.getRemotePath() : this.repositoryPath)
         const autoload = Path.join(root, this.proprietary.autoloadPath || 'vendor/autoload.php')
         const args = [
             `-d lode_bootstrap=${autoload}`,
             '--bootstrap',
             this.runsInRemote
-                ? Path.join(this.remotePath, '.lode/phpunit/bootstrap.php')
+                ? Path.join(this.getRemotePath(), '.lode/phpunit/bootstrap.php')
                 : process.env.NODE_ENV === 'development'
                     ? Path.resolve(__dirname, '../../reporters/phpunit/bootstrap.php')
                     : unpacked(Path.join(__static, './reporters/phpunit/bootstrap.php')),
