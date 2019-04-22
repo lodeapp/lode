@@ -2,13 +2,27 @@
     <Modal :title="$root.project ? $string.set('Add repositories to :0', $root.project.name) : 'Add repositories'">
         <form class="add-repositories" @submit.prevent="handleSubmit">
             <h5>Repositories</h5>
-            <RepositoryPath
+            <dl
                 v-for="(slot, index) in slots"
                 :key="slot.key"
-                :validator="slot.validator"
-                @input="onPathEdit(index, $event)"
-                @remove="removeRow(index)"
-            />
+                class="form-group"
+                :class="{ errored: slot.validator.hasErrors('path') }"
+            >
+                <dd class="d-flex">
+                    <input
+                        type="text"
+                        class="form-control input-block input-sm"
+                        placeholder="Repository path"
+                        v-model="slot.path"
+                        @input="slot.validator.reset('path')"
+                    >
+                    <button class="btn btn-sm" type="button" @click="choose(index)">Choose</button>
+                    <button class="remove-row tooltipped tooltipped-nw" type="button" @click="removeRow(index)" aria-label="Clear row">
+                        <Icon symbol="x" />
+                    </button>
+                </dd>
+                <dd v-if="slot.validator.hasErrors('path')" class="form-error">{{ slot.validator.getErrors('path') }}</dd>
+            </dl>
             <dl class="form-group">
                 <button type="button" class="btn btn-sm" @click="addRow">
                     Add another repository
@@ -33,18 +47,18 @@
 </template>
 
 <script>
+import { remote } from 'electron'
+import _find from 'lodash/find'
 import _uniqBy from 'lodash/uniqBy'
 import { RepositoryValidator } from '@lib/frameworks/validator'
 
 import Modal from '@/components/modals/Modal'
-import RepositoryPath from '@/components/RepositoryPath'
 import Confirm from '@/components/modals/mixins/confirm'
 
 export default {
     name: 'AddRepositories',
     components: {
-        Modal,
-        RepositoryPath
+        Modal
     },
     mixins: [Confirm],
     data () {
@@ -66,12 +80,27 @@ export default {
         this.addRow()
     },
     methods: {
-        addRow () {
+        async choose (index) {
+            const directory = remote.dialog.showOpenDialog({
+                properties: ['createDirectory', 'openDirectory', 'multiSelections']
+            })
+
+            if (!directory) {
+                return
+            }
+
+            directory.forEach((path, index) => {
+                if (!_find(this.slots, { path })) {
+                    index === 0 ? this.slots[index].path = path : this.addRow(path)
+                    this.slots[index].validator.reset('path')
+                }
+            })
+        },
+        addRow (path = '') {
             this.slots.push({
                 key: this.$string.random(),
                 validator: new RepositoryValidator(this.$root.project.repositories.map(repository => repository.path)),
-                errored: false,
-                path: ''
+                path
             })
         },
         removeRow (index) {
@@ -79,10 +108,6 @@ export default {
             if (!this.slots.length) {
                 this.addRow()
             }
-        },
-        onPathEdit (index, path) {
-            this.slots[index].errored = false
-            this.slots[index].path = path
         },
         handleSubmit () {
             if (this.empty) {
