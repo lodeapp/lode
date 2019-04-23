@@ -24,7 +24,7 @@ export interface ITest extends Nugget {
 }
 
 export interface ITestResult {
-    identifier: string
+    id: string
     name: string
     displayName: string
     status: Status
@@ -88,7 +88,7 @@ export class Test extends Nugget implements ITest {
      * Get this test's id.
      */
     getId (): string {
-        return this.result.identifier!
+        return this.result.id!
     }
 
     /**

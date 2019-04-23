@@ -55,7 +55,7 @@ class Base64TestReporter {
 
         return {
             ancestors: result.ancestorTitles,
-            identifier: this.hash(result.ancestorTitles.concat([result.title]).join('¦')),
+            id: this.hash(result.ancestorTitles.concat([result.title]).join('¦')),
             name: result.title,
             displayName: result.title,
             status: result.status,
@@ -109,12 +109,12 @@ class Base64TestReporter {
             if (result.ancestors.length) {
                 let prefix = suite
                 result.ancestors.forEach(ancestor => {
-                    const identifier = this.hash(`${prefix}¦${ancestor}`)
-                    let index = _findIndex(group, { identifier })
+                    const id = this.hash(`${prefix}¦${ancestor}`)
+                    let index = _findIndex(group, { id })
                     prefix += `${ancestor}`
                     if (index === -1) {
                         const test = {
-                            identifier,
+                            id,
                             name: ancestor,
                             displayName: ancestor,
                             status: result.status,
@@ -122,7 +122,7 @@ class Base64TestReporter {
                             tests: []
                         }
                         group.push(test)
-                        index = _findIndex(group, { identifier: test.identifier })
+                        index = _findIndex(group, { id: test.id })
                     }
                     group = group[index].tests
                 })

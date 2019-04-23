@@ -55,7 +55,7 @@ export abstract class Nugget extends EventEmitter {
      */
     protected defaults (result: ITestResult, status: Status | false = 'idle'): ITestResult {
         return {
-            identifier: result.identifier,
+            id: result.id,
             name: result.name,
             displayName: result.displayName || result.name,
             status: status ? status : result.status,
@@ -69,10 +69,10 @@ export abstract class Nugget extends EventEmitter {
     /**
      * Find the test by a given identifier in the nugget's current children.
      *
-     * @param identifier The identifier of the test to try to find.
+     * @param id The identifier of the test to try to find.
      */
-    protected findTest (identifier: string): ITest | undefined {
-        return find(this.tests, test => test.getId() === identifier)
+    protected findTest (id: string): ITest | undefined {
+        return find(this.tests, test => test.getId() === id)
     }
 
     /**
@@ -85,7 +85,7 @@ export abstract class Nugget extends EventEmitter {
         result: ITestResult,
         force: boolean = false
     ): ITest {
-        let test: ITest | undefined | boolean = force ? false : this.findTest(result.identifier)
+        let test: ITest | undefined | boolean = force ? false : this.findTest(result.id)
         if (!test) {
             test = this.newTest(result)
             test.on('selective', this.updateCountsListener)
