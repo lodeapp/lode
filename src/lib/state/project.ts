@@ -10,16 +10,20 @@ export class Project {
         log.info('Initializing project store: ' + id)
         this.store = new ElectronStore({
             encryptionKey: process.env.NODE_ENV === 'production' ? 'v1' : null,
-            name: id,
+            name: 'project',
             defaults: {
                 busy: false,
                 options: {
                     id
                 }
             },
-            fileExtension: 'lode',
-            cwd: 'Projects'
+            fileExtension: 'db',
+            cwd: `Projects/${id}`
         })
+    }
+
+    public getPath (): string {
+        return this.store.path.replace(/\/project\.db$/i, '')
     }
 
     public get (key?: string, fallback?: any): any {
