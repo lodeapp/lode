@@ -89,11 +89,9 @@ export default {
             if (!this.framework || !this.repository) {
                 return path
             }
-            let root = this.framework.runsInRemote ? this.framework.remotePath : this.repository.path
+            const root = this.framework.runsInRemote ? this.framework.remotePath : this.repository.path
             if (!root) {
                 return path
-            } else if (this.framework.path) {
-                root = Path.join(root, this.framework.path)
             }
             return Path.relative(root, path)
         },
@@ -101,6 +99,9 @@ export default {
             if (typeof item !== 'object') {
                 return
             }
+
+            // Calculate the local file path.
+            const filePath = Path.join(this.repository.path, this.toRelative(item.file))
 
             new Menu()
                 .add({
@@ -111,9 +112,9 @@ export default {
                             ? 'Show in Explorer'
                             : 'Show in your File Manager',
                     click: () => {
-                        this.$root.revealFile(item.file)
+                        this.$root.revealFile(filePath)
                     },
-                    enabled: this.$fileystem.exists(item.file)
+                    enabled: this.$fileystem.exists(filePath)
                 })
                 .add({
                     id: 'copy',
@@ -121,9 +122,9 @@ export default {
                         ? 'Copy File Path'
                         : 'Copy file path',
                     click: () => {
-                        this.$root.copyToClipboard(item.file)
+                        this.$root.copyToClipboard(filePath)
                     },
-                    enabled: this.$fileystem.exists(item.file)
+                    enabled: this.$fileystem.exists(filePath)
                 })
                 .add({
                     id: 'open',
@@ -131,9 +132,9 @@ export default {
                         ? 'Open with Default Program'
                         : 'Open with default program',
                     click: () => {
-                        this.$root.openFile(item.file)
+                        this.$root.openFile(filePath)
                     },
-                    enabled: this.$fileystem.isSafe(item.file) && this.$fileystem.exists(item.file)
+                    enabled: this.$fileystem.isSafe(filePath) && this.$fileystem.exists(filePath)
                 })
                 .before(() => {
                     this.activeContextMenu = index
