@@ -36,8 +36,6 @@
 </template>
 
 <script>
-import * as Path from 'path'
-import { pathExistsSync } from 'fs-extra'
 import { Menu } from '@main/menu'
 import { mapGetters } from 'vuex'
 import Nugget from '@/components/Nugget'
@@ -87,13 +85,10 @@ export default {
             return this.suite.file !== this.filePath ? this.suite.file : false
         },
         fileExists () {
-            return pathExistsSync(this.filePath)
-        },
-        fileExtension () {
-            return Path.extname(this.filePath)
+            return this.$fileystem.exists(this.filePath)
         },
         fileIsSafe () {
-            return this.$fileystem.isExtensionSafe(this.fileExtension)
+            return this.$fileystem.isSafe(this.filePath)
         },
         ...mapGetters({
             context: 'context/context'
@@ -157,6 +152,8 @@ export default {
                 .addMultiple(this.suite.contextMenu())
                 .open()
         },
+        // This is used by the suite's children to see if they
+        // can add an "open" item to their context menu.
         canOpen () {
             return this.fileIsSafe && this.fileExists
         },

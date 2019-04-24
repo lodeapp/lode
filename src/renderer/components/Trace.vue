@@ -15,7 +15,13 @@
         </template>
         <template v-else>
             <div class="collapsible-group">
-                <Collapsible v-for="(item, index) in trace" :key="index" :show="!index">
+                <Collapsible
+                    v-for="(item, index) in trace"
+                    :key="index"
+                    :show="!index"
+                    :class="{ 'has-context-menu': hasContextMenu(index) }"
+                    @contextmenu.native.stop.prevent="onContextMenu(item, index, $event)"
+                >
                     <template v-slot:header>
                         <template v-if="typeof item === 'object'">
                             <Filename :path="toRelative(item.file)" @dblclick.native.stop />
@@ -27,7 +33,11 @@
                         </template>
                     </template>
                     <template v-if="typeof item === 'object'">
-                        <Snippet :code="item.code" :line="item.line" :language="item.lang" />
+                        <Snippet
+                            :code="item.code"
+                            :line="item.line"
+                            :language="item.lang"
+                        />
                     </template>
                 </Collapsible>
             </div>
@@ -38,6 +48,7 @@
 <script>
 import * as Path from 'path'
 import _isArray from 'lodash/isArray'
+import { Menu } from '@main/menu'
 import Collapsible from '@/components/Collapsible'
 import Filename from '@/components/Filename'
 import Snippet from '@/components/Snippet'
@@ -63,6 +74,11 @@ export default {
             required: true
         }
     },
+    data () {
+        return {
+            activeContextMenu: null
+        }
+    },
     computed: {
         isNested () {
             return this.trace.length && this.trace[0] && _isArray(this.trace[0])
@@ -80,6 +96,55 @@ export default {
                 root = Path.join(root, this.framework.path)
             }
             return Path.relative(root, path)
+        },
+        onContextMenu (item, index, event) {
+            if (typeof item !== 'object') {
+                return
+            }
+
+            new Menu()
+                .add({
+                    id: 'reveal',
+                    label: __DARWIN__
+                        ? 'Reveal in Finder'
+                        : __WIN32__
+                            ? 'Show in Explorer'
+                            : 'Show in your File Manager',
+                    click: () => {
+                        this.$root.revealFile(item.file)
+                    },
+                    enabled: this.$fileystem.exists(item.file)
+                })
+                .add({
+                    id: 'copy',
+                    label: __DARWIN__
+                        ? 'Copy File Path'
+                        : 'Copy file path',
+                    click: () => {
+                        this.$root.copyToClipboard(item.file)
+                    },
+                    enabled: this.$fileystem.exists(item.file)
+                })
+                .add({
+                    id: 'open',
+                    label: __DARWIN__
+                        ? 'Open with Default Program'
+                        : 'Open with default program',
+                    click: () => {
+                        this.$root.openFile(item.file)
+                    },
+                    enabled: this.$fileystem.isSafe(item.file) && this.$fileystem.exists(item.file)
+                })
+                .before(() => {
+                    this.activeContextMenu = index
+                })
+                .after(() => {
+                    this.activeContextMenu = null
+                })
+                .open()
+        },
+        hasContextMenu (index) {
+            return this.activeContextMenu === index
         }
     }
 }
