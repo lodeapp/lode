@@ -32,7 +32,7 @@ export default {
                 commit('CLEAR')
             }
         },
-        clear: ({ commit }, modelId) => {
+        clear: ({ commit }) => {
             commit('CLEAR')
         }
     },

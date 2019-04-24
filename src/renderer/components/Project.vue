@@ -90,6 +90,7 @@
                     <Results
                         v-if="framework"
                         v-show="!frameworkLoading"
+                        :key="framework.getId()"
                         :context="fullContext"
                         @reset="resetContext"
                     />
@@ -183,11 +184,17 @@ export default {
                 framework
             })
         },
-        removeFramework (framework) {
-            this.$root.onModelRemove(framework.getId())
-            this.repository.removeFramework(framework.getId())
+        removeFramework (frameworkId) {
+            // If the framework we're removing is the currently active one,
+            // make sure to clear the Vuex context, too
+            if (frameworkId === this.framework.getId()) {
+                this.resetContext()
+                this.$store.commit('context/CLEAR')
+            }
+            this.repository.removeFramework(frameworkId)
             this.repository.save()
             this.framework = null
+            delete this.persistContext[frameworkId]
             this.onProjectChange()
         },
         registerFrameworkListeners (framework) {
