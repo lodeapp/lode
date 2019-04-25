@@ -131,8 +131,8 @@ export class PHPUnit extends Framework {
         const args: Array<string> = ['--filter']
         const filters: Array<string> = []
 
-        this.suites.filter(suite => suite.selected).forEach(suite => {
-            const suiteClass = PHPUnitSuite.escapeClassName(suite.class!)
+        this.suites.filter(suite => suite.selected).forEach((suite: PHPUnitSuite) => {
+            const suiteClass = suite.getClassName()
             const selected = suite.tests.filter((test: ITest) => test.selected)
             if (selected.length !== suite.tests.length) {
                 // If not running all tests from suite, filter each one

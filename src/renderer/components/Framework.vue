@@ -64,6 +64,7 @@
             :running="running"
             :key="suite.getId()"
             @activate="onChildActivation"
+            @refresh="refresh"
         />
     </div>
 </template>

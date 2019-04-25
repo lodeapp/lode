@@ -150,6 +150,17 @@ export default {
                     enabled: this.canOpen()
                 })
                 .addMultiple(this.suite.contextMenu())
+                .separator()
+                .add({
+                    label: __DARWIN__
+                        ? 'Refresh Metadata'
+                        : 'Refresh metadata',
+                    click: () => {
+                        this.suite.resetMeta()
+                        this.$emit('refresh')
+                    },
+                    enabled: !!this.suite.getMeta()
+                })
                 .open()
         },
         // This is used by the suite's children to see if they

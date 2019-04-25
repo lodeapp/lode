@@ -210,13 +210,13 @@ class ApplicationMenu {
                 {
                     label: __DARWIN__ ? 'Refresh Framework' : 'Refresh framework',
                     click: emit('refresh-framework'),
-                    accelerator: 'CmdOrCtrl+R',
+                    accelerator: 'CmdOrCtrl+Shift+R',
                     enabled: hasFramework
                 },
                 {
                     label: __DARWIN__ ? 'Run Framework' : 'Run framework',
                     click: emit('run-framework'),
-                    accelerator: 'CmdOrCtrl+Shift+R',
+                    accelerator: 'CmdOrCtrl+R',
                     enabled: hasFramework
                 },
                 {

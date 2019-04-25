@@ -25,7 +25,8 @@ export interface ISuite extends Nugget {
     getRelativePath (): string
     getDisplayName (): string
     getStatus (): Status
-    getMeta (): Array<any>
+    getMeta (): any
+    resetMeta (): void
     getConsole (): Array<any>
     testsLoaded (): boolean
     rebuildTests (result: ISuiteResult): void
@@ -47,7 +48,7 @@ export interface ISuite extends Nugget {
 export interface ISuiteResult {
     file: string
     tests?: Array<ITestResult>
-    meta?: Array<any>
+    meta?: object | null
     console?: Array<any>
     testsLoaded?: boolean
     version?: string
@@ -221,7 +222,16 @@ export class Suite extends Nugget implements ISuite {
             return this.result.meta!
         }
 
-        return get(this.result.meta!, key, fallback)
+        return !this.result.meta ? fallback : get(this.result.meta!, key, fallback)
+    }
+
+    /**
+     * Reset metadata for this suite.
+     */
+    public resetMeta (): void {
+        if (this.result.meta) {
+            this.result.meta = null
+        }
     }
 
     /**

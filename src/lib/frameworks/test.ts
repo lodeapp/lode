@@ -87,7 +87,7 @@ export class Test extends Nugget implements ITest {
     /**
      * Get this test's id.
      */
-    getId (): string {
+    public getId (): string {
         return this.result.id!
     }
 
