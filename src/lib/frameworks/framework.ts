@@ -659,8 +659,15 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Reset all previously queued suites.
      */
     protected idleQueued (): void {
+        if (this.selective) {
+            this.selected.suites.forEach(suite => {
+                suite.idleQueued(true)
+            })
+            return
+        }
+
         this.suites.forEach(suite => {
-            suite.idleQueued()
+            suite.idleQueued(false)
         })
     }
 

@@ -387,16 +387,18 @@ export abstract class Nugget extends EventEmitter {
     /**
      * Reset this nugget or any of its children if they are
      * on a queued status (i.e. from an interrupted run).
+     *
+     * @param selective Whether we're currently in selective mode or not.
      */
-    public idleQueued (): void {
-        if (this.getStatus() === 'queued') {
-            this.idle(false)
-            return
-        } else if (this.getStatus() === 'running') {
+    public idleQueued (selective: boolean): void {
+        if (['queued', 'running'].indexOf(this.getStatus()) > -1) {
             this.tests.forEach(test => {
-                test.idleQueued()
+                if (['queued', 'running'].indexOf(test.getStatus()) > -1) {
+                    test.idle(selective)
+                }
             })
             this.result!.tests = this.getTestResults().map((test: ITestResult) => {
+                // Static results can never be "running", so check for "queued" only.
                 if (test.status === 'queued') {
                     return this.defaults(test, 'idle')
                 }

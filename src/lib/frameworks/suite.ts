@@ -35,7 +35,7 @@ export interface ISuite extends Nugget {
     idle (selective: boolean): void
     queue (selective: boolean): void
     error (selective: boolean): void
-    idleQueued (): void
+    idleQueued (selective: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
     persist (): ISuiteResult
     refresh (options: SuiteOptions): void
@@ -122,12 +122,21 @@ export class Suite extends Nugget implements ISuite {
      * @param result The result object with which to build this suite's tests.
      */
     public rebuildTests (result: ISuiteResult): void {
-        this.result = result
-        if (this.bloomed) {
+        // Bloom the suite before rebuilding tests, so we can map the existing
+        // tests more precisely.
+        this.bloom().then(() => {
             this.tests = (result.tests || []).map((result: ITestResult) => {
                 return this.makeTest(result, false)
             })
-        }
+
+            if (!this.expanded) {
+                this.wither()
+            }
+
+            // Update the status in case new tests have been created
+            // or old tests have been removed.
+            this.updateStatus()
+        })
     }
 
     /**
