@@ -1,75 +1,95 @@
 <template>
-    <div
-        class="framework has-status"
-        :class="[
-            `status--${framework.status}`,
-            framework.selective ? 'selective' : ''
-        ]"
-    >
-        <div class="header">
-            <div class="title">
-                <Indicator :status="framework.status" />
-                <h3 class="heading">
-                    <span class="name">
-                        {{ framework.name }}
-                    </span>
-                </h3>
-                <div class="actions">
-                    <button type="button" class="btn-link more-actions" @click.prevent="openMenu">
-                        <Icon symbol="kebab-vertical" />
-                    </button>
-                    <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
-                        <Icon symbol="sync" />
-                    </button>
-                    <button
-                        class="btn btn-sm btn-primary"
-                        :disabled="running || refreshing"
-                        @click="start"
+    <div>
+        <div
+            class="framework has-status"
+            :class="[
+                `status--${framework.status}`,
+                selective ? 'selective' : ''
+            ]"
+        >
+            <div class="header">
+                <div class="title">
+                    <Indicator :status="framework.status" />
+                    <h3 class="heading">
+                        <span class="name">
+                            {{ framework.getDisplayName() }}
+                        </span>
+                    </h3>
+                    <div class="actions">
+                        <button type="button" class="btn-link more-actions" @click.prevent="openMenu">
+                            <Icon symbol="kebab-vertical" />
+                        </button>
+                        <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
+                            <Icon symbol="sync" />
+                        </button>
+                        <button
+                            class="btn btn-sm btn-primary"
+                            :disabled="running || refreshing"
+                            @click="start"
+                        >
+                            <template v-if="selective">
+                                Run selected
+                                <span class="Counter">{{ selected.suites.length }}</span>
+                            </template>
+                            <template v-else-if="filtering">
+                                {{ 'Run match|Run matches' | plural(suites.length) }}
+                                <span class="Counter">{{ suites.length }}</span>
+                            </template>
+                            <template v-else>Run</template>
+                        </button>
+                        <button
+                            class="btn btn-sm btn-danger"
+                            :disabled="!running && !refreshing && !queued"
+                            @click="stop"
+                        >
+                            Stop
+                        </button>
+                    </div>
+                </div>
+                <div class="filters">
+                    <template v-if="!framework.empty()">
+                        <Ledger :framework="framework" />
+                    </template>
+                    <template v-else-if="queued">
+                        Queued...
+                    </template>
+                    <template v-else-if="refreshing">
+                        Refreshing...
+                    </template>
+                    <template v-else>
+                        No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
+                    </template>
+                </div>
+                <div class="filters search">
+                    <input
+                        type="search"
+                        class="form-control input-block input-sm"
+                        placeholder="Filter suites"
+                        v-model="keyword"
                     >
-                        {{ framework.selective ? 'Run selected' : 'Run' }}
-                        <span v-if="framework.selective" class="Counter">{{ framework.selected.suites.length }}</span>
-                    </button>
-                    <button
-                        class="btn btn-sm btn-danger"
-                        :disabled="!running && !refreshing && !queued"
-                        @click="stop"
-                    >
-                        Stop
-                    </button>
                 </div>
             </div>
-            <div class="filters">
-                <template v-if="framework.suites.length">
-                    <Ledger :framework="framework" />
-                </template>
-                <template v-else-if="queued">
-                    Queued...
-                </template>
-                <template v-else-if="refreshing">
-                    Refreshing...
-                </template>
-                <template v-else>
-                    No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
-                </template>
-            </div>
-            <div v-if="framework.expandFilters" class="filters">
-                <!-- <div class="search" v-if="framework.suites.length > 1">
-                    <input type="search" class="form-control input-block input-sm" placeholder="Filter suites">
-                </div> -->
-            </div>
+            <Suite
+                v-for="suite in suites"
+                :suite="suite"
+                :running="running"
+                :key="suite.getId()"
+                @activate="onChildActivation"
+                @refresh="refresh"
+            />
         </div>
-        <Suite
-            v-for="suite in framework.suites"
-            :suite="suite"
-            :running="running"
-            :key="suite.getId()"
-            @activate="onChildActivation"
-            @refresh="refresh"
-        />
+        <div v-if="hidden" class="cutoff">
+            <div>
+                <div>{{ ':n hidden suite|:n hidden suites' | plural(hidden) }}</div>
+                <button class="btn-link" @click="resetFilters"><strong>Clear filters</strong></button>
+            </div>
+            <span class="zigzag"></span>
+        </div>
     </div>
 </template>
 
 <script>
+import _debounce from 'lodash/debounce'
 import { ipcRenderer } from 'electron'
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
@@ -93,6 +113,9 @@ export default {
         }
     },
     computed: {
+        suites () {
+            return this.framework.getSuites()
+        },
         running () {
             return this.framework.status === 'running'
         },
@@ -101,6 +124,26 @@ export default {
         },
         queued () {
             return this.framework.status === 'queued'
+        },
+        selective () {
+            return this.framework.isSelective()
+        },
+        selected () {
+            return this.framework.getSelected()
+        },
+        filtering () {
+            return this.framework.hasFilters()
+        },
+        hidden () {
+            return this.framework.count() - this.framework.getSuites().length
+        },
+        keyword: {
+            get () {
+                return this.framework.getFilter('keyword')
+            },
+            set: _debounce(function (value) {
+                this.framework.setFilter('keyword', value)
+            }, 150)
         }
     },
     created () {
@@ -147,6 +190,9 @@ export default {
                     this.remove()
                     break
             }
+        },
+        resetFilters () {
+            this.framework.resetFilters()
         }
     }
 }

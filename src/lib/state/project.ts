@@ -9,7 +9,7 @@ export class Project {
     constructor (id: string) {
         log.info('Initializing project store: ' + id)
         this.store = new ElectronStore({
-            encryptionKey: process.env.NODE_ENV === 'production' ? 'v1' : null,
+            encryptionKey: process.env.NODE_ENV === 'production' ? 'v1' : undefined,
             name: 'project',
             defaults: {
                 busy: false,

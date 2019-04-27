@@ -1,7 +1,8 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { find, findIndex, trimStart } from 'lodash'
+import { chunk, find, findIndex, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
+import { filter as fuzzy } from 'fuzzaldrin'
 import { EventEmitter } from 'events'
 import { IProcess } from '@lib/process/process'
 import { ProcessFactory } from '@lib/process/factory'
@@ -19,6 +20,11 @@ import pool from '@lib/process/pool'
 export type SuiteList = {
     suites: Array<ISuite>
 }
+
+/**
+ * A list of possible framework filters.
+ */
+export type FrameworkFilter = 'keyword' | 'status' | 'group'
 
 /**
  * Options to instantiate a Framework with.
@@ -40,7 +46,7 @@ export type FrameworkOptions = {
     active?: boolean
     suites?: Array<ISuiteResult>
     scanStatus?: 'pending' | 'removed'
-    proprietary: any,
+    proprietary: any
 }
 
 /**
@@ -61,10 +67,7 @@ export interface IFramework extends EventEmitter {
     sshIdentity: string | null
     runner: string | null
     process?: number
-    suites: Array<ISuite>
     status: FrameworkStatus
-    selective: boolean
-    selected: SuiteList
     queue: { [index: string]: Function }
     ledger: { [key in Status]: number }
 
@@ -76,11 +79,20 @@ export interface IFramework extends EventEmitter {
     isRunning (): boolean
     isRrefreshing (): boolean
     isBusy (): boolean
+    empty (): boolean
+    count (): number
     persist (): FrameworkOptions
     save (): void
     updateOptions (options: FrameworkOptions): void
     setActive (active: boolean): void
     isActive (): boolean
+    isSelective (): boolean
+    getSuites (): Array<ISuite>
+    getSelected (): SuiteList
+    setFilter (filter: FrameworkFilter, value: Array<string> | string | null): void
+    getFilter (filter: FrameworkFilter): Array<string> | string | null
+    hasFilters (): boolean
+    resetFilters (): void
 }
 
 /**
@@ -102,13 +114,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public sshPort!: number | null
     public sshIdentity!: string | null
     public process?: number
-    public suites: Array<ISuite> = []
     public running: Array<Promise<void>> = []
     public status: FrameworkStatus = 'loading'
-    public selective: boolean = false
-    public selected: SuiteList = {
-        suites: []
-    }
     public queue: { [index: string]: Function } = {}
     public ledger: { [key in Status]: number } = {
         queued: 0,
@@ -128,10 +135,22 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected version?: string
     protected parsed: boolean = false
     protected ready: boolean = false
+    protected suites: Array<ISuite> = []
+    protected selective: boolean = false
+    protected selected: SuiteList = {
+        suites: []
+    }
+    protected maxSelective: number = 200
     protected initialSuiteCount: number = 0
     protected initialSuiteReady: number = 0
+    protected hasSuites: boolean = false
     protected proprietary: any = {}
     protected active: boolean = false
+    protected filters: { [key in FrameworkFilter]: Array<string> | string | null } = {
+        keyword: null,
+        status: null,
+        group: null
+    }
 
     static readonly defaults?: FrameworkOptions
 
@@ -169,6 +188,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.active = options.active || false
 
         this.initialSuiteCount = (options.suites || []).length
+        this.hasSuites = this.initialSuiteCount > 0
 
         // If options include suites already (i.e. persisted state), add them.
         this.loadSuites(options.suites || [])
@@ -220,8 +240,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
     /**
      * The command arguments for running this framework selectively.
+     *
+     * @param suites The suites selected to run.
      */
-    protected abstract runSelectiveArgs (): Array<string>
+    protected abstract runSelectiveArgs (suites: Array<ISuite>): Array<string>
 
     /**
      * Reload this framework's suites and tests.
@@ -385,7 +407,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected handleRun (): Promise<void> {
         this.assemble()
-        if (this.selective) {
+        if (this.selective || this.hasFilters()) {
             return this.runSelective()
                 .then(() => {
                     this.disassemble()
@@ -433,7 +455,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
             this.idleQueued()
             this.updateStatus()
             this.emit('change', this)
-            this.disassemble()
             log.info(`Stopping ${this.name}`)
         })
         .catch(error => {
@@ -463,6 +484,22 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * Whether this framework has any suites.
+     * This is used for layout purposes. Renderer can't rely on the value
+     * returned by `getSuites` because it might be modified by filters.
+     */
+    public empty (): boolean {
+        return !this.hasSuites
+    }
+
+    /**
+     * How many suites the framework currently has.
+     */
+    public count (): number {
+        return this.suites.length
+    }
+
+    /**
      * Run all suites inside this framework.
      */
     protected run (): Promise<void> {
@@ -489,7 +526,15 @@ export abstract class Framework extends EventEmitter implements IFramework {
                         this.suites.forEach(suite => {
                             suite.queue(false)
                         })
-                        this.report(this.runArgs(), resolve, reject)
+                        this.report(this.runArgs())
+                            .then((outcome: string) => {
+                                if (outcome !== 'killed') {
+                                    this.afterRun()
+                                }
+                                resolve()
+                            }).catch(error => {
+                                reject(error)
+                            })
                     })
                     .catch(error => {
                         // Rejecting the Promise is enough to bubble the error
@@ -505,14 +550,32 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * selected by the user).
      */
     protected runSelective (): Promise<void> {
-        this.selected.suites.forEach(suite => {
+        const suites = this.selective ? this.selected.suites : this.getSuites()
+        suites.forEach(suite => {
             suite.queue(true)
         })
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
             // See @run for reasoning behind `nextTick`
             process.nextTick(() => {
-                this.report(this.runSelectiveArgs(), resolve, reject)
+                // Chunk the selected suites so we can ensure we're never filtering
+                // too many at a time (some frameworks will break if filtering
+                // arguments are too long, like PHPUnit's, which passes them
+                // straight into a `preg_match` call).
+                chunk(suites, this.maxSelective).reduce((step, chunk) => {
+                    return step.then((outcome: string) => {
+                        if (outcome === 'success') {
+                            return this.report(this.runSelectiveArgs(chunk))
+                        }
+                        return ''
+                    })
+                }, Promise.resolve('success'))
+                    .then(() => {
+                        this.afterRun()
+                        resolve()
+                    }).catch(error => {
+                        reject(error)
+                    })
             })
         })
     }
@@ -550,35 +613,30 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * and `reject` functions to standardise outcome resolution.
      *
      * @param args The arguments to run the report process with.
-     * @param resolve The wrapper Promise's resolve function
-     * @param reject The wrapper Promise's reject function
      */
-    protected report (
-        args: Array<string>,
-        resolve: Function,
-        reject: Function
-    ): IProcess {
-        return this.spawn(args)
-            .on('report', ({ process, report }) => {
-                try {
-                    this.running.push(this.debriefSuite(report))
-                } catch (error) {
-                    this.emit('error', error)
-                    log.error('Failed to debrief suite results.', error)
-                }
-            })
-            .on('success', () => {
-                Promise.all(this.running).then(() => {
-                    this.afterRun()
-                    resolve()
+    protected report (args: Array<string>): Promise<string> {
+        return new Promise((resolve, reject) => {
+            this.spawn(args)
+                .on('report', ({ process, report }) => {
+                    try {
+                        this.running.push(this.debriefSuite(report))
+                    } catch (error) {
+                        this.emit('error', error)
+                        log.error('Failed to debrief suite results.', error)
+                    }
                 })
-            })
-            .on('killed', () => {
-                resolve()
-            })
-            .on('error', error => {
-                reject(error)
-            })
+                .on('success', () => {
+                    Promise.all(this.running).then(() => {
+                        resolve('success')
+                    })
+                })
+                .on('killed', () => {
+                    resolve('killed')
+                })
+                .on('error', error => {
+                    reject(error)
+                })
+        })
     }
 
     /**
@@ -987,6 +1045,74 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     public isActive (): boolean {
         return this.active
+    }
+
+    /**
+     * Whether the framework has any selected suites.
+     */
+    public isSelective (): boolean {
+        return this.selective
+    }
+
+    /**
+     * Get the framework's suites.
+     */
+    public getSuites (): Array<ISuite> {
+        if (!this.hasFilters()) {
+            return this.suites
+        }
+
+        const keyword = this.filters.keyword ? (this.filters.keyword as string).toUpperCase() : null
+        return this.suites.filter((suite: ISuite) => {
+            if (keyword) {
+                if (!fuzzy([suite.getFilePath().toUpperCase()], keyword).length) {
+                    return false
+                }
+            }
+            return true
+        })
+    }
+
+    /**
+     * Get the framework's selected suites.
+     */
+    public getSelected (): SuiteList {
+        return this.selected
+    }
+
+    /**
+     * Set a filter for this framework.
+     */
+    public setFilter (
+        filter: FrameworkFilter,
+        value: Array<string> | string | null
+    ): void {
+        this.filters[filter] = value
+    }
+
+    /**
+     * Get the value of a framework filter.
+     */
+    getFilter (filter: FrameworkFilter): Array<string> | string | null {
+        return this.filters[filter]
+    }
+
+    /**
+     * Whether the framework has any filters currently active.
+     */
+    public hasFilters (): boolean {
+        return Object.values(this.filters).some(value => !!value)
+    }
+
+    /**
+     * Reset all filters for this framework.
+     */
+    public resetFilters (): void {
+        this.filters = {
+            keyword: null,
+            status: null,
+            group: null
+        }
     }
 
     /**

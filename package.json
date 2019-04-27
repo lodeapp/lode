@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "Lode",
-  "version": "0.16.2",
+  "version": "0.17.0",
   "author": "Tomas Buteler <tbuteler@me.com>",
   "description": "A universal GUI for test runners",
   "license": null,
@@ -11,6 +11,11 @@
     "build:all": "yarn run clean:all && yarn run icons && yarn run pack:reporters && yarn run licenses && node .electron-vue/build.js && electron-builder --m --l --w && yarn run clean",
     "build:dev": "cross-env IS_DEV=true yarn run build",
     "release": "yarn run clean:all && yarn run icons && yarn run pack:reporters && yarn run licenses && node .electron-vue/build.js && electron-builder --publish always && yarn run clean",
+    "release:mac": "yarn run clean:all && yarn run icons && yarn run pack:reporters && yarn run licenses && node .electron-vue/build.js && electron-builder --m --publish always && yarn run clean",
+    "release:linux": "yarn run clean:all && yarn run icons && yarn run pack:reporters && yarn run licenses && node .electron-vue/build.js && electron-builder --l --publish always && yarn run clean",
+    "release:win": "yarn run clean:all && yarn run icons && yarn run pack:reporters && yarn run licenses && node .electron-vue/build.js && electron-builder --w --publish always && yarn run clean",
+    "release:unix": "yarn run clean:all && yarn run icons && yarn run pack:reporters && yarn run licenses && node .electron-vue/build.js && electron-builder --m --l --publish always && yarn run clean",
+    "release:all": "yarn run clean:all && yarn run icons && yarn run pack:reporters && yarn run licenses && node .electron-vue/build.js && electron-builder --m --l --w --publish always && yarn run clean",
     "clean": "rm -rf static/reporters && rm -rf dist/* && mkdir dist/electron && touch dist/electron/.gitkeep",
     "clean:all": "yarn run clean:build && yarn run clean",
     "clean:build": "rm -rf build/*",
@@ -30,7 +35,7 @@
   "dependencies": {
     "@primer/css": "primer/css",
     "bottleneck": "^2.13.0",
-    "electron-store": "^2.0.0",
+    "electron-store": "^3.0.0",
     "electron-updater": "^4.0.6",
     "electron-window-state": "^5.0.2",
     "fs-extra": "^7.0.0",
@@ -56,6 +61,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^5.0.4",
+    "@types/fuzzaldrin": "^2.1.2",
     "@types/glob": "^7.1.1",
     "@types/latinize": "^0.2.15",
     "@types/lodash": "^4.14.116",

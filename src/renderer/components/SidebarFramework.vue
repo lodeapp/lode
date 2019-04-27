@@ -7,8 +7,8 @@
         <div class="title">
             <Indicator :status="framework.status" />
             <h4 class="heading">
-                <span class="name" :title="framework.name">
-                    {{ framework.name }}
+                <span class="name" :title="framework.getDisplayName()">
+                    {{ framework.getDisplayName() }}
                 </span>
             </h4>
         </div>

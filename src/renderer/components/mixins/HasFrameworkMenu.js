@@ -6,7 +6,7 @@ export default {
             menuActive: false,
             menu: new Menu()
                 .add({
-                    label: this.framework.name,
+                    label: this.framework.getDisplayName(),
                     enabled: false
                 })
                 .add({

@@ -201,7 +201,7 @@ export default {
             framework
                 .on('error', (error, process) => {
                     this.$alert.show({
-                        message: this.$string.set('The process for **:0** terminated unexpectedly.', framework.name),
+                        message: this.$string.set('The process for **:0** terminated unexpectedly.', framework.getDisplayName()),
                         help: framework.troubleshoot(error),
                         type: 'error',
                         error

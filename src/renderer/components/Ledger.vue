@@ -1,8 +1,8 @@
 <template>
     <div class="progress-breakdown">
-        <span v-if="framework.selective" class="Label Label--outline Label--selected">
-            <span>{{ framework.selected.suites.length }}</span>
-            {{ 'selected|selected' | plural(framework.selected.suites.length) }}
+        <span v-if="framework.isSelective()" class="Label Label--outline Label--selected">
+            <span>{{ selected.length }}</span>
+            {{ 'selected|selected' | plural(selected.length) }}
         </span>
         <template v-for="(count, status) in ledger">
             <span class="Label Label--outline" :class="[`Label--${status}`]" v-if="count > 0" :key="status">
@@ -41,6 +41,9 @@ export default {
         }
     },
     computed: {
+        selected () {
+            return this.framework.getSelected().suites
+        },
         ledger () {
             // Modify ledger to consolidate running and queued states.
             const ledger = _cloneDeep(this.framework.ledger)
