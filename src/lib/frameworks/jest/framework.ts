@@ -123,8 +123,9 @@ export class Jest extends Framework {
      * The command arguments for running this framework selectively.
      *
      * @param suites The suites selected to run.
+     * @param selectTests Whether to check for selected tests, or run the entire suite.
      */
-    protected runSelectiveArgs (suites: Array<ISuite>): Array<string> {
+    protected runSelectiveArgs (suites: Array<ISuite>, selectTests: boolean): Array<string> {
         const args: Array<string> = []
 
         suites.forEach((suite: ISuite) => {

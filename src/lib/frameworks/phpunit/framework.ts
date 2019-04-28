@@ -128,22 +128,14 @@ export class PHPUnit extends Framework {
      * The command arguments for running this framework selectively.
      *
      * @param suites The suites selected to run.
+     * @param selectTests Whether to check for selected tests, or run the entire suite.
      */
-    protected runSelectiveArgs (suites: Array<ISuite>): Array<string> {
+    protected runSelectiveArgs (suites: Array<ISuite>, selectTests: boolean): Array<string> {
         const args: Array<string> = ['--filter']
         const filters: Array<string> = []
-        const suiteIds = suites.map((suite: ISuite) => suite.getId())
-
-        // @TODO: Since PHPUnit tests run sequentially, we can't create the
-        // arguments in the order they are given, otherwise we'd run the suites
-        // in the order they were selected, not the order they appear. When we
-        // support sorting of suites we could order the `suites` argument before
-        // passing it here, but for now we will filter the entire suite array to
-        // make sure they run in the correct order (that is, if the selected
-        // suites haven't been chunked).
-        this.suites.filter((suite: ISuite) => suiteIds.includes(suite.getId())).forEach((suite: ISuite) => {
+        suites.forEach((suite: ISuite) => {
             const suiteClass = (suite as PHPUnitSuite).getClassName()
-            const selected = suite.tests.filter((test: ITest) => test.selected)
+            const selected = suite.tests.filter((test: ITest) => selectTests ? test.selected : true)
             if (selected.length !== suite.tests.length) {
                 // If not running all tests from suite, filter each one
                 selected.forEach((test: ITest) => {

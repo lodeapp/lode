@@ -242,8 +242,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * The command arguments for running this framework selectively.
      *
      * @param suites The suites selected to run.
+     * @param selectTests Whether to check for selected tests, or run the entire suite.
      */
-    protected abstract runSelectiveArgs (suites: Array<ISuite>): Array<string>
+    protected abstract runSelectiveArgs (suites: Array<ISuite>, selectTests: boolean): Array<string>
 
     /**
      * Reload this framework's suites and tests.
@@ -484,19 +485,19 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * How many suites the framework currently has.
+     */
+    public count (): number {
+        return this.suites.length
+    }
+
+    /**
      * Whether this framework has any suites.
      * This is used for layout purposes. Renderer can't rely on the value
      * returned by `getSuites` because it might be modified by filters.
      */
     public empty (): boolean {
-        return !this.hasSuites
-    }
-
-    /**
-     * How many suites the framework currently has.
-     */
-    public count (): number {
-        return this.suites.length
+        return this.count() === 0
     }
 
     /**
@@ -552,7 +553,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected runSelective (): Promise<void> {
         const suites = this.selective ? this.selected.suites : this.getSuites()
         suites.forEach(suite => {
-            suite.queue(true)
+            suite.queue(this.selective)
         })
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
@@ -562,10 +563,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 // too many at a time (some frameworks will break if filtering
                 // arguments are too long, like PHPUnit's, which passes them
                 // straight into a `preg_match` call).
+                // @TODO: sort suites before chunking.
                 chunk(suites, this.maxSelective).reduce((step, chunk) => {
                     return step.then((outcome: string) => {
                         if (outcome === 'success') {
-                            return this.report(this.runSelectiveArgs(chunk))
+                            return this.report(this.runSelectiveArgs(chunk, this.selective))
                         }
                         return ''
                     })
@@ -1066,6 +1068,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return this.suites.filter((suite: ISuite) => {
             if (keyword) {
                 if (!fuzzy([suite.getFilePath().toUpperCase()], keyword).length) {
+                    if (suite.selected) {
+                        suite.toggleSelected(false, true)
+                    }
                     return false
                 }
             }

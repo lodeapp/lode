@@ -24,14 +24,14 @@
                         </button>
                         <button
                             class="btn btn-sm btn-primary"
-                            :disabled="running || refreshing"
+                            :disabled="running || refreshing || noResults"
                             @click="start"
                         >
                             <template v-if="selective">
                                 Run selected
                                 <span class="Counter">{{ selected.suites.length }}</span>
                             </template>
-                            <template v-else-if="filtering">
+                            <template v-else-if="filtering && !noResults">
                                 {{ 'Run match|Run matches' | plural(suites.length) }}
                                 <span class="Counter">{{ suites.length }}</span>
                             </template>
@@ -60,7 +60,7 @@
                         No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
                     </template>
                 </div>
-                <div class="filters search">
+                <div v-if="framework.count()" class="filters search">
                     <input
                         type="search"
                         class="form-control input-block input-sm"
@@ -80,7 +80,8 @@
         </div>
         <div v-if="hidden" class="cutoff">
             <div>
-                <div>{{ ':n hidden suite|:n hidden suites' | plural(hidden) }}</div>
+                <div v-if="noResults">No results</div>
+                <div v-else>{{ ':n hidden suite|:n hidden suites' | plural(hidden) }}</div>
                 <button class="btn-link" @click="resetFilters"><strong>Clear filters</strong></button>
             </div>
             <span class="zigzag"></span>
@@ -114,6 +115,7 @@ export default {
     },
     computed: {
         suites () {
+            console.log('getting suites')
             return this.framework.getSuites()
         },
         running () {
@@ -136,6 +138,9 @@ export default {
         },
         hidden () {
             return this.framework.count() - this.framework.getSuites().length
+        },
+        noResults () {
+            return this.hidden === this.framework.count()
         },
         keyword: {
             get () {
