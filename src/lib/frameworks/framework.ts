@@ -1066,13 +1066,26 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
         const keyword = this.filters.keyword ? (this.filters.keyword as string).toUpperCase() : null
         return this.suites.filter((suite: ISuite) => {
-            if (keyword) {
-                if (!fuzzy([suite.getFilePath().toUpperCase()], keyword).length) {
-                    if (suite.selected) {
-                        suite.toggleSelected(false, true)
-                    }
-                    return false
+            if (
+                (
+                    keyword &&
+                    !fuzzy([suite.getFilePath().toUpperCase()], keyword).length
+                ) ||
+                (
+                    this.filters.status &&
+                    (
+                        this.filters.status.indexOf(suite.getStatus()) === -1 &&
+                        // Don't exclude queued or running suites, otherwise running
+                        // a matched status filter would automatically dissolve
+                        // all matches once it starts.
+                        ['queued', 'running'].indexOf(suite.getStatus()) === -1
+                    )
+                )
+            ) {
+                if (suite.selected) {
+                    suite.toggleSelected(false, true)
                 }
+                return false
             }
             return true
         })
@@ -1092,13 +1105,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
         filter: FrameworkFilter,
         value: Array<string> | string | null
     ): void {
-        this.filters[filter] = value
+        this.filters[filter] = Array.isArray(value) ? (value.length ? value : null) : value
     }
 
     /**
      * Get the value of a framework filter.
      */
-    getFilter (filter: FrameworkFilter): Array<string> | string | null {
+    public getFilter (filter: FrameworkFilter): Array<string> | string | null {
         return this.filters[filter]
     }
 

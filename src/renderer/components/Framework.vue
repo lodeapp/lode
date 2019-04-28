@@ -115,7 +115,6 @@ export default {
     },
     computed: {
         suites () {
-            console.log('getting suites')
             return this.framework.getSuites()
         },
         running () {
