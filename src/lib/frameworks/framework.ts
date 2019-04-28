@@ -552,6 +552,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected runSelective (): Promise<void> {
         const suites = this.selective ? this.selected.suites : this.getSuites()
+
+        // If we're running filtered matches and all suites match, just
+        // run the framework as normal, for performance reasons.
+        if (!this.selective && suites.length === this.suites.length) {
+            return this.run()
+        }
+
         suites.forEach(suite => {
             suite.queue(this.selective)
         })
