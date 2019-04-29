@@ -38,6 +38,10 @@
     .filters {
         padding: var(--spacing-half) var(--spacing) var(--spacing-half);
 
+        a {
+            -webkit-app-region: no-drag !important;
+        }
+
         .progress-breakdown {
             @include clearfix;
 

@@ -2,9 +2,9 @@
 
 namespace LodeApp\PHPUnit;
 
-use PHPUnit\Framework\Test;
-use PHPUnit\Framework\WarningTestCase;
-use PHPUnit\Util\TestDox\NamePrettifier;
+use PHPUnit_Framework_Test;
+use PHPUnit_Framework_WarningTestCase;
+use PHPUnit_Util_TestDox_NamePrettifier;
 use ReflectionClass;
 use Throwable;
 
@@ -28,7 +28,7 @@ class Report
     /**
      * Name prettifier, for consistent transformations.
      *
-     * @var \PHPUnit\Util\TestDox\NamePrettifier
+     * @var \PHPUnit_Util_TestDox_NamePrettifier
      */
     protected $prettifier;
 
@@ -43,7 +43,7 @@ class Report
      * The test originating object. Not necessarily corresponds
      * to the test itself (i.e. could be a warning).
      *
-     * @var PHPUnit\Framework\Test
+     * @var PHPUnit_Framework_Test
      */
     protected $test;
 
@@ -78,9 +78,9 @@ class Report
     /**
      * Create a new Lode report class.
      *
-     * @param \PHPUnit\Framework\Test $test
+     * @param \PHPUnit_Framework_Test $test
      */
-    public function __construct(Test $test)
+    public function __construct(PHPUnit_Framework_Test $test)
     {
         $this->test = $test;
         $this->class = get_class($this->test);
@@ -92,7 +92,7 @@ class Report
         }
         $this->reflection = new ReflectionClass($this->class);
 
-        $this->prettifier = new NamePrettifier;
+        $this->prettifier = new PHPUnit_Util_TestDox_NamePrettifier;
         $this->console = Lode::make(Console::class);
     }
 
@@ -207,7 +207,7 @@ class Report
             'console' => $this->isLast ? $this->console->pullSuiteLogs($this->getFileName()) : [],
             'meta' => [
                 'class' => $this->getClass(),
-                'groups' => $this->test->getGroups(),
+                'groups' => method_exists($this->test, 'getGroups') ? $this->test->getGroups() : [],
             ],
         ]);
     }
@@ -219,7 +219,7 @@ class Report
      */
     public function isWarning()
     {
-        return $this->test instanceof WarningTestCase;
+        return $this->test instanceof PHPUnit_Framework_WarningTestCase;
     }
 
     /**

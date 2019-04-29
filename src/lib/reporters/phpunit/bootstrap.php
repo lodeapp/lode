@@ -11,9 +11,20 @@ try {
     exit(1);
 }
 
-spl_autoload_register(function($class) {
+spl_autoload_register(function ($class) {
     if (stripos($class, 'LodeApp\PHPUnit') === 0) {
-        include_once __DIR__ . DIRECTORY_SEPARATOR. 'src' . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen('LodeApp\PHPUnit')) . '.php');
+        $folder = '';
+        if (class_exists('PHPUnit_Runner_Version') && stripos(\PHPUnit_Runner_Version::id(), '5.') === 0) {
+            if ($class === 'LodeApp\PHPUnit\LodeReporter' || $class === 'LodeApp\PHPUnit\Report') {
+                $folder = DIRECTORY_SEPARATOR . '5';
+            }
+        } else if (class_exists('PHPUnit\Runner\Version') && stripos(\PHPUnit\Runner\Version::id(), '6.') === 0) {
+            if ($class === 'LodeApp\PHPUnit\LodeReporter') {
+                $folder = DIRECTORY_SEPARATOR . '6';
+            }
+        }
+
+        include_once __DIR__ . DIRECTORY_SEPARATOR. 'src' . $folder . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen('LodeApp\PHPUnit')) . '.php');
     }
 });
 
