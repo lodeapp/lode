@@ -29,8 +29,8 @@ export class Window {
         ? `http://localhost:9080`
         : `file://${__dirname}/index.html`
 
-    protected minWidth = 900
-    protected minHeight = 600
+    protected minWidth = 960
+    protected minHeight = 660
 
     public constructor(projectId: string | null) {
 
@@ -42,8 +42,8 @@ export class Window {
 
         // Load saved window state, if any
         const savedWindowState = windowStateKeeper({
-            defaultHeight: this.minWidth,
-            defaultWidth: this.minHeight
+            defaultHeight: this.minHeight,
+            defaultWidth: this.minWidth
         })
 
         // Initial window options

@@ -46,6 +46,7 @@ class State extends EventEmitter {
     }
 
     public reset (): void {
+        log.info('Resetting settings.')
         this.emit('clear', this.get())
         this.store.clear()
         const userData = app.getPath('userData')
