@@ -114,7 +114,7 @@
 
         &.is-active {
             background-color: theme-color('failed');
-            border-color: theme-color('failed', 'step', 100);
+            border-color: theme-color('failed', 'step', 200);
             color: theme-color('failed', '000');
 
             &:hover,

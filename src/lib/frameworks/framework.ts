@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { chunk, find, findIndex, trimStart } from 'lodash'
+import { chunk, find, findIndex, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { filter as fuzzy } from 'fuzzaldrin'
 import { EventEmitter } from 'events'
@@ -1071,11 +1071,18 @@ export abstract class Framework extends EventEmitter implements IFramework {
             return this.suites
         }
 
-        const keyword = this.filters.keyword ? (this.filters.keyword as string).toUpperCase() : null
+        const exact = this.filters.keyword && (this.filters.keyword as string).match(/^[\'\"].+[\'\"]$/g)
+        const keyword = this.filters.keyword ? trim((this.filters.keyword as string).toUpperCase(), `"'`) : null
         return this.suites.filter((suite: ISuite) => {
             if (
                 (
                     keyword &&
+                    exact &&
+                    suite.getFilePath().toUpperCase().indexOf(keyword) === -1
+                ) ||
+                (
+                    keyword &&
+                    !exact &&
                     !fuzzy([suite.getFilePath().toUpperCase()], keyword).length
                 ) ||
                 (
