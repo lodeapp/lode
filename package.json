@@ -24,6 +24,7 @@
     "e2e": "yarn run pack && mocha tests/e2e",
     "icons": "mkdir -p build/icons && cp -rf static/icons/* build/icons",
     "licenses": "node .electron-vue/licenses.js",
+    "decipher": "node .electron-vue/decipher.js",
     "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter src",
     "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src",
     "pack:jest": "cross-env NODE_ENV=production webpack --mode production --progress --colors --config .electron-vue/reporters/webpack.jest.config.js",
