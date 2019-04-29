@@ -1,5 +1,13 @@
-input::placeholder {
-    color: var(--input-placeholder-text-color);
+input {
+    -webkit-app-region: no-drag !important;
+
+    &::placeholder {
+        color: var(--input-placeholder-text-color);
+    }
+
+    &[type=search]::-webkit-search-cancel-button {
+        -webkit-appearance: searchfield-cancel-button;
+    }
 }
 
 select {

@@ -1,9 +1,10 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { get } from 'lodash'
-import { unpacked } from '@lib/helpers'
+import { unpacked } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
+import { ISuite } from '@lib/frameworks/suite'
 
 export class Jest extends Framework {
 
@@ -120,11 +121,14 @@ export class Jest extends Framework {
 
     /**
      * The command arguments for running this framework selectively.
+     *
+     * @param suites The suites selected to run.
+     * @param selectTests Whether to check for selected tests, or run the entire suite.
      */
-    protected runSelectiveArgs (): Array<string> {
+    protected runSelectiveArgs (suites: Array<ISuite>, selectTests: boolean): Array<string> {
         const args: Array<string> = []
 
-        this.suites.filter(suite => suite.selected).forEach(suite => {
+        suites.forEach((suite: ISuite) => {
             args.push(suite.getRelativePath())
         })
 

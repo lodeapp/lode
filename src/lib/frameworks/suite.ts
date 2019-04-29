@@ -172,14 +172,14 @@ export class Suite extends Nugget implements ISuite {
     /**
      * Get this suite's id.
      */
-    getId (): string {
+    public getId (): string {
         return this.file!
     }
 
     /**
      * Get this suite's file.
      */
-    getFile (): string {
+    public getFile (): string {
         return this.file!
     }
 

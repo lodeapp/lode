@@ -27,6 +27,14 @@ export function parseStatus (components: Array<Status>): Status {
         return components[0]
     }
 
+    // If there are mixed queued and non-queued components, we'll consider the
+    // final status as running, assuming this is transient because the status
+    // will update again until queued components are run or process is stopped,
+    // in which case we'll manually change from running to something else.
+    if (components.includes('queued')) {
+        return 'running'
+    }
+
     if (components.includes('error')) {
         return 'error'
     }
@@ -52,14 +60,6 @@ export function parseStatus (components: Array<Status>): Status {
     // revisit this in the future with more experience and feedback.
     if (components.includes('skipped')) {
         return 'incomplete'
-    }
-
-    // If there are mixed queued and non-queued components, we'll consider the
-    // final status as running, assuming this is transient because the status
-    // will update again until queued components are run or process is stopped,
-    // in which case we'll manually change from running to something else.
-    if (components.includes('queued')) {
-        return 'running'
     }
 
     return 'partial'

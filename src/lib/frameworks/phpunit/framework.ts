@@ -1,9 +1,9 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { unpacked } from '@lib/helpers'
+import { unpacked } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
-import { ISuiteResult, Suite } from '@lib/frameworks/suite'
+import { ISuiteResult, ISuite, Suite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
 import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
 import { FrameworkValidator } from '@lib/frameworks/validator'
@@ -126,14 +126,16 @@ export class PHPUnit extends Framework {
 
     /**
      * The command arguments for running this framework selectively.
+     *
+     * @param suites The suites selected to run.
+     * @param selectTests Whether to check for selected tests, or run the entire suite.
      */
-    protected runSelectiveArgs (): Array<string> {
+    protected runSelectiveArgs (suites: Array<ISuite>, selectTests: boolean): Array<string> {
         const args: Array<string> = ['--filter']
         const filters: Array<string> = []
-
-        this.suites.filter(suite => suite.selected).forEach((suite: PHPUnitSuite) => {
-            const suiteClass = suite.getClassName()
-            const selected = suite.tests.filter((test: ITest) => test.selected)
+        suites.forEach((suite: ISuite) => {
+            const suiteClass = (suite as PHPUnitSuite).getClassName()
+            const selected = suite.tests.filter((test: ITest) => selectTests ? test.selected : true)
             if (selected.length !== suite.tests.length) {
                 // If not running all tests from suite, filter each one
                 selected.forEach((test: ITest) => {

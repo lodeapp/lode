@@ -1,11 +1,17 @@
 <template>
     <div class="progress-breakdown">
-        <span v-if="framework.selective" class="Label Label--outline Label--selected">
-            <span>{{ framework.selected.suites.length }}</span>
-            {{ 'selected|selected' | plural(framework.selected.suites.length) }}
+        <span v-if="framework.isSelective()" class="Label Label--outline Label--selected">
+            <span>{{ selected.length }}</span>
+            {{ 'selected|selected' | plural(selected.length) }}
         </span>
         <template v-for="(count, status) in ledger">
-            <span class="Label Label--outline" :class="[`Label--${status}`]" v-if="count > 0" :key="status">
+            <span
+                v-if="count > 0 || isActive(status)"
+                :key="status"
+                class="Label Label--outline"
+                :class="[`Label--${status}`, isActive(status) ? 'is-active' : '']"
+                @click="toggle(status)"
+            >
                 <span>{{ count }}</span>
                 {{ statusString[status] | plural(count) }}
             </span>
@@ -41,12 +47,42 @@ export default {
         }
     },
     computed: {
+        selected () {
+            return this.framework.getSelected().suites
+        },
         ledger () {
             // Modify ledger to consolidate running and queued states.
             const ledger = _cloneDeep(this.framework.ledger)
             ledger['queued'] += ledger['running']
             delete ledger['running']
             return ledger
+        },
+        filters () {
+            return this.framework.getFilter('status') || []
+        }
+    },
+    methods: {
+        isActive (status) {
+            return this.filters.indexOf(status) > -1
+        },
+        toggle (status) {
+            if (this.isActive(status)) {
+                this.deactivate(status)
+                return
+            }
+            this.activate(status)
+        },
+        activate (status) {
+            const statuses = _cloneDeep(this.filters)
+            this.framework.setFilter('status', statuses.concat([status]))
+        },
+        deactivate (status) {
+            const statuses = _cloneDeep(this.filters)
+            const index = statuses.indexOf(status)
+            if (index > -1) {
+                statuses.splice(index, 1)
+                this.framework.setFilter('status', statuses)
+            }
         }
     }
 }

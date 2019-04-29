@@ -1,7 +1,7 @@
 const _ = require('lodash')
 const Path = require('path')
 const Fs = require('fs-extra')
-const nlf = require('nlf')
+const checker = require('license-checker')
 const chalk = require('chalk')
 const parseAuthor = require('parse-author')
 
@@ -45,7 +45,8 @@ const getLicenseContent = (license, author = '', organization = '') => {
 
     const licensesContent = {
         'MIT': `The MIT License (MIT)\n\nCopyright (c) ::author::\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n`,
-        'BSD': `Copyright (c) ::year::, ::author.name::\n\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\n* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.\n* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.\n* Neither the name of the organization ::organization:: nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ::AUTHOR.NAME:: BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.`
+        'BSD': `Copyright (c) ::year::, ::author.name::\n\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\n* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.\n* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.\n* Neither the name of the organization ::organization:: nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ::AUTHOR.NAME:: BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.`,
+        'BSD-2-Clause': `Copyright ::year:: ::author.name::\n\nRedistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\n\n1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.\n\n2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.`
     }
 
     return _.get(licensesContent, license, '')
@@ -59,26 +60,24 @@ const getLicenseContent = (license, author = '', organization = '') => {
 
 console.log(`${chalk.bgBlue.white(' LICENSES ')} Parsing and writing dependencies' licenses`)
 
-nlf.find({
-    directory: Path.resolve(__dirname, '../'),
+checker.init({
+    start: Path.resolve(__dirname, '../'),
     production: true
 }, (err, data) => {
 
+    data = Object.keys(data).map(id => {
+        return Object.assign({ id }, data[id])
+    })
+
     // Create a slimmer packages object with minimal information.
     let packages = data.map(package => {
+
         // Reduce parsed licenses object optimistically. We'll later iterate
         // through this list to check whether or not it's been properly populated
         // and adjust accordingly.
-        package.license = _.get(_.mapValues(_.pick(package.licenseSources, 'license'), (licenseCollection) => {
-            return (licenseCollection.sources[0] || {}).text
-        }), 'license', '')
+        package.license = package.licenseFile && package.licenseFile.match(/license/i) ? Fs.readFileSync(package.licenseFile).toString() : ''
 
-        // Remove repository property if no URL is set.
-        if (package.repository === '(none)') {
-            delete package.repository
-        }
-
-        return _.pick(package, ['id', 'repository', 'directory', 'license'])
+        return package
     })
 
     // Append manually added packages
@@ -88,9 +87,12 @@ nlf.find({
     // any that may not be required to be in this list (i.e. empty packages
     // from deeply nested depencendies).
     packages = packages.filter((package, index) => {
-        if (!package.id) {
-            throw new Error(`An unknown license is missing id property (array index ${index})`)
+
+        // Exclude our own license from the final file.
+        if (package.id.startsWith('Lode@')) {
+            return false
         }
+
         if (!package.license) {
 
             // Abandoned packages get an NPM security holder URL; ignore these.
@@ -101,11 +103,7 @@ nlf.find({
             // Have we identified this package's license manually? If not, as a
             // last resort, attempt to parse the package's package.json in case
             // there is more information there about its licensing.
-            const licenseOverride = package.override || _.get(addendum.licenses || {}, package.id, _.get(
-                Fs.readJsonSync(Path.join(package.directory, 'package.json'), { throws: false }) || {},
-                'license',
-                ''
-            ))
+            const licenseOverride = package.override || _.get(addendum.licenses || {}, package.id, package.licenses)
             if (licenseOverride) {
 
                 // If it's public domain, skip
@@ -139,7 +137,7 @@ nlf.find({
     // If all goes well, write the object to file, without directory information.
     const file = Path.join(__dirname, '../static/licenses.json')
     Fs.writeFileSync(file, JSON.stringify(
-        _.sortBy(packages.map(package => _.omit(package, 'directory', 'override')), 'id')
+        _.sortBy(packages.map(package => _.pick(package, ['id', 'repository', 'license'])), 'id')
     ))
 
     console.log(`${chalk.bgBlue.white(' LICENSES ')} Licenses written to ${file}`)

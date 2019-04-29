@@ -5,7 +5,7 @@
             <h3 class="modal-title">Remove Framework</h3>
         </template>
         <div>
-            <p v-markdown.set="framework.name">{{ 'Are you sure you want to remove **:0** testing from this project? This will not delete any tests from your filesystem and cannot be undone.' }}</p>
+            <p v-markdown.set="framework.getDisplayName()">{{ 'Are you sure you want to remove **:0** testing from this project? This will not delete any tests from your filesystem and cannot be undone.' }}</p>
         </div>
         <div slot="footer" class="modal-footer tertiary separated">
             <button type="button" class="btn btn-sm autofocus" @click="cancel">

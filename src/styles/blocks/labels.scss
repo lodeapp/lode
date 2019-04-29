@@ -1,4 +1,5 @@
 .Label {
+    -webkit-app-region: no-drag !important;
     position: relative;
 
     // Italics inside labels should be numbers and
@@ -15,7 +16,6 @@
     &.is-active {
 
         &::before {
-            border-left: 1px solid;
             content: '';
             display: block;
             height: 100%;
@@ -26,7 +26,6 @@
         }
 
         &::after {
-            border-left: 1px solid;
             content: '\00d7';
             display: inline-block;
             font-size: 1.4rem;
@@ -46,10 +45,6 @@
             border-color: theme-color('selected', 'step', 100);
             color: theme-color('selected', '000');
 
-            &::before {
-                border-color: theme-color('selected', 'step', 100);
-            }
-
             &:hover,
             &:focus,
             &:active {
@@ -66,10 +61,6 @@
             background-color: theme-color('passed', 'step', 100);
             border-color: theme-color('passed', 'step', 200);
             color: theme-color('passed', '000');
-
-            &::before {
-                border-color: theme-color('passed', 'step', 200);
-            }
 
             &:hover,
             &:focus,
@@ -90,10 +81,6 @@
             border-color: theme-color('incomplete', 'step', 200);
             color: theme-color('incomplete', '000');
 
-            &::before {
-                border-color: theme-color('incomplete', 'step', 200);
-            }
-
             &:hover,
             &:focus,
             &:active {
@@ -111,10 +98,6 @@
             border-color: theme-color('warning', 'step', 100);
             color: theme-color('warning', '000');
 
-            &::before {
-                border-color: theme-color('warning', 'step', 100);
-            }
-
             &:hover,
             &:focus,
             &:active {
@@ -131,12 +114,8 @@
 
         &.is-active {
             background-color: theme-color('failed');
-            border-color: theme-color('failed', 'step', 100);
+            border-color: theme-color('failed', 'step', 200);
             color: theme-color('failed', '000');
-
-            &::before {
-                border-color: theme-color('failed', 'step', 100);
-            }
 
             &:hover,
             &:focus,
@@ -156,10 +135,6 @@
             border-color: theme-color('queued', 'step', 300);
             color: theme-color('queued', '000');
 
-            &::before {
-                border-color: theme-color('queued', 'step', 300);
-            }
-
             &:hover,
             &:focus,
             &:active {
@@ -177,14 +152,27 @@
             border-color: theme-color('idle', 'step', 300);
             color: theme-color('idle', '000');
 
-            &::before {
-                border-color: theme-color('idle', 'step', 300);
-            }
-
             &:hover,
             &:focus,
             &:active {
                 background-color: darken(theme-color('idle', 'step', 200), 3%);
+            }
+        }
+    }
+
+    &--empty {
+        border-color: theme-color('idle');
+        color: theme-color('idle', 'step', 200);
+
+        &.is-active {
+            background-color: theme-color('idle');
+            border-color: theme-color('idle', 'step', 100);
+            color: theme-color('idle', 700);
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: darken(theme-color('idle'), 3%);
             }
         }
     }
@@ -197,10 +185,6 @@
             background-color: theme-color('partial');
             border-color: theme-color('partial', 'step', 100);
             color: theme-color('partial', '000');
-
-            &::before {
-                border-color: theme-color('partial', 'step', 100);
-            }
 
             &:hover,
             &:focus,
