@@ -1,11 +1,8 @@
 {
-  "publish": [{
-    "provider": "s3",
-    "bucket": "lode-releases"
-  }],
   "productName": "Lode",
   "appId": "com.recontra.lode",
   "directories": {
+    "buildResources": "releases",
     "output": "build"
   },
   "files": [
@@ -57,5 +54,9 @@
       "tar.gz",
       "appimage"
     ]
-  }
+  },
+  "publish": [{
+    "provider": "s3",
+    "bucket": "lode-releases"
+  }]
 }

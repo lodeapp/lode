@@ -25,7 +25,7 @@ export default {
     created () {
         const dir = this.path.split('/')
         this.name = dir.pop() || ''
-        this.dir = dir.join('/') + (this.name ? '/' : '')
+        this.dir = dir.length ? dir.join('/') + (this.name ? '/' : '') : ''
     }
 }
 </script>

@@ -124,7 +124,7 @@ export default new Vue({
                         this.crash()
                         break
                     case 'feedback':
-                        window.location.href = 'mailto:tbuteler@me.com'
+                        window.location.href = 'mailto:support@lode.run'
                         break
                     case 'reset-settings':
                         this.$modal.confirm('ResetSettings')

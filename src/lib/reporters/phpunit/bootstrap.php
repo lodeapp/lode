@@ -14,13 +14,16 @@ try {
 spl_autoload_register(function ($class) {
     if (stripos($class, 'LodeApp\PHPUnit') === 0) {
         $folder = '';
-        if (class_exists('PHPUnit_Runner_Version') && stripos(\PHPUnit_Runner_Version::id(), '5.') === 0) {
+        if (
+            class_exists('PHPUnit_Runner_Version') &&
+            (stripos(\PHPUnit_Runner_Version::id(), '5.') === 0 || stripos(\PHPUnit_Runner_Version::id(), '4.') === 0)
+        ) {
             if ($class === 'LodeApp\PHPUnit\LodeReporter' || $class === 'LodeApp\PHPUnit\Report') {
-                $folder = DIRECTORY_SEPARATOR . '5';
+                $folder = DIRECTORY_SEPARATOR . '48-57';
             }
         } else if (class_exists('PHPUnit\Runner\Version') && stripos(\PHPUnit\Runner\Version::id(), '6.') === 0) {
             if ($class === 'LodeApp\PHPUnit\LodeReporter') {
-                $folder = DIRECTORY_SEPARATOR . '6';
+                $folder = DIRECTORY_SEPARATOR . '60-65';
             }
         }
 
