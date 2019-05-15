@@ -1,5 +1,6 @@
 New:
-    - Backwards support for PHPUnit version 5.7 through 6.5
-    - Partial backwards support for PHPUnit version 4.8 and 5.0
+    - Shiny new application icon
+Changed:
+    - Auto-download updates, but still prompt users to install
 Fixed:
-    - Misleading slash in suite filenames that were located in the test folder root
+    - Formatting and misnomers in terms and conditions

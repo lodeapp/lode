@@ -20,23 +20,12 @@ export class Updater {
         })
 
         autoUpdater.on('update-available', (info) => {
+            this.downloading = true
             applicationMenu.setOptions({
-                isCheckingForUpdate: false
+                isCheckingForUpdate: false,
+                isDownloadingUpdate: true
             })
-            dialog.showMessageBox({
-                type: 'info',
-                message: 'A new version of Lode is available',
-                detail: `Lode ${info.version} is now available — you have ${app.getVersion()}. Would you like to download it now?`,
-                buttons: ['Download Update', 'Cancel']
-            }, (buttonIndex) => {
-                if (buttonIndex === 0) {
-                    this.downloading = true
-                    applicationMenu.setOptions({
-                        isDownloadingUpdate: true
-                    })
-                    autoUpdater.downloadUpdate()
-                }
-            })
+            autoUpdater.downloadUpdate()
         })
 
         autoUpdater.on('update-not-available', (info) => {
