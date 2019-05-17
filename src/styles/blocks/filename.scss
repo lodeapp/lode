@@ -10,4 +10,17 @@
         color: var(--text-color-secondary-discreet);
         word-break: break-all;
     }
+
+    // Truncate variation has a different structure.
+    &--truncate {
+        color: var(--text-color-secondary-discreet);
+        font-size: 1rem;
+        word-break: break-all;
+
+        & > strong {
+            color: var(--text-color);
+            font-weight: var(--font-weight-normal);
+            word-break: normal;
+        }
+    }
 }

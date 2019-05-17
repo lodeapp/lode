@@ -14,7 +14,7 @@ import '../styles/app.scss'
 import Alerts from './plugins/alerts'
 import Filesystem from './plugins/filesystem'
 import Filters from './plugins/filters'
-import Highlight from './plugins/highlight'
+import Code from './plugins/code'
 import Input from './plugins/input'
 import Modals from './plugins/modals'
 import Strings from './plugins/strings'
@@ -34,7 +34,7 @@ Vue.config.productionTip = false
 Vue.use(new Alerts(store))
 Vue.use(new Filesystem())
 Vue.use(new Filters())
-Vue.use(new Highlight())
+Vue.use(new Code())
 Vue.use(new Input())
 Vue.use(new Modals(store))
 Vue.use(new Strings('en-US'))

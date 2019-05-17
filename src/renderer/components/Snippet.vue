@@ -1,6 +1,6 @@
 <template>
     <div class="snippet">
-        <pre><code :class="[language]">{{ parsed }}</code></pre>
+        <pre><code :class="['hljs', activeLanguage]" v-html="snippet"></code></pre>
     </div>
 </template>
 
@@ -22,22 +22,16 @@ export default {
         }
     },
     computed: {
-        isObject () {
-            return typeof this.code === 'object'
-        },
         parsed () {
-            if (!this.isObject) {
-                return this.$highlight.normalize(this.code)
-            }
-
-            return this.$highlight.normalize(Object.values(this.code).join('\n'))
-        }
-    },
-    mounted () {
-        const code = this.$highlight.element(this.$el.querySelector('pre code'))
-
-        if (this.line) {
-            code.lines(Object.keys(this.code)[0] || 1, this.line)
+            return this.$code.highlight(this.code, this.language)
+        },
+        activeLanguage () {
+            return this.parsed.language
+        },
+        snippet () {
+            return this.line
+                ? this.$code.lines(this.parsed.value, Object.keys(this.code)[0] || 1, this.line)
+                : this.parsed.value
         }
     }
 }

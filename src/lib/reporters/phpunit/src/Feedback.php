@@ -49,7 +49,7 @@ class Feedback
      *
      * @return string
      */
-    protected function getMessage()
+    protected function getText()
     {
         return $this->exception->getMessage();
     }
@@ -123,7 +123,28 @@ class Feedback
         if ($this->exception instanceof ExpectationFailedException) {
             $comparison = $this->exception->getComparisonFailure();
             if ($comparison instanceof ComparisonFailure) {
-                return preg_replace('/^\n/', '', $comparison->getDiff());
+                return [
+                    '@' => preg_replace('/^\n/', '', $comparison->getDiff()),
+                    '-' => preg_replace('/^\n/', '', $comparison->getExpectedAsString()),
+                    '+' => preg_replace('/^\n/', '', $comparison->getActualAsString()),
+                ];
+            } else {
+                // If PHPUnit doesn't create a ComparisonFailure, but this was, in fact,
+                // a comparison, we'll attempt to parse it based on the message contents.
+                // If we fail, no harm done, but if we succeed feedback is greatly improved.
+                preg_match('/Failed asserting that \'(.+)\' contains (.+)\./imsU', $this->exception->getMessage(), $matches);
+                if (count($matches)) {
+                    return Util::compact([
+                        // Since this is not a proper expectation, just a partial
+                        // string we searched for, use a different key so we
+                        // can categorize it more appropriately.
+                        'q' => preg_replace('/^\n/', '', Util::get($matches, 2)),
+                        // Attempt to normalize line-breaks in case they were mangled
+                        // in the process of building the message. This is especially
+                        // important when detecting presence in HTML strings.
+                        '+' => preg_replace('~\\\n\R~u', "\n", Util::get($matches, 1)),
+                    ]);
+                }
             }
         }
 
@@ -139,7 +160,7 @@ class Feedback
     {
         return Util::compact([
             'title' => $this->getTitle(),
-            'message' => $this->getMessage(),
+            'text' => $this->getText(),
             'diff' => $this->getDiff(),
             'trace' => $this->getTrace(),
         ]);
