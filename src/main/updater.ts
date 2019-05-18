@@ -4,7 +4,7 @@ import { applicationMenu } from './menu'
 
 export class Updater {
 
-    protected initialRun: boolean = true
+    protected startup: boolean = true
     protected downloading: boolean = false
     protected downloaded: boolean = false
 
@@ -20,20 +20,37 @@ export class Updater {
         })
 
         autoUpdater.on('update-available', (info) => {
-            this.downloading = true
             applicationMenu.setOptions({
-                isCheckingForUpdate: false,
-                isDownloadingUpdate: true
+                isCheckingForUpdate: false
             })
-            autoUpdater.downloadUpdate()
+
+            // If this is the startup run and an update is available,
+            // just download it without prompting.
+            if (this.startup) {
+                this.startup = false
+                this.download()
+                return
+            }
+
+            // If check for update was user-initiated, prompt to confirm download.
+            dialog.showMessageBox({
+                type: 'info',
+                message: 'A new version of Lode is available',
+                detail: `Lode ${info.version} is now available — you have ${app.getVersion()}. Would you like to download it now?`,
+                buttons: ['Download Update', 'Cancel']
+            }, (buttonIndex) => {
+                if (buttonIndex === 0) {
+                    this.download()
+                }
+            })
         })
 
         autoUpdater.on('update-not-available', (info) => {
             applicationMenu.setOptions({
                 isCheckingForUpdate: false
             })
-            if (this.initialRun) {
-                this.initialRun = false
+            if (this.startup) {
+                this.startup = false
                 return
             }
             dialog.showMessageBox({
@@ -48,8 +65,8 @@ export class Updater {
             applicationMenu.setOptions({
                 isCheckingForUpdate: false
             })
-            if (this.initialRun) {
-                this.initialRun = false
+            if (this.startup) {
+                this.startup = false
                 return
             }
             dialog.showErrorBox('Update Failed', 'An error occurred while attempting to update Lode, please try again. You may be required to update manually by downloading Lode again.')
@@ -73,5 +90,13 @@ export class Updater {
                 }
             })
         })
+    }
+
+    protected download (): void {
+        this.downloading = true
+        applicationMenu.setOptions({
+            isDownloadingUpdate: true
+        })
+        autoUpdater.downloadUpdate()
     }
 }
