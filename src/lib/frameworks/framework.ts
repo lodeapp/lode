@@ -390,6 +390,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * Get this framework's full remote path, if any, including the tests path.
+     */
+    public getFullRemotePath (): string {
+        if (!this.getRemotePath()) {
+            return ''
+        }
+        return Path.join(this.getRemotePath(), this.path)
+    }
+
+    /**
      * Update this framework's status.
      *
      * @param to The status we're updating to.
@@ -1072,7 +1082,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         const exact = this.filters.keyword && (this.filters.keyword as string).match(/^[\'\"].+[\'\"]$/g)
-        const keyword = this.filters.keyword ? trim((this.filters.keyword as string).toUpperCase(), `"'`) : null
+        const keyword = this.getFilterKeyword()
         return this.suites.filter((suite: ISuite) => {
             if (
                 (
@@ -1083,7 +1093,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 (
                     keyword &&
                     !exact &&
-                    !fuzzy([suite.getFilePath().toUpperCase()], keyword).length
+                    !fuzzy([suite.getDisplayName().toUpperCase()], keyword).length
                 ) ||
                 (
                     this.filters.status &&
@@ -1145,6 +1155,30 @@ export abstract class Framework extends EventEmitter implements IFramework {
             status: null,
             group: null
         }
+    }
+
+    /**
+     * Get the relevant part of the current filter keyword (i.e. minus the
+     * path sections not shown in the interface), and processed in a way that
+     * that be processes by the filtering routine.
+     */
+    protected getFilterKeyword (): string | null {
+        if (!this.filters.keyword) {
+            return null
+        }
+        let keyword: string = trim((this.filters.keyword as string), `"'`)
+
+        // We're wilfully ignoring whether the framework runs in remote and
+        // testing both cases at all times because if the framework does run
+        // in a remote environment we still want to support users searching
+        // using the local file's path.
+        if (this.runsInRemote && keyword.startsWith(this.getFullRemotePath())) {
+            keyword = Path.relative(this.getFullRemotePath(), keyword)
+        } else if (keyword.startsWith(this.fullPath)) {
+            keyword = Path.relative(this.fullPath, keyword)
+        }
+
+        return keyword.toUpperCase()
     }
 
     /**
