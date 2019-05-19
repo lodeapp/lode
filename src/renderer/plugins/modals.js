@@ -35,7 +35,13 @@ export default class Modals {
         this.store.dispatch('modals/close')
         const modal = this.modals.pop()
         if (modal.callback) {
-            modal.callback.call()
+            // Set a timeout before triggering callback in case callback is going
+            // to instantiate a similar modal. Not doing so could cause the modal
+            // to be cached by Vue, thus not rendering properly (i.e. not calling
+            // `created` or `mounted` lifecycle events on the new modal).
+            setTimeout(() => {
+                modal.callback.call()
+            })
         }
     }
 

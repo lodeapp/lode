@@ -162,11 +162,13 @@
 
     &--empty {
         border-color: theme-color('idle');
+        box-shadow: inset 0 0 0 1px $white, inset 0 0 0 2px theme-color('idle',  'step', -100);
         color: theme-color('idle', 'step', 200);
 
         &.is-active {
             background-color: theme-color('idle');
             border-color: theme-color('idle', 'step', 100);
+            box-shadow: inset 0 0 0 1px theme-color('idle'), inset 0 0 0 2px $white;
             color: theme-color('idle', 700);
 
             &:hover,
@@ -179,11 +181,13 @@
 
     &--partial {
         border-color: theme-color('partial');
-        color: theme-color('partial');
+        box-shadow: inset 0 0 0 1px $white, inset 0 0 0 2px theme-color('partial', 'step', -100);
+        color: theme-color('partial', 'step', 100);
 
         &.is-active {
             background-color: theme-color('partial');
             border-color: theme-color('partial', 'step', 100);
+            box-shadow: inset 0 0 0 1px theme-color('partial'), inset 0 0 0 2px theme-color('partial', 'step', 100);
             color: theme-color('partial', '000');
 
             &:hover,

@@ -1,8 +1,13 @@
 <template>
-    <span class="filename">
-        <span class="dir">{{ dir }}</span>
-        <span class="name">{{ name }}</span>
-        <span class="extension">{{ extension }}</span>
+    <span class="filename" :class="{ 'filename--truncate': truncate }">
+        <template v-if="truncate">
+            {{ dir }}<strong>{{ name }}</strong>{{ extension }}
+        </template>
+        <template v-else>
+            <span class="dir">{{ dir }}</span>
+            <span class="name">{{ name }}</span>
+            <span class="extension">{{ extension }}</span>
+        </template>
     </span>
 </template>
 
@@ -13,6 +18,10 @@ export default {
         path: {
             type: String,
             required: true
+        },
+        truncate: {
+            type: Boolean,
+            default: false
         }
     },
     data () {
