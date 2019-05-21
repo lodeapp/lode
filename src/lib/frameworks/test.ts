@@ -68,6 +68,9 @@ export class Test extends Nugget implements ITest {
      * @param cleanup Whether to clean obsolete children after building.
      */
     protected build (result: ITestResult, cleanup: boolean): void {
+        // We allow result status to be empty from reporters, but we'll
+        // amend them before building the actual test.
+        result.status = this.getRecursiveStatus(result)
         this.updateStatus(result.status || 'idle')
         this.result = result
         if (result.tests && result.tests.length) {

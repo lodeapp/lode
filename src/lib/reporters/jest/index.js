@@ -117,7 +117,6 @@ class Base64TestReporter {
                             id,
                             name: ancestor,
                             displayName: ancestor,
-                            status: result.status,
                             console: [],
                             tests: []
                         }

@@ -184,6 +184,20 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
+     * Get the status from a result object recursively. Useful to defer status
+     * calculations from reporters to the app's logic (e.g. Jest), when a
+     * chain of statuses cannot be reliably calculated in the reporter itself.
+     *
+     * @param result The test result we're extracting the status from
+     */
+    protected getRecursiveStatus (result: ITestResult): Status {
+        if (!result.status) {
+            result.status = parseStatus((result.tests || []).map((test: ITestResult) => this.getRecursiveStatus(test)))
+        }
+        return result.status
+    }
+
+    /**
      * Update this nugget's status.
      *
      * @param to The status we're updating to.
