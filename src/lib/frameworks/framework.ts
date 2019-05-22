@@ -929,6 +929,22 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * Returns the portion of a path, if any, that is present in a given file path.
+     *
+     * @param path The full path whose presence we're trying to check
+     * @param file The file which potentially holds a portion of the given path.
+     */
+    protected pathInFile (path: string, file: string): string {
+        return trim(path, '/').split('/').reduce((found: string, directory: string) => {
+            if (file.startsWith(found + directory + '/')) {
+                found += directory + '/'
+                return found
+            }
+            return ''
+        }, '')
+    }
+
+    /**
      * Update the framework's array of selected suites.
      *
      * @param suite The suite which triggered this update.
@@ -1166,16 +1182,18 @@ export abstract class Framework extends EventEmitter implements IFramework {
         if (!this.filters.keyword) {
             return null
         }
-        let keyword: string = trim((this.filters.keyword as string), `"'`)
+        let keyword: string = trim((this.filters.keyword as string), `"'/`)
 
         // We're wilfully ignoring whether the framework runs in remote and
         // testing both cases at all times because if the framework does run
         // in a remote environment we still want to support users searching
         // using the local file's path.
-        if (this.runsInRemote && keyword.startsWith(this.getFullRemotePath())) {
-            keyword = Path.relative(this.getFullRemotePath(), keyword)
-        } else if (keyword.startsWith(this.fullPath)) {
-            keyword = Path.relative(this.fullPath, keyword)
+        const remoteEmbeddedPath: string = this.pathInFile(this.getFullRemotePath(), keyword)
+        const embeddedPath: string = this.pathInFile(this.fullPath, keyword)
+        if (this.runsInRemote && remoteEmbeddedPath) {
+            keyword = Path.relative(remoteEmbeddedPath, keyword)
+        } else if (embeddedPath) {
+            keyword = Path.relative(embeddedPath, keyword)
         }
 
         return keyword.toUpperCase()
