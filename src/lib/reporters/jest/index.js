@@ -2,15 +2,54 @@ const crypto = require('crypto')
 const _compact = require('lodash/compact')
 const _find = require('lodash/find')
 const _findIndex = require('lodash/findIndex')
+const _get = require('lodash/get')
+const _identity = require('lodash/identity')
+const _pickBy = require('lodash/pickBy')
 const stripAnsi = require('strip-ansi')
+const hasAnsi = require('has-ansi')
+const bugsnag = require('@bugsnag/js')
+
+class MockError extends Error {
+    constructor (message, stack) {
+        super(_get(stack.match(/(.+): (.+)/) || [], 2, '').trim())
+        this.name = _get(stack.match(/(.+): (.+)/) || [], 1, '').trim()
+        this.stack = stack
+    }
+}
+
+class PreventPlugin {
+    init (client) {
+        client.config.beforeSend.push(function (report) {
+            return new Promise(function (resolve, reject) {
+                report.ignore()
+                resolve()
+            })
+        })
+    }
+}
 
 class Base64TestReporter {
     constructor (globalConfig, options) {
         this._globalConfig = globalConfig
         this._options = options
+        this.feedbacks = []
+        this.reports = []
+
+        const bugsnagClient = bugsnag({
+            apiKey: '.',
+            autoNotify: false,
+            autoCaptureSessions: false,
+            logger: null,
+            endpoints: {
+                notify: 'file://null',
+                sessions: 'file://null'
+            }
+        })
+        bugsnagClient.use(new PreventPlugin())
+        this.reporter = bugsnagClient
     }
 
-    parseFeedback (feedback) {
+    parseOriginalFeedback (feedback) {
         if (!feedback) {
             return ''
         }
@@ -20,7 +59,7 @@ class Base64TestReporter {
 
         // Map the feedback messages to their respective tests, preserving
         // the ANSI codes, which we'll later use to format our reports
-        return feedback
+        this.feedbacks = feedback
             .split(prefix)
             .filter(message => {
                 // eslint-disable-next-line no-control-regex
@@ -42,16 +81,46 @@ class Base64TestReporter {
             .filter(Boolean)
     }
 
+    async getFeedback (result) {
+        if (result.status !== 'failed') {
+            return null
+        }
+
+        try {
+            return await new Promise((resolve, reject) => {
+                const error = new MockError('', result.failureMessages[0])
+                this.reporter.notify(error, {}, (err, report) => {
+                    if (err) {
+                        throw err
+                    }
+                    resolve({
+                        content: _pickBy({
+                            title: error.name,
+                            [hasAnsi(error.message) ? 'ansi' : 'text']: error.message,
+                            trace: this.transformTrace(report)
+                        }, _identity),
+                        type: 'feedback'
+                    })
+                })
+            })
+        } catch (_) {
+            // Fallback to Jest default's ANSI trace
+            const feedback = _find(this.feedbacks, { test: result.fullName || result.title })
+            return {
+                content: feedback ? feedback.message : '',
+                type: 'ansi'
+            }
+        }
+    }
+
     hash (string) {
         return crypto.createHash('sha1').update(string).digest('hex')
     }
 
-    transform (result, feedbacks) {
+    async transform (result) {
         if (['skipped', 'pending'].includes(result.status)) {
             result.status = 'incomplete'
         }
-
-        const feedback = _find(feedbacks, { test: result.fullName || result.title })
 
         return {
             ancestors: result.ancestorTitles,
@@ -59,10 +128,7 @@ class Base64TestReporter {
             name: result.title,
             displayName: result.title,
             status: result.status,
-            feedback: {
-                content: feedback ? feedback.message : '',
-                type: 'ansi'
-            },
+            feedback: await this.getFeedback(result),
             stats: {
                 duration: result.duration
                 // @TODO: Assertions don't seem to be properly counted. Let's hold this
@@ -94,12 +160,28 @@ class Base64TestReporter {
         }))
     }
 
-    failedSuiteTest (result, feedbacks) {
-        return this.transform({
+    transformTrace (report) {
+        if (!report.stacktrace) {
+            return null
+        }
+
+        return [
+            report.stacktrace.map(frame => {
+                return {
+                    file: _get(frame, 'file', null),
+                    line: _get(frame, 'lineNumber', null),
+                    code: _get(frame, 'code', null)
+                }
+            })
+        ]
+    }
+
+    async failedSuiteTest (result) {
+        return await this.transform({
             ancestorTitles: [result.testFilePath],
             title: 'Test suite failed to run',
-            status: 'failed'
-        }, feedbacks)
+            status: 'error'
+        })
     }
 
     group (suite, ungrouped) {
@@ -132,13 +214,13 @@ class Base64TestReporter {
         return tests
     }
 
-    onTestResult (test, testResult, aggregatedResult) {
-        const feedbacks = this.parseFeedback(testResult.failureMessage)
-        const tests = this.group(test.path, testResult.testResults.map(result => this.transform(result, feedbacks)))
+    async processTestResult (test, testResult, aggregatedResult) {
+        this.parseOriginalFeedback(testResult.failureMessage)
+        const tests = this.group(test.path, await Promise.all(testResult.testResults.map(async (result) => await this.transform(result))))
 
         // If test suite failed to run, add a test inside it for feedback
         if (!tests.length && testResult.failureMessage) {
-            tests.push(this.failedSuiteTest(testResult, feedbacks))
+            tests.push(await this.failedSuiteTest(testResult))
         }
 
         const results = {
@@ -158,8 +240,14 @@ class Base64TestReporter {
             }
         }
 
-        const encoded = Buffer.from(JSON.stringify(results)).toString('base64')
-        console.log(`(${encoded})`)
+        return results
+    }
+
+    onTestResult (test, testResult, aggregatedResult) {
+        this.reports.push(this.processTestResult(test, testResult, aggregatedResult).then(results => {
+            const encoded = Buffer.from(JSON.stringify(results)).toString('base64')
+            console.log(`(${encoded})`)
+        }))
     }
 
     onRunStart (results) {
@@ -167,7 +255,12 @@ class Base64TestReporter {
     }
 
     onRunComplete (contexts, results) {
-        console.log('\n}REPORT>>>')
+        return new Promise((resolve, reject) => {
+            Promise.all(this.reports).then(() => {
+                console.log('\n}REPORT>>>')
+                resolve()
+            })
+        })
     }
 }
 

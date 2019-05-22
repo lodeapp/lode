@@ -1,9 +1,14 @@
 <template>
     <div class="feedback">
         <h4>{{ content.title }}</h4>
-        <p class="message">{{ content.text }}</p>
+        <p class="message">
+            <span v-if="content.text" v-markdown="content.text"></span>
+            <template v-if="content.ansi">
+                <Ansi :content="content.ansi" />
+            </template>
+        </p>
         <Diff v-if="content.diff" :content="content.diff" />
-        <h4 v-if="trace" class="text-muted">
+        <h4 v-if="trace && trace.length" class="text-muted">
             {{ 'Exception|Exceptions' | plural(trace.length) }}
             <small class="float-right">
                 <button type="button" class="btn-link more-actions" title="Reverse order" @click.prevent="reverse = !reverse">
@@ -12,7 +17,7 @@
             </small>
         </h4>
         <Trace
-            v-if="trace"
+            v-if="trace && trace.length"
             :repository="repository"
             :framework="framework"
             :trace="trace"
@@ -32,6 +37,7 @@ import _cloneDeep from 'lodash/cloneDeep'
 import _get from 'lodash/get'
 import _isArray from 'lodash/isArray'
 import _reverse from 'lodash/reverse'
+import Ansi from '@/components/Ansi'
 import Diff from '@/components/Diff'
 import MetaTable from '@/components/MetaTable'
 import Trace from '@/components/Trace'
@@ -39,6 +45,7 @@ import Trace from '@/components/Trace'
 export default {
     name: 'Feedback',
     components: {
+        Ansi,
         Diff,
         MetaTable,
         Trace

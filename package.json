@@ -38,6 +38,7 @@
     "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src"
   },
   "dependencies": {
+    "@bugsnag/js": "^6.2.0",
     "@primer/css": "primer/css",
     "bottleneck": "^2.13.0",
     "electron-store": "^3.0.0",
@@ -46,6 +47,7 @@
     "fs-extra": "^7.0.0",
     "fuzzaldrin": "^2.1.0",
     "glob": "^7.1.3",
+    "has-ansi": "^3.0.0",
     "highlight.js": "^9.15.6",
     "is-base64": "^0.0.6",
     "latinize": "^0.4.0",

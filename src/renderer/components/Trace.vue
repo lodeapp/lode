@@ -87,7 +87,7 @@ export default {
     },
     methods: {
         toRelative (path) {
-            if (!this.framework || !this.repository) {
+            if (!this.framework || !this.repository || !path.startsWith('/')) {
                 return path
             }
             const root = this.framework.runsInRemote ? this.framework.remotePath : this.repository.path
