@@ -229,11 +229,19 @@ class ApplicationMenu {
                 },
                 separator,
                 {
+                    label: __DARWIN__ ? 'Filter Suites…' : 'Filter suites…',
+                    click: emit('filter'),
+                    accelerator: (() => {
+                        return __DARWIN__ ? 'Command+F' : 'Ctrl+F'
+                    })(),
+                    enabled: hasFramework
+                },
+                separator,
+                {
                     label: __DARWIN__ ? 'Framework Settings…' : 'Framework settings…',
                     click: emit('framework-settings'),
                     enabled: hasFramework
                 },
-                separator,
                 {
                     label: __DARWIN__ ? 'Remove Framework' : 'Remove framework',
                     click: emit('remove-framework'),
