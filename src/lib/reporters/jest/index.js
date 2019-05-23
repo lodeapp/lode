@@ -215,18 +215,26 @@ class Base64TestReporter {
     }
 
     async processTestResult (test, testResult, aggregatedResult) {
+        // First, we parse Jest's formatted feedback, so it's available as a
+        // fallback when we're trying to transform tests results.
         this.parseOriginalFeedback(testResult.failureMessage)
+
+        // Second, we get the console logs that Jest has recorded, which are
+        // not available after our asynchronous transformations finish.
+        const logs = this.transformConsole(testResult.console)
+
+        // Finally, we transform and group the actual test results and prepare
+        // the response that will be given to the app.
         const tests = this.group(test.path, await Promise.all(testResult.testResults.map(async (result) => await this.transform(result))))
 
         // If test suite failed to run, add a test inside it for feedback
         if (!tests.length && testResult.failureMessage) {
             tests.push(await this.failedSuiteTest(testResult))
         }
-
         const results = {
             file: test.path,
             tests,
-            console: this.transformConsole(testResult.console)
+            console: logs
         }
 
         // Use the `useStderr` CLI option to determine whether we're in development

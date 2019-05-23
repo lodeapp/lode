@@ -127,12 +127,12 @@
     &--queued,
     &--normal {
         border-color: theme-color('queued', 'step', 200);
-        color: $white;
+        color: theme-color('queued', 'step', 200);
 
         &.is-active {
             background-color: theme-color('queued', 'step', 200);
             border-color: theme-color('queued', 'step', 300);
-            color: theme-color('queued', '000');
+            color: $white;
 
             &:hover,
             &:focus,
