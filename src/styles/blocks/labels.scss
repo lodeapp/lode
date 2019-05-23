@@ -43,7 +43,7 @@
         &.is-active {
             background-color: theme-color('selected');
             border-color: theme-color('selected', 'step', 100);
-            color: theme-color('selected', '000');
+            color: $white;
 
             &:hover,
             &:focus,
@@ -60,7 +60,7 @@
         &.is-active {
             background-color: theme-color('passed', 'step', 100);
             border-color: theme-color('passed', 'step', 200);
-            color: theme-color('passed', '000');
+            color: $white;
 
             &:hover,
             &:focus,
@@ -79,7 +79,7 @@
         &.is-active {
             background-color: theme-color('incomplete', 'step', 100);
             border-color: theme-color('incomplete', 'step', 200);
-            color: theme-color('incomplete', '000');
+            color: $white;
 
             &:hover,
             &:focus,
@@ -96,7 +96,7 @@
         &.is-active {
             background-color: theme-color('warning');
             border-color: theme-color('warning', 'step', 100);
-            color: theme-color('warning', '000');
+            color: $white;
 
             &:hover,
             &:focus,
@@ -107,15 +107,14 @@
     }
 
     &--failed,
-    &--removed,
-    &--error {
+    &--removed {
         border-color: theme-color('failed');
         color: theme-color('failed');
 
         &.is-active {
             background-color: theme-color('failed');
             border-color: theme-color('failed', 'step', 200);
-            color: theme-color('failed', '000');
+            color: $white;
 
             &:hover,
             &:focus,
@@ -128,7 +127,7 @@
     &--queued,
     &--normal {
         border-color: theme-color('queued', 'step', 200);
-        color: theme-color('queued', 'step', 200);
+        color: $white;
 
         &.is-active {
             background-color: theme-color('queued', 'step', 200);
@@ -150,7 +149,7 @@
         &.is-active {
             background-color: theme-color('idle', 'step', 200);
             border-color: theme-color('idle', 'step', 300);
-            color: theme-color('idle', '000');
+            color: $white;
 
             &:hover,
             &:focus,
@@ -188,12 +187,31 @@
             background-color: theme-color('partial');
             border-color: theme-color('partial', 'step', 100);
             box-shadow: inset 0 0 0 1px theme-color('partial'), inset 0 0 0 2px theme-color('partial', 'step', 100);
-            color: theme-color('partial', '000');
+            color: $white;
 
             &:hover,
             &:focus,
             &:active {
                 background-color: darken(theme-color('partial'), 3%);
+            }
+        }
+    }
+
+    &--error {
+        border-color: theme-color('failed');
+        box-shadow: inset 0 0 0 1px $white, inset 0 0 0 2px theme-color('failed', 'step', -100);
+        color: theme-color('failed');
+
+        &.is-active {
+            background-color: theme-color('failed', 400);
+            border-color: theme-color('failed', 'step', 200);
+            box-shadow: inset 0 0 0 1px theme-color('failed'), inset 0 0 0 2px $white;
+            color: $white;
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: darken(theme-color('failed', 400), 3%);
             }
         }
     }
