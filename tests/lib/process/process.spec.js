@@ -1,9 +1,15 @@
 import * as Path from 'path'
 import * as fs from 'fs-extra'
-import { DefaultProcess } from '@main/lib/process/process'
+import { DefaultProcess } from '@lib/process/process'
 
-const fixtures = Path.join(__dirname, '../../../fixtures/process')
-const decoded = fs.readJsonSync(Path.join(__dirname, '../../../fixtures/process/decoded.json'))
+const fixtures = Path.join(__dirname, '../../fixtures/process')
+const decoded = fs.readJsonSync(Path.join(__dirname, '../../fixtures/process/decoded.json'))
+
+beforeAll(() => {
+    // Capture calls to the global logger and suppress console logs.
+    global.log = { debug () {} }
+    global.console = { log () {} }
+})
 
 describe('main/lib/process/DefaultProcess', () => {
     it('emits decoded reports', (done) => {
