@@ -33,7 +33,7 @@
                             {{ item }}
                         </template>
                     </template>
-                    <template v-if="typeof item === 'object'">
+                    <template v-if="typeof item === 'object' && item.code">
                         <Snippet
                             :code="item.code"
                             :line="item.line"

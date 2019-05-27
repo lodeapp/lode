@@ -44,6 +44,10 @@ export default class Code {
     }
 
     asString (code) {
+        if (!code) {
+            return ''
+        }
+
         return typeof code === 'object'
             ? this.normalize(Object.values(code).join('\n'))
             : this.normalize(code)

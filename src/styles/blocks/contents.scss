@@ -4,6 +4,7 @@
     flex-grow: 1;
 
     .no-projects {
+        -webkit-app-region: drag;
         height: 100vw;
         padding: 210px 0 0;
         text-align: center;
@@ -11,6 +12,10 @@
 
         h1 {
             margin-bottom: var(--spacing-double);
+        }
+
+        & > button {
+            -webkit-app-region: no-drag !important;
         }
     }
 }
