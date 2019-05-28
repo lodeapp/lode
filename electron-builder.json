@@ -2,7 +2,7 @@
   "productName": "Lode",
   "appId": "com.recontra.lode",
   "directories": {
-    "buildResources": "releases",
+    "buildResources": "support",
     "output": "build"
   },
   "files": [
@@ -12,6 +12,7 @@
   "asarUnpack": [
     "dist/electron/static/reporters/**/**"
   ],
+  "afterSign": "./.electron-vue/after-sign.js",
   "dmg": {
     "contents": [
       {
@@ -30,6 +31,8 @@
   "mac": {
     "category": "public.app-category.developer-tools",
     "icon": "build/icons/icon.png",
+    "hardenedRuntime": true,
+    "entitlements": "./support/entitlements.mac.inherit.plist",
     "target": [
       "zip",
       "dmg"
