@@ -7985,6 +7985,11 @@ osenv@0, osenv@^0.1.4:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
 
+overlayscrollbars@^1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/overlayscrollbars/-/overlayscrollbars-1.7.1.tgz#ad51a06b193a360552320364555b47259cfd53d9"
+  integrity sha512-L9sDsYR2FOB5UCrtWxvYp5wfLxD0ZbNQvPTg0Av7sHBTiBNvMyz60UMuam0l2a3crpInnoibGSnKHs1Y3P37kw==
+
 p-cancelable@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/p-cancelable/-/p-cancelable-1.1.0.tgz#d078d15a3af409220c886f1d9a0ca2e441ab26cc"

@@ -1,4 +1,7 @@
 .test-result {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 
     .tabnav {
         -webkit-app-region: drag;
@@ -27,6 +30,9 @@
     }
 
     .test-result-breakdown {
+        flex: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
         padding: 15px;
     }
 }

@@ -1,11 +1,12 @@
 .framework {
     background: $primary;
-    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 
     & > .header {
         -webkit-app-region: drag;
         background-color: $primary;
-        border-bottom: 1px solid $primary-border;
         position: sticky;
         top: 0;
         z-index: var(--framework-z-index);
@@ -57,7 +58,7 @@
             -webkit-app-region: no-drag !important;
             background-color: var(--color-gray-200);
             border-top: 1px solid var(--color-gray-400);
-            box-shadow: 0 1px 0 0px var(--color-gray-500);
+            box-shadow: 0 1px 0 0px var(--color-gray-400);
             padding-bottom: calc(var(--spacing-half) + 1px);
 
             input {
@@ -72,12 +73,19 @@
         }
     }
 
-    & > :last-child {
+    & > .children {
+        flex: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
 
-        &.is-collapsed {
-            border-bottom: 1px solid $primary-border;
+        & > :last-child {
+
+            &.is-collapsed {
+                border-bottom: 1px solid $primary-border;
+            }
         }
     }
+
 
     & + .cutoff {
         animation: fade-in-top .4s forwards;

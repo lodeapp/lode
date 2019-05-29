@@ -69,14 +69,16 @@
                     >
                 </div>
             </div>
-            <Suite
-                v-for="suite in suites"
-                :suite="suite"
-                :running="running"
-                :key="suite.getId()"
-                @activate="onChildActivation"
-                @refresh="refresh"
-            />
+            <div class="children">
+                <Suite
+                    v-for="suite in suites"
+                    :suite="suite"
+                    :running="running"
+                    :key="suite.getId()"
+                    @activate="onChildActivation"
+                    @refresh="refresh"
+                />
+            </div>
         </div>
         <div v-if="hidden" class="cutoff">
             <div>

@@ -9,49 +9,55 @@
             </div>
             <Split :class="{ 'empty': noRepositories || emptyStatus || frameworkLoading }" v-else>
                 <Pane class="sidebar">
-                    <h5 class="sidebar-header">Project</h5>
-                    <div class="sidebar-item has-status" :class="[`status--${$root.project.status}`]">
-                        <div class="header">
-                            <div class="title">
-                                <Indicator :status="$root.project.status" />
-                                <h4 class="heading">
-                                    <span class="name" :title="$root.project.name">
-                                        {{ $root.project.name }}
-                                    </span>
-                                </h4>
+                    <header>
+                        <h5 class="sidebar-header">Project</h5>
+                        <div class="sidebar-item has-status" :class="[`status--${$root.project.status}`]">
+                            <div class="header">
+                                <div class="title">
+                                    <Indicator :status="$root.project.status" />
+                                    <h4 class="heading">
+                                        <span class="name" :title="$root.project.name">
+                                            {{ $root.project.name }}
+                                        </span>
+                                    </h4>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <h5 v-if="!noRepositories" class="sidebar-header">
-                        <span>Repositories</span>
-                        <button type="button" class="sidebar-action" @click="this.$root.addRepositories">
-                            <Icon symbol="plus" />
-                        </button>
-                    </h5>
-                    <SidebarRepository
-                        v-for="repository in $root.project.repositories"
-                        :repository="repository"
-                        :key="repository.getId()"
-                        @scan="$root.scanRepository"
-                        @remove="removeRepository"
-                    >
-                        <div
-                            v-for="framework in repository.frameworks"
-                            :key="framework.getId()"
-                            class="sidebar-item sidebar-item--framework has-status"
-                            :class="[
-                                `status--${framework.status}`,
-                                framework.isActive() ? 'is-active' : ''
-                            ]"
+                        <h5 v-if="!noRepositories" class="sidebar-header">
+                            <span>Repositories</span>
+                            <button type="button" class="sidebar-action" @click="this.$root.addRepositories">
+                                <Icon symbol="plus" />
+                            </button>
+                        </h5>
+                    </header>
+                    <section>
+                        <div class="shadow"></div>
+                        <div class="shadow-overlay"></div>
+                        <SidebarRepository
+                            v-for="repository in $root.project.repositories"
+                            :repository="repository"
+                            :key="repository.getId()"
+                            @scan="$root.scanRepository"
+                            @remove="removeRepository"
                         >
-                            <SidebarFramework
-                                :framework="framework"
-                                @activate="onFrameworkActivation($event, repository)"
-                                @manage="manageFramework"
-                                @remove="removeFramework"
-                            />
-                        </div>
-                    </SidebarRepository>
+                            <div
+                                v-for="framework in repository.frameworks"
+                                :key="framework.getId()"
+                                class="sidebar-item sidebar-item--framework has-status"
+                                :class="[
+                                    `status--${framework.status}`,
+                                    framework.isActive() ? 'is-active' : ''
+                                ]"
+                            >
+                                <SidebarFramework
+                                    :framework="framework"
+                                    @activate="onFrameworkActivation($event, repository)"
+                                    @manage="manageFramework"
+                                    @remove="removeFramework"
+                                />
+                            </div>
+                        </SidebarRepository>
+                    </section>
                 </Pane>
                 <Pane>
                     <template v-if="noRepositories">
@@ -109,6 +115,8 @@ import Framework from '@/components/Framework'
 import Results from '@/components/Results'
 import Split from '@/components/Split'
 
+// import OverlayScrollbars from 'overlayscrollbars'
+
 export default {
     name: 'Project',
     components: {
@@ -160,6 +168,17 @@ export default {
             this.onProjectChange()
             this.loading = false
         })
+    },
+    mounted () {
+        // OverlayScrollbars(this.$el.querySelector('.sidebar section'), {
+        //     className: 'os-theme-dark',
+        //     resize: 'both',
+        //     sizeAutoCapable: true,
+        //     paddingAbsolute: true,
+        //     scrollbars: {
+        //         clickScrolling: true
+        //     }
+        // })
     },
     methods: {
         scanEmptyRepositories () {

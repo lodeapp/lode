@@ -6,10 +6,11 @@ const builder = require('../electron-builder.json')
 const electron_notarize = require('electron-notarize')
 
 module.exports = async function (params) {
-    // Only notarize the app on Mac OS only.
+    // Only notarize the app on macOS.
     if (process.platform !== 'darwin') {
         return
     }
+
     let appPath = path.join(params.appOutDir, `${params.packager.appInfo.productFilename}.app`)
     if (!fs.existsSync(appPath)) {
         throw new Error(`Cannot find application at: ${appPath}`)
@@ -26,6 +27,7 @@ module.exports = async function (params) {
         })
     } catch (error) {
         console.error(error)
+        process.exit(1)
     }
 
     console.log(`Done notarizing ${builder.appId}`)
