@@ -24,7 +24,7 @@ export default {
     },
     data () {
         return {
-            logo: 'static/icons/256x256.png'
+            logo: 'static/icons/icon.png'
         }
     },
     computed: {

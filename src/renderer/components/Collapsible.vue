@@ -31,11 +31,14 @@ export default {
     data () {
         return {
             content: this.$slots.default,
-            expanded: this.show
+            expanded: this.show && this.$slots.default
         }
     },
     methods: {
         toggle () {
+            if (!this.content) {
+                return
+            }
             this.expanded = !this.expanded
         },
         clipboard () {

@@ -1,7 +1,7 @@
 <template>
     <span class="filename" :class="{ 'filename--truncate': truncate }">
         <template v-if="truncate">
-            {{ dir }}<strong>{{ name }}</strong>{{ extension }}
+            <span v-html="'&lrm;'"></span>{{ dir }}<strong>{{ name }}</strong>{{ extension }}
         </template>
         <template v-else>
             <span class="dir">{{ dir }}</span>

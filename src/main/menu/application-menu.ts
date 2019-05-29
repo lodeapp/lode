@@ -229,11 +229,19 @@ class ApplicationMenu {
                 },
                 separator,
                 {
+                    label: __DARWIN__ ? 'Filter Suites…' : 'Filter suites…',
+                    click: emit('filter'),
+                    accelerator: (() => {
+                        return __DARWIN__ ? 'Command+F' : 'Ctrl+F'
+                    })(),
+                    enabled: hasFramework
+                },
+                separator,
+                {
                     label: __DARWIN__ ? 'Framework Settings…' : 'Framework settings…',
                     click: emit('framework-settings'),
                     enabled: hasFramework
                 },
-                separator,
                 {
                     label: __DARWIN__ ? 'Remove Framework' : 'Remove framework',
                     click: emit('remove-framework'),
@@ -314,34 +322,15 @@ class ApplicationMenu {
             })
         }
 
-        // const submitIssueItem: Electron.MenuItemConstructorOptions = {
-        //   label: __DARWIN__ ? 'Report Issue…' : 'Report issue…',
-        //   click() {
-        //     shell.openExternal('https://github.com/desktop/desktop/issues/new/choose')
-        //   },
-        // }
-
-        // const contactSupportItem: Electron.MenuItemConstructorOptions = {
-        //   label: __DARWIN__ ? 'Contact GitHub Support…' : '&Contact GitHub support…',
-        //   click() {
-        //     shell.openExternal(
-        //       `https://github.com/contact?from_desktop_app=1&app_version=${app.getVersion()}`
-        //     )
-        //   },
-        // }
-
-        // const showUserGuides: Electron.MenuItemConstructorOptions = {
-        //   label: 'Show User Guides',
-        //   click() {
-        //     shell.openExternal('https://help.github.com/desktop/guides/')
-        //   },
-        // }
-
         const helpItems = [
-            // submitIssueItem,
-            // contactSupportItem,
-            // showUserGuides,
-            separator,
+            {
+                label: __DARWIN__ ? 'Show Documentation' : 'Show documentation',
+                click () {
+                    shell.openExternal(
+                        'https://lode.run/documentation/'
+                    )
+                }
+            },
             {
                 label: __DARWIN__ ? 'Report a Problem or Feature Request' : 'Report a problem or feature request',
                 click: emit('feedback')

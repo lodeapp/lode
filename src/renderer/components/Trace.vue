@@ -33,7 +33,7 @@
                             {{ item }}
                         </template>
                     </template>
-                    <template v-if="typeof item === 'object'">
+                    <template v-if="typeof item === 'object' && item.code">
                         <Snippet
                             :code="item.code"
                             :line="item.line"
@@ -87,7 +87,7 @@ export default {
     },
     methods: {
         toRelative (path) {
-            if (!this.framework || !this.repository) {
+            if (!this.framework || !this.repository || !path.startsWith('/')) {
                 return path
             }
             const root = this.framework.runsInRemote ? this.framework.remotePath : this.repository.path

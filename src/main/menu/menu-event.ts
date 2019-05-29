@@ -2,6 +2,7 @@ export type MenuEvent =
   | 'add-repositories'
   | 'crash'
   | 'feedback'
+  | 'filter'
   | 'framework-settings'
   | 'log-project'
   | 'log-settings'

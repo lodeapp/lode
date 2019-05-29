@@ -44,6 +44,10 @@ export default class Code {
     }
 
     asString (code) {
+        if (!code) {
+            return ''
+        }
+
         return typeof code === 'object'
             ? this.normalize(Object.values(code).join('\n'))
             : this.normalize(code)
@@ -55,9 +59,16 @@ export default class Code {
     }
 
     lines (code, line = 1, highlight = false) {
-        return `<table class="has-lines"><tr><td class="line-number">${line}</td><td class="blob">` + code.replace(/\n/g, () => {
+        line = parseInt(line)
+        if (highlight) {
+            highlight = parseInt(highlight)
+        }
+        // Wrap code in empty starting and ending lines, so that we can have
+        // padding and still be able to highlight first and last lines with the
+        // same height as all other lines.
+        return `<table class="has-lines"><tr><td class="line-number"></td><td class="blob"></td></tr><tr${line === highlight ? ' class="highlight"' : ''}><td class="line-number">${line}</td><td class="blob">` + code.replace(/\n/g, () => {
             line++
             return `</td></tr>\n<tr${line === highlight ? ' class="highlight"' : ''}><td class="line-number">${line}</td><td class="blob">`
-        }) + '</td></tr></table>'
+        }) + '</td></tr><tr><td class="line-number"></td><td class="blob"></td></tr></table>'
     }
 }
