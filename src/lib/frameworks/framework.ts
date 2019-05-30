@@ -1115,6 +1115,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                     this.filters.status &&
                     (
                         this.filters.status.indexOf(suite.getStatus()) === -1 &&
+                        (this.filters.status.indexOf('selected') === -1 || !suite.selected) &&
                         // Don't exclude queued or running suites, otherwise running
                         // a matched status filter would automatically dissolve
                         // all matches once it starts.
@@ -1124,6 +1125,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
             ) {
                 if (suite.selected) {
                     suite.toggleSelected(false, true)
+                }
+                if (suite.expanded) {
+                    suite.toggleExpanded(false, true)
                 }
                 return false
             }

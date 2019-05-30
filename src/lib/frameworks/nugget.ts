@@ -253,9 +253,9 @@ export abstract class Nugget extends EventEmitter {
      * @param cascade Whether toggling should apply to nugget's children.
      */
     public async toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void> {
-        const expanded = typeof toggle === 'undefined' ? !this.expanded : toggle
+        this.expanded = typeof toggle === 'undefined' ? !this.expanded : toggle
 
-        if (expanded) {
+        if (this.expanded) {
             await this.bloom()
         } else {
             await this.wither()
@@ -263,10 +263,9 @@ export abstract class Nugget extends EventEmitter {
 
         if (cascade !== false) {
             this.tests.forEach(test => {
-                test.toggleExpanded(expanded)
+                test.toggleExpanded(this.expanded)
             })
         }
-        this.expanded = expanded
         return Promise.resolve()
     }
 
