@@ -1,12 +1,20 @@
 <template>
     <div class="test-result">
-        <div class="tabnav">
-            <nav class="tabnav-tabs">
+        <div class="tabs">
+            <nav>
                 <template v-if="!empty">
-                    <a v-if="feedback" @mousedown="setTab('feedback')" class="tabnav-tab" :class="{ selected: tab === 'feedback' }">Feedback</a>
-                    <a v-if="console" @mousedown="setTab('console')" class="tabnav-tab" :class="{ selected: tab === 'console' }">Console</a>
-                    <a v-if="suiteConsole" @mousedown="setTab('suiteConsole')" class="tabnav-tab" :class="{ selected: tab === 'suiteConsole' }">Suite Console</a>
-                    <a v-if="stats" @mousedown="setTab('stats')" class="tabnav-tab" :class="{ selected: tab === 'stats' }">Statistics</a>
+                    <button type="button" v-if="feedback" @mousedown="setTab('feedback')" class="tab" :class="{ selected: tab === 'feedback' }">
+                        Feedback
+                    </button>
+                    <button type="button" v-if="console" @mousedown="setTab('console')" class="tab" :class="{ selected: tab === 'console' }">
+                        Console
+                    </button>
+                    <button type="button" v-if="suiteConsole" @mousedown="setTab('suiteConsole')" class="tab" :class="{ selected: tab === 'suiteConsole' }">
+                        Suite Console
+                    </button>
+                    <button type="button" v-if="stats" @mousedown="setTab('stats')" class="tab" :class="{ selected: tab === 'stats' }">
+                        Statistics
+                    </button>
                 </template>
             </nav>
         </div>

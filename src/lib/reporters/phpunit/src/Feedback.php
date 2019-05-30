@@ -67,7 +67,7 @@ class Feedback
             $trace[] = $this->getExceptionTrace($e);
         } while ($e = method_exists($e, 'getPreviousWrapped') ? $e->getPreviousWrapped() : $e->getPrevious());
 
-        return $trace;
+        return Util::compact($trace);
     }
 
     /**
