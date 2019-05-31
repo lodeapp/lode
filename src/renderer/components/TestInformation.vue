@@ -11,6 +11,14 @@
                     <td class="heading">Status</td>
                     <td>{{ displayStatus(status) }}</td>
                 </tr>
+                <tr v-if="typeof stats.first !== 'undefined'">
+                    <td class="heading">First seen</td>
+                    <td :title="firstSeen">{{ displayFirstSeen }}</td>
+                </tr>
+                <tr v-if="typeof stats.last !== 'undefined'">
+                    <td class="heading">Last run</td>
+                    <td :title="lastRun">{{ displayLastRun }}</td>
+                </tr>
                 <tr v-if="typeof stats.duration !== 'undefined'">
                     <td class="heading">Duration</td>
                     <!-- @TODO: Duration component to show seconds, minutes, hours, etc -->
@@ -27,6 +35,7 @@
 </template>
 
 <script>
+import moment from 'moment'
 import _isEmpty from 'lodash/isEmpty'
 import { mapGetters } from 'vuex'
 
@@ -45,6 +54,18 @@ export default {
     computed: {
         isEmpty () {
             return _isEmpty(this.stats)
+        },
+        lastRun () {
+            return moment(this.stats.last).format('MMMM Do YYYY, HH:mm:ss')
+        },
+        displayLastRun () {
+            return moment(this.stats.last).fromNow()
+        },
+        firstSeen () {
+            return moment(this.stats.first).format('MMMM Do YYYY, HH:mm:ss')
+        },
+        displayFirstSeen () {
+            return moment(this.stats.first).fromNow()
         },
         ...mapGetters({
             displayStatus: 'status/display'

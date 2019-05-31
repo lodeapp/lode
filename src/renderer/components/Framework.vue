@@ -78,15 +78,15 @@
                     @activate="onChildActivation"
                     @refresh="refresh"
                 />
+                <footer v-if="hidden" class="cutoff">
+                    <div>
+                        <div v-if="noResults">No results</div>
+                        <div v-else>{{ ':n hidden item|:n hidden items' | plural(hidden) }}</div>
+                        <button class="btn-link" @click="resetFilters"><strong>Clear filters</strong></button>
+                    </div>
+                    <span class="zigzag"></span>
+                </footer>
             </div>
-        </div>
-        <div v-if="hidden" class="cutoff">
-            <div>
-                <div v-if="noResults">No results</div>
-                <div v-else>{{ ':n hidden item|:n hidden items' | plural(hidden) }}</div>
-                <button class="btn-link" @click="resetFilters"><strong>Clear filters</strong></button>
-            </div>
-            <span class="zigzag"></span>
         </div>
     </div>
 </template>
