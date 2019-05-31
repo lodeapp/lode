@@ -64,7 +64,7 @@
                     <input
                         type="search"
                         class="form-control input-block input-sm"
-                        placeholder="Filter suites"
+                        placeholder="Filter items"
                         v-model="keyword"
                     >
                 </div>
@@ -83,7 +83,7 @@
         <div v-if="hidden" class="cutoff">
             <div>
                 <div v-if="noResults">No results</div>
-                <div v-else>{{ ':n hidden suite|:n hidden suites' | plural(hidden) }}</div>
+                <div v-else>{{ ':n hidden item|:n hidden items' | plural(hidden) }}</div>
                 <button class="btn-link" @click="resetFilters"><strong>Clear filters</strong></button>
             </div>
             <span class="zigzag"></span>

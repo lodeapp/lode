@@ -98,7 +98,7 @@
     "electron": "^4.0.4",
     "electron-builder": "20.42.0",
     "electron-devtools-installer": "^2.2.4",
-    "electron-notarize": "^0.1.0",
+    "electron-notarize": "^0.1.1",
     "eslint": "^4.19.1",
     "eslint-config-standard": "^11.0.0",
     "eslint-friendly-formatter": "^4.0.1",

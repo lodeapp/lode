@@ -1,12 +1,16 @@
 <template>
     <div class="test-statistics markdown-body">
-        <div v-if="isEmpty">No statistics to display.</div>
+        <div v-if="isEmpty">Run the test at least once to gather information.</div>
         <table v-else>
             <colgroup>
                 <col width="1%">
                 <col width="99%">
             </colgroup>
             <tbody>
+                <tr>
+                    <td class="heading">Status</td>
+                    <td>{{ displayStatus(status) }}</td>
+                </tr>
                 <tr v-if="typeof stats.duration !== 'undefined'">
                     <td class="heading">Duration</td>
                     <!-- @TODO: Duration component to show seconds, minutes, hours, etc -->
@@ -24,10 +28,15 @@
 
 <script>
 import _isEmpty from 'lodash/isEmpty'
+import { mapGetters } from 'vuex'
 
 export default {
-    name: 'TestStatistics',
+    name: 'TestInformation',
     props: {
+        status: {
+            type: String,
+            default: 'idle'
+        },
         stats: {
             type: Object,
             required: true
@@ -36,7 +45,10 @@ export default {
     computed: {
         isEmpty () {
             return _isEmpty(this.stats)
-        }
+        },
+        ...mapGetters({
+            displayStatus: 'status/display'
+        })
     }
 }
 </script>
