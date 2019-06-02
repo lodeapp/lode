@@ -6,8 +6,9 @@ const builder = require('../electron-builder.json')
 const electron_notarize = require('electron-notarize')
 
 module.exports = async function (params) {
-    // Only notarize the app on macOS.
-    if (process.platform !== 'darwin') {
+    // Only notarize the app on macOS and unless it's
+    // been explicitly skipped.
+    if (process.platform !== 'darwin' || process.env.NOTARIZE === 'false') {
         return
     }
 

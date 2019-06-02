@@ -1,5 +1,5 @@
 <template>
-    <div class="test-statistics markdown-body">
+    <div class="test-information markdown-body">
         <div v-if="isEmpty">Run the test at least once to gather information.</div>
         <table v-else>
             <colgroup>
@@ -15,9 +15,10 @@
                     <td class="heading">First seen</td>
                     <td :title="firstSeen">{{ displayFirstSeen }}</td>
                 </tr>
-                <tr v-if="typeof stats.last !== 'undefined'">
+                <tr>
                     <td class="heading">Last run</td>
-                    <td :title="lastRun">{{ displayLastRun }}</td>
+                    <td v-if="typeof stats.last !== 'undefined'" :title="lastRun">{{ displayLastRun }}</td>
+                    <td v-else>Never</td>
                 </tr>
                 <tr v-if="typeof stats.duration !== 'undefined'">
                     <td class="heading">Duration</td>

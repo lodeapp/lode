@@ -27,6 +27,10 @@ export class Project {
     }
 
     public get (key?: string, fallback?: any): any {
+        if (!key) {
+            return this.store.store
+        }
+
         return this.store.get(key, fallback)
     }
 
