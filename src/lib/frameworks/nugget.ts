@@ -1,4 +1,4 @@
-import { debounce, find } from 'lodash'
+import { debounce, find, get, maxBy } from 'lodash'
 import { EventEmitter } from 'events'
 import { ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
@@ -219,6 +219,40 @@ export abstract class Nugget extends EventEmitter {
      */
     public getStatus (): Status {
         return this.status
+    }
+
+    /**
+     * Get this nugget's last updated date as a string.
+     */
+    public getLastUpdated (): string | undefined {
+        if (this.hasChildren()) {
+            const dates = this.bloomed
+                ? this.tests.map((test: ITest) => test.getLastUpdated())
+                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.first'))
+            return maxBy(dates, date => {
+                return Date.parse(date).valueOf()
+            })
+        }
+
+        // If no children exist, just return this nugget's own information.
+        return get(this.result, 'stats.first')
+    }
+
+    /**
+     * Get this nugget's last run date as a string.
+     */
+    public getLastRun (): string | undefined {
+        if (this.hasChildren()) {
+            const dates = this.bloomed
+                ? this.tests.map((test: ITest) => test.getLastRun())
+                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.last'))
+            return maxBy(dates, date => {
+                return Date.parse(date).valueOf()
+            })
+        }
+
+        // If no children exist, just return this nugget's own information.
+        return get(this.result, 'stats.last')
     }
 
     /**
