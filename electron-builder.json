@@ -14,6 +14,7 @@
   ],
   "afterSign": "./.electron-vue/after-sign.js",
   "dmg": {
+    "sign": false,
     "contents": [
       {
         "x": 410,
