@@ -94,6 +94,7 @@ class LodeReporter extends ResultPrinter
      */
     public function startTestSuite(TestSuite $suite)
     {
+        $files = 0;
         // Before starting, compile a detailed list of all the tests we'll run.
         // This helps us output pointers regarding the progress of each test group.
         foreach (new RecursiveIteratorIterator(new TestSuiteIterator($suite)) as $test) {
@@ -102,6 +103,8 @@ class LodeReporter extends ResultPrinter
 
             // Only add if it suite doesn't already exist.
             if (!isset($this->all[$filename])) {
+                $files++;
+                $report->setOrder($files);
                 $this->all[$filename] = $report->hydrateSuite([]);
             }
 
@@ -250,6 +253,12 @@ class LodeReporter extends ResultPrinter
             if ($last && isset($last['name']) && $last['name'] === $report->getName()) {
                 $report->setIsLast(true);
             }
+        }
+
+        $filenames = array_keys($this->all);
+        $n = array_search($filename, $filenames);
+        if ($n !== false) {
+            $report->setOrder($n + 1);
         }
 
         return $report->setTime($time)->render();

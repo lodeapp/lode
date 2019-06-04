@@ -11,7 +11,7 @@ import { ProjectIdentifier } from '@lib/frameworks/project'
 
 export class State extends EventEmitter {
     protected store: any
-    protected currentVersion: number = 0
+    protected currentVersion: number = 1
     protected defaultSettings: object = {
         concurrency: 3,
         confirm: {
@@ -41,7 +41,7 @@ export class State extends EventEmitter {
     }
 
     protected getVersion (): number {
-        return this.get('version', 0)
+        return this.get('version', 1)
     }
 
     protected isMainProcess (): boolean {

@@ -5,10 +5,10 @@
 //
 //
 // -------- Grays --------
-$gray-000:        #fafbfc !default;
-$gray-100:        #f8f9fa !default;
-$gray-200:        #e9ecef !default;
-$gray-300:        #dee2e6 !default;
+$gray-000:        #f7f7f7 !default;
+$gray-100:        #f0f0f0 !default;
+$gray-200:        #ececec !default;
+$gray-300:        #e3e3e3 !default;
 $gray-400:        #ced4da !default;
 $gray-500:        #adb5bd !default;
 $gray-600:        #6c757d !default;
@@ -202,7 +202,7 @@ $palette: (
 $primary: $white;
 $primary-border: $gray-300;
 
-$secondary: $gray-100;
+$secondary: $gray-000;
 $secondary-text: $gray-600;
 $secondary-discreet-text: lighten($gray-600, 15%);
 

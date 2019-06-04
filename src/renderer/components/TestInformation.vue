@@ -13,11 +13,11 @@
                 </tr>
                 <tr v-if="typeof stats.first !== 'undefined'">
                     <td class="heading">First seen</td>
-                    <td :title="firstSeen">{{ displayFirstSeen }}</td>
+                    <td :key="timeKey" :title="firstSeen">{{ displayFirstSeen() }}</td>
                 </tr>
                 <tr>
                     <td class="heading">Last run</td>
-                    <td v-if="typeof stats.last !== 'undefined'" :title="lastRun">{{ displayLastRun }}</td>
+                    <td :key="timeKey" v-if="typeof stats.last !== 'undefined'" :title="lastRun">{{ displayLastRun() }}</td>
                     <td v-else>Never</td>
                 </tr>
                 <tr v-if="typeof stats.duration !== 'undefined'">
@@ -52,6 +52,12 @@ export default {
             required: true
         }
     },
+    data () {
+        return {
+            timeKey: this.$string.random(),
+            timeInterval: null
+        }
+    },
     computed: {
         isEmpty () {
             return _isEmpty(this.stats)
@@ -59,18 +65,28 @@ export default {
         lastRun () {
             return moment(this.stats.last).format('MMMM Do YYYY, HH:mm:ss')
         },
-        displayLastRun () {
-            return moment(this.stats.last).fromNow()
-        },
         firstSeen () {
             return moment(this.stats.first).format('MMMM Do YYYY, HH:mm:ss')
-        },
-        displayFirstSeen () {
-            return moment(this.stats.first).fromNow()
         },
         ...mapGetters({
             displayStatus: 'status/display'
         })
+    },
+    mounted () {
+        this.timeInterval = window.setInterval(() => {
+            this.timeKey = this.$string.random()
+        }, 15000)
+    },
+    beforeDestroy () {
+        window.clearInterval(this.timeInterval)
+    },
+    methods: {
+        displayLastRun () {
+            return moment(this.stats.last).fromNow()
+        },
+        displayFirstSeen () {
+            return moment(this.stats.first).fromNow()
+        }
     }
 }
 </script>

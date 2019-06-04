@@ -23,6 +23,21 @@
 
             & > .actions {
                 flex-shrink: 0;
+
+                .btn {
+                    margin-right: 2px;
+
+                    &:focus {
+                        // Reduce noise in action buttons by dropping focus
+                        // outline. Since they are usually disabled on click,
+                        // (e.g. sync, run), then focus is short-lived anyway.
+                        box-shadow: none;
+                    }
+                }
+
+                & > :last-child {
+                    margin-right: 0;
+                }
             }
         }
     }

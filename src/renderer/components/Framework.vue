@@ -16,15 +16,16 @@
                         </span>
                     </h3>
                     <div class="actions">
-                        <button type="button" class="btn-link more-actions" @click.prevent="openMenu">
+                        <button type="button" class="btn-link more-actions" tabindex="-1" @click.prevent="openMenu">
                             <Icon symbol="kebab-vertical" />
                         </button>
-                        <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing">
+                        <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing" tabindex="-1">
                             <Icon symbol="sync" />
                         </button>
                         <button
                             class="btn btn-sm btn-primary"
                             :disabled="running || refreshing || noResults"
+                            tabindex="-1"
                             @click="start"
                         >
                             <template v-if="selective">
@@ -68,6 +69,17 @@
                         v-model="keyword"
                     >
                 </div>
+                <div v-if="framework.count()" class="filters sort">
+                    <button type="button" @click.prevent="onSortClick">
+                        <template v-if="visible > 1">
+                            {{ ':n item sorted by :0|:n items sorted by :0' | plural(visible) | set(displaySort) }}
+                            <Icon symbol="chevron-down" />
+                        </template>
+                        <template v-else>
+                            {{ ':n item|:n items' | plural(visible) }}
+                        </template>
+                    </button>
+                </div>
             </div>
             <div class="children">
                 <Suite
@@ -94,6 +106,8 @@
 <script>
 import _debounce from 'lodash/debounce'
 import { ipcRenderer } from 'electron'
+import { Menu } from '@main/menu'
+import { sortDisplayName } from '@lib/frameworks/sort'
 import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
@@ -137,8 +151,11 @@ export default {
         filtering () {
             return this.framework.hasFilters()
         },
+        visible () {
+            return this.framework.getSuites().length
+        },
         hidden () {
-            return this.framework.count() - this.framework.getSuites().length
+            return this.framework.count() - this.visible
         },
         noResults () {
             return this.hidden === this.framework.count()
@@ -150,6 +167,17 @@ export default {
             set: _debounce(function (value) {
                 this.framework.setFilter('keyword', value)
             }, 150)
+        },
+        sort: {
+            get () {
+                return this.framework.getSort()
+            },
+            set (value) {
+                this.framework.setSort(value)
+            }
+        },
+        displaySort () {
+            return sortDisplayName(this.sort)
         }
     },
     created () {
@@ -202,6 +230,31 @@ export default {
         },
         resetFilters () {
             this.framework.resetFilters()
+        },
+        onSortClick () {
+            const menu = new Menu()
+            this.framework.getSupportedSorts().forEach(sort => {
+                menu.add({
+                    label: sortDisplayName(sort),
+                    type: 'checkbox',
+                    checked: sort === this.sort,
+                    click: () => {
+                        this.sort = sort
+                    }
+                })
+            })
+            menu
+                .separator()
+                .add({
+                    label: 'Reverse',
+                    type: 'checkbox',
+                    checked: this.framework.isSortReverse(),
+                    click: () => {
+                        this.framework.setSortReverse()
+                    }
+                })
+                .attachTo(this.$el.querySelector('.sort button'))
+                .open()
         }
     }
 }

@@ -22,6 +22,10 @@ export interface ITest extends Nugget {
     debrief (result: ITestResult, cleanup: boolean): Promise<void>
     hasChildren(): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
+    getLastUpdated (): string | null
+    getLastRun (): string | null
+    getTotalDuration (): number
+    getMaxDuration (): number
 }
 
 export interface ITestResult {

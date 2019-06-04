@@ -98,7 +98,7 @@
     "del": "^3.0.0",
     "devtron": "^1.4.0",
     "electron": "^4.0.4",
-    "electron-builder": "20.42.0",
+    "electron-builder": "20.43.0",
     "electron-devtools-installer": "^2.2.4",
     "electron-notarize": "^0.1.1",
     "eslint": "^4.19.1",

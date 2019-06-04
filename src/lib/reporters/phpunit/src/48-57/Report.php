@@ -76,6 +76,13 @@ class Report
     protected $class;
 
     /**
+     * The test's running order.
+     *
+     * @var int
+     */
+    protected $order;
+
+    /**
      * Create a new Lode report class.
      *
      * @param \PHPUnit_Framework_Test $test
@@ -121,7 +128,19 @@ class Report
     }
 
     /**
-     * Set the `isLast` property of this report
+     * Set the `order` property of this report.
+     *
+     * @param int $order
+     * @return this
+     */
+    public function setOrder($order)
+    {
+        $this->order = $order;
+        return $this;
+    }
+
+    /**
+     * Set the `isLast` property of this report.
      *
      * @param bool $isLast
      * @return this
@@ -205,10 +224,11 @@ class Report
             // Since we can't really know when a suite and not a test has logged an entry
             // we'll just pull the remainder of the console if this is the suite's last entry.
             'console' => $this->isLast ? $this->console->pullSuiteLogs($this->getFileName()) : [],
-            'meta' => [
+            'meta' => Util::compact([
+                'n' => $this->order,
                 'class' => $this->getClass(),
                 'groups' => method_exists($this->test, 'getGroups') ? $this->test->getGroups() : [],
-            ],
+            ]),
         ]);
     }
 

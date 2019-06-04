@@ -1,9 +1,7 @@
-// See: https://medium.com/@TwitterArchiveEraser/notarize-electron-apps-7a5f988406db
-
-const fs = require('fs')
-const path = require('path')
+const Fs = require('fs')
+const Path = require('path')
 const builder = require('../electron-builder.json')
-const electron_notarize = require('electron-notarize')
+const notarize = require('electron-notarize')
 
 module.exports = async function (params) {
     // Only notarize the app on macOS and unless it's
@@ -12,17 +10,10 @@ module.exports = async function (params) {
         return
     }
 
-    let appPath = path.join(params.appOutDir, `${params.packager.appInfo.productFilename}.app`)
-    if (!fs.existsSync(appPath)) {
-        throw new Error(`Cannot find application at: ${appPath}`)
-    }
-
-    console.log(`Notarizing ${builder.appId} found at ${appPath}`)
-
     try {
-        await electron_notarize.notarize({
+        await notarize.notarize({
             appBundleId: builder.appId,
-            appPath: appPath,
+            appPath: Path.join(params.appOutDir, `${params.packager.appInfo.productFilename}.app`),
             appleId: 'tbuteler@me.com',
             appleIdPassword: `@keychain:AC_PASSWORD`
         })
@@ -31,5 +22,5 @@ module.exports = async function (params) {
         process.exit(1)
     }
 
-    console.log(`Done notarizing ${builder.appId}`)
+    console.log(`Done notarizing ${builder.appId}.`)
 }

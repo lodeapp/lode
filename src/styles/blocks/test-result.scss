@@ -17,7 +17,7 @@
                 background: none;
                 border: 0;
                 box-shadow: none;
-                padding: var(--spacing);
+                padding: calc(var(--spacing) + 3px) var(--spacing);
 
                 &:hover,
                 &:focus,

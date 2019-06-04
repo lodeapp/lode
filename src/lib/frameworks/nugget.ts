@@ -1,4 +1,4 @@
-import { debounce, find, get, maxBy } from 'lodash'
+import { debounce, find, get, max, maxBy, sum } from 'lodash'
 import { EventEmitter } from 'events'
 import { ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
@@ -224,35 +224,65 @@ export abstract class Nugget extends EventEmitter {
     /**
      * Get this nugget's last updated date as a string.
      */
-    public getLastUpdated (): string | undefined {
+    public getLastUpdated (): string | null {
         if (this.hasChildren()) {
             const dates = this.bloomed
                 ? this.tests.map((test: ITest) => test.getLastUpdated())
-                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.first'))
+                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.first', null))
             return maxBy(dates, date => {
-                return Date.parse(date).valueOf()
+                return date ? Date.parse(date).valueOf() : null
             })
         }
 
         // If no children exist, just return this nugget's own information.
-        return get(this.result, 'stats.first')
+        return get(this.result, 'stats.first', null)
     }
 
     /**
      * Get this nugget's last run date as a string.
      */
-    public getLastRun (): string | undefined {
+    public getLastRun (): string | null {
         if (this.hasChildren()) {
             const dates = this.bloomed
                 ? this.tests.map((test: ITest) => test.getLastRun())
-                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.last'))
+                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.last', null))
             return maxBy(dates, date => {
-                return Date.parse(date).valueOf()
+                return date ? Date.parse(date).valueOf() : null
             })
         }
 
         // If no children exist, just return this nugget's own information.
-        return get(this.result, 'stats.last')
+        return get(this.result, 'stats.last', null)
+    }
+
+    /**
+     * Get this nugget's maximum duration in milliseconds.
+     */
+    public getTotalDuration (): number {
+        if (this.hasChildren()) {
+            const durations = this.bloomed
+                ? this.tests.map((test: ITest) => test.getMaxDuration())
+                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.duration', 0))
+            return sum(durations) || 0
+        }
+
+        // If no children exist, just return this nugget's own information.
+        return get(this.result, 'stats.duration', 0)
+    }
+
+    /**
+     * Get this nugget's maximum duration in milliseconds.
+     */
+    public getMaxDuration (): number {
+        if (this.hasChildren()) {
+            const durations = this.bloomed
+                ? this.tests.map((test: ITest) => test.getMaxDuration())
+                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.duration', 0))
+            return max(durations) || 0
+        }
+
+        // If no children exist, just return this nugget's own information.
+        return get(this.result, 'stats.duration', 0)
     }
 
     /**

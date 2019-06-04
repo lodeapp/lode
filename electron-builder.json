@@ -32,7 +32,9 @@
     "category": "public.app-category.developer-tools",
     "icon": "build/icons/icon.png",
     "hardenedRuntime": true,
-    "entitlements": "./support/entitlements.mac.inherit.plist",
+    "gatekeeperAssess": false,
+    "entitlements": "./support/entitlements.mac.plist",
+    "entitlementsInherit": "./support/entitlements.mac.plist",
     "target": [
       "zip",
       "dmg"
