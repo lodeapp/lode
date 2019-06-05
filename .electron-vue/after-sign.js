@@ -11,6 +11,8 @@ module.exports = async function (params) {
     }
 
     try {
+        console.log(`Starting notarization of ${builder.appId}.`)
+
         await notarize.notarize({
             appBundleId: builder.appId,
             appPath: Path.join(params.appOutDir, `${params.packager.appInfo.productFilename}.app`),
@@ -22,5 +24,5 @@ module.exports = async function (params) {
         process.exit(1)
     }
 
-    console.log(`Done notarizing ${builder.appId}.`)
+    console.log(`Finished notarization of ${builder.appId}.`)
 }
