@@ -160,11 +160,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
         group: null
     }
     protected sort!: FrameworkSort
-    protected sortDefault: FrameworkSort = 'name'
     protected sortReverse!: boolean
     protected supportedSorts?: Array<FrameworkSort>
 
     static readonly defaults?: FrameworkOptions
+    static readonly sortDefault: FrameworkSort = 'name'
 
     constructor (options: FrameworkOptions) {
         super()
@@ -193,11 +193,14 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.sshPort = options.sshPort || null
         this.sshIdentity = options.sshIdentity || null
         this.runner = options.runner || ''
+
+        // Usage of `this.constructor` means that we can allow individual framework
+        // implementations to override the static properties with their own defaults.
         this.proprietary = options.proprietary || {
             ...(this.constructor as typeof Framework).defaults!.proprietary
         }
         this.active = options.active || false
-        this.sort = options.sort || this.sortDefault
+        this.sort = options.sort || (this.constructor as typeof Framework).sortDefault
         this.sortReverse = options.sortReverse || false
 
         this.initialSuiteCount = (options.suites || []).length
@@ -1231,7 +1234,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Get the current sort option for this framework.
      */
     public getSort (): FrameworkSort {
-        return this.sort || this.sortDefault
+        return this.sort || (this.constructor as typeof Framework).sortDefault
     }
 
     /**

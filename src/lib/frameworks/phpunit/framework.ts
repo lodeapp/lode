@@ -21,12 +21,12 @@ export class PHPUnit extends Framework {
         }
     }
 
+    // Set PHPUnit's default sort order
+    static readonly sortDefault: FrameworkSort = 'framework'
+
     // Suites are defined in the parent constructor (albeit a different class),
     // so we'll just inherit the default value from it (or risk overriding it).
     public suites!: Array<PHPUnitSuite>
-
-    // Set PHPUnit's default sort order
-    protected sortDefault: FrameworkSort = 'framework'
 
     /**
      * The class of suite we use for this framework. Overrides the default
