@@ -7,7 +7,7 @@
                     <h2>{{ 'Loading :0…' | set($root.project.name) }}</h2>
                 </div>
             </div>
-            <Split :class="{ 'empty': noRepositories || emptyStatus || frameworkLoading }" v-else>
+            <Split v-else :class="{ 'empty': noRepositories || emptyStatus || frameworkLoading }">
                 <Pane class="sidebar">
                     <header>
                         <h5 class="sidebar-header">Project</h5>
@@ -168,17 +168,6 @@ export default {
             this.onProjectChange()
             this.loading = false
         })
-    },
-    mounted () {
-        // OverlayScrollbars(this.$el.querySelector('.sidebar section'), {
-        //     className: 'os-theme-dark',
-        //     resize: 'both',
-        //     sizeAutoCapable: true,
-        //     paddingAbsolute: true,
-        //     scrollbars: {
-        //         clickScrolling: true
-        //     }
-        // })
     },
     methods: {
         scanEmptyRepositories () {
