@@ -1,5 +1,6 @@
 .Label {
     -webkit-app-region: no-drag !important;
+    font-variant-numeric: tabular-nums;
     position: relative;
 
     // Italics inside labels should be numbers and
@@ -44,12 +45,6 @@
             background-color: theme-color('selected');
             border-color: theme-color('selected', 'step', 100);
             color: $white;
-
-            &:hover,
-            &:focus,
-            &:active {
-                background-color: darken(theme-color('selected'), 3%);
-            }
         }
     }
 
@@ -61,12 +56,6 @@
             background-color: theme-color('passed', 'step', 100);
             border-color: theme-color('passed', 'step', 200);
             color: $white;
-
-            &:hover,
-            &:focus,
-            &:active {
-                background-color: darken(theme-color('passed', 'step', 100), 2%);
-            }
         }
     }
 
@@ -74,18 +63,12 @@
     &--skipped,
     &--pending {
         border-color: theme-color('incomplete', 'step', 200);
-        color: theme-color('incomplete', 'step', 200);
+        color: theme-color('incomplete', 800);
 
         &.is-active {
-            background-color: theme-color('incomplete', 'step', 100);
+            background-color: theme-color('incomplete', 'step');
             border-color: theme-color('incomplete', 'step', 200);
-            color: $white;
-
-            &:hover,
-            &:focus,
-            &:active {
-                background-color: darken(theme-color('incomplete'), 3%);
-            }
+            color: theme-color('incomplete', 900);
         }
     }
 
@@ -97,12 +80,6 @@
             background-color: theme-color('warning');
             border-color: theme-color('warning', 'step', 100);
             color: $white;
-
-            &:hover,
-            &:focus,
-            &:active {
-                background-color: darken(theme-color('warning'), 3%);
-            }
         }
     }
 
@@ -115,12 +92,6 @@
             background-color: theme-color('failed');
             border-color: theme-color('failed', 'step', 200);
             color: $white;
-
-            &:hover,
-            &:focus,
-            &:active {
-                background-color: darken(theme-color('failed'), 3%);
-            }
         }
     }
 
@@ -133,12 +104,6 @@
             background-color: theme-color('queued', 'step', 200);
             border-color: theme-color('queued', 'step', 300);
             color: $white;
-
-            &:hover,
-            &:focus,
-            &:active {
-                background-color: darken(theme-color('queued', 'step', 200), 3%);
-            }
         }
     }
 
@@ -150,12 +115,6 @@
             background-color: theme-color('idle', 'step', 200);
             border-color: theme-color('idle', 'step', 300);
             color: $white;
-
-            &:hover,
-            &:focus,
-            &:active {
-                background-color: darken(theme-color('idle', 'step', 200), 3%);
-            }
         }
     }
 
@@ -169,12 +128,6 @@
             border-color: theme-color('idle', 'step', 100);
             box-shadow: inset 0 0 0 1px theme-color('idle'), inset 0 0 0 2px $white;
             color: theme-color('idle', 700);
-
-            &:hover,
-            &:focus,
-            &:active {
-                background-color: darken(theme-color('idle'), 3%);
-            }
         }
     }
 
@@ -188,12 +141,6 @@
             border-color: theme-color('partial', 'step', 100);
             box-shadow: inset 0 0 0 1px theme-color('partial'), inset 0 0 0 2px theme-color('partial', 'step', 100);
             color: $white;
-
-            &:hover,
-            &:focus,
-            &:active {
-                background-color: darken(theme-color('partial'), 3%);
-            }
         }
     }
 
@@ -207,12 +154,6 @@
             border-color: theme-color('failed', 'step', 200);
             box-shadow: inset 0 0 0 1px theme-color('failed'), inset 0 0 0 2px $white;
             color: $white;
-
-            &:hover,
-            &:focus,
-            &:active {
-                background-color: darken(theme-color('failed', 400), 3%);
-            }
         }
     }
 }

@@ -1,6 +1,11 @@
 <template>
     <div class="progress-breakdown">
-        <span v-if="framework.isSelective()" class="Label Label--outline Label--selected">
+        <span
+            v-if="framework.isSelective() || isActive('selected')"
+            class="Label Label--outline Label--selected"
+            :class="[isActive('selected') ? 'is-active' : '']"
+            @click="toggle('selected')"
+        >
             <span>{{ selected.length }}</span>
             {{ 'selected|selected' | plural(selected.length) }}
         </span>

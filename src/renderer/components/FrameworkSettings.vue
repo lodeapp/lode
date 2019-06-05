@@ -40,7 +40,7 @@
                 <dd :class="{ errored: validator.hasErrors('type') }">
                     <div v-if="validator.hasErrors('type')" class="form-error">{{ validator.getErrors('type') }}</div>
                     <select class="form-control form-select input-sm" v-model="fields.type">
-                        <option>Select Test Framework</option>
+                        <option value="">Select Test Framework</option>
                         <option
                             v-for="framework in availableFrameworks"
                             :key="framework.defaults.type"

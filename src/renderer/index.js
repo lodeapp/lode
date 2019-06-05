@@ -9,6 +9,7 @@ import { Project } from '@lib/frameworks/project'
 
 // Styles
 import '../styles/app.scss'
+import 'overlayscrollbars/css/OverlayScrollbars.css'
 
 // Plugins
 import Alerts from './plugins/alerts'

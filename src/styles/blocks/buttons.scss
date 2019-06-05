@@ -4,45 +4,89 @@ button,
 }
 
 .btn {
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-500);
+    border-radius: 2px;
+    box-shadow: none;
+    font-weight: var(--font-weight-semibold);
 
-    i {
-        line-height: 1.5em;
-        vertical-align: middle;
+    &:hover {
+        background: lighten($gray-200, 2%);
+        border-color: $gray-500;
     }
 
-    // Cascade disabled state to .Counter inside buttons
+    &:focus {
+        box-shadow: 0 0 0 2px transparentize($blue-400, .7);
+    }
+
+    &:active {
+        background: darken($gray-200, 3%);
+        border-color: $gray-500;
+        box-shadow: none;
+    }
+
     &:disabled {
+        background: transparentize($gray-100, .1);
+        border-color: transparentize($gray-500, .6);
+        color: transparentize($black, .6);
 
         & > .Counter {
             opacity: .5;
         }
     }
 
-    // Our primary button is blue, not green
-    &.btn-primary {
-        @include btn-solid($text-white, lighten($blue-400, 8%), darken($blue-400, 2%));
+    i {
+        line-height: 1.5em;
+        vertical-align: middle;
     }
 
-    &.btn-loading {
-        color: transparent;
+    & > .Counter {
+        font-variant-numeric: tabular-nums;
+    }
 
-        &::after {
-            animation: rotate .6s infinite linear;
-            border-bottom: 1em solid var(--color-blue-200);
-            border-left: 1em solid var(--color-blue-400);
-            border-radius: 50%;
-            border-right: 1em solid var(--color-blue-200);
-            border-top: 1em solid var(--color-blue-200);
-            content: '';
-            display: block;
-            font-size: 2px;
-            height: 8em;
-            left: 0;
-            margin: 0 auto calc(-8em - 4px);
-            position: relative;
-            top: calc(-8em - 4px);
-            transform: translateZ(0);
-            width: 8em;
+    // Our primary button is blue, not green
+    &.btn-primary {
+        background: $blue-400;
+        border-color: $blue-500;
+        box-shadow: none;
+        color: $text-white;
+
+        &:hover {
+            background: $blue-400;
+            border-color: $blue-500;
+        }
+
+        &:active {
+            background: darken($blue-400, 8%);
+            border-color: darken($blue-400, 12%);
+        }
+
+        &:disabled {
+            background: transparentize($blue-400, .5);
+            border-color: transparentize($blue-500, .9);
+            color: transparentize($text-white, .1);
+
+            & > .Counter {
+                background: transparentize($text-white, .3);
+                color: transparentize($blue-400, .5);
+                opacity: 1;
+            }
+        }
+
+        & > .Counter {
+            color: $blue-400;
+        }
+    }
+
+    &.btn-danger {
+        color: $red-600;
+
+        &:hover {
+            color: $red-600;
+        }
+
+        &:disabled {
+            color: transparentize($red-600, .6);
         }
     }
 }
@@ -56,6 +100,14 @@ button,
         height: 100%;
         min-width: 15px;
         padding: 0 6px;
+
+        &:hover {
+            box-shadow: none;
+        }
+
+        &:active {
+            box-shadow: none;
+        }
 
         &:hover,
         &:focus,

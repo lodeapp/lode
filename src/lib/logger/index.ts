@@ -100,6 +100,10 @@ function getLogger(): Promise<winston.LogMethod> {
  * or if the entry could not be written due to an error.
  */
 export async function log(level: LogLevel, message: string) {
+    if (!__LOGGER__) {
+        console.log(message)
+        return
+    }
     try {
         const logger = await getLogger()
         await new Promise<void>((resolve, reject) => {

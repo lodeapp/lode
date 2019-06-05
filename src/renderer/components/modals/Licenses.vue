@@ -1,7 +1,9 @@
 <template>
     <Modal title="Open Source Notices">
-        <p>Lode's <a href="#" @click.prevent="$root.openExternal('https://github.com/lodeapp')">open source adapter libraries</a> are distributed individually and may be required for this software to function as intended. Check the repositories' pages for licenses and full list of contributors.</p>
-        <hr>
+        <!--
+            <p>Lode's <a href="#" @click.prevent="$root.openExternal('https://github.com/lodeapp')">open source adapter libraries</a> are distributed individually and may be required for this software to function as intended. Check the repositories' pages for licenses and full list of contributors.</p>
+            <hr>
+        -->
         <div v-if="!licenses.length">
             <p>An error ocurred while loading third party licenses. Please contact the authors for licensing information.</p>
         </div>

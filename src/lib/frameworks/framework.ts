@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { chunk, find, findIndex, trim, trimStart } from 'lodash'
+import { chunk, find, findIndex, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { filter as fuzzy } from 'fuzzaldrin'
 import { EventEmitter } from 'events'
@@ -10,6 +10,7 @@ import { queue } from '@lib/process/queue'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
+import { FrameworkSort, sortOptions, sortDirection } from '@lib/frameworks/sort'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 import { SSHOptions } from '@lib/process/ssh'
 import pool from '@lib/process/pool'
@@ -47,6 +48,8 @@ export type FrameworkOptions = {
     suites?: Array<ISuiteResult>
     scanStatus?: 'pending' | 'removed'
     proprietary: any
+    sort?: FrameworkSort
+    sortReverse?: boolean
 }
 
 /**
@@ -93,6 +96,11 @@ export interface IFramework extends EventEmitter {
     getFilter (filter: FrameworkFilter): Array<string> | string | null
     hasFilters (): boolean
     resetFilters (): void
+    setSort (sort: FrameworkSort): void
+    getSort (): FrameworkSort
+    getSupportedSorts (): Array<FrameworkSort>
+    setSortReverse (reverse?: boolean): void
+    isSortReverse (): boolean
 }
 
 /**
@@ -151,8 +159,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
         status: null,
         group: null
     }
+    protected sort!: FrameworkSort
+    protected sortReverse!: boolean
+    protected supportedSorts?: Array<FrameworkSort>
 
     static readonly defaults?: FrameworkOptions
+    static readonly sortDefault: FrameworkSort = 'name'
 
     constructor (options: FrameworkOptions) {
         super()
@@ -181,11 +193,15 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.sshPort = options.sshPort || null
         this.sshIdentity = options.sshIdentity || null
         this.runner = options.runner || ''
+
+        // Usage of `this.constructor` means that we can allow individual framework
+        // implementations to override the static properties with their own defaults.
         this.proprietary = options.proprietary || {
             ...(this.constructor as typeof Framework).defaults!.proprietary
         }
-
         this.active = options.active || false
+        this.sort = options.sort || (this.constructor as typeof Framework).sortDefault
+        this.sortReverse = options.sortReverse || false
 
         this.initialSuiteCount = (options.suites || []).length
         this.hasSuites = this.initialSuiteCount > 0
@@ -306,6 +322,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
             sshIdentity: this.sshIdentity,
             active: this.active,
             proprietary: this.proprietary,
+            sort: this.sort,
+            sortReverse: this.sortReverse,
             suites: this.suites.map((suite: ISuite) => suite.persist())
         }
     }
@@ -580,8 +598,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 // too many at a time (some frameworks will break if filtering
                 // arguments are too long, like PHPUnit's, which passes them
                 // straight into a `preg_match` call).
-                // @TODO: sort suites before chunking.
-                chunk(suites, this.maxSelective).reduce((step, chunk) => {
+                chunk(this.sortSuites(suites), this.maxSelective).reduce((step, chunk) => {
                     return step.then((outcome: string) => {
                         if (outcome === 'success') {
                             return this.report(this.runSelectiveArgs(chunk, this.selective))
@@ -1094,12 +1111,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     public getSuites (): Array<ISuite> {
         if (!this.hasFilters()) {
-            return this.suites
+            return this.sortSuites(this.suites)
         }
 
         const exact = this.filters.keyword && (this.filters.keyword as string).match(/^[\'\"].+[\'\"]$/g)
         const keyword = this.getFilterKeyword()
-        return this.suites.filter((suite: ISuite) => {
+        return this.sortSuites(this.suites.filter((suite: ISuite) => {
             if (
                 (
                     keyword &&
@@ -1115,6 +1132,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                     this.filters.status &&
                     (
                         this.filters.status.indexOf(suite.getStatus()) === -1 &&
+                        (this.filters.status.indexOf('selected') === -1 || !suite.selected) &&
                         // Don't exclude queued or running suites, otherwise running
                         // a matched status filter would automatically dissolve
                         // all matches once it starts.
@@ -1125,10 +1143,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 if (suite.selected) {
                     suite.toggleSelected(false, true)
                 }
+                if (suite.expanded) {
+                    suite.toggleExpanded(false, true)
+                }
                 return false
             }
             return true
-        })
+        }))
     }
 
     /**
@@ -1197,6 +1218,84 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         return keyword.toUpperCase()
+    }
+
+    /**
+     * Set the sort order property for this framework.
+     *
+     * @param sort Which option to use for sorting this framework.
+     */
+    public setSort (sort: FrameworkSort): void {
+        this.sort = sort
+        this.emit('change', this)
+    }
+
+    /**
+     * Get the current sort option for this framework.
+     */
+    public getSort (): FrameworkSort {
+        return this.sort || (this.constructor as typeof Framework).sortDefault
+    }
+
+    /**
+     * Get all sort options supported by this framework.
+     */
+    public getSupportedSorts (): Array<FrameworkSort> {
+        // If framework has not defined its supported sorts, assume all.
+        return this.supportedSorts || (Object.keys(sortOptions) as Array<FrameworkSort>)
+    }
+
+    /**
+     * Set the reverse sort order property.
+     */
+    public setSortReverse (reverse?: boolean): void {
+        this.sortReverse = typeof reverse !== 'undefined' ? reverse : !this.sortReverse
+        this.emit('change', this)
+    }
+
+    /**
+     * Whether the current sort order is reversed.
+     */
+    public isSortReverse (): boolean {
+        return this.sortReverse
+    }
+
+    /**
+     * Sort suites by the framework's currently selected sorting option.
+     *
+     * @param suites The suites to sort
+     */
+    protected sortSuites (suites: Array<ISuite>): Array<ISuite> {
+        return orderBy(
+            suites,
+            (suite: ISuite) => this.sortProperty(suite, this.sort),
+            sortDirection(this.sort, this.sortReverse)
+        )
+    }
+
+    /**
+     * Get the sorting property of a given suite.
+     *
+     * @param suite The suites to get the property from.
+     * @param sort The sorting option to enforce on the suite.
+     */
+    protected sortProperty (suite: ISuite, sort?: FrameworkSort): string | number | null {
+        switch (sort) {
+            case 'framework':
+                return suite.getRunningOrder()
+            case 'name':
+                return suite.getDisplayName()
+            case 'updated':
+                return suite.getLastUpdated()
+            case 'run':
+                return suite.getLastRun()
+            case 'duration':
+                return suite.getTotalDuration()
+            case 'maxduration':
+                return suite.getMaxDuration()
+            default:
+                return null
+        }
     }
 
     /**

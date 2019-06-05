@@ -43,6 +43,11 @@ export interface ISuite extends Nugget {
     isFresh (): boolean
     hasChildren(): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
+    getRunningOrder (): number | null
+    getLastUpdated (): string | null
+    getLastRun (): string | null
+    getTotalDuration (): number
+    getMaxDuration (): number
 }
 
 export interface ISuiteResult {
@@ -248,6 +253,13 @@ export class Suite extends Nugget implements ISuite {
      */
     public getConsole (): Array<any> {
         return this.result.console!
+    }
+
+    /**
+     * Get this nugget's running order, if any.
+     */
+    public getRunningOrder (): number | null {
+        return this.getMeta('n', null)
     }
 
     /**

@@ -1,17 +1,18 @@
 .collapsible {
-    border: 1px solid var(--color-gray-300);
+    border: 1px solid var(--color-gray-400);
     border-radius: 3px;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 
     & > .header {
-        background-color: var(--color-gray-100);
+        background-color: var(--color-gray-000);
         border-radius: inherit;
         position: relative;
         padding: var(--spacing);
 
         .btn,
         .btn-link {
+            background: var(--color-gray-000);
             height: 1.8rem;
             position: absolute;
             right: calc(var(--spacing) - 2px);

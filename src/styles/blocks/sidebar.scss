@@ -1,18 +1,45 @@
 .sidebar {
     -webkit-app-region: drag;
     background-color: var(--sidebar-color);
+    border-radius: 0.0001px; // Prevent .shadow from overflowing.
     display: flex;
     flex-direction: column;
     padding: 35px 0 0;
+    height: 100vh;
 
-    & > h5 {
+    header {
+        position: sticky;
+    }
+
+    .shadow {
+        height: 1px;
+        position: fixed;
+        width: 100%;
+        border-bottom: 1px solid var(--color-gray-500);
+        box-shadow: 0 2px 0 0 transparentize($black, .9);
+        z-index: 1;
+    }
+
+    .shadow-overlay {
+        background-color: var(--sidebar-color);
+        height: 3px;
+        position: relative;
+        width: 100%;
+        z-index: 2;
+    }
+
+    section {
+        flex: 1;
+        overflow-x: hidden;
+        overflow-y: overlay;
+        z-index: 1;
+    }
+
+    .sidebar-header {
         -webkit-app-region: no-drag;
         color: var(--sidebar-text-secondary-color);
         font-size: 1rem;
         margin: var(--spacing) 0 var(--spacing-half) var(--spacing);
-    }
-
-    .sidebar-header {
 
         & > .sidebar-action {
             background-color: var(--sidebar-text-secondary-color);

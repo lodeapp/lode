@@ -24,7 +24,7 @@
                 <dd v-if="slot.validator.hasErrors('path')" class="form-error">{{ slot.validator.getErrors('path') }}</dd>
             </dl>
             <dl class="form-group">
-                <button type="button" class="btn btn-sm" @click="addRow">
+                <button type="button" class="btn btn-sm" @click="addRow()">
                     Add another repository
                 </button>
             </dl>
@@ -102,6 +102,18 @@ export default {
                 validator: new RepositoryValidator(this.$root.project.repositories.map(repository => repository.path)),
                 path
             })
+            if (!path) {
+                this.$nextTick(() => {
+                    const inputs = this.$el.querySelectorAll('input[type=text]')
+                    if (inputs && inputs.length) {
+                        try {
+                            inputs[inputs.length - 1].focus()
+                        } catch (_) {
+                            // Fail silently if we can't focus on last input.
+                        }
+                    }
+                })
+            }
         },
         removeRow (index) {
             this.slots.splice(index, 1)

@@ -1,3 +1,4 @@
+import _get from 'lodash/get'
 import { Status } from '@lib/frameworks/status'
 import { Nugget } from '@lib/frameworks/nugget'
 
@@ -21,6 +22,10 @@ export interface ITest extends Nugget {
     debrief (result: ITestResult, cleanup: boolean): Promise<void>
     hasChildren(): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
+    getLastUpdated (): string | null
+    getLastRun (): string | null
+    getTotalDuration (): number
+    getMaxDuration (): number
 }
 
 export interface ITestResult {
@@ -72,10 +77,33 @@ export class Test extends Nugget implements ITest {
         // amend them before building the actual test.
         result.status = this.getRecursiveStatus(result)
         this.updateStatus(result.status || 'idle')
-        this.result = result
+        this.result = this.mergeResults(result)
         if (result.tests && result.tests.length) {
             this.debriefTests(result.tests, cleanup)
         }
+    }
+
+    /**
+     * Merge new tests results with existing ones. Useful for persisting
+     * some properties which are inherent to a test (e.g. first seen date).
+     *
+     * @param result The result object with which to build this test.
+     */
+    protected mergeResults (result: ITestResult): ITestResult {
+        // If result already has the "first seen" property, it's likely the test
+        // being persisted from store, in which case we'll let that date prevail.
+        if (_get(result, 'stats.first')) {
+            return result
+        }
+        // Otherwise, set the "first seen" date according to current existing
+        // result or the current date and time (i.e. it's a new test).
+        result.stats = {
+            ...(result.stats || {}),
+            ...{
+                first: _get(this.result || {}, 'stats.first', new Date().toISOString())
+            }
+        }
+        return result
     }
 
     /**
@@ -122,6 +150,8 @@ export class Test extends Nugget implements ITest {
      * @param cleanup Whether to clean obsolete children after debriefing.
      */
     public debrief (result: ITestResult, cleanup: boolean): Promise<void> {
+        // Amend result stats with last run date and time (i.e. now)
+        result.stats = { ...(result.stats || {}), ...{ last: new Date().toISOString() }}
         return new Promise((resolve, reject) => {
             this.build(result, cleanup)
             this.emit('debriefed')

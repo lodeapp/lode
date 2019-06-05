@@ -7,6 +7,7 @@ import { ISuiteResult, ISuite, Suite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
 import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
 import { FrameworkValidator } from '@lib/frameworks/validator'
+import { FrameworkSort } from '@lib/frameworks/sort'
 
 export class PHPUnit extends Framework {
 
@@ -19,6 +20,9 @@ export class PHPUnit extends Framework {
             autoloadPath: ''
         }
     }
+
+    // Set PHPUnit's default sort order
+    static readonly sortDefault: FrameworkSort = 'framework'
 
     // Suites are defined in the parent constructor (albeit a different class),
     // so we'll just inherit the default value from it (or risk overriding it).

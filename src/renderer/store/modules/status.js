@@ -10,6 +10,7 @@ export default {
             loading: 'Loading',
             partial: 'Partial',
             passed: 'Passed',
+            queued: 'Queued',
             refreshing: 'Refreshing',
             running: 'Running',
             skipped: 'Skipped',

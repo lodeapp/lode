@@ -1,15 +1,15 @@
 New:
-  - Improved Jest feedback, with better separation between message and stack trace and rich traces instead of plain ANSI
-  - Command-F will now focus on the framework's filtering input
-  - Jump to documentation from application menu
+    - Test file list can now be sorted (initially supports sorting by running order, name, dates of last update or last run, total duration and maximum test duration)
+    - Allow filtering by "selected" status. Useful for when you want a run a subset of files by their status, but want to keep them in view regardless of their subsequent outcomes
+    - Lode will now remember the first time a test was seen and the last time it was run
+    - Link to release notes from About window
 Changed:
-  - Exclude hidden part of a suite's path from keyword filtering, which should yield better results when copying and pasting paths from many different sources
-  - Clicking on repository name on sidebar will now collapse and expand it
-  - Better handling of collapsible panels with no content (no empty bodies, no copy button)
-  - Software update improvements
+    - More minimalistic result pane tabs
+    - Test information (previously "statistics") is no longer hidden while a test is in a transient status
+    - If a file is excluded by filters they will now be collapsed in addition to being unselected
+    - Improvements in content overflow sidebar, tests list and results pane
+    - Use tabular numbers for dynamic labels
+    - Slight changes in color palette
 Fixed:
-  - Fix macOS malicious software alert in quarantined app, due to stricter control for notarized apps in 10.14.5
-  - Code snippets failing to highlight first line
-  - Don't try to calculate relative paths to files inside a stack trace frame if they're already relative
-  - Odd filename truncation in relative paths in a collapsible panel's header
-  - Missing icon in about window
+    - Issue with "Add another repository" button creating a new input that was not blank when trying to add multiple repositories at once
+    - Prevent PHPUnit from returning empty traces

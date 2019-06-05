@@ -1,8 +1,10 @@
-.test-statistics {
+.test-information {
     font-size: 1.1rem;
 
     .heading {
         font-weight: var(--font-weight-semibold);
+        white-space: nowrap;
+        width: 1%;
     }
 
     td:not(.heading) {
