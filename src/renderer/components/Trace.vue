@@ -90,7 +90,7 @@ export default {
             if (!this.framework || !this.repository || !path.startsWith('/')) {
                 return path
             }
-            const root = this.framework.runsInRemote ? this.framework.remotePath : this.repository.path
+            const root = this.framework.runsInRemote ? this.framework.remotePath : this.repository.getPath()
             if (!root) {
                 return path
             }
@@ -102,7 +102,7 @@ export default {
             }
 
             // Calculate the local file path.
-            const filePath = Path.join(this.repository.path, this.toRelative(item.file))
+            const filePath = Path.join(this.repository.getPath(), this.toRelative(item.file))
 
             new Menu()
                 .add({

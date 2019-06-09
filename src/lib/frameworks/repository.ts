@@ -1,4 +1,5 @@
 import { Glob } from 'glob'
+import { pathExistsSync } from 'fs-extra'
 import { v4 as uuid } from 'uuid'
 import { findIndex } from 'lodash'
 import { EventEmitter } from 'events'
@@ -28,8 +29,6 @@ export type ParsedRepository = {
 }
 
 export interface IRepository extends EventEmitter {
-    readonly path: string
-    readonly name: string
     frameworks: Array<IFramework>
     status: FrameworkStatus
     selected: boolean
@@ -50,17 +49,21 @@ export interface IRepository extends EventEmitter {
     persist (): RepositoryOptions
     addFramework (options: FrameworkOptions): Promise<IFramework>
     removeFramework (id: string): void
+    getFrameworkById (id: string): IFramework | undefined
+    getPath (): string
+    updatePath (path: string): void
+    exists (): boolean
 }
 
 export class Repository extends EventEmitter implements IRepository {
-    public readonly path: string
-    public readonly name: string
     public frameworks: Array<IFramework> = []
     public status: FrameworkStatus = 'loading'
     public selected: boolean = false
     public scanning: boolean = false
 
     protected id: string
+    protected path: string
+    protected name: string
     protected expanded: boolean
     protected parsed: boolean = false
     protected ready: boolean = false
@@ -229,6 +232,13 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
+     * A function to run when a child framework errors out.
+     */
+    protected errorListener (): void {
+        this.exists()
+    }
+
+    /**
      * Prepare the repository for parsed state.
      */
     protected onParsed (): void {
@@ -310,6 +320,7 @@ export class Repository extends EventEmitter implements IRepository {
                 .on('status', this.statusListener.bind(this))
                 .on('state', this.stateListener.bind(this))
                 .on('change', this.changeListener.bind(this))
+                .on('error', this.errorListener.bind(this))
             this.frameworks.push(framework)
             this.updateStatus()
             this.emit('frameworkAdded', framework)
@@ -344,5 +355,36 @@ export class Repository extends EventEmitter implements IRepository {
             return this.frameworks[index]
         }
         return undefined
+    }
+
+    /**
+    * Get this repository's path.
+    */
+    public getPath (): string {
+        return this.path
+    }
+
+    /**
+     * Update the repository's path.
+     */
+    public updatePath (path: string): void {
+        this.path = path
+        this.frameworks.forEach((framework: IFramework) => {
+            framework.updateOptions({
+                ...framework.persist(),
+                ...{ repositoryPath: path }
+            })
+        })
+        this.updateStatus()
+        this.save()
+    }
+
+    /**
+     * Whether the repository exists in the filesystem
+     */
+    public exists (): boolean {
+        const exists = pathExistsSync(this.path)
+        this.updateStatus(exists ? undefined : 'missing')
+        return exists
     }
 }

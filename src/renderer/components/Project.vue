@@ -7,8 +7,9 @@
                     <h2>{{ 'Loading :0…' | set($root.project.name) }}</h2>
                 </div>
             </div>
-            <Split v-else :class="{ 'empty': noRepositories || emptyStatus || frameworkLoading }">
+            <Split v-else :class="{ 'empty': noRepositories || emptyStatus || frameworkLoading || repositoryMissing }">
                 <Pane class="sidebar">
+                    <div class="draggable"></div>
                     <header>
                         <h5 class="sidebar-header">Project</h5>
                         <div class="sidebar-item has-status" :class="[`status--${$root.project.status}`]">
@@ -38,6 +39,7 @@
                             :repository="repository"
                             :key="repository.getId()"
                             @scan="$root.scanRepository"
+                            @locate="locateRepository"
                             @remove="removeRepository"
                         >
                             <div
@@ -59,7 +61,8 @@
                         </SidebarRepository>
                     </section>
                 </Pane>
-                <Pane>
+                <Pane id="list">
+                    <div class="draggable"></div>
                     <template v-if="noRepositories">
                         <div class="cta">
                             <h2>{{ 'Add repositories to :0' | set($root.project.name) }}</h2>
@@ -72,6 +75,15 @@
                             <h2>Scan for frameworks inside your repositories</h2>
                             <p>Lode can scan the project's repositories for testing frameworks. If none are found, your frameworks may not be supported, yet.</p>
                             <button class="btn btn-primary" @click="scanEmptyRepositories">Scan for frameworks</button>
+                        </div>
+                    </template>
+                    <template v-else-if="repositoryMissing && repository">
+                        <div class="cta">
+                            <h2>Lode can't find "{{ repository.getDisplayName() }}"</h2>
+                            <p v-markdown>It was last seen at `{{ repository.getPath() }}`.</p>
+                            <button class="btn btn-primary" @click="locateRepository(repository)">Locate</button>
+                            <button class="btn" @click="removeRepository(repository)">Remove</button>
+                            <button class="btn" @click="repository.exists()">Check again</button>
                         </div>
                     </template>
                     <template v-else>
@@ -93,9 +105,10 @@
                     </template>
                 </Pane>
                 <Pane id="results">
+                    <div class="draggable"></div>
                     <Results
                         v-if="framework"
-                        v-show="!frameworkLoading"
+                        v-show="!repositoryMissing && !frameworkLoading"
                         :key="framework.getId()"
                         :context="fullContext"
                         @reset="resetContext"
@@ -107,6 +120,7 @@
 </template>
 
 <script>
+import { remote } from 'electron'
 import Pane from '@/components/Pane'
 import SidebarRepository from '@/components/SidebarRepository'
 import SidebarFramework from '@/components/SidebarFramework'
@@ -114,8 +128,6 @@ import Indicator from '@/components/Indicator'
 import Framework from '@/components/Framework'
 import Results from '@/components/Results'
 import Split from '@/components/Split'
-
-// import OverlayScrollbars from 'overlayscrollbars'
 
 export default {
     name: 'Project',
@@ -149,6 +161,9 @@ export default {
             return this.$root.project.repositories.length === this.$root.project.repositories.filter(repository => {
                 return !repository.frameworks.length
             }).length
+        },
+        repositoryMissing () {
+            return this.repository && this.repository.status === 'missing'
         }
     },
     created () {
@@ -180,10 +195,28 @@ export default {
             )
         },
         removeRepository (repository) {
+            // If the repository we're removing is the currently active one,
+            // make sure to clear the Vuex context, too
+            if (repository.getId() === this.repository.getId()) {
+                this.resetContext()
+                this.$store.commit('context/CLEAR')
+                this.repository = null
+                this.framework = null
+            }
+
             this.$root.onModelRemove(repository.getId())
             this.$root.project.removeRepository(repository.getId())
             this.$root.project.save()
             this.onProjectChange()
+        },
+        async locateRepository (repository) {
+            const path = remote.dialog.showOpenDialog({
+                properties: ['openDirectory', 'multiSelections']
+            })
+
+            if (path) {
+                repository.updatePath(path[0])
+            }
         },
         manageFramework (framework) {
             this.$modal.open('ManageFrameworks', {
@@ -279,10 +312,14 @@ export default {
             this.frameworkLoading = false
         },
         onFrameworkActivation (frameworkId, repository) {
-            // Do nothing when clicking on currently active framework
+            // Do nothing when clicking on currently active framework.
             if (frameworkId === this.framework.getId()) {
                 return
             }
+
+            // Check if repository still exists before proceeding, but continue
+            // even if it does not so we can better handle changes or relocation.
+            repository.exists()
 
             this.clearActiveFrameworks(frameworkId)
 

@@ -1,0 +1,12 @@
+// Dedicated draggable element to avoid
+// conflict with gutter dragging.
+.draggable {
+    -webkit-app-region: drag;
+    display: block;
+    height: 100%;
+    max-height: 43px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: calc(100% - var(--split-gutter-width));
+}

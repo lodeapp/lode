@@ -20,6 +20,12 @@ declare const __LINUX__: boolean
 /** Path to static files */
 declare const __static: string
 
+/** URL to send Electron's crash reports to */
+declare const __CRASH_URL__: string
+
+/** Lode's Universal Analytics property ID */
+declare const __ANALYTICS_ID__: string
+
 /**
  * The currently executing process kind.
  */
@@ -98,6 +104,18 @@ interface ILogger {
 }
 
 declare const log: ILogger
+
+interface ITracker {
+    screenview (screen: string): void
+    event (
+      category: string,
+      action: string,
+      label?: string | null,
+      value?: string | null
+    ): void
+}
+
+declare const track: ITracker
 
 declare namespace Electron {
     interface MenuItem {

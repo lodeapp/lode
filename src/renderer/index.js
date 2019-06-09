@@ -1,4 +1,5 @@
 import '@lib/logger/renderer'
+import '@lib/tracker/renderer'
 
 import Vue from 'vue'
 import store from './store'
@@ -233,6 +234,12 @@ export default new Vue({
             })
         },
         scanRepository (repository, callback = null) {
+            if (!repository.exists()) {
+                if (callback) {
+                    callback()
+                }
+                return
+            }
             this.$modal.open('ManageFrameworks', {
                 repository,
                 scan: true

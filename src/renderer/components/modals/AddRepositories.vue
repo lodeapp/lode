@@ -82,7 +82,7 @@ export default {
     methods: {
         async choose (index) {
             const directory = remote.dialog.showOpenDialog({
-                properties: ['createDirectory', 'openDirectory', 'multiSelections']
+                properties: ['openDirectory', 'multiSelections']
             })
 
             if (!directory) {
@@ -99,7 +99,7 @@ export default {
         addRow (path = '') {
             this.slots.push({
                 key: this.$string.random(),
-                validator: new RepositoryValidator(this.$root.project.repositories.map(repository => repository.path)),
+                validator: new RepositoryValidator(this.$root.project.repositories.map(repository => repository.getPath())),
                 path
             })
             if (!path) {

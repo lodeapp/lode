@@ -141,6 +141,7 @@
         "__SILENT__": false,
         "__static": false,
         "__WIN32__": false,
+        "__CRASH_URL__": false,
         "afterAll": false,
         "afterEach": false,
         "beforeAll": false,
@@ -152,6 +153,7 @@
         "it": false,
         "jest": false,
         "log": false,
+        "track": false,
         "module": false,
         "process": false,
         "require": false

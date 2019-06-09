@@ -145,7 +145,7 @@ export default {
             this.frameworks.forEach(framework => {
                 this.$set(framework, 'key', framework.id || this.$string.random())
                 this.$set(framework, 'validator', new FrameworkValidator({
-                    repositoryPath: this.repository.path
+                    repositoryPath: this.repository.getPath()
                 }))
             })
         },
@@ -187,7 +187,7 @@ export default {
                             const index = _findIndex(this.repository.frameworks, existing => existing.getId() === framework.id)
                             this.repository.frameworks[index].updateOptions({
                                 ...framework,
-                                ...{ repositoryPath: this.repository.path }
+                                ...{ repositoryPath: this.repository.getPath() }
                             })
                             return true
                         }

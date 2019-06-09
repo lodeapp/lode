@@ -25,7 +25,6 @@
     z-index: 1001;
 
     .modal-dialog {
-        -webkit-app-region: no-drag !important;
         flex-grow: 1;
         margin: var(--spacing-triple) auto;
         max-width: var(--modal-medium);

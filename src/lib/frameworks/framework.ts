@@ -344,6 +344,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         const initChanged = options.command !== this.command
             || this.runsInRemote !== options.runsInRemote
             || this.sshHost !== options.sshHost
+            || this.repositoryPath !== options.repositoryPath
 
         const pathsChanged = options.path !== this.path || (this.runsInRemote && options.remotePath !== this.remotePath)
 

@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "Lode",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "author": "Tomas Buteler <tbuteler@me.com>",
   "description": "A universal GUI for unit testing",
   "license": null,
@@ -42,6 +42,7 @@
   "dependencies": {
     "@bugsnag/js": "^6.2.0",
     "@primer/css": "primer/css",
+    "@sentry/electron": "^0.17.1",
     "bottleneck": "^2.13.0",
     "electron-store": "^3.0.0",
     "electron-updater": "^4.0.6",
@@ -63,6 +64,7 @@
     "split.js": "^1.5.10",
     "strip-ansi": "^5.0.0",
     "terminal.js": "^1.0.10",
+    "universal-analytics": "^0.4.20",
     "uuid": "^3.3.2",
     "vue": "^2.5.16",
     "vuex": "^3.0.1",
