@@ -9,5 +9,6 @@ Changed:
     - More minimalistic filtering input, with the addition of a search icon in preparation of more complex search options
     - Terms and conditions to account for anonymized tracking
 Fixed:
+    - PHPUnit failing to run inside repositories with spaces in their path
     - Framework lingers in active mode even if its parent repository was removed
     - Sidebar jiggle when switching frameworks
