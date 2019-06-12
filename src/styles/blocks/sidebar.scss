@@ -1,11 +1,14 @@
 .sidebar {
-    -webkit-app-region: drag;
     background-color: var(--sidebar-color);
     border-radius: 0.0001px; // Prevent .shadow from overflowing.
     display: flex;
     flex-direction: column;
     padding: 35px 0 0;
     height: 100vh;
+
+    & > .draggable {
+        width: 100%;
+    }
 
     header {
         position: sticky;
@@ -36,7 +39,6 @@
     }
 
     .sidebar-header {
-        -webkit-app-region: no-drag;
         color: var(--sidebar-text-secondary-color);
         font-size: 1rem;
         margin: var(--spacing) 0 var(--spacing-half) var(--spacing);
@@ -75,7 +77,6 @@
     }
 
     .sidebar-item {
-        -webkit-app-region: no-drag;
 
         & > .header {
             padding: var(--spacing-half) 0 var(--spacing-half) var(--spacing);
@@ -134,7 +135,8 @@
                         }
                     }
 
-                    &.status--warning {
+                    &.status--warning,
+                    &.status--missing {
 
                         & > .indicator {
                             box-shadow: 0 0 0 4px theme-color('warning', 200), 0 0 0 5px theme-color('warning', 100);

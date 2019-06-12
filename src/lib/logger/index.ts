@@ -9,7 +9,7 @@ const { combine, timestamp, printf } = winston.format
 
 let logDirectoryPath: string | null = null
 
-export function getLogDirectoryPath() {
+export function getLogDirectoryPath () {
     if (!logDirectoryPath) {
         const userData = app.getPath('userData')
         logDirectoryPath = Path.join(userData, 'logs')
@@ -28,7 +28,7 @@ export function getLogDirectoryPath() {
  *             path such that passing a path '/logs/foo' will end up
  *             writing to '/logs/2017-05-17.foo'
  */
-function initializeWinston(path: string): winston.LogMethod {
+function initializeWinston (path: string): winston.LogMethod {
     const fileLogger = new DailyRotateFile({
         dirname: path,
         filename: 'lode-%DATE%.log',
@@ -65,7 +65,7 @@ let loggerPromise: Promise<winston.LogMethod> | null = null
  *          it accepts a log level, a message and an optional callback
  *          for when the event has been written to all destinations.
  */
-function getLogger(): Promise<winston.LogMethod> {
+function getLogger (): Promise<winston.LogMethod> {
     if (loggerPromise) {
         return loggerPromise
     }
@@ -99,7 +99,7 @@ function getLogger(): Promise<winston.LogMethod> {
  * resolves when the log entry has been written to all transports
  * or if the entry could not be written due to an error.
  */
-export async function log(level: LogLevel, message: string) {
+export async function log (level: LogLevel, message: string) {
     if (!__LOGGER__) {
         console.log(message)
         return

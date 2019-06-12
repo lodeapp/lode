@@ -9,7 +9,7 @@
             <div>
                 The following repository will be removed:
                 <div>
-                    <code>{{ repository.path }}</code>
+                    <code>{{ repository.getPath() }}</code>
                 </div>
             </div>
         </div>

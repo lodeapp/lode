@@ -1,6 +1,7 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import latinize from 'latinize'
+import { v4 as uuid } from 'uuid'
 import { find, findIndex, sortBy, uniqBy } from 'lodash'
 import { EventEmitter } from 'events'
 import { app } from 'electron'
@@ -13,6 +14,7 @@ export class State extends EventEmitter {
     protected store: any
     protected currentVersion: number = 1
     protected defaultSettings: object = {
+        userid: uuid(),
         concurrency: 3,
         confirm: {
             switchProject: true

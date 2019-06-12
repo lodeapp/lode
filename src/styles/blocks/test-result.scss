@@ -4,7 +4,6 @@
     flex: 1;
 
     .tabs {
-        -webkit-app-region: drag;
         background-color: $secondary;
         border-bottom: 1px solid $primary-border;
 
@@ -12,12 +11,11 @@
             padding: 0 var(--spacing-half);
 
             .tab {
-                -webkit-app-region: no-drag;
                 -webkit-appearance: none;
                 background: none;
                 border: 0;
                 box-shadow: none;
-                padding: calc(var(--spacing) + 3px) var(--spacing);
+                padding: calc(var(--spacing) + -2px) var(--spacing);
 
                 &:hover,
                 &:focus,

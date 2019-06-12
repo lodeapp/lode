@@ -8,17 +8,6 @@
         border-radius: 0;
         box-shadow: none;
         color: rgba($gray-600, .3);
-
-        // Dedicated draggable element to avoid
-        // conflict with gutter dragging.
-        .draggable {
-            -webkit-app-region: drag;
-            position: absolute;
-            top: 0;
-            right: 0;
-            height: 100%;
-            width: calc(100% - var(--split-gutter-width));
-        }
     }
 
     & > .has-status {
@@ -27,7 +16,6 @@
         height: 100vh;
 
         & > .header {
-            -webkit-app-region: drag;
             background-color: $secondary;
             padding-bottom: 15px;
 
@@ -44,7 +32,6 @@
                 padding: 0 15px 0;
 
                 li {
-                    -webkit-app-region: no-drag;
                     display: inline;
                     user-select: text;
                     white-space: normal;

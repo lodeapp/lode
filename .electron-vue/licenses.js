@@ -28,12 +28,14 @@ const addendum = {
     licenses: {
         'cycle@1.0.3': 'Public domain',
         'file-stream-rotator@0.3.1': 'MIT',
-        'latinize@0.4.0': 'BSD'
+        'latinize@0.4.0': 'BSD',
+        'json-schema@0.2.3': 'BSD'
     },
     // Author information for copyright notices, in case we don't have the
     // actual license text and need to generate it on-the-fly.
     authors: {
         'latinize@0.4.0': 'Jakub Dundalek <dundalek@gmail.com> (http://dundalek.com/)',
+        'json-schema@0.2.3': 'Kris Zyp',
         'desktop@1.6.1': 'GitHub, Inc',
         'electron@2.0.8': 'GitHub, Inc'
     }
@@ -85,7 +87,7 @@ checker.init({
 
     // Verify that all production packages have license content, and remove
     // any that may not be required to be in this list (i.e. empty packages
-    // from deeply nested depencendies).
+    // from deeply nested dependencies).
     packages = packages.filter((package, index) => {
 
         // Exclude our own license from the final file.
@@ -104,6 +106,11 @@ checker.init({
             // last resort, attempt to parse the package's package.json in case
             // there is more information there about its licensing.
             const licenseOverride = package.override || _.get(addendum.licenses || {}, package.id, package.licenses)
+
+            if (_.isArray(licenseOverride)) {
+                throw new Error(`Multiple licenses available for ${package.id}). Please override license explicitly with one of the following: ${licenseOverride.join(', ')}`)
+            }
+
             if (licenseOverride) {
 
                 // If it's public domain, skip
@@ -137,11 +144,18 @@ checker.init({
     // If all goes well, write the object to file, without directory information.
     const file = Path.join(__dirname, '../static/licenses.json')
     Fs.writeFileSync(file, JSON.stringify(
-        _.sortBy(packages.map(package => _.pick(package, ['id', 'repository', 'license'])), 'id')
+        _.sortBy(packages.map(package => _.pick(package, ['id', 'repository', 'license'])), 'id'),
+        null,
+        2
     ))
 
     console.log(`${chalk.bgBlue.white(' LICENSES ')} Licenses written to ${file}`)
 })
+
+if (!Fs.existsSync(Path.join(__dirname, '../static/reporters'))) {
+    console.log(`${chalk.bgBlue.white(' LICENSES ')} Reporters not built. Aborting license injection.`)
+    return
+}
 
 // Copy Lode's license into each reporter package that might get
 // placed inside remote machines during runs.

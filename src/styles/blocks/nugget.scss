@@ -211,7 +211,8 @@
         }
     }
 
-    &.status--warning {
+    &.status--warning,
+    &.status--missing {
 
         & > .seam::before,
         & > .seam::after {
@@ -224,6 +225,10 @@
                 background-color: theme-color('warning');
                 border-color: darken(theme-color('warning'), 5%);
                 box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('warning', 300);
+
+                i {
+                    color: $white;
+                }
             }
         }
     }

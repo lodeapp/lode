@@ -8,6 +8,7 @@ export default {
             idle: 'Idle',
             incomplete: 'Incomplete',
             loading: 'Loading',
+            missing: 'Missing',
             partial: 'Partial',
             passed: 'Passed',
             queued: 'Queued',

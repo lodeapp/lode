@@ -22,10 +22,13 @@
             }
 
             & > .actions {
+                display: flex;
                 flex-shrink: 0;
+                font-size: 0;
 
-                .btn {
-                    margin-right: 2px;
+                .btn,
+                .btn-link {
+                    margin-right: var(--spacing-half);
 
                     &:focus {
                         // Reduce noise in action buttons by dropping focus
@@ -57,6 +60,7 @@
         width: 14px;
 
         i {
+            line-height: 0;
             position: relative;
             top: -2px;
         }
@@ -109,11 +113,17 @@
         }
     }
 
-    &.status--warning {
+    &.status--warning,
+    &.status--missing {
 
         & > .indicator {
             background-color: theme-color('warning');
             box-shadow: 0 0 0 4px theme-color('warning', 200);
+
+            i {
+                color: $white;
+                opacity: .9;
+            }
         }
     }
 

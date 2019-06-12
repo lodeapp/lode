@@ -4,24 +4,63 @@ export default {
     data () {
         return {
             selectedFramework: this.initial,
-            menuActive: false,
-            menu: new Menu()
-                .add({
-                    label: this.repository.name,
-                    enabled: false
-                })
-                .add({
-                    label: __DARWIN__ ? 'Manage Frameworks…' : 'Manage frameworks…',
-                    click: () => {
-                        this.manage()
-                    }
-                })
-                .add({
-                    label: __DARWIN__ ? 'Scan for Frameworks…' : 'Scan for frameworks…',
-                    click: () => {
-                        this.scan()
-                    }
-                })
+            menuActive: false
+        }
+    },
+    computed: {
+        repositoryPath () {
+            return this.repository.getPath()
+        }
+    },
+    methods: {
+        openMenu (event) {
+            const menu = new Menu()
+            if (this.repository.exists()) {
+                menu
+                    .add({
+                        label: this.repository.name,
+                        enabled: false
+                    })
+                    .add({
+                        label: __DARWIN__ ? 'Manage Frameworks…' : 'Manage frameworks…',
+                        click: () => {
+                            this.manage()
+                        }
+                    })
+                    .add({
+                        label: __DARWIN__ ? 'Scan for Frameworks…' : 'Scan for frameworks…',
+                        click: () => {
+                            this.scan()
+                        }
+                    })
+                    .separator()
+                    .add({
+                        id: 'reveal',
+                        label: __DARWIN__
+                            ? 'Reveal in Finder'
+                            : __WIN32__
+                                ? 'Show in Explorer'
+                                : 'Show in your File Manager',
+                        click: () => {
+                            this.$root.revealFile(this.repositoryPath)
+                        }
+                    })
+            } else {
+                menu
+                    .add({
+                        id: 'locate',
+                        label: 'Repository missing',
+                        enabled: false
+                    })
+                    .add({
+                        id: 'locate',
+                        label: __DARWIN__ ? 'Locate Repository' : 'Locate repository',
+                        click: () => {
+                            this.$emit('locate', this.repository)
+                        }
+                    })
+            }
+            menu
                 .separator()
                 .add({
                     label: 'Remove',
@@ -39,11 +78,6 @@ export default {
                         button.blur()
                     }
                 })
-        }
-    },
-    methods: {
-        openMenu (event) {
-            this.menu
                 .attachTo(this.$el.querySelector('.more-actions'))
                 .open()
         },

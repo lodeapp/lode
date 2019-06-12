@@ -1,6 +1,5 @@
 <template>
     <div class="results" :class="{ blankslate: !testActive || loading }">
-        <div class="draggable"></div>
         <h3 v-if="!testActive">No test selected</h3>
         <div v-if="loading" class="loading">
             <div class="loading-group">

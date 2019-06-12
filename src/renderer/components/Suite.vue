@@ -109,16 +109,11 @@ export default {
         onContextMenu (event) {
             new Menu()
                 .add({
-                    id: 'reveal',
-                    label: __DARWIN__
-                        ? 'Reveal in Finder'
-                        : __WIN32__
-                            ? 'Show in Explorer'
-                            : 'Show in your File Manager',
+                    id: 'filter',
+                    label: __DARWIN__ ? 'Filter this Item' : 'Filter this item',
                     click: () => {
-                        this.$root.revealFile(this.filePath)
-                    },
-                    enabled: this.fileExists
+                        this.$emit('filter', this.suite)
+                    }
                 })
                 .add({
                     id: 'copy-local',

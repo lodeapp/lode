@@ -5,7 +5,6 @@
     height: 100vh;
 
     & > .header {
-        -webkit-app-region: drag;
         background-color: $primary;
         position: sticky;
         top: 0;
@@ -43,10 +42,6 @@
     .filters {
         padding: var(--spacing-half) var(--spacing) var(--spacing-third);
 
-        a {
-            -webkit-app-region: no-drag !important;
-        }
-
         .progress-breakdown {
             @include clearfix;
 
@@ -58,9 +53,8 @@
             }
         }
 
-        &.sort,
-        &.search {
-            -webkit-app-region: no-drag !important;
+        &.search,
+        &.sort {
             background-color: var(--color-gray-100);
             border-top: 1px solid var(--color-gray-400);
             color: var(--color-gray-600);
@@ -68,14 +62,35 @@
             padding-bottom: var(--spacing-half);
             text-align: center;
             white-space: nowrap;
+        }
+
+        &.search {
+            align-items: center;
+            display: flex;
+            padding: 0;
+            padding-left: var(--spacing);
+            transition: background-color .2s;
 
             input {
+                background-color: transparent;
+                border: 0;
                 box-shadow: none;
                 color: var(--input-text-color);
                 border-color: var(--color-gray-400);
 
                 &:focus {
                     border-color: var(--color-blue-400);
+                }
+            }
+
+            i {
+                transition: color .2s;
+            }
+
+            &.is-searching {
+
+                i {
+                    color: var(--color-blue-400);
                 }
             }
         }

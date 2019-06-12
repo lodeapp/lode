@@ -16,7 +16,6 @@
             width: 33%;
 
             & + .gutter {
-                -webkit-app-region: no-drag !important;
                 border-left: 1px solid var(--sidebar-border-color);
                 cursor: col-resize !important;
                 margin: 0;
@@ -24,16 +23,17 @@
                 z-index: 3;
             }
 
-            &:not(.sidebar) + .gutter {
-                border-left-color: $primary-border;
+            &:not(.sidebar) {
+
+                & + .gutter {
+                    border-left-color: $primary-border;
+                }
             }
         }
 
         &.empty {
 
             & > .pane:not(.sidebar) {
-                -webkit-app-region: drag;
-                margin-left: var(--split-gutter-width);
                 background-color: $secondary;
                 overflow: visible;
                 white-space: nowrap;

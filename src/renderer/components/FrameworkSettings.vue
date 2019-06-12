@@ -290,7 +290,7 @@ export default {
     methods: {
         async chooseAutoloadPath () {
             const file = remote.dialog.showOpenDialog({
-                defaultPath: this.repository.path,
+                defaultPath: this.repository.getPath(),
                 properties: ['openFile']
             })
 
@@ -298,12 +298,12 @@ export default {
                 return
             }
 
-            this.fields.proprietary.autoloadPath = Path.relative(this.repository.path, file[0])
+            this.fields.proprietary.autoloadPath = Path.relative(this.repository.getPath(), file[0])
             this.validator.reset('autoloadPath')
         },
         async chooseTestsPath () {
             const directory = remote.dialog.showOpenDialog({
-                defaultPath: this.repository.path,
+                defaultPath: this.repository.getPath(),
                 properties: ['createDirectory', 'openDirectory']
             })
 
@@ -311,7 +311,7 @@ export default {
                 return
             }
 
-            this.fields.path = Path.relative(this.repository.path, directory[0])
+            this.fields.path = Path.relative(this.repository.getPath(), directory[0])
             this.validator.reset('path')
         },
         async chooseIdentity () {

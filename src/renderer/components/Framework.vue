@@ -39,7 +39,7 @@
                             <template v-else>Run</template>
                         </button>
                         <button
-                            class="btn btn-sm btn-danger"
+                            class="btn btn-sm"
                             :disabled="!running && !refreshing && !queued"
                             @click="stop"
                         >
@@ -61,7 +61,8 @@
                         No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
                     </template>
                 </div>
-                <div v-if="framework.count()" class="filters search">
+                <div v-if="framework.count()" class="filters search" :class="{ 'is-searching': keyword }">
+                    <Icon symbol="search" />
                     <input
                         type="search"
                         class="form-control input-block input-sm"
@@ -89,6 +90,7 @@
                     :key="suite.getId()"
                     @activate="onChildActivation"
                     @refresh="refresh"
+                    @filter="filterSuite"
                 />
                 <footer v-if="hidden" class="cutoff">
                     <div>
@@ -230,6 +232,9 @@ export default {
         },
         resetFilters () {
             this.framework.resetFilters()
+        },
+        filterSuite (suite) {
+            this.keyword = `"${suite.getRelativePath()}"`
         },
         onSortClick () {
             const menu = new Menu()

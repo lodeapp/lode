@@ -1,4 +1,6 @@
+import '@lib/crash/reporter'
 import '@lib/logger/main'
+import '@lib/tracker/main'
 
 import { app, ipcMain } from 'electron'
 import { applicationMenu } from './menu'
@@ -57,6 +59,7 @@ function createWindow(projectId: string | null) {
 
 app
     .on('ready', () => {
+        track.screenview('Application started')
         createWindow(state.getCurrentProject())
         applicationMenu.build()
 

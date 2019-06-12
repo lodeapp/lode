@@ -20,3 +20,28 @@
     background-clip: padding-box;
     box-shadow: none;
 }
+
+@mixin win32 {
+    body.platform-win32 & {
+        @content;
+    }
+}
+
+@mixin win32-context {
+    body.platform-win32 {
+        @content;
+    }
+}
+
+@mixin darwin {
+    body.platform-darwin & {
+        @content;
+    }
+}
+
+@mixin darwin-context {
+    body.platform-darwin {
+        @content;
+    }
+}
+

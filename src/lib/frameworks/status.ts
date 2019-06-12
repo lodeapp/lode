@@ -2,7 +2,7 @@ import { uniq } from 'lodash'
 
 export type Status = 'queued' | 'running' | 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle' | 'error'
 
-export type FrameworkStatus = Status | 'refreshing' | 'loading'
+export type FrameworkStatus = Status | 'refreshing' | 'loading' | 'missing'
 
 /**
  * Compute an overarching generic status based on a set of statuses.
