@@ -1,7 +1,7 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { get } from 'lodash'
-import { unpacked } from '@lib/helpers/paths'
+import { unpacked, dir } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
 import { ISuite } from '@lib/frameworks/suite'
@@ -60,8 +60,8 @@ export class Jest extends Framework {
         super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
-                ? Path.resolve(__dirname, '../../reporters/jest')
-                : unpacked(Path.join(__static, './reporters/jest'))
+                ? Path.resolve(__dirname, dir('../../reporters/jest'))
+                : unpacked(Path.join(__static, dir('./reporters/jest')))
             Fs.copySync(reporter, this.injectPath())
         }
     }
@@ -107,10 +107,10 @@ export class Jest extends Framework {
             '--colors',
             '--reporters',
             this.runsInRemote
-                ? Path.join(this.getRemotePath(), '.lode/jest/index.js')
+                ? Path.join(this.getRemotePath(), dir('.lode/jest/index.js'))
                 : process.env.NODE_ENV === 'development'
-                    ? Path.resolve(__dirname, '../../reporters/jest/index.js')
-                    : unpacked(Path.join(__static, './reporters/jest/index.js'))
+                    ? Path.resolve(__dirname, dir('../../reporters/jest/index.js'))
+                    : unpacked(Path.join(__static, dir('./reporters/jest/index.js')))
         ]
 
         if (__DEV__) {

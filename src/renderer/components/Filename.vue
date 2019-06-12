@@ -12,6 +12,8 @@
 </template>
 
 <script>
+import * as Path from 'path'
+
 export default {
     name: 'Filename',
     props: {
@@ -32,9 +34,9 @@ export default {
         }
     },
     created () {
-        const dir = this.path.split('/')
+        const dir = this.path.split(Path.sep)
         this.name = dir.pop() || ''
-        this.dir = dir.length ? dir.join('/') + (this.name ? '/' : '') : ''
+        this.dir = dir.length ? dir.join(Path.sep) + (this.name ? Path.sep : '') : ''
     }
 }
 </script>

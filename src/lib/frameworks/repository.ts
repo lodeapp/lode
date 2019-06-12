@@ -1,3 +1,4 @@
+import * as Path from 'path'
 import { Glob } from 'glob'
 import { pathExistsSync } from 'fs-extra'
 import { v4 as uuid } from 'uuid'
@@ -74,7 +75,7 @@ export class Repository extends EventEmitter implements IRepository {
         super()
         this.id = options.id || uuid()
         this.path = options.path
-        this.name = options.name || this.path.split('/').pop() || 'untitled'
+        this.name = options.name || Path.basename(this.path) || 'untitled'
         this.expanded = typeof options.expanded === 'undefined' ? true : options.expanded
         this.initialFrameworkCount = (options.frameworks || []).length
 

@@ -1,5 +1,5 @@
 input {
-    -webkit-app-region: no-drag !important;
+    -webkit-app-region: no-drag;
 
     &::placeholder {
         color: var(--input-placeholder-text-color);

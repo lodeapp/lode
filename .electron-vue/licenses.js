@@ -144,11 +144,18 @@ checker.init({
     // If all goes well, write the object to file, without directory information.
     const file = Path.join(__dirname, '../static/licenses.json')
     Fs.writeFileSync(file, JSON.stringify(
-        _.sortBy(packages.map(package => _.pick(package, ['id', 'repository', 'license'])), 'id')
+        _.sortBy(packages.map(package => _.pick(package, ['id', 'repository', 'license'])), 'id'),
+        null,
+        2
     ))
 
     console.log(`${chalk.bgBlue.white(' LICENSES ')} Licenses written to ${file}`)
 })
+
+if (!Fs.existsSync(Path.join(__dirname, '../static/reporters'))) {
+    console.log(`${chalk.bgBlue.white(' LICENSES ')} Reporters not built. Aborting license injection.`)
+    return
+}
 
 // Copy Lode's license into each reporter package that might get
 // placed inside remote machines during runs.

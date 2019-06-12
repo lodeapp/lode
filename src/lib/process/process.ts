@@ -79,13 +79,18 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         this.command = options.command
         this.path = options.path
 
-        // Parse command and arguments into something we
-        // can use for spawning a process.
+        // Parse command and arguments into something we can use for spawning a
+        // process. This means extracting the actual binary from a command that
+        // could include both binary and default arguments (e.g. `yarn test`
+        // refers to the `yarn` binary with a `test` argument).
+        //
+        // @TODO: This will break if the command is a binary whose filename has
+        // spaces in it. Although it's an edge case (hopefully), we are taking
+        // a leap of faith with the space-split and we should handle it better
+        // in the future (i.e. don't split if in quotes or something).
         this.args = this.spawnArguments(
             compact(
-                flattenDeep(([this.command] as any).concat(options.args!).map((arg: string) => {
-                    return arg.split(' ')
-                }))
+                flattenDeep(((this.command as any).split(' ')).concat(options.args!))
             ) || []
         )
 
