@@ -63,7 +63,7 @@
     "highlight.js": "^9.15.6",
     "is-base64": "^0.0.6",
     "latinize": "^0.4.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.13",
     "markdown-it": "^8.4.2",
     "octicons": "^8.4.1",
     "overlayscrollbars": "^1.7.1",
