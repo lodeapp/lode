@@ -1,2 +1,2 @@
-Changed:
-    - Use S3 publisher alongside GitHub for automatic updates
+Fixed:
+    - Security fixes - #10 #11
