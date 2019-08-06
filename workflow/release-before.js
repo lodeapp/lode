@@ -13,6 +13,8 @@ if (!Fs.existsSync(releaseNotesPath)) {
 }
 
 const releaseNotes = String(Fs.readFileSync(releaseNotesPath))
+console.log(`\nRember to have a published release on GitHub for version ${pkg.version}. If you haven't yet, the command is below.\n`)
+console.log(`git tag v${pkg.version} && git push origin refs/tags/v${pkg.version}\n`)
 console.log(`\n${chalk.bgBlue.white(' RELEASE NOTES ')} For version ${pkg.version}.\n`)
 console.log(releaseNotes)
 

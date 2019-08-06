@@ -63,5 +63,14 @@
   },
   "publish": [{
     "provider": "github"
-  }]
+  }],
+  "publish": [
+    {
+      "provider": "github"
+    },
+    {
+      "provider": "s3",
+      "bucket": "lode-releases"
+    }
+  ]
 }

@@ -1,2 +1,2 @@
-New:
-    - Lode is now [open source software](https://github.com/lodeapp/lode)!
+Changed:
+    - Use S3 publisher alongside GitHub for automatic updates
