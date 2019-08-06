@@ -12,7 +12,7 @@
   "asarUnpack": [
     "dist/electron/static/reporters/**/**"
   ],
-  "afterSign": "./.electron-vue/after-sign.js",
+  "afterSign": "./workflow/after-sign.js",
   "dmg": {
     "contents": [
       {
@@ -30,7 +30,7 @@
   },
   "mac": {
     "category": "public.app-category.developer-tools",
-    "icon": "build/icons/icon.png",
+    "icon": "build/icons/512x512.png",
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
     "entitlements": "./support/entitlements.mac.plist",
@@ -41,7 +41,7 @@
     ]
   },
   "win": {
-    "icon": "build/icons/icon.png",
+    "icon": "build/icons/512x512.png",
     "target": [
       {
         "target": "nsis",
@@ -53,7 +53,8 @@
     ]
   },
   "linux": {
-    "icon": "build/icons/icon.png",
+    "category": "Development",
+    "icon": "build/icons/512x512.png",
     "target": [
       "deb",
       "tar.gz",
@@ -61,7 +62,6 @@
     ]
   },
   "publish": [{
-    "provider": "s3",
-    "bucket": "lode-releases"
+    "provider": "github"
   }]
 }

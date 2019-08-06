@@ -204,10 +204,22 @@
   resolved "https://registry.yarnpkg.com/@types/latinize/-/latinize-0.2.15.tgz#a1718e53c5d6a37a554cbe4209e4ab15adc975f9"
   integrity sha1-oXGOU8XWo3pVTL5CCeSrFa3Jdfk=
 
+"@types/linkify-it@*":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@types/linkify-it/-/linkify-it-2.1.0.tgz#ea3dd64c4805597311790b61e872cbd1ed2cd806"
+  integrity sha512-Q7DYAOi9O/+cLLhdaSvKdaumWyHbm7HAk/bFwwyTuU0arR5yyCeW5GOoqt4tJTpDRxhpx9Q8kQL6vMpuw9hDSw==
+
 "@types/lodash@^4.14.116":
   version "4.14.123"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.123.tgz#39be5d211478c8dd3bdae98ee75bb7efe4abfe4d"
   integrity sha512-pQvPkc4Nltyx7G1Ww45OjVqUsJP4UsZm+GWJpigXgkikZqJgRm4c48g027o6tdgubWHwFRF15iFd+Y4Pmqv6+Q==
+
+"@types/markdown-it@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@types/markdown-it/-/markdown-it-0.0.8.tgz#9af8704acde87fec70475369ba0413d50717bd8d"
+  integrity sha512-ouaTOi5kAdkTPl97u6uDkth9od4pQffPF9STcjYVZKFrEwLYf15s7Z772WxWE3IOcYBJglaT0XqdyNEiEfGgYg==
+  dependencies:
+    "@types/linkify-it" "*"
 
 "@types/minimatch@*":
   version "3.0.3"

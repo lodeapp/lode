@@ -7,7 +7,7 @@
                 <span>{{ $string.set('Version :0', version) }}</span>
                 <a href="#" @click.prevent="openReleaseNotes">Release notes</a>
             </p>
-            <p v-markdown.set="(new Date()).getFullYear()">&copy; 2018 - :0 Recontra, U.L. All rights reserved.</p>
+            <p v-markdown.set="(new Date()).getFullYear()">&copy; 2018 - :0 Tomas Buteler. All rights reserved.</p>
             <p class="legal">
                 <a href="#" @click.prevent="showTerms">Terms and Conditions</a>
                 <a href="#" @click.prevent="showLicenses">Open Source Notices</a>
@@ -27,7 +27,7 @@ export default {
     },
     data () {
         return {
-            logo: 'static/icons/icon.png'
+            logo: 'static/icons/512x512.png'
         }
     },
     computed: {

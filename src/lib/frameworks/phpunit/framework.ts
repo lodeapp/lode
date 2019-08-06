@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { unpacked, dir } from '@lib/helpers/paths'
+import { unpacked, loc } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
 import { ISuiteResult, ISuite, Suite } from '@lib/frameworks/suite'
@@ -61,8 +61,8 @@ export class PHPUnit extends Framework {
         super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
-                ? Path.resolve(__dirname, dir('../../reporters/phpunit'))
-                : unpacked(Path.join(__static, dir('./reporters/phpunit')))
+                ? Path.resolve(__dirname, loc('../../reporters/phpunit'))
+                : unpacked(Path.join(__static, loc('./reporters/phpunit')))
             Fs.copySync(reporter, this.injectPath())
         }
     }
@@ -104,16 +104,16 @@ export class PHPUnit extends Framework {
      */
     protected runArgs (): Array<string> {
         const root = (this.runsInRemote ? this.getRemotePath() : this.repositoryPath)
-        const autoload = Path.join(root, dir(this.proprietary.autoloadPath || 'vendor/autoload.php'))
+        const autoload = Path.join(root, loc(this.proprietary.autoloadPath || 'vendor/autoload.php'))
         const args = [
             '-d',
             `lode_bootstrap=${autoload}`,
             '--bootstrap',
             this.runsInRemote
-                ? Path.join(this.getRemotePath(), dir('.lode/phpunit/bootstrap.php'))
+                ? Path.join(this.getRemotePath(), loc('.lode/phpunit/bootstrap.php'))
                 : process.env.NODE_ENV === 'development'
-                    ? Path.resolve(__dirname, dir('../../reporters/phpunit/bootstrap.php'))
-                    : unpacked(Path.join(__static, dir('./reporters/phpunit/bootstrap.php'))),
+                    ? Path.resolve(__dirname, loc('../../reporters/phpunit/bootstrap.php'))
+                    : unpacked(Path.join(__static, loc('./reporters/phpunit/bootstrap.php'))),
             // Sometimes writing to stdout will fail (on remote machines?). If we
             // can ever figure out why, we should revert back to default.
             '--stderr',

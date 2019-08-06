@@ -10,7 +10,7 @@ const webpack = require('webpack')
 
 const MinifyPlugin = require('babel-minify-webpack-plugin')
 
-let config = {
+const config = {
     entry: {
         main: path.join(__dirname, '../../src/lib/reporters/jest/index.js')
     },
@@ -36,10 +36,10 @@ let config = {
         libraryTarget: 'commonjs2',
         path: path.join(__dirname, '../../static/reporters/jest')
     },
-        plugins: [
+    plugins: [
         new webpack.NoEmitOnErrorsPlugin()
     ],
-        resolve: {
+    resolve: {
         extensions: ['.js']
     },
     target: 'node'

@@ -18,10 +18,10 @@ console.log(releaseNotes)
 
 inquirer.prompt([
     {
-      type: 'confirm',
-      name: 'releaseNotes',
-      message: 'Are the release notes above up-to-date and correct.',
-      default: false
+        type: 'confirm',
+        name: 'releaseNotes',
+        message: 'Are the release notes above up-to-date and correct.',
+        default: false
     }
 ]).then(answers => {
     if (!answers.releaseNotes) {

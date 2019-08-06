@@ -4,12 +4,21 @@ import { RepositoryOptions } from '@lib/frameworks/repository'
 import { FrameworkOptions } from '@lib/frameworks/framework'
 import { getFrameworkByType } from '@lib/frameworks'
 
+/**
+ * The required format for validation errors.
+ */
 export type ValidationErrors = { [index: string]: Array<string> }
 
+/**
+ * Potential repository options (i.e. not necessarily valid).
+ */
 export type PotentialRepositoryOptions = RepositoryOptions & {
     path?: string
 }
 
+/**
+ * Potential framework options (i.e. not necessarily valid).
+ */
 export type PotentialFrameworkOptions = FrameworkOptions & {
     name?: string
     type?: string
@@ -21,10 +30,16 @@ export type PotentialFrameworkOptions = FrameworkOptions & {
     sshIdentity?: string | null
 }
 
+/**
+ * Available options to instantiate a framework validator.
+ */
 export type FrameworkValidatorOptions = {
     repositoryPath: string
 }
 
+/**
+ * A generic validation class.
+ */
 export class Validator {
 
     public errors: ValidationErrors = {}
@@ -135,6 +150,9 @@ export class Validator {
     }
 }
 
+/**
+ * A validation class for repository objects.
+ */
 export class RepositoryValidator extends Validator {
 
     protected existing: Array<string>
@@ -167,6 +185,9 @@ export class RepositoryValidator extends Validator {
     }
 }
 
+/**
+ * A validation class for framework objects.
+ */
 export class FrameworkValidator extends Validator {
     public readonly repositoryPath: string
 
