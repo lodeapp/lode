@@ -1,6 +1,6 @@
 # [Lode](https://lode.run)
 
-Lode is an open source [Electron](https://electron.atom.io)-based
+Lode is an open source [Electron](https://electronjs.org/)-based
 universal test runner graphical user interface. It is written in [TypeScript](http://www.typescriptlang.org) and [Vue](https://vuejs.org/).
 
 ![Lode screenshot - macOS](https://lode.run/github-screenshot.png)
@@ -33,4 +33,4 @@ See [lode.run](https://lode.run/documentation/) for instructions on how to use t
 
 Code is licensed under the [MIT license](LICENSE).
 
-Usage of the software is bound to its own [terms and conditions](static/LICENSE).
+Usage of the software is bound to its own [terms and conditions](https://lode.run/terms/).
