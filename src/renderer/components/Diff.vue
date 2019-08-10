@@ -42,7 +42,7 @@ export default {
     },
     computed: {
         diff () {
-            return _get(this.parts, 'diff', '')
+            return this.formatDiff(_get(this.parts, 'diff', ''))
         },
         parts () {
             if (typeof this.content === 'string') {
@@ -52,20 +52,24 @@ export default {
             }
 
             return _pickBy({
-                'diff': _get(this.content, '@', ''),
+                'diff': this.formatDiff(_get(this.content, '@', '')),
                 'actual': _get(this.content, '+', ''),
                 'expected': _get(this.content, '-', ''),
                 'expected-partial': _get(this.content, 'q', '')
             }, _identity)
         },
         hasSupporting () {
-            return Object.keys(this.parts).length > 1
+            return typeof this.content !== 'string'
         },
         hasDiff () {
             return typeof this.parts.diff !== 'undefined'
         }
     },
     methods: {
+        formatDiff (diff) {
+            // Clean chunk headers without any line information.
+            return diff.replace(/\n@@ @@\n/, '\n\n')
+        },
         partName (key) {
             return _get({
                 'diff': 'Difference',
