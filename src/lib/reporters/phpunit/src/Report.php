@@ -11,21 +11,6 @@ use Throwable;
 class Report
 {
     /**
-     * A map of PHPUnit vs. Lode string statuses
-     *
-     * @var array
-     */
-    protected $statuses = [
-        0 => 'passed', // PASSED
-        1 => 'skipped', // SKIPPED
-        2 => 'incomplete', // INCOMPLETE
-        3 => 'failed', // FAILURE
-        4 => 'failed', // ERROR
-        5 => 'empty', // RISKY
-        6 => 'warning', // WARNING
-    ];
-
-    /**
      * Name prettifier, for consistent transformations.
      *
      * @var \PHPUnit\Util\TestDox\NamePrettifier
@@ -46,6 +31,14 @@ class Report
      * @var PHPUnit\Framework\Test
      */
     protected $test;
+
+    /**
+     * The outcome of the test run, standardised
+     * for display inside of Lode.
+     *
+     * @var string
+     */
+    protected $status;
 
     /**
      * The exception triggered by the test, if any.
@@ -86,10 +79,12 @@ class Report
      * Create a new Lode report class.
      *
      * @param \PHPUnit\Framework\Test $test
+     * @param string $status
      */
-    public function __construct(Test $test)
+    public function __construct(Test $test, $status = 'idle')
     {
         $this->test = $test;
+        $this->status = $status;
         $this->class = get_class($this->test);
         if ($this->isWarning()) {
             $original = $this->getWarningClass();
@@ -204,8 +199,9 @@ class Report
             'displayName' => $this->transformName($name),
             'status' => 'idle',
             'feedback' => [],
-            'stats' => [],
             'console' => [],
+            'params' => '',
+            'stats' => [],
         ]);
     }
 
@@ -260,9 +256,10 @@ class Report
     public function render()
     {
         $current = array_merge($this->hydrateTest(), [
-            'status' => $this->status(),
+            'status' => $this->status,
             'feedback' => $this->exception ? (new Feedback($this->exception))->render() : null,
             'console' => $this->console->pullTestLogs($this->getFileName(), $this->test->getName()),
+            'params' => $this->usesDataProvider() ? $this->transformParameters($this->getDataSetAsString()) : '',
             'stats' => [
                 'duration' => $this->time,
                 'assertions' => $this->getNumAssertions(),
@@ -301,14 +298,14 @@ class Report
     }
 
     /**
-     * Map a PHPUnit status string into a standardized
-     * Lode status string.
+     * Clean-up the data-as-string provided by PHPUnit.
      *
+     * @param string $name
      * @return string
      */
-    protected function status()
+    protected function transformParameters(string $data): string
     {
-        return Util::get($this->statuses, $this->test->getStatus(), 'warning');
+        return preg_replace('/^ with data set (#\d*|".*") \((.*)\)/', '$2', $data);
     }
 
     /**

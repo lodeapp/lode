@@ -89,6 +89,7 @@ class Base64TestReporter {
         try {
             return await new Promise((resolve, reject) => {
                 const error = new MockError('', result.failureMessages[0])
+                const feedback = this.transformFeedback(result.failureMessages[0], error)
                 this.reporter.notify(error, {}, (err, report) => {
                     if (err) {
                         throw err
@@ -96,7 +97,8 @@ class Base64TestReporter {
                     resolve({
                         content: _pickBy({
                             title: error.name,
-                            [hasAnsi(error.message) ? 'ansi' : 'text']: error.message,
+                            [hasAnsi(feedback.message) ? 'ansi' : 'text']: feedback.message,
+                            diff: feedback.diff,
                             trace: this.transformTrace(report)
                         }, _identity),
                         type: 'feedback'
@@ -174,6 +176,30 @@ class Base64TestReporter {
                 }
             })
         ]
+    }
+
+    transformFeedback (feedback, error) {
+        let diff = null
+        let message = feedback
+            .replace(error.name ? new RegExp(`^${error.name}\: `) : '', '') // Try to clean error name.
+            .replace(/\n\s*at\s.+/gm, '') // Try to clean trace.
+
+        if (message.search(/\n(Difference:\s*)?\x1b.*\-\sExpected\s*.+/) > -1) {
+            diff = {
+                '@': stripAnsi(message)
+                    // Remove "Difference:" header, if present (Jest <= 23)
+                    .replace(/(.+)(\nDifference:\s*)?(\-\sExpected\s*.+)/s, '$3')
+                    // Add proper diff headers, including empty chunk headers for consistency.
+                    .replace(/\-\sExpected/, '--- Expected')
+                    .replace(/\+\sReceived\n/, '+++ Received\n@@ @@')
+            }
+            message = message.replace(/\n(Difference:\s*)?\x1b.*\-\sExpected\s*(.+)/s, '')
+        }
+
+        return {
+            message,
+            diff
+        }
     }
 
     async failedSuiteTest (result) {

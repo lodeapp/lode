@@ -12,6 +12,10 @@
         margin-top: var(--spacing-half);
         margin-bottom: var(--spacing-and-half);
 
+        :not(:empty) {
+            white-space: pre-wrap;
+        }
+
         code {
             background-color: $blue-100;
             border-radius: 2px;

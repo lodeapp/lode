@@ -12,6 +12,9 @@
                         <button type="button" v-if="feedback" @mousedown="setTab('feedback')" class="tab" :class="{ selected: tab === 'feedback' }">
                             Feedback
                         </button>
+                        <button type="button" v-if="parameters" @mousedown="setTab('parameters')" class="tab" :class="{ selected: tab === 'parameters' }">
+                            Parameters
+                        </button>
                         <button type="button" v-if="console" @mousedown="setTab('console')" class="tab" :class="{ selected: tab === 'console' }">
                             Console
                         </button>
@@ -40,6 +43,9 @@
                     <!-- Catch-all for unknown content -->
                     <pre v-else><code>{{ feedback.content }}</code></pre>
                 </div>
+                <div v-else-if="parameters && tab === 'parameters'">
+                    <Parameters :parameters="parameters" />
+                </div>
                 <div v-else-if="console && tab === 'console'">
                     <Console v-for="(output, index) in console" :key="`console-${index}`" :output="output" />
                 </div>
@@ -65,6 +71,7 @@ import Ansi from '@/components/Ansi'
 import Console from '@/components/Console'
 import Feedback from '@/components/Feedback'
 import KeyValue from '@/components/KeyValue'
+import Parameters from '@/components/Parameters'
 import TestInformation from '@/components/TestInformation'
 
 export default {
@@ -74,6 +81,7 @@ export default {
         Console,
         Feedback,
         KeyValue,
+        Parameters,
         TestInformation
     },
     props: {
@@ -103,6 +111,8 @@ export default {
                 return 'suiteConsole'
             } else if (this.stats) {
                 return 'stats'
+            } else if (this.parameters) {
+                return 'parameters'
             }
         },
         test () {
@@ -125,6 +135,9 @@ export default {
         },
         feedback () {
             return this.result && this.result.feedback && this.result.feedback.content ? this.result.feedback : false
+        },
+        parameters () {
+            return this.result && this.result.params
         },
         console () {
             return this.result && this.result.console && this.result.console.length ? this.result.console : false

@@ -7,5 +7,6 @@ npm-debug.log.*
 thumbs.db
 !.gitkeep
 src/main/lib/process/debug/*.json
+src/lib/reporters/phpunit/bootstrap
 tests/coverage
 yarn-error.log

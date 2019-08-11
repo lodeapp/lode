@@ -150,7 +150,7 @@ class LodeReporter extends ResultPrinter
      */
     public function addSuccess(Test $test, $time)
     {
-        $this->progress($this->render($test, null, $time));
+        $this->progress($this->render($test, 'passed', null, $time));
     }
 
     /**
@@ -162,7 +162,7 @@ class LodeReporter extends ResultPrinter
      */
     public function addError(Test $test, Exception $e, $time)
     {
-        $this->progress($this->render($test, $e, $time));
+        $this->progress($this->render($test, 'failed', $e, $time));
         $this->lastTestFailed = true;
     }
 
@@ -175,7 +175,7 @@ class LodeReporter extends ResultPrinter
      */
     public function addFailure(Test $test, AssertionFailedError $e, $time)
     {
-        $this->progress($this->render($test, $e, $time));
+        $this->progress($this->render($test, 'failed', $e, $time));
         $this->lastTestFailed = true;
     }
 
@@ -188,7 +188,7 @@ class LodeReporter extends ResultPrinter
      */
     public function addWarning(Test $test, Warning $e, $time)
     {
-        $this->progress($this->render($test, $e, $time));
+        $this->progress($this->render($test, 'warning', $e, $time));
         $this->lastTestFailed = true;
     }
 
@@ -201,7 +201,7 @@ class LodeReporter extends ResultPrinter
      */
     public function addIncompleteTest(Test $test, Exception $e, $time)
     {
-        $this->progress($this->render($test, $e, $time));
+        $this->progress($this->render($test, 'incomplete', $e, $time));
         $this->lastTestFailed = true;
     }
 
@@ -214,7 +214,7 @@ class LodeReporter extends ResultPrinter
      */
     public function addRiskyTest(Test $test, Exception $e, $time)
     {
-        $this->progress($this->render($test, $e, $time));
+        $this->progress($this->render($test, 'empty', $e, $time));
         $this->lastTestFailed = true;
     }
 
@@ -227,20 +227,25 @@ class LodeReporter extends ResultPrinter
      */
     public function addSkippedTest(Test $test, Exception $e, $time)
     {
-        $this->progress($this->render($test, $e, $time));
+        $this->progress($this->render($test, 'skipped', $e, $time));
         $this->lastTestFailed = true;
     }
 
     /**
      * Render a test report.
      *
+     * Don't rely on status from the test object, as it could be null
+     * (and even be cast as passed in PHPUnit 7+), which can be the case
+     * for tests running in separate processes.
+     *
      * @param \PHPUnit\Framework\Test $test
+     * @param string $status
      * @param \Exception|null $t
      * @param float $time
      */
-    protected function render($test, Exception $t = null, $time)
+    protected function render($test, $status, Exception $t = null, $time)
     {
-        $report = new Report($test);
+        $report = new Report($test, $status);
 
         if ($t) {
             $report->withException($t);
