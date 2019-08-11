@@ -36,6 +36,12 @@ spl_autoload_register(function ($class) {
     }
 });
 
+if (!function_exists('console')) {
+    function console() {
+        call_user_func_array([\LodeApp\PHPUnit\Console::class, 'log'], func_get_args());
+    }
+}
+
 // Remember actual bootstrap location in case PHPUnit boots another process
 // for tests running in isolation.
 file_put_contents(__DIR__ . DIRECTORY_SEPARATOR . 'bootstrap', $bootstrap);

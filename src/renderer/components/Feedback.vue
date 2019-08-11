@@ -2,7 +2,7 @@
     <div class="feedback">
         <h4>{{ content.title }}</h4>
         <p class="message">
-            <span v-if="content.text" v-markdown="content.text"></span>
+            <span v-if="content.text">{{ content.text }}</span>
             <template v-if="content.ansi">
                 <Ansi :content="content.ansi" />
             </template>

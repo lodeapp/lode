@@ -199,8 +199,9 @@ class Report
             'displayName' => $this->transformName($name),
             'status' => 'idle',
             'feedback' => [],
-            'stats' => [],
             'console' => [],
+            'params' => '',
+            'stats' => [],
         ]);
     }
 
@@ -258,6 +259,7 @@ class Report
             'status' => $this->status,
             'feedback' => $this->exception ? (new Feedback($this->exception))->render() : null,
             'console' => $this->console->pullTestLogs($this->getFileName(), $this->test->getName()),
+            'params' => $this->usesDataProvider() ? $this->transformParameters($this->getDataSetAsString()) : '',
             'stats' => [
                 'duration' => $this->time,
                 'assertions' => $this->getNumAssertions(),
@@ -293,6 +295,17 @@ class Report
     protected function transformName(string $name)
     {
         return preg_replace('/^it\s/', '', $this->prettifier->prettifyTestMethod($name));
+    }
+
+    /**
+     * Clean-up the data-as-string provided by PHPUnit.
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function transformParameters(string $data): string
+    {
+        return preg_replace('/^ with data set (#\d*|".*") \((.*)\)/', '$2', $data);
     }
 
     /**
