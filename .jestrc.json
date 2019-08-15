@@ -15,7 +15,8 @@
   [
     "<rootDir>/build/",
     "<rootDir>/dist/",
-    "<rootDir>/node_modules/"
+    "<rootDir>/node_modules/",
+    "<rootDir>/src/"
   ],
   "transform": {
     ".*\\.(vue)$": "vue-jest",
