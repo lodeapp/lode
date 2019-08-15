@@ -59,13 +59,10 @@ export class Updater {
                 message: 'You’re up-to-date!',
                 detail: `Lode ${app.getVersion()} is currently the newest version available.`,
                 buttons: ['OK']
-            }).then(({ response }) => {
-                console.log(response)
             })
         })
 
         autoUpdater.on('error', (err) => {
-            console.log({ err })
             applicationMenu.setOptions({
                 isCheckingForUpdate: false
             })

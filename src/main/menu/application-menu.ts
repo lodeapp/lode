@@ -458,12 +458,10 @@ function zoom(direction: ZoomDirection): ClickHandler {
             // precision numbers from chromium that don't always round nicely so
             // we'll have to do a little trick to figure out which of our supported
             // zoom factors the value is referring to.
+            const currentZoom = findClosestValue(zoomFactors, rawZoom)
 
-                const nextZoomLevel = zoomFactors.find(f => direction === ZoomDirection.In ? f > currentZoom : f < currentZoom)
+            const nextZoomLevel = zoomFactors.find(f => direction === ZoomDirection.In ? f > currentZoom : f < currentZoom)
 
-                // If we couldn't find a zoom level (likely due to manual manipulation
-                // of the zoom factor in devtools) we'll just snap to the closest valid
-                // factor we've got.
             // If we couldn't find a zoom level (likely due to manual manipulation
             // of the zoom factor in devtools) we'll just snap to the closest valid
             // factor we've got.
