@@ -210,13 +210,15 @@ export default {
             this.onProjectChange()
         },
         async locateRepository (repository) {
-            const path = remote.dialog.showOpenDialog({
+            remote.dialog.showOpenDialog({
                 properties: ['openDirectory', 'multiSelections']
-            })
+            }).then(({ filePaths }) => {
+                if (!filePaths || !filePaths.length) {
+                    return
+                }
 
-            if (path) {
-                repository.updatePath(path[0])
-            }
+                repository.updatePath(filePaths[0])
+            })
         },
         manageFramework (framework) {
             this.$modal.open('ManageFrameworks', {

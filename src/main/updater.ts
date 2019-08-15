@@ -38,8 +38,8 @@ export class Updater {
                 message: 'A new version of Lode is available',
                 detail: `Lode ${info.version} is now available — you have ${app.getVersion()}. Would you like to download it now?`,
                 buttons: ['Download Update', 'Cancel']
-            }, (buttonIndex) => {
-                if (buttonIndex === 0) {
+            }).then(({ response }) => {
+                if (response === 0) {
                     this.download()
                 }
             })
@@ -53,15 +53,19 @@ export class Updater {
                 this.startup = false
                 return
             }
+
             dialog.showMessageBox({
                 type: 'info',
                 message: 'You’re up-to-date!',
                 detail: `Lode ${app.getVersion()} is currently the newest version available.`,
                 buttons: ['OK']
+            }).then(({ response }) => {
+                console.log(response)
             })
         })
 
         autoUpdater.on('error', (err) => {
+            console.log({ err })
             applicationMenu.setOptions({
                 isCheckingForUpdate: false
             })
@@ -84,8 +88,8 @@ export class Updater {
                 message: 'Ready to Install',
                 detail: `Lode ${info.version} has been download and is ready to install. You are required to restart the app.`,
                 buttons: ['Install and Relaunch', 'Cancel']
-            }, (buttonIndex) => {
-                if (buttonIndex === 0) {
+            }).then(({ response }) => {
+                if (response === 0) {
                     autoUpdater.quitAndInstall()
                 }
             })

@@ -61,7 +61,8 @@ export class Window {
                 // See https://developers.google.com/web/updates/2016/10/auxclick
                 disableBlinkFeatures: 'Auxclick',
                 backgroundThrottling: false,
-                scrollBounce: true
+                scrollBounce: true,
+                nodeIntegration: true
             },
             acceptFirstMouse: true
         }
@@ -69,7 +70,7 @@ export class Window {
         if (__DARWIN__) {
             windowOptions.titleBarStyle = 'hiddenInset'
         } else if (__WIN32__) {
-            // windowOptions.frame = false
+            windowOptions.frame = false
         } else if (__LINUX__) {
             // windowOptions.icon = path.join(__dirname, 'static', 'icon-logo.png')
         }
