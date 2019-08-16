@@ -13,7 +13,10 @@
         margin-bottom: var(--spacing-and-half);
 
         :not(:empty) {
-            white-space: pre-wrap;
+
+            &:not(.ansi) {
+                white-space: pre-wrap;
+            }
         }
 
         code {
