@@ -31,7 +31,7 @@
         "no-class-assign": 2,
         "no-cond-assign": 2,
         "no-const-assign": 2,
-        "no-control-regex": 2,
+        "no-control-regex": 0,
         "no-delete-var": 2,
         "no-dupe-args": 2,
         "no-dupe-class-members": 2,
@@ -124,14 +124,14 @@
           "svg": "always",
           "math": "always"
         }],
-        "vue/max-attributes-per-line": [4, 4],
+        "vue/max-attributes-per-line": 0,
         "vue/require-prop-types": 0,
         "wrap-iife": [2, "any"],
         "yield-star-spacing": [2, "both"],
         "yoda": [2, "never"]
     },
     "parserOptions": {
-        "ecmaVersion": 2017
+        "ecmaVersion": 2018
     },
     "globals": {
         "__DARWIN__": false,

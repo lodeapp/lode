@@ -114,6 +114,7 @@ export default {
             } else if (this.parameters) {
                 return 'parameters'
             }
+            return ''
         },
         test () {
             return _last(this.context)

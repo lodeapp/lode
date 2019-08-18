@@ -1,5 +1,5 @@
 <template>
-    <Modal :help="help" :class="[alerts.length > 1 ? 'modal--paged' : '']" size="lg">
+    <Modal :help="help" :class="[alerts.length > 1 ? 'modal--paged' : '']">
         <template slot="header">
             <Icon v-if="type === 'error'" class="type--error" symbol="issue-opened" />
             <h3 class="modal-title" v-html="title"></h3>

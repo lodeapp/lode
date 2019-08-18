@@ -37,9 +37,9 @@
             max-width: var(--modal-small);
         }
 
-        @include media-breakpoint-up(xl) {
+        @include media-breakpoint-up(lg) {
 
-            .modal-lg {
+            &.modal-lg {
                 max-width: var(--modal-large);
             }
         }

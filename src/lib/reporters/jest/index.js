@@ -62,7 +62,6 @@ class Base64TestReporter {
         this.feedbacks = feedback
             .split(prefix)
             .filter(message => {
-                // eslint-disable-next-line no-control-regex
                 return message.replace(/\x1b/g, '').length
             })
             .map(message => {
@@ -73,7 +72,6 @@ class Base64TestReporter {
                 return {
                     feedback,
                     hasPrefix,
-                    // eslint-disable-next-line no-control-regex
                     test: match.replace(/(\x1b|›\s|●\s)/g, ''),
                     message: hasPrefix ? `${prefix}${message}` : message
                 }
