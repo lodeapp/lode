@@ -289,43 +289,43 @@ export default {
     },
     methods: {
         async chooseAutoloadPath () {
-            const file = remote.dialog.showOpenDialog({
+            remote.dialog.showOpenDialog({
                 defaultPath: this.repository.getPath(),
                 properties: ['openFile']
+            }).then(({ filePaths }) => {
+                if (!filePaths || !filePaths.length) {
+                    return
+                }
+
+                this.fields.proprietary.autoloadPath = Path.relative(this.repository.getPath(), filePaths[0])
+                this.validator.reset('autoloadPath')
             })
-
-            if (!file) {
-                return
-            }
-
-            this.fields.proprietary.autoloadPath = Path.relative(this.repository.getPath(), file[0])
-            this.validator.reset('autoloadPath')
         },
         async chooseTestsPath () {
-            const directory = remote.dialog.showOpenDialog({
+            remote.dialog.showOpenDialog({
                 defaultPath: this.repository.getPath(),
                 properties: ['createDirectory', 'openDirectory']
+            }).then(({ filePaths }) => {
+                if (!filePaths || !filePaths.length) {
+                    return
+                }
+
+                this.fields.path = Path.relative(this.repository.getPath(), filePaths[0])
+                this.validator.reset('path')
             })
-
-            if (!directory) {
-                return
-            }
-
-            this.fields.path = Path.relative(this.repository.getPath(), directory[0])
-            this.validator.reset('path')
         },
         async chooseIdentity () {
-            const file = remote.dialog.showOpenDialog({
+            remote.dialog.showOpenDialog({
                 properties: ['openFile', 'showHiddenFiles'],
                 message: 'Choose a custom SSH key file to use with this connection.\nNote that ~/.ssh/id_rsa and identities defined in your SSH configuration are included by default.'
+            }).then(({ filePaths }) => {
+                if (!filePaths || !filePaths.length) {
+                    return
+                }
+
+                this.fields.sshIdentity = filePaths[0]
+                this.validator.reset('sshIdentity')
             })
-
-            if (!file) {
-                return
-            }
-
-            this.fields.sshIdentity = file[0]
-            this.validator.reset('sshIdentity')
         },
         remove () {
             this.$emit('remove')

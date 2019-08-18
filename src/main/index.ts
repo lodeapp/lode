@@ -63,8 +63,8 @@ app
         createWindow(state.getCurrentProject())
         applicationMenu.build()
 
-        // Start auto-updating process.
         if (process.env.NODE_ENV === 'production') {
+            // Start auto-updating process.
             new Updater()
         }
     })
@@ -80,7 +80,7 @@ app
     })
 
 ipcMain
-    .on('log', (event: Electron.IpcMessageEvent, level: LogLevel, message: string) => {
+    .on('log', (event: Electron.IpcMainEvent, level: LogLevel, message: string) => {
         // Write renderer messages to log, if they meet the level threshold.
         // We're using the main log function directly so that they are not
         // marked as being from the "main" process.

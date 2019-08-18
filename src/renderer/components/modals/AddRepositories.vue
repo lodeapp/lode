@@ -81,19 +81,19 @@ export default {
     },
     methods: {
         async choose (index) {
-            const directory = remote.dialog.showOpenDialog({
+            remote.dialog.showOpenDialog({
                 properties: ['openDirectory', 'multiSelections']
-            })
-
-            if (!directory) {
-                return
-            }
-
-            directory.forEach((path, index) => {
-                if (!_find(this.slots, { path })) {
-                    index === 0 ? this.slots[index].path = path : this.addRow(path)
-                    this.slots[index].validator.reset('path')
+            }).then(({ filePaths }) => {
+                if (!filePaths || !filePaths.length) {
+                    return
                 }
+
+                filePaths.forEach((path, index) => {
+                    if (!_find(this.slots, { path })) {
+                        index === 0 ? this.slots[index].path = path : this.addRow(path)
+                        this.slots[index].validator.reset('path')
+                    }
+                })
             })
         },
         addRow (path = '') {

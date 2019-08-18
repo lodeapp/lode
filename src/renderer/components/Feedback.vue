@@ -1,12 +1,12 @@
 <template>
     <div class="feedback">
         <h4>{{ content.title }}</h4>
-        <p class="message">
-            <span v-if="content.text">{{ content.text }}</span>
+        <div class="message">
+            <p v-if="content.text">{{ content.text }}</p>
             <template v-if="content.ansi">
                 <Ansi :content="content.ansi" />
             </template>
-        </p>
+        </div>
         <Diff v-if="content.diff" :content="content.diff" />
         <h4 v-if="trace && trace.length" class="text-muted">
             {{ 'Exception|Exceptions' | plural(trace.length) }}

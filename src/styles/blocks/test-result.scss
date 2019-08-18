@@ -1,7 +1,9 @@
 .test-result {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
     flex: 1;
+    min-height: 0;
 
     .tabs {
         background-color: $secondary;
