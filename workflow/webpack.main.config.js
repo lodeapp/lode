@@ -9,6 +9,7 @@ const { dependencies } = require('../package.json')
 const webpack = require('webpack')
 
 const MinifyPlugin = require('babel-minify-webpack-plugin')
+const PreJSPlugin = require('dotprejs/src/PreJSPlugin')
 
 const mainConfig = {
     entry: {
@@ -97,6 +98,10 @@ if (process.env.NODE_ENV === 'production') {
         new MinifyPlugin(),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': '"production"'
+        }),
+        new PreJSPlugin({
+            assets: ['main.js'],
+            runtime: require('electron')
         })
     )
 }
