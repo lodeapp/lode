@@ -23,6 +23,13 @@ export type SuiteList = {
 }
 
 /**
+ * A ledger of statuses.
+ */
+export type Ledger = {
+    [key in Status]: number
+}
+
+/**
  * A list of possible framework filters.
  */
 export type FrameworkFilter = 'keyword' | 'status' | 'group'
@@ -72,7 +79,6 @@ export interface IFramework extends EventEmitter {
     process?: number
     status: FrameworkStatus
     queue: { [index: string]: Function }
-    ledger: { [key in Status]: number }
 
     getId (): string
     getDisplayName (): string
@@ -101,6 +107,7 @@ export interface IFramework extends EventEmitter {
     getSupportedSorts (): Array<FrameworkSort>
     setSortReverse (reverse?: boolean): void
     isSortReverse (): boolean
+    getLedger (): Ledger
 }
 
 /**
@@ -125,19 +132,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public running: Array<Promise<void>> = []
     public status: FrameworkStatus = 'loading'
     public queue: { [index: string]: Function } = {}
-    public ledger: { [key in Status]: number } = {
-        queued: 0,
-        running: 0,
-        passed: 0,
-        failed: 0,
-        incomplete: 0,
-        skipped: 0,
-        warning: 0,
-        partial: 0,
-        empty: 0,
-        idle: 0,
-        error: 0
-    }
 
     protected id!: string
     protected version?: string
@@ -162,6 +156,19 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected sort!: FrameworkSort
     protected sortReverse!: boolean
     protected supportedSorts?: Array<FrameworkSort>
+    protected ledger: { [key in Status]: number } = {
+        queued: 0,
+        running: 0,
+        passed: 0,
+        failed: 0,
+        incomplete: 0,
+        skipped: 0,
+        warning: 0,
+        partial: 0,
+        empty: 0,
+        idle: 0,
+        error: 0
+    }
 
     static readonly defaults?: FrameworkOptions
     static readonly sortDefault: FrameworkSort = 'name'
@@ -1297,6 +1304,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
             default:
                 return null
         }
+    }
+
+    /**
+     * Return the framework's status ledger.
+     */
+    getLedger (): Ledger {
+        return this.ledger
     }
 
     /**

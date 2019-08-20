@@ -57,7 +57,7 @@ export default {
         },
         ledger () {
             // Modify ledger to consolidate running and queued states.
-            const ledger = _cloneDeep(this.framework.ledger)
+            const ledger = _cloneDeep(this.framework.getLedger())
             ledger['queued'] += ledger['running']
             delete ledger['running']
             return ledger
