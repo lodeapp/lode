@@ -48,6 +48,15 @@ export default {
         }
     },
     methods: {
+        start () {
+            this.repository.start()
+        },
+        refresh () {
+            this.repository.refresh()
+        },
+        stop () {
+            this.repository.stop()
+        },
         toggle () {
             this.repository.toggle()
         }

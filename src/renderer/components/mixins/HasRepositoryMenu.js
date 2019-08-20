@@ -22,6 +22,25 @@ export default {
                         enabled: false
                     })
                     .add({
+                        label: __DARWIN__ ? 'Refresh' : 'Refresh',
+                        click: () => {
+                            this.refresh()
+                        }
+                    })
+                    .add({
+                        label: __DARWIN__ ? 'Run' : 'Run',
+                        click: () => {
+                            this.start()
+                        }
+                    })
+                    .add({
+                        label: __DARWIN__ ? 'Stop' : 'Stop',
+                        click: () => {
+                            this.stop()
+                        }
+                    })
+                    .separator()
+                    .add({
                         label: __DARWIN__ ? 'Manage Frameworks…' : 'Manage frameworks…',
                         click: () => {
                             this.manage()

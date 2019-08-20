@@ -100,6 +100,15 @@ export default new Vue({
                     case 'select-all':
                         this.selectAll()
                         break
+                    case 'refresh-all':
+                        this.project.refresh()
+                        break
+                    case 'run-all':
+                        this.project.start()
+                        break
+                    case 'stop-all':
+                        this.project.stop()
+                        break
                     case 'rename-project':
                         this.editProject()
                         break

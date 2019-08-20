@@ -125,7 +125,10 @@
           "math": "always"
         }],
         "vue/max-attributes-per-line": 0,
+        "vue/multiline-html-element-content-newline": 0,
+        "vue/no-multi-spaces": 0,
         "vue/require-prop-types": 0,
+        "vue/singleline-html-element-content-newline": 0,
         "wrap-iife": [2, "any"],
         "yield-star-spacing": [2, "both"],
         "yoda": [2, "never"]

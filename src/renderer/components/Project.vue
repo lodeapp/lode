@@ -12,9 +12,15 @@
                     <div class="draggable"></div>
                     <header>
                         <h5 class="sidebar-header">Project</h5>
-                        <div class="sidebar-item has-status" :class="[`status--${$root.project.status}`]">
+                        <div
+                            class="sidebar-item has-status"
+                            :class="[
+                                `status--${$root.project.status}`,
+                                menuActive ? 'is-menu-active' : '',
+                            ]"
+                        >
                             <div class="header">
-                                <div class="title">
+                                <div class="title" @contextmenu="openMenu">
                                     <Indicator :status="$root.project.status" />
                                     <h4 class="heading">
                                         <span class="name" :title="$root.project.name">
@@ -128,6 +134,7 @@ import Indicator from '@/components/Indicator'
 import Framework from '@/components/Framework'
 import Results from '@/components/Results'
 import Split from '@/components/Split'
+import HasProjectMenu from '@/components/mixins/HasProjectMenu'
 
 export default {
     name: 'Project',
@@ -140,6 +147,9 @@ export default {
         Results,
         Split
     },
+    mixins: [
+        HasProjectMenu
+    ],
     data () {
         return {
             context: [],
