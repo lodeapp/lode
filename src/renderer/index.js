@@ -3,7 +3,7 @@ import '@lib/tracker/renderer'
 
 import Vue from 'vue'
 import store from './store'
-import { isEmpty } from 'lodash'
+import { isArray, isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@lib/state'
 import { Project } from '@lib/frameworks/project'
@@ -148,6 +148,29 @@ export default new Vue({
                 }
             })
     },
+    mounted () {
+        document.ondragover = e => {
+            if (e.dataTransfer != null) {
+                e.dataTransfer.dropEffect = store.getters['modals/hasModals'] ? 'none' : 'copy'
+            }
+            e.preventDefault()
+        }
+
+        document.ondrop = e => {
+            e.preventDefault()
+        }
+
+        document.body.ondrop = e => {
+            if (store.getters['modals/hasModals']) {
+                return
+            }
+            if (e.dataTransfer != null) {
+                const files = e.dataTransfer.files
+                this.addRepositories(Array.from(files).map(({ path }) => path))
+            }
+            e.preventDefault()
+        }
+    },
     methods: {
         loadProject (projectOptions) {
             projectOptions = JSON.parse(projectOptions)
@@ -222,8 +245,11 @@ export default new Vue({
         handleSwitchProject (projectId) {
             ipcRenderer.send('switch-project', projectId)
         },
-        addRepositories () {
-            this.$modal.confirm('AddRepositories', {})
+        addRepositories (directories) {
+            if (!isArray(directories)) {
+                directories = null
+            }
+            this.$modal.confirm('AddRepositories', { directories })
                 .then(({ repositories, autoScan }) => {
                     if (autoScan) {
                         this.scanRepositories(repositories.map(repository => repository.getId()), 0)

@@ -61,6 +61,12 @@ export default {
         Modal
     },
     mixins: [Confirm],
+    props: {
+        directories: {
+            type: Array,
+            default: null
+        }
+    },
     data () {
         return {
             loading: false,
@@ -78,6 +84,9 @@ export default {
     },
     created () {
         this.addRow()
+        if (this.directories && this.directories.length) {
+            this.populate(this.directories)
+        }
     },
     methods: {
         async choose (index) {
@@ -88,12 +97,15 @@ export default {
                     return
                 }
 
-                filePaths.forEach((path, index) => {
-                    if (!_find(this.slots, { path })) {
-                        index === 0 ? this.slots[index].path = path : this.addRow(path)
-                        this.slots[index].validator.reset('path')
-                    }
-                })
+                this.populate(filePaths)
+            })
+        },
+        populate (filePaths) {
+            filePaths.forEach((path, index) => {
+                if (!_find(this.slots, { path })) {
+                    index === 0 ? this.slots[index].path = path : this.addRow(path)
+                    this.slots[index].validator.reset('path')
+                }
             })
         },
         addRow (path = '') {
