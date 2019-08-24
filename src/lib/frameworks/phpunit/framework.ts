@@ -157,6 +157,22 @@ export class PHPUnit extends Framework {
     }
 
     /**
+     * Calculate the total amount we need to measure for progress for the given
+     * suites. PHPUnit suites are reported test by test, so we'll need to set
+     * the total for the amount of tests within the framework, as opposed to
+     * the amount of suites which we'd ordinarily measure.
+     *
+     * @param suites The suites whose progress we're setting up to measure.
+     */
+    protected calculateProgressTotalForSuites(suites: Array<ISuite>): number {
+        return suites.reduce((acc, suite: ISuite) => {
+            // Return the children count, or 1 if suite is empty, as it will
+            // and progress counted regardless of it having children or not.
+            return acc + (suite.countChildren() || 1)
+        }, 0)
+    }
+
+    /**
      * Validate PHPUnit specific options.
      */
     public static validate (validator: FrameworkValidator, options: any): void {

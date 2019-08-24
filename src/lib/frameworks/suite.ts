@@ -41,6 +41,7 @@ export interface ISuite extends Nugget {
     refresh (options: SuiteOptions): void
     setFresh (fresh: boolean): void
     isFresh (): boolean
+    countChildren (): number
     hasChildren(): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
     getRunningOrder (): number | null

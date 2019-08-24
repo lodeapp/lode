@@ -41,10 +41,17 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
+     * Count this nugget's children.
+     */
+    public countChildren (): number {
+        return this.getTestResults().length
+    }
+
+    /**
      * Whether this nugget has children.
      */
     public hasChildren (): boolean {
-        return this.getTestResults().length > 0
+        return this.countChildren() > 0
     }
 
     /**

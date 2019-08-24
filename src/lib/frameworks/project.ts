@@ -4,6 +4,7 @@ import { EventEmitter } from 'events'
 import { state } from '@lib/state'
 import { Project as ProjectState } from '@lib/state/project'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
+import { ProgressLedger } from '@lib/frameworks/progress'
 import { RepositoryOptions, IRepository, Repository } from '@lib/frameworks/repository'
 
 /**
@@ -42,6 +43,8 @@ export interface IProject extends EventEmitter {
     updateOptions (options: ProjectOptions): void
     addRepository (options: RepositoryOptions): Promise<IRepository>
     removeRepository (id: string): void
+    getRepositoryById (id: string): IRepository | undefined
+    getProgressLedger (): ProgressLedger
 }
 
 export class Project extends EventEmitter implements IProject {
@@ -186,7 +189,16 @@ export class Project extends EventEmitter implements IProject {
      * A function to run when a child repository changes its state (i.e. runs, stops, etc).
      */
     protected stateListener (): void {
-        this.state.set('busy', this.isBusy())
+        const isBusy = this.isBusy()
+        this.state.set('busy', isBusy)
+        this.emit('busy', isBusy)
+
+        // If project is no longer busy, reset all progress ledgers.
+        if (!isBusy) {
+            this.repositories.forEach((repository: IRepository) => {
+                repository.resetProgressLedger()
+            })
+        }
     }
 
     /**
@@ -316,5 +328,28 @@ export class Project extends EventEmitter implements IProject {
             return this.repositories[index]
         }
         return undefined
+    }
+
+    /**
+     * Return the project's progress ledger.
+     */
+    public getProgressLedger (): ProgressLedger {
+        return this.repositories.reduce((ledger: ProgressLedger, reopsitory: IRepository) => {
+            const reopsitoryLedger: ProgressLedger = reopsitory.getProgressLedger()
+            ledger.run += reopsitoryLedger.run
+            ledger.total += reopsitoryLedger.total
+            return ledger
+        }, {
+            run: 0,
+            total: 0
+        })
+    }
+
+    /**
+     * Return the project's progress.
+     */
+    public getProgress (): number {
+        const ledger = this.getProgressLedger()
+        return ledger.total ? ledger.run / ledger.total : -1
     }
 }

@@ -9,7 +9,8 @@ import { ProcessFactory } from '@lib/process/factory'
 import { queue } from '@lib/process/queue'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
-import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
+import { FrameworkStatus, Status, StatusLedger, parseStatus } from '@lib/frameworks/status'
+import { ProgressLedger } from '@lib/frameworks/progress'
 import { FrameworkSort, sortOptions, sortDirection } from '@lib/frameworks/sort'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 import { SSHOptions } from '@lib/process/ssh'
@@ -20,13 +21,6 @@ import pool from '@lib/process/pool'
  */
 export type SuiteList = {
     suites: Array<ISuite>
-}
-
-/**
- * A ledger of statuses.
- */
-export type Ledger = {
-    [key in Status]: number
 }
 
 /**
@@ -107,7 +101,9 @@ export interface IFramework extends EventEmitter {
     getSupportedSorts (): Array<FrameworkSort>
     setSortReverse (reverse?: boolean): void
     isSortReverse (): boolean
-    getLedger (): Ledger
+    getLedger (): StatusLedger
+    getProgressLedger (): ProgressLedger
+    resetProgressLedger (): void
 }
 
 /**
@@ -156,7 +152,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected sort!: FrameworkSort
     protected sortReverse!: boolean
     protected supportedSorts?: Array<FrameworkSort>
-    protected ledger: { [key in Status]: number } = {
+    protected ledger: StatusLedger = {
         queued: 0,
         running: 0,
         passed: 0,
@@ -168,6 +164,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
         empty: 0,
         idle: 0,
         error: 0
+    }
+    protected progressLedger: ProgressLedger = {
+        run: 0,
+        total: 0
     }
 
     static readonly defaults?: FrameworkOptions
@@ -543,6 +543,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         this.suites.forEach(suite => {
             suite.queue(false)
         })
+
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
             // Only start the actual running process on next tick. This allows
@@ -598,6 +599,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         suites.forEach(suite => {
             suite.queue(this.selective)
         })
+
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
             // See @run for reasoning behind `nextTick`
@@ -662,6 +664,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return new Promise((resolve, reject) => {
             this.spawn(args)
                 .on('report', ({ process, report }) => {
+                    this.progress()
                     try {
                         this.running.push(this.debriefSuite(report))
                     } catch (error) {
@@ -1010,6 +1013,69 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * Return the framework's status ledger.
+     */
+    public getLedger (): StatusLedger {
+        return this.ledger
+    }
+
+    /**
+     * Progress the ledger by one unit.
+     */
+    protected progress(): void {
+        this.progressLedger.run++
+        this.emit('progress')
+    }
+
+    /**
+     * Prepare the progress ledger to measure a run of the given suites.
+     *
+     * @param suites The suites whose progress we're setting up to measure.
+     */
+    protected measureProgressForSuites(suites: Array<ISuite>): void {
+        this.updateProgressLedger(0, this.calculateProgressTotalForSuites(suites))
+        this.emit('measuring', this.progressLedger)
+    }
+
+    /**
+     * Calculate the total amount we need to measure for progress for the given
+     * suites. This is useful in case a particular frameworks needs to override
+     * the calculation (i.e. measure progress in tests not suites).
+     *
+     * @param suites The suites whose progress we're setting up to measure.
+     */
+    protected calculateProgressTotalForSuites(suites: Array<ISuite>): number {
+        return suites.length
+    }
+
+    /**
+     * Update the framework's progress ledger.
+     *
+     * @param run The number of suites already run.
+     * @param total The total number of suites to mark progress of.
+     */
+    protected updateProgressLedger (run: number, total?: number): void {
+        this.progressLedger.run = run
+        if (typeof total !== 'undefined') {
+            this.progressLedger.total = total
+        }
+    }
+
+    /**
+     * Return the framework's progress ledger.
+     */
+    public getProgressLedger (): ProgressLedger {
+        return this.progressLedger
+    }
+
+    /**
+     * Reset the framework's progress ledger.
+     */
+    public resetProgressLedger (): void {
+        this.updateProgressLedger(0, 0)
+    }
+
+    /**
      * Debrief a specific suite with the run's results.
      *
      * @param partial The suite's run results (potentially incomplete)
@@ -1052,6 +1118,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
         const id = uuid()
         this.queue[id] = () => this.handleRun()
         queue.add(() => this.handleQueued(id))
+
+        // Progress should be measured from a framework being queued,
+        // rather than it actually being run.
+        this.measureProgressForSuites(
+            this.selective ? this.selected.suites : (this.hasFilters() ? this.getSuites() : this.suites)
+        )
     }
 
     /**
@@ -1304,13 +1376,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
             default:
                 return null
         }
-    }
-
-    /**
-     * Return the framework's status ledger.
-     */
-    getLedger (): Ledger {
-        return this.ledger
     }
 
     /**

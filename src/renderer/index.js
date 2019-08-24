@@ -59,6 +59,16 @@ export default new Vue({
             project: null
         }
     },
+    computed: {
+        progress () {
+            return this.project ? this.project.getProgress() : -1
+        }
+    },
+    watch: {
+        progress (value) {
+            remote.getCurrentWindow().setProgressBar(this.project.getProgress())
+        }
+    },
     created () {
         this.loadProject(remote.getCurrentWindow().getProjectOptions())
 
