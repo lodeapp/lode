@@ -8,6 +8,8 @@ import { SSHOptions, SSH } from './ssh'
 import { BufferedSearch } from './search'
 import { ErrorWithCode, ProcessError } from './errors'
 
+export type ProcessId = string | number
+
 export type ProcessOptions = {
     command: string
     args: Array<string>
@@ -18,8 +20,7 @@ export type ProcessOptions = {
 }
 
 export interface IProcess extends EventEmitter {
-    readonly process?: ChildProcess
-    getId (): number
+    getId (): ProcessId
     stop (): void
     owns (command: string): boolean
 }
@@ -28,23 +29,23 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     static readonly type: string = 'default'
     protected readonly startDelimiter: string = '<<<REPORT{'
     protected readonly endDelimiter: string = '}REPORT>>>'
-    search: BufferedSearch
-    command!: string
-    binary: string = ''
-    args: Array<string> = []
-    path?: string
-    chunks: Array<string> = []
-    rawChunks: Array<string> = []
-    error: string = ''
-    killed: boolean = false
-    closed: boolean = false
-    exitCode?: number
-    exitSignal: string | null = null
-    reports: boolean = false
-    reportBuffer: string = ''
-    reportClosed: boolean = false
-    writeToFile: boolean = false
-    process?: ChildProcess
+    protected search: BufferedSearch
+    protected command!: string
+    protected binary: string = ''
+    protected args: Array<string> = []
+    protected path?: string
+    protected chunks: Array<string> = []
+    protected rawChunks: Array<string> = []
+    protected error: string = ''
+    protected killed: boolean = false
+    protected closed: boolean = false
+    protected exitCode?: number
+    protected exitSignal: string | null = null
+    protected reports: boolean = false
+    protected reportBuffer: string = ''
+    protected reportClosed: boolean = false
+    protected writeToFile: boolean = false
+    protected process?: ChildProcess
 
     constructor (options: ProcessOptions) {
         super()
@@ -144,7 +145,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     /**
      * Get this process's unique id.
      */
-    public getId (): number {
+    public getId (): ProcessId {
         if (__DEV__ && process.env.FROM_FILE) {
             // If we're re-processing from a file, generate a hash from the filename.
             return Array.from(process.env.FROM_FILE).reduce((s, c) => Math.imul(31, s) + c.charCodeAt(0) | 0, 0)
@@ -192,7 +193,11 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             // successfully, ignore the error, assuming it relates to a failure in the
             // tests for which we'll give appropriate feedback in the interface.
             log.debug('Process successfully exited.')
-            this.emit('success', { process: this })
+            this.emit('success', {
+                process: this,
+                lines: this.getLines(),
+                rawLines: this.getRawLines(),
+            })
         } else {
             // If process errored out but did not emit an error event, we'll
             // compose it from the chunks we received. If error occurred while
@@ -289,7 +294,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     protected report (encoded: string): void {
         const report: object | string = this.parseReport(encoded)
         this.emit('report', {
-            process: this,
             report
         })
         if (__DEV__) {
@@ -315,14 +319,14 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     /**
      * Get all lines received from the output stream, clear of Ansi escape codes.
      */
-    public getLines (): Array<string> {
+    protected getLines (): Array<string> {
         return this.chunks.join('\n').split('\n').map(chunk => stripAnsi(chunk))
     }
 
     /**
      * Get all lines received from the output stream, unprocessed
      */
-    public getRawLines (): Array<string> {
+    protected getRawLines (): Array<string> {
         return this.chunks.join('\n').split('\n')
     }
 

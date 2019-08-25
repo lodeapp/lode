@@ -4,8 +4,8 @@ import { chunk, find, findIndex, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { filter as fuzzy } from 'fuzzaldrin'
 import { EventEmitter } from 'events'
-import { IProcess } from '@lib/process/process'
-import { ProcessFactory } from '@lib/process/factory'
+import { ProcessId, IProcess } from '@lib/process/process'
+import { ProcessBridge } from '@lib/process/bridge'
 import { queue } from '@lib/process/queue'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
@@ -14,7 +14,6 @@ import { ProgressLedger } from '@lib/frameworks/progress'
 import { FrameworkSort, sortOptions, sortDirection } from '@lib/frameworks/sort'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 import { SSHOptions } from '@lib/process/ssh'
-import pool from '@lib/process/pool'
 
 /**
  * A list of test suites.
@@ -70,7 +69,7 @@ export interface IFramework extends EventEmitter {
     sshPort: number | null
     sshIdentity: string | null
     runner: string | null
-    process?: number
+    process?: number | string
     status: FrameworkStatus
     queue: { [index: string]: Function }
 
@@ -124,8 +123,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public sshUser!: string | null
     public sshPort!: number | null
     public sshIdentity!: string | null
-    public process?: number
+    public process?: ProcessId
     public running: Array<Promise<void>> = []
+    public killed: boolean = false
     public status: FrameworkStatus = 'loading'
     public queue: { [index: string]: Function } = {}
 
@@ -442,7 +442,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Run this framework's test suites, either fully or selectively.
      */
-    protected handleRun (): Promise<void> {
+    protected async handleRun (): Promise<void> {
         this.assemble()
         if (this.selective || this.hasFilters()) {
             return this.runSelective()
@@ -466,35 +466,34 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Stop any processes that apply to this framework. This can include
      * running, refreshing or cancelling any queued jobs.
      */
-    public stop (): Promise<void> {
+    public async stop (): Promise<void> {
         return new Promise((resolve, reject) => {
             // Before checking the actual process, clear the queue
             this.queue = {}
 
+            // Prevent chained processes from being spawned by setting
+            // the `killed` flag (i.e. running after a reload).
+            this.killed = true
+
             // If process exists, kill it, otherwise resolve directly
             if (!this.process) {
                 resolve()
-            }
-
-            // Get the running process from the active process pool
-            const running = pool.findProcess(this.process!)
-            if (!running) {
-                resolve()
-            }
-
-            running!
-                .on('killed', () => {
+            } else {
+                // Get the running process from the active process pool
+                ProcessBridge.stop(this.process!).then(() => {
                     resolve()
                 })
-                .stop()
+            }
         })
         .then(() => {
+            this.killed = false
             this.idleQueued()
             this.updateStatus()
             this.emit('change', this)
             log.info(`Stopping ${this.name}`)
         })
         .catch(error => {
+            this.killed = false
             this.onError(error)
         })
     }
@@ -539,7 +538,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Run all suites inside this framework.
      */
-    protected run (): Promise<void> {
+    protected async run (): Promise<void> {
         this.suites.forEach(suite => {
             suite.queue(false)
         })
@@ -554,7 +553,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                         // Killed processes resolve the promise, so if user
                         // interrupted the run while reloading, make sure the
                         // run does not go ahead.
-                        if (outcome === 'killed') {
+                        if (outcome === 'killed' || this.killed) {
                             log.debug(`Process was killed while reloading before run.`)
                             resolve()
                             return
@@ -587,7 +586,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Run this framework selectively (i.e. only run suites that have been
      * selected by the user).
      */
-    protected runSelective (): Promise<void> {
+    protected async runSelective (): Promise<void> {
         const suites = this.selective ? this.selected.suites : this.getSuites()
 
         // If we're running filtered matches and all suites match, just
@@ -629,7 +628,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Refresh the list of suites inside this framework.
      */
-    protected handleRefresh (): Promise<void> {
+    protected async handleRefresh (): Promise<void> {
         this.assemble()
         this.updateStatus('refreshing')
         this.suites.forEach(suite => {
@@ -660,10 +659,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param args The arguments to run the report process with.
      */
-    protected report (args: Array<string>): Promise<string> {
+    protected async report (args: Array<string>): Promise<string> {
         return new Promise((resolve, reject) => {
             this.spawn(args)
-                .on('report', ({ process, report }) => {
+                .on('report', ({ report }) => {
                     this.progress()
                     try {
                         this.running.push(this.debriefSuite(report))
@@ -784,7 +783,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param args The arguments to spawn the process with.
      */
     protected spawn (args: Array<string>): IProcess {
-        const process = ProcessFactory.make({
+        const process = ProcessBridge.make({
             command: this.command,
             args,
             path: this.repositoryPath,

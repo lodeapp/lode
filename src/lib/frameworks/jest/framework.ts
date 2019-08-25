@@ -72,9 +72,8 @@ export class Jest extends Framework {
     protected reload (): Promise<string> {
         return new Promise((resolve, reject) => {
             this.spawn(['--listTests', '--forceExit'])
-                .on('success', ({ process }) => {
+                .on('success', ({ lines }) => {
                     try {
-                        const lines = process.getLines()
                         lines.sort()
                         lines.filter((file: string) => this.fileInPath(file))
                             .map((file: string) => this.makeSuite(this.hydrateSuiteResult({

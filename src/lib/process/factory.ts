@@ -1,11 +1,11 @@
 import { find } from 'lodash'
-import { ProcessOptions, IProcess, DefaultProcess } from './process'
+import { ProcessId, ProcessOptions, IProcess, DefaultProcess } from './process'
 import { Runners } from './runners'
 import pool from './pool'
 
 export class ProcessFactory {
 
-    public static make (options: ProcessOptions): IProcess {
+    public static make (options: ProcessOptions, id?: ProcessId): IProcess {
 
         let spawned: IProcess | null = null
 
@@ -28,7 +28,7 @@ export class ProcessFactory {
 
         spawned = spawned || new DefaultProcess(options)
 
-        pool.add(spawned)
+        pool.add(spawned, id)
 
         return spawned
     }
