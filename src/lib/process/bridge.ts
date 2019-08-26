@@ -1,18 +1,22 @@
 import { v4 as uuid } from 'uuid'
 import { app, ipcRenderer } from 'electron'
-import { ProcessId, ProcessOptions } from './process'
+import { ProcessId, ProcessOptions, IProcess } from './process'
 import { ProcessFactory } from './factory'
 import { ProcessListener } from './listener'
 import pool from '@lib/process/pool'
 
 /**
- * A bridge for running processes, optionally between
+ * A bridge for spawning processes, optionally between
  * Electron's renderer and main processes.
  */
 export class ProcessBridge {
 
-    // public static make (options: ProcessOptions): Promise<number> {
-    public static make (options: ProcessOptions) {
+    /**
+     * Make a new process according to the given options.
+     *
+     * @param options The options for the process we're making.
+     */
+    public static make (options: ProcessOptions): IProcess {
         // Are we in the main process? If so, defer to factory.
         if (typeof app !== 'undefined') {
             return ProcessFactory.make(options)
@@ -23,6 +27,11 @@ export class ProcessBridge {
         return new ProcessListener(id)
     }
 
+    /**
+     * Stop a running process using its id.
+     *
+     * @param id The id of the process to be stopped.
+     */
     public static stop (id: ProcessId): Promise<void> {
         return new Promise((resolve, reject) => {
             if (typeof app !== 'undefined') {

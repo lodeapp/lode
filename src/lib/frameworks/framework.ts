@@ -69,7 +69,7 @@ export interface IFramework extends EventEmitter {
     sshPort: number | null
     sshIdentity: string | null
     runner: string | null
-    process?: number | string
+    process?: ProcessId
     status: FrameworkStatus
     queue: { [index: string]: Function }
 
