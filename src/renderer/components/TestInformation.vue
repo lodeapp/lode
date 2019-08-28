@@ -22,8 +22,7 @@
                 </tr>
                 <tr v-if="typeof stats.duration !== 'undefined'">
                     <td class="heading">Duration</td>
-                    <!-- @TODO: Duration component to show seconds, minutes, hours, etc -->
-                    <td>{{ stats.duration }}ms</td>
+                    <td><Duration :ms="stats.duration" /></td>
                 </tr>
                 <tr v-if="typeof stats.assertions !== 'undefined'">
                     <td class="heading">Assertions</td>
@@ -39,9 +38,13 @@
 import moment from 'moment'
 import _isEmpty from 'lodash/isEmpty'
 import { mapGetters } from 'vuex'
+import Duration from '@/components/Duration'
 
 export default {
     name: 'TestInformation',
+    components: {
+        Duration
+    },
     props: {
         status: {
             type: String,

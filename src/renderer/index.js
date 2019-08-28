@@ -20,6 +20,7 @@ import Code from './plugins/code'
 import Input from './plugins/input'
 import Modals from './plugins/modals'
 import Strings from './plugins/strings'
+import Durations from './plugins/durations'
 
 // Directives
 import Markdown from './directives/markdown'
@@ -40,6 +41,7 @@ Vue.use(new Code())
 Vue.use(new Input())
 Vue.use(new Modals(store))
 Vue.use(new Strings('en-US'))
+Vue.use(new Durations('en-US'))
 
 // Register directives
 Vue.directive('markdown', Markdown(Vue))

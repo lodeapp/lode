@@ -12,6 +12,7 @@ import { state } from '@lib/state'
 import { log as writeLog } from '@lib/logger'
 import { ProcessOptions, IProcess } from '@lib/process/process'
 import { ProcessFactory } from '@lib/process/factory'
+import { ProcessError } from '@lib/process/errors'
 import pool from '@lib/process/pool'
 
 // Expose garbage collector
@@ -115,11 +116,17 @@ ipcMain
     })
     .on('spawn', (event: Electron.IpcMainEvent, id: string, options: ProcessOptions) => {
         const process: IProcess = ProcessFactory.make(options, id)
-        const events = ['close', 'data', 'error', 'killed', 'report', 'success']
+        const events = ['close', 'data', 'killed', 'report', 'success']
         events.forEach((eventType: string) => {
             process.on(eventType, (...args: any) => {
                 event.sender.send(`${id}:${eventType}`, ...args)
             })
+        })
+        // If an error occurs, pass the error object as string instead of
+        // letting it be serialized. Should we ever want to do anything with
+        // the added properties of a ProcessError, we should revist this.
+        process.on('error', (error: ProcessError) => {
+            event.sender.send(`${id}:error`, error.toString())
         })
     })
     .on('stop', (event: Electron.IpcMainEvent, id: string) => {
