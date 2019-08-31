@@ -302,9 +302,9 @@ export default new Vue({
             shell.openExternal(link)
         },
         async openFile (path) {
-            const result = await shell.openExternal(`file://${path}`)
-
-            if (!result) {
+            try {
+                await shell.openExternal(`file://${path}`)
+            } catch (_) {
                 this.$alert.show({
                     message: 'Unable to open file in an external program. Please check you have a program associated with this file extension.',
                     help: 'The following path was attempted: `' + path + '`',
