@@ -8,3 +8,4 @@ Changed:
     - Pre-compile main process for faster loading times - #14
 Fixed:
     - Opening files in external application alerting for an error that didn't occur
+    - PHPUnit files getting stuck in "running" status if running a subset of tests in which one or more had been removed from the framework

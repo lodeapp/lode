@@ -36,6 +36,7 @@ export interface ISuite extends Nugget {
     queue (selective: boolean): void
     error (selective: boolean): void
     idleQueued (selective: boolean): void
+    errorQueued (selective: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
     persist (): ISuiteResult
     refresh (options: SuiteOptions): void

@@ -469,27 +469,48 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
+     * Set the status of this nugget or any of its children if
+     * they are on a queued status (i.e. from an interrupted run).
+     *
+     * @param status The status to set the nugget and children to.
+     * @param selective Whether we're currently in selective mode or not.
+     */
+    protected setQueuedStatus (status: 'idle' | 'error', selective: boolean): void {
+        if (['queued', 'running'].indexOf(this.getStatus()) > -1) {
+            this.tests.forEach(test => {
+                if (['queued', 'running'].indexOf(test.getStatus()) > -1) {
+                    test[status](selective)
+                }
+            })
+            this.result!.tests = this.getTestResults().map((test: ITestResult) => {
+                // Static results can never be "running", so check for "queued" only.
+                if (test.status === 'queued') {
+                    return this.defaults(test, status)
+                }
+                return test
+            })
+            this.updateStatus()
+        }
+    }
+
+    /**
      * Reset this nugget or any of its children if they are
      * on a queued status (i.e. from an interrupted run).
      *
      * @param selective Whether we're currently in selective mode or not.
      */
     public idleQueued (selective: boolean): void {
-        if (['queued', 'running'].indexOf(this.getStatus()) > -1) {
-            this.tests.forEach(test => {
-                if (['queued', 'running'].indexOf(test.getStatus()) > -1) {
-                    test.idle(selective)
-                }
-            })
-            this.result!.tests = this.getTestResults().map((test: ITestResult) => {
-                // Static results can never be "running", so check for "queued" only.
-                if (test.status === 'queued') {
-                    return this.defaults(test, 'idle')
-                }
-                return test
-            })
-            this.updateStatus()
-        }
+        this.setQueuedStatus('idle', selective)
+    }
+
+    /**
+     * Mark this nugget or any of its children if they are on a queued status
+     * as having errored out (i.e. if they were expected to run and didn't)
+     *
+     * @param selective Whether we're currently in selective mode or not.
+     */
+    public errorQueued (selective: boolean): void {
+        this.setQueuedStatus('error', selective)
     }
 
     /**

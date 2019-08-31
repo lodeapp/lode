@@ -615,8 +615,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
                         return ''
                     })
                 }, Promise.resolve('success'))
-                    .then(() => {
-                        this.afterRun()
+                    .then((outcome: string) => {
+                        if (outcome !== 'killed') {
+                            this.afterRun()
+                        }
                         resolve()
                     }).catch(error => {
                         reject(error)
@@ -693,8 +695,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
         // If a selected suite didn't run, mark their status as "error".
         if (this.selective) {
             this.selected.suites.forEach(suite => {
-                if (suite.getStatus() === 'queued') {
-                    suite.error(true)
+                if (['queued', 'running'].indexOf(suite.getStatus()) > -1) {
+                    suite.errorQueued(true)
                 }
             })
         }
