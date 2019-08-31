@@ -1,4 +1,5 @@
 import { identity, get, pickBy } from 'lodash'
+import { Decimal } from 'decimal.js'
 import Strings from './strings'
 
 export type Duration = {
@@ -34,7 +35,7 @@ export default class Durations {
         if (entries.length > 2) {
             delete object.milliseconds
         } else if (object.seconds > 0 && object.milliseconds > 0) {
-            object.seconds += (object.milliseconds / 1000)
+            object.seconds = parseFloat(new Decimal(object.seconds + (object.milliseconds / 1000)).toDecimalPlaces(3).valueOf())
             delete object.milliseconds
         }
 

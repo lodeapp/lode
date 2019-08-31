@@ -6,3 +6,5 @@ Changed:
     - Less dependency on Node APIs in the renderer process
     - Updated Primer CSS and Octicons to latest version
     - Pre-compile main process for faster loading times - #14
+Fixed:
+    - Opening files in external application alerting for an error that didn't occur
