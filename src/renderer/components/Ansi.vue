@@ -10,7 +10,6 @@
 
 <script>
 import Terminal from 'terminal.js'
-import { ProcessError } from '@lib/process/errors'
 import Icon from '@/components/Icon'
 
 export default {
@@ -25,16 +24,7 @@ export default {
         }
     },
     data () {
-        // If content is an error, don't try to parse it
-        if (this.content instanceof Error && !(this.content instanceof ProcessError)) {
-            return {
-                showRaw: false,
-                raw: this.content.toString(),
-                html: this.content.toString()
-            }
-        }
-
-        const content = this.content instanceof ProcessError ? this.content.toString() : this.content
+        const content = this.content instanceof Error ? this.content.toString() : this.content
 
         // Create a new Terminal instance with plenty of space for our output.
         // We'll trim the unsused space when rendering the html.
@@ -54,7 +44,8 @@ export default {
                 [/\n/g, '\r\n'],
                 [/<<<REPORT\{?\s*/, ''],
                 [/Connection to .+ closed\.\s*$/, ''],
-                [/PHPUnit .+ by Sebastian Bergmann and contributors\.\s+/, '']
+                [/PHPUnit .+ by Sebastian Bergmann and contributors\.\s+/, ''],
+                [/\x1b]8;;.*\x1b]8;;/g, '']
             ].forEach(replace => {
                 content = content.replace(replace[0], replace[1])
             })
