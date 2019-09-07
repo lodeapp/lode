@@ -19,7 +19,9 @@ export interface ITest extends Nugget {
     queue (selective: boolean): void
     error (selective: boolean): void
     idleQueued (selective: boolean): void
+    errorQueued (selective: boolean): void
     debrief (result: ITestResult, cleanup: boolean): Promise<void>
+    countChildren (): number
     hasChildren(): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
     getLastUpdated (): string | null

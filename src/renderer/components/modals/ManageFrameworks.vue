@@ -20,14 +20,14 @@
                     <button type="button" class="btn btn-sm" @click="handleScan" :disabled="scanning">Scan</button>
                 </h5>
                 <FrameworkSettings
-                    v-for="framework in filteredFrameworks"
-                    :key="framework.key"
+                    v-for="filtered in filteredFrameworks"
+                    :key="filtered.key"
                     :repository="repository"
-                    :framework="framework"
-                    :validator="framework.validator"
+                    :framework="filtered"
+                    :validator="filtered.validator"
                     :dedicated="singleFramework"
-                    @input="handleChange(framework, $event)"
-                    @remove="handleRemove(framework)"
+                    @input="handleChange(filtered, $event)"
+                    @remove="handleRemove(filtered)"
                 />
             </div>
         </div>

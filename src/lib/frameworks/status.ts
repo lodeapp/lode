@@ -1,8 +1,21 @@
 import { uniq } from 'lodash'
 
+/**
+ * Possible statuses for tests.
+ */
 export type Status = 'queued' | 'running' | 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle' | 'error'
 
+/**
+ * Possible statuses for frameworks.
+ */
 export type FrameworkStatus = Status | 'refreshing' | 'loading' | 'missing'
+
+/**
+ * A ledger of statuses.
+ */
+export type StatusLedger = {
+    [key in Status]: number
+}
 
 /**
  * Compute an overarching generic status based on a set of statuses.

@@ -10,6 +10,10 @@ import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
 import { log as writeLog } from '@lib/logger'
+import { ProcessOptions, IProcess } from '@lib/process/process'
+import { ProcessFactory } from '@lib/process/factory'
+import { ProcessError } from '@lib/process/errors'
+import pool from '@lib/process/pool'
 
 // Expose garbage collector
 app.commandLine.appendSwitch('js-flags', '--expose_gc')
@@ -40,7 +44,7 @@ let mainWindow: Window | null = null
 function createWindow(projectId: string | null) {
     const window = new Window(projectId)
 
-    window.onClose((event: any) => {
+    window.onClose((event: Electron.IpcMainEvent) => {
         if (window.isBusy()) {
             log.info('Window is busy. Attempting teardown of pending renderer processes.')
             event.preventDefault()
@@ -86,10 +90,10 @@ ipcMain
         // marked as being from the "main" process.
         writeLog(level, message)
     })
-    .on('refresh-menu', (event: any) => {
+    .on('refresh-menu', (event: Electron.IpcMainEvent) => {
         applicationMenu.build()
     })
-    .on('set-menu-options', (event: any, options: any) => {
+    .on('set-menu-options', (event: Electron.IpcMainEvent, options: any) => {
         applicationMenu.setOptions(options)
     })
     .on('window-should-close', () => {
@@ -99,14 +103,42 @@ ipcMain
             }
         })
     })
-    .on('switch-project', (event: any, projectId: string) => {
+    .on('switch-project', (event: Electron.IpcMainEvent, projectId: string) => {
         state.set('currentProject', projectId)
         if (mainWindow) {
             mainWindow.setProject(projectId)
             event.sender.send('project-switched', mainWindow.getProjectOptions())
         }
     })
-    .on('reset-settings', (event: any) => {
+    .on('reset-settings', (event: Electron.IpcMainEvent) => {
         state.reset()
         event.returnValue = true
+    })
+    .on('spawn', (event: Electron.IpcMainEvent, id: string, options: ProcessOptions) => {
+        const process: IProcess = ProcessFactory.make(options, id)
+        const events = ['close', 'data', 'killed', 'report', 'success']
+        events.forEach((eventType: string) => {
+            process.on(eventType, (...args: any) => {
+                event.sender.send(`${id}:${eventType}`, ...args)
+            })
+        })
+        // If an error occurs, pass the error object as string instead of
+        // letting it be serialized. Should we ever want to do anything with
+        // the added properties of a ProcessError, we should revist this.
+        process.on('error', (error: ProcessError) => {
+            event.sender.send(`${id}:error`, error.toString())
+        })
+    })
+    .on('stop', (event: Electron.IpcMainEvent, id: string) => {
+        const running = pool.findProcess(id)
+        if (!running) {
+            event.sender.send(`${id}:stopped`)
+            return
+        }
+
+        running!
+            .on('killed', () => {
+                event.sender.send(`${id}:stopped`)
+            })
+            .stop()
     })

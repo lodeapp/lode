@@ -3,7 +3,7 @@ import '@lib/tracker/renderer'
 
 import Vue from 'vue'
 import store from './store'
-import { isEmpty } from 'lodash'
+import { isArray, isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@lib/state'
 import { Project } from '@lib/frameworks/project'
@@ -20,6 +20,7 @@ import Code from './plugins/code'
 import Input from './plugins/input'
 import Modals from './plugins/modals'
 import Strings from './plugins/strings'
+import Durations from './plugins/durations'
 
 // Directives
 import Markdown from './directives/markdown'
@@ -40,6 +41,7 @@ Vue.use(new Code())
 Vue.use(new Input())
 Vue.use(new Modals(store))
 Vue.use(new Strings('en-US'))
+Vue.use(new Durations('en-US'))
 
 // Register directives
 Vue.directive('markdown', Markdown(Vue))
@@ -57,6 +59,16 @@ export default new Vue({
         return {
             modals: [],
             project: null
+        }
+    },
+    computed: {
+        progress () {
+            return this.project ? this.project.getProgress() : -1
+        }
+    },
+    watch: {
+        progress (value) {
+            remote.getCurrentWindow().setProgressBar(this.project.getProgress())
         }
     },
     created () {
@@ -100,6 +112,15 @@ export default new Vue({
                     case 'select-all':
                         this.selectAll()
                         break
+                    case 'refresh-all':
+                        this.project.refresh()
+                        break
+                    case 'run-all':
+                        this.project.start()
+                        break
+                    case 'stop-all':
+                        this.project.stop()
+                        break
                     case 'rename-project':
                         this.editProject()
                         break
@@ -138,6 +159,29 @@ export default new Vue({
                         break
                 }
             })
+    },
+    mounted () {
+        document.ondragover = e => {
+            if (e.dataTransfer != null) {
+                e.dataTransfer.dropEffect = store.getters['modals/hasModals'] ? 'none' : 'copy'
+            }
+            e.preventDefault()
+        }
+
+        document.ondrop = e => {
+            e.preventDefault()
+        }
+
+        document.body.ondrop = e => {
+            if (store.getters['modals/hasModals']) {
+                return
+            }
+            if (e.dataTransfer != null) {
+                const files = e.dataTransfer.files
+                this.addRepositories(Array.from(files).map(({ path }) => path))
+            }
+            e.preventDefault()
+        }
     },
     methods: {
         loadProject (projectOptions) {
@@ -213,8 +257,11 @@ export default new Vue({
         handleSwitchProject (projectId) {
             ipcRenderer.send('switch-project', projectId)
         },
-        addRepositories () {
-            this.$modal.confirm('AddRepositories', {})
+        addRepositories (directories) {
+            if (!isArray(directories)) {
+                directories = null
+            }
+            this.$modal.confirm('AddRepositories', { directories })
                 .then(({ repositories, autoScan }) => {
                     if (autoScan) {
                         this.scanRepositories(repositories.map(repository => repository.getId()), 0)
@@ -255,9 +302,9 @@ export default new Vue({
             shell.openExternal(link)
         },
         async openFile (path) {
-            const result = await shell.openExternal(`file://${path}`)
-
-            if (!result) {
+            try {
+                await shell.openExternal(`file://${path}`)
+            } catch (_) {
                 this.$alert.show({
                     message: 'Unable to open file in an external program. Please check you have a program associated with this file extension.',
                     help: 'The following path was attempted: `' + path + '`',

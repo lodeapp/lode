@@ -172,7 +172,7 @@ class ApplicationMenu {
                 separator,
                 {
                     label: '&Reload',
-                    accelerator: 'CmdOrCtrl+0',
+                    accelerator: 'CmdOrCtrl+Shift+0',
                     click(item: any, focusedWindow: Electron.BrowserWindow) {
                         if (focusedWindow) {
                             focusedWindow.reload()
@@ -187,18 +187,35 @@ class ApplicationMenu {
             label: __DARWIN__ ? 'Project' : '&Project',
             submenu: [
                 {
+                    label: __DARWIN__ ? 'Refresh All' : 'Refresh all',
+                    accelerator: 'CmdOrCtrl+Alt+Shift+R',
+                    click: emit('refresh-all')
+                },
+                {
+                    label: __DARWIN__ ? 'Run All' : 'Run all',
+                    accelerator: 'CmdOrCtrl+Alt+R',
+                    click: emit('run-all')
+                },
+                {
+                    label: __DARWIN__ ? 'Stop All' : 'Stop all',
+                    accelerator: 'Alt+Esc',
+                    click: emit('stop-all')
+                },
+                separator,
+                {
                     label: __DARWIN__ ? 'Rename Project' : 'Rename project',
-                    accelerator: 'CmdOrCtrl+Shift+E',
+                    accelerator: 'CmdOrCtrl+Alt+E',
                     click: emit('rename-project')
                 },
                 {
                     label: __DARWIN__ ? 'Remove Project' : 'Remove project',
-                    accelerator: 'CmdOrCtrl+Shift+Backspace',
+                    accelerator: 'CmdOrCtrl+Alt+Backspace',
                     click: emit('remove-project')
                 },
                 separator,
                 {
                     label: __DARWIN__ ? 'Add Repositories… ' : 'Add repositories…',
+                    accelerator: 'CmdOrCtrl+Alt+O',
                     click: emit('add-repositories')
                 }
             ]
@@ -246,6 +263,7 @@ class ApplicationMenu {
                 {
                     label: __DARWIN__ ? 'Remove Framework' : 'Remove framework',
                     click: emit('remove-framework'),
+                    accelerator: 'CmdOrCtrl+Backspace',
                     enabled: hasFramework
                 }
             ]

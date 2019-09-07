@@ -4,16 +4,16 @@ import { chunk, find, findIndex, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { filter as fuzzy } from 'fuzzaldrin'
 import { EventEmitter } from 'events'
-import { IProcess } from '@lib/process/process'
-import { ProcessFactory } from '@lib/process/factory'
+import { ProcessId, IProcess } from '@lib/process/process'
+import { ProcessBridge } from '@lib/process/bridge'
 import { queue } from '@lib/process/queue'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
-import { FrameworkStatus, Status, parseStatus } from '@lib/frameworks/status'
+import { FrameworkStatus, Status, StatusLedger, parseStatus } from '@lib/frameworks/status'
+import { ProgressLedger } from '@lib/frameworks/progress'
 import { FrameworkSort, sortOptions, sortDirection } from '@lib/frameworks/sort'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 import { SSHOptions } from '@lib/process/ssh'
-import pool from '@lib/process/pool'
 
 /**
  * A list of test suites.
@@ -69,10 +69,9 @@ export interface IFramework extends EventEmitter {
     sshPort: number | null
     sshIdentity: string | null
     runner: string | null
-    process?: number
+    process?: ProcessId
     status: FrameworkStatus
     queue: { [index: string]: Function }
-    ledger: { [key in Status]: number }
 
     getId (): string
     getDisplayName (): string
@@ -101,6 +100,9 @@ export interface IFramework extends EventEmitter {
     getSupportedSorts (): Array<FrameworkSort>
     setSortReverse (reverse?: boolean): void
     isSortReverse (): boolean
+    getLedger (): StatusLedger
+    getProgressLedger (): ProgressLedger
+    resetProgressLedger (): void
 }
 
 /**
@@ -121,23 +123,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public sshUser!: string | null
     public sshPort!: number | null
     public sshIdentity!: string | null
-    public process?: number
+    public process?: ProcessId
     public running: Array<Promise<void>> = []
+    public killed: boolean = false
     public status: FrameworkStatus = 'loading'
     public queue: { [index: string]: Function } = {}
-    public ledger: { [key in Status]: number } = {
-        queued: 0,
-        running: 0,
-        passed: 0,
-        failed: 0,
-        incomplete: 0,
-        skipped: 0,
-        warning: 0,
-        partial: 0,
-        empty: 0,
-        idle: 0,
-        error: 0
-    }
 
     protected id!: string
     protected version?: string
@@ -162,6 +152,23 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected sort!: FrameworkSort
     protected sortReverse!: boolean
     protected supportedSorts?: Array<FrameworkSort>
+    protected ledger: StatusLedger = {
+        queued: 0,
+        running: 0,
+        passed: 0,
+        failed: 0,
+        incomplete: 0,
+        skipped: 0,
+        warning: 0,
+        partial: 0,
+        empty: 0,
+        idle: 0,
+        error: 0
+    }
+    protected progressLedger: ProgressLedger = {
+        run: 0,
+        total: 0
+    }
 
     static readonly defaults?: FrameworkOptions
     static readonly sortDefault: FrameworkSort = 'name'
@@ -435,7 +442,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Run this framework's test suites, either fully or selectively.
      */
-    protected handleRun (): Promise<void> {
+    protected async handleRun (): Promise<void> {
         this.assemble()
         if (this.selective || this.hasFilters()) {
             return this.runSelective()
@@ -459,35 +466,34 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Stop any processes that apply to this framework. This can include
      * running, refreshing or cancelling any queued jobs.
      */
-    public stop (): Promise<void> {
+    public async stop (): Promise<void> {
         return new Promise((resolve, reject) => {
             // Before checking the actual process, clear the queue
             this.queue = {}
 
+            // Prevent chained processes from being spawned by setting
+            // the `killed` flag (i.e. running after a reload).
+            this.killed = true
+
             // If process exists, kill it, otherwise resolve directly
             if (!this.process) {
                 resolve()
-            }
-
-            // Get the running process from the active process pool
-            const running = pool.findProcess(this.process!)
-            if (!running) {
-                resolve()
-            }
-
-            running!
-                .on('killed', () => {
+            } else {
+                // Get the running process from the active process pool
+                ProcessBridge.stop(this.process!).then(() => {
                     resolve()
                 })
-                .stop()
+            }
         })
         .then(() => {
+            this.killed = false
             this.idleQueued()
             this.updateStatus()
             this.emit('change', this)
             log.info(`Stopping ${this.name}`)
         })
         .catch(error => {
+            this.killed = false
             this.onError(error)
         })
     }
@@ -532,10 +538,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Run all suites inside this framework.
      */
-    protected run (): Promise<void> {
+    protected async run (): Promise<void> {
         this.suites.forEach(suite => {
             suite.queue(false)
         })
+
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
             // Only start the actual running process on next tick. This allows
@@ -546,7 +553,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                         // Killed processes resolve the promise, so if user
                         // interrupted the run while reloading, make sure the
                         // run does not go ahead.
-                        if (outcome === 'killed') {
+                        if (outcome === 'killed' || this.killed) {
                             log.debug(`Process was killed while reloading before run.`)
                             resolve()
                             return
@@ -579,7 +586,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Run this framework selectively (i.e. only run suites that have been
      * selected by the user).
      */
-    protected runSelective (): Promise<void> {
+    protected async runSelective (): Promise<void> {
         const suites = this.selective ? this.selected.suites : this.getSuites()
 
         // If we're running filtered matches and all suites match, just
@@ -591,6 +598,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         suites.forEach(suite => {
             suite.queue(this.selective)
         })
+
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
             // See @run for reasoning behind `nextTick`
@@ -607,8 +615,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
                         return ''
                     })
                 }, Promise.resolve('success'))
-                    .then(() => {
-                        this.afterRun()
+                    .then((outcome: string) => {
+                        if (outcome !== 'killed') {
+                            this.afterRun()
+                        }
                         resolve()
                     }).catch(error => {
                         reject(error)
@@ -620,7 +630,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Refresh the list of suites inside this framework.
      */
-    protected handleRefresh (): Promise<void> {
+    protected async handleRefresh (): Promise<void> {
         this.assemble()
         this.updateStatus('refreshing')
         this.suites.forEach(suite => {
@@ -651,10 +661,11 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param args The arguments to run the report process with.
      */
-    protected report (args: Array<string>): Promise<string> {
+    protected async report (args: Array<string>): Promise<string> {
         return new Promise((resolve, reject) => {
             this.spawn(args)
-                .on('report', ({ process, report }) => {
+                .on('report', ({ report }) => {
+                    this.progress()
                     try {
                         this.running.push(this.debriefSuite(report))
                     } catch (error) {
@@ -684,8 +695,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
         // If a selected suite didn't run, mark their status as "error".
         if (this.selective) {
             this.selected.suites.forEach(suite => {
-                if (suite.getStatus() === 'queued') {
-                    suite.error(true)
+                if (['queued', 'running'].indexOf(suite.getStatus()) > -1) {
+                    suite.errorQueued(true)
                 }
             })
         }
@@ -774,7 +785,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param args The arguments to spawn the process with.
      */
     protected spawn (args: Array<string>): IProcess {
-        const process = ProcessFactory.make({
+        const process = ProcessBridge.make({
             command: this.command,
             args,
             path: this.repositoryPath,
@@ -1003,6 +1014,69 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * Return the framework's status ledger.
+     */
+    public getLedger (): StatusLedger {
+        return this.ledger
+    }
+
+    /**
+     * Progress the ledger by one unit.
+     */
+    protected progress(): void {
+        this.progressLedger.run++
+        this.emit('progress')
+    }
+
+    /**
+     * Prepare the progress ledger to measure a run of the given suites.
+     *
+     * @param suites The suites whose progress we're setting up to measure.
+     */
+    protected measureProgressForSuites(suites: Array<ISuite>): void {
+        this.updateProgressLedger(0, this.calculateProgressTotalForSuites(suites))
+        this.emit('measuring', this.progressLedger)
+    }
+
+    /**
+     * Calculate the total amount we need to measure for progress for the given
+     * suites. This is useful in case a particular frameworks needs to override
+     * the calculation (i.e. measure progress in tests not suites).
+     *
+     * @param suites The suites whose progress we're setting up to measure.
+     */
+    protected calculateProgressTotalForSuites(suites: Array<ISuite>): number {
+        return suites.length
+    }
+
+    /**
+     * Update the framework's progress ledger.
+     *
+     * @param run The number of suites already run.
+     * @param total The total number of suites to mark progress of.
+     */
+    protected updateProgressLedger (run: number, total?: number): void {
+        this.progressLedger.run = run
+        if (typeof total !== 'undefined') {
+            this.progressLedger.total = total
+        }
+    }
+
+    /**
+     * Return the framework's progress ledger.
+     */
+    public getProgressLedger (): ProgressLedger {
+        return this.progressLedger
+    }
+
+    /**
+     * Reset the framework's progress ledger.
+     */
+    public resetProgressLedger (): void {
+        this.updateProgressLedger(0, 0)
+    }
+
+    /**
      * Debrief a specific suite with the run's results.
      *
      * @param partial The suite's run results (potentially incomplete)
@@ -1045,6 +1119,12 @@ export abstract class Framework extends EventEmitter implements IFramework {
         const id = uuid()
         this.queue[id] = () => this.handleRun()
         queue.add(() => this.handleQueued(id))
+
+        // Progress should be measured from a framework being queued,
+        // rather than it actually being run.
+        this.measureProgressForSuites(
+            this.selective ? this.selected.suites : (this.hasFilters() ? this.getSuites() : this.suites)
+        )
     }
 
     /**

@@ -48,8 +48,8 @@ function startRenderer () {
         })
 
         compiler.hooks.compilation.tap('compilation', compilation => {
-        compilation.hooks.htmlWebpackPluginAfterEmit.tapAsync('html-webpack-plugin-after-emit', (data, cb) => {
-            hotMiddleware.publish({ action: 'reload' })
+            compilation.hooks.htmlWebpackPluginAfterEmit.tapAsync('html-webpack-plugin-after-emit', (data, cb) => {
+                hotMiddleware.publish({ action: 'reload' })
                 cb()
             })
         })
@@ -125,7 +125,7 @@ function startElectron () {
     }
 
     electronProcess.stdout.on('data', data => {
-        electronLog(data, 'blue')
+        electronLog(data)
     })
     electronProcess.stderr.on('data', data => {
         electronLog(data, 'red')
@@ -139,20 +139,7 @@ function startElectron () {
 }
 
 function electronLog (data, color) {
-    let log = ''
-    data = data.toString().split(/\r?\n/)
-    data.forEach(line => {
-        log += `  ${line}\n`
-    })
-    if (/[0-9A-z]+/.test(log)) {
-        console.log(
-            chalk[color].bold('┏ Electron -------------------') +
-            '\n\n' +
-            log +
-            chalk[color].bold('┗ ----------------------------') +
-            '\n'
-        )
-    }
+    console.log(color ? chalk[color](data.toString()) : data.toString())
 }
 
 function init () {

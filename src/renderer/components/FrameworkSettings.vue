@@ -42,10 +42,10 @@
                     <select class="form-control form-select input-sm" v-model="fields.type">
                         <option value="">Select Test Framework</option>
                         <option
-                            v-for="framework in availableFrameworks"
-                            :key="framework.defaults.type"
-                            :value="framework.defaults.type"
-                        >{{ framework.defaults.name }}</option>
+                            v-for="available in availableFrameworks"
+                            :key="available.defaults.type"
+                            :value="available.defaults.type"
+                        >{{ available.defaults.name }}</option>
                     </select>
                 </dd>
             </dl>

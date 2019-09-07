@@ -26,9 +26,9 @@
         </template>
         <template v-if="hasChildren">
             <Test
-                v-for="test in test.tests"
-                :key="test.getId()"
-                :test="test"
+                v-for="child in test.tests"
+                :key="child.getId()"
+                :test="child"
                 :running="running"
                 :selectable="selectable"
                 @open="$emit('open')"

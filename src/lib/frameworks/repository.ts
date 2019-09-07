@@ -6,6 +6,7 @@ import { findIndex } from 'lodash'
 import { EventEmitter } from 'events'
 import { Frameworks } from '@lib/frameworks'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
+import { ProgressLedger } from '@lib/frameworks/progress'
 import { FrameworkFactory } from '@lib/frameworks/factory'
 import { FrameworkOptions, IFramework } from '@lib/frameworks/framework'
 
@@ -54,6 +55,8 @@ export interface IRepository extends EventEmitter {
     getPath (): string
     updatePath (path: string): void
     exists (): boolean
+    getProgressLedger (): ProgressLedger
+    resetProgressLedger (): void
 }
 
 export class Repository extends EventEmitter implements IRepository {
@@ -70,6 +73,10 @@ export class Repository extends EventEmitter implements IRepository {
     protected ready: boolean = false
     protected initialFrameworkCount: number = 0
     protected initialFrameworkReady: number = 0
+    protected progressLedger: ProgressLedger = {
+        run: 0,
+        total: 0
+    }
 
     constructor (options: RepositoryOptions) {
         super()
@@ -240,6 +247,20 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
+     * A function to run when a child framework starts measuring progress.
+     */
+    protected measuringListener (frameworkLedger: ProgressLedger): void {
+        this.progressLedger.total += frameworkLedger.total
+    }
+
+    /**
+     * A function to run when a child framework progresses.
+     */
+    protected progressListener (): void {
+        this.progress()
+    }
+
+    /**
      * Prepare the repository for parsed state.
      */
     protected onParsed (): void {
@@ -322,6 +343,8 @@ export class Repository extends EventEmitter implements IRepository {
                 .on('state', this.stateListener.bind(this))
                 .on('change', this.changeListener.bind(this))
                 .on('error', this.errorListener.bind(this))
+                .on('measuring', this.measuringListener.bind(this))
+                .on('progress', this.progressListener.bind(this))
             this.frameworks.push(framework)
             this.updateStatus()
             this.emit('frameworkAdded', framework)
@@ -387,5 +410,32 @@ export class Repository extends EventEmitter implements IRepository {
         const exists = pathExistsSync(this.path)
         this.updateStatus(exists ? undefined : 'missing')
         return exists
+    }
+
+    /**
+     * Progress the ledger by one unit.
+     */
+    protected progress(): void {
+        this.progressLedger.run++
+    }
+
+    /**
+     * Return the framework's progress ledger.
+     */
+    public getProgressLedger (): ProgressLedger {
+        return this.progressLedger
+    }
+
+    /**
+     * Reset the framework's progress ledger.
+     */
+    public resetProgressLedger (): void {
+        this.progressLedger = {
+            run: 0,
+            total: 0
+        }
+        this.frameworks.forEach((framework: IFramework) => {
+            framework.resetProgressLedger()
+        })
     }
 }
