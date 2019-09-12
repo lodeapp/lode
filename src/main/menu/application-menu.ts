@@ -246,7 +246,7 @@ class ApplicationMenu {
                 },
                 separator,
                 {
-                    label: __DARWIN__ ? 'Filter Suites…' : 'Filter suites…',
+                    label: __DARWIN__ ? 'Filter Items' : 'Filter items',
                     click: emit('filter'),
                     accelerator: (() => {
                         return __DARWIN__ ? 'Command+F' : 'Ctrl+F'
