@@ -14,40 +14,31 @@ const filters = {
 }
 
 const folder = Path.join(__dirname, '../build')
-Fs.readdir(folder, (err, files) => {
-    if (err) {
-        console.error(err)
-        return
-    } else if (!files || files.length === 0) {
-        console.log(`Folder ${folder} is empty. Aborting S3 upload.`)
-        return
+const files = Fs.readdirSync(folder)
+
+if (!files || files.length === 0) {
+    console.log(`Folder ${folder} is empty. Aborting S3 upload.`)
+    process.exit(1)
+}
+
+for (const file of files) {
+    // If file doesn't match the given filter, continue.
+    if (filters[process.platform] && file.search(new RegExp(filters[process.platform])) === -1) {
+        continue
     }
 
-    for (const file of files) {
-        // If file doesn't match the given filter, continue.
-        if (filters[process.platform] && file.search(new RegExp(filters[process.platform])) === -1) {
-            continue
-        }
+    const filePath = Path.join(folder, file)
 
-        const filePath = Path.join(folder, file)
-
-        // Abort if file is a directory.
-        if (Fs.lstatSync(filePath).isDirectory()) {
-            continue
-        }
-
-        Fs.readFile(filePath, (error, fileContent) => {
-            if (error) {
-                throw error
-            }
-
-            s3.upload({
-                Bucket: process.env.AWS_S3_BUCKET,
-                Key: `dev/${process.platform}/${file}`,
-                Body: fileContent
-            }, (res) => {
-                console.log(`Successfully uploaded '${file}'.`)
-            })
-        })
+    // Abort if file is a directory.
+    if (Fs.lstatSync(filePath).isDirectory()) {
+        continue
     }
-})
+
+    s3.upload({
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: `dev/${process.platform}/${file}`,
+        Body: Fs.readFileSync(filePath)
+    }, (res) => {
+        console.log(`Successfully uploaded '${file}'.`)
+    })
+}

@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Test and build using node ${{ matrix.node_version }} and ${{ matrix.os }}
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
