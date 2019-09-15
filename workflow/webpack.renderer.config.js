@@ -15,22 +15,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { VueLoaderPlugin } = require('vue-loader')
 const CircularDependencyPlugin = require('circular-dependency-plugin')
 
-/**
- * List of node_modules to include in webpack bundle
- *
- * Required for specific packages like Vue UI libraries
- * that provide pure *.vue files that need compiling
- * https://simulatedgreg.gitbooks.io/electron-vue/content/en/webpack-configurations.html#white-listing-externals
- */
-const whiteListedModules = ['vue']
-
 const rendererConfig = {
-    devtool: '#cheap-module-eval-source-map',
+    devtool: 'inline-source-map',
     entry: {
         renderer: path.join(__dirname, '../src/renderer/index.js')
     },
     externals: [
-        ...Object.keys(dependencies || {}).filter(d => !whiteListedModules.includes(d))
+        ...Object.keys(dependencies || {}).filter(d => !['vue'].includes(d))
     ],
     module: {
         rules: [
@@ -133,7 +124,9 @@ const rendererConfig = {
     },
     plugins: [
         new VueLoaderPlugin(),
-        new MiniCssExtractPlugin({ filename: 'styles.css' }),
+        new MiniCssExtractPlugin({
+            filename: 'styles.css'
+        }),
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: path.resolve(__dirname, '../src/index.ejs'),
@@ -169,7 +162,7 @@ const rendererConfig = {
             '@main': path.join(__dirname, '../src/main'),
             'vue$': 'vue/dist/vue.esm.js'
         },
-        extensions: ['.js', '.ts', '.vue', '.json', '.css', '.node']
+        extensions: ['.js', '.ts', '.vue', '.json', '.css']
     },
     target: 'electron-renderer'
 }
