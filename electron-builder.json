@@ -12,6 +12,7 @@
   "asarUnpack": [
     "dist/electron/static/reporters/**/**"
   ],
+  "extends": null,
   "afterSign": "./workflow/after-sign.js",
   "dmg": {
     "contents": [

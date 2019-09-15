@@ -4,10 +4,10 @@ process.env.BABEL_ENV = 'main'
 
 const { getReplacements } = require('./app-info')
 
+const _ = require('lodash')
 const path = require('path')
 const { dependencies } = require('../package.json')
 const webpack = require('webpack')
-
 const MinifyPlugin = require('babel-minify-webpack-plugin')
 const PreJSPlugin = require('dotprejs/src/PreJSPlugin')
 
@@ -79,9 +79,7 @@ mainConfig.plugins.push(
     }))
 )
 
-/**
- * Adjust mainConfig for development settings
- */
+// Adjust mainConfig for development settings
 if (process.env.NODE_ENV !== 'production') {
     mainConfig.plugins.push(
         new webpack.DefinePlugin({
@@ -90,20 +88,20 @@ if (process.env.NODE_ENV !== 'production') {
     )
 }
 
-/**
- * Adjust mainConfig for production settings
- */
+// Adjust mainConfig for production settings
 if (process.env.NODE_ENV === 'production') {
-    mainConfig.plugins.push(
+    Array.prototype.push.apply(mainConfig.plugins, _.compact([
         new MinifyPlugin(),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': '"production"'
         }),
-        new PreJSPlugin({
-            assets: ['main.js'],
-            runtime: require('electron')
-        })
-    )
+        ['darwin', 'win32'].indexOf(process.platform) > -1
+            ? new PreJSPlugin({
+                assets: ['main.js'],
+                runtime: require('electron')
+            })
+            : null
+    ]))
 }
 
 module.exports = mainConfig
