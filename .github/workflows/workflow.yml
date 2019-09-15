@@ -9,7 +9,7 @@ on:
     branches:
     - master
     - develop
-    
+
 jobs:
   build:
     name: Test and build using node ${{ matrix.node_version }} and ${{ matrix.os }}
@@ -39,12 +39,8 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Upload to S3
-      uses: jakejarvis/s3-sync-action@master
-      with:
-        args: --acl public-read
+      run: node ./workflow/upload.js
       env:
-        SOURCE_DIR: './build'
-        AWS_REGION: 'eu-west-1'
-        AWS_S3_BUCKET: ${{ secrets.LODE_RELEASES_BUCKET }}/dev/${{ matrix.os }}
+        AWS_S3_BUCKET: ${{ secrets.LODE_RELEASES_BUCKET }}
         AWS_ACCESS_KEY_ID: ${{ secrets.S3_PUBLISHER_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PUBLISHER_SECRET }}
