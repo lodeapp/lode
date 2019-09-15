@@ -95,6 +95,7 @@
     "@types/shell-escape": "^0.2.0",
     "@types/uuid": "^3.4.4",
     "@vue/test-utils": "^1.0.0-beta.29",
+    "aws-sdk": "^2.528.0",
     "babel-jest": "^24.8.0",
     "babel-loader": "^8.0.6",
     "babel-minify-webpack-plugin": "^0.3.1",
