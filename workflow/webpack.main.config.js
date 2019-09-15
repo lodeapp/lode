@@ -99,10 +99,12 @@ if (process.env.NODE_ENV === 'production') {
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': '"production"'
         }),
-        new PreJSPlugin({
-            assets: ['main.js'],
-            runtime: require('electron')
-        })
+        ['darwin', 'win32'].indexOf(process.platform) > -1
+            ? new PreJSPlugin({
+                assets: ['main.js'],
+                runtime: require('electron')
+            })
+            : null
     )
 }
 
