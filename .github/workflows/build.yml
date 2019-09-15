@@ -1,4 +1,4 @@
-name: Node CI
+name: Build cross-platform
 
 on:
   push:
@@ -17,8 +17,7 @@ jobs:
     strategy:
       matrix:
         node-version: [10.x]
-        # os: [ubuntu-latest, windows-latest, macOS-latest]
-        os: [ubuntu-latest]
+        os: [macOS-latest, windows-latest, ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v1
