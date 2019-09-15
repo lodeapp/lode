@@ -27,7 +27,7 @@ jobs:
       if: matrix.os == 'macOS-latest'
       run: |
         export CERTIFICATE_P12=Certificate.p12;
-        echo ${CERTIFICATE_BASE64} | base64 -- decode > $CERTIFICATE_P12;
+        echo ${CERTIFICATE_BASE64} | base64 --decode > $CERTIFICATE_P12;
         export KEYCHAIN=build.keychain;
         security create-keychain -p secret $KEYCHAIN;
         security default-keychain -s $KEYCHAIN;
