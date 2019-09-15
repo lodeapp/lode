@@ -12,12 +12,11 @@ on:
     
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
+    name: Test and build using node ${{ matrix.node_version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: 10.x
+        node-version: [10.x]
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
@@ -26,7 +25,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, build, and test
+    - name: yarn install, test and build
       run: |
         yarn install
         yarn tests
