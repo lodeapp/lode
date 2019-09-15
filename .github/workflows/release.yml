@@ -1,21 +1,18 @@
-name: Test build cross-platform
+name: Release cross-platform
 
 on:
   push:
     branches:
-    - develop
-  pull_request:
-    branches:
-    - develop
+    - master
 
 jobs:
-  build:
-    name: Build on ${{ matrix.os }}
+  release:
+    name: Release on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         node-version: [10.x]
-        os: [macOS-latest, windows-latest]
+        os: [macOS-latest]
 
     steps:
     - uses: actions/checkout@v1
@@ -43,16 +40,14 @@ jobs:
       run: yarn tests
       env:
         CI: true
-    - name: Build
-      run: yarn build
+    - name: Release
+      run: yarn release
       env:
         CI: true
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DEBUG: electron-builder,electron-osx-sign*
-    - name: Upload to S3
-      run: node ./workflow/upload.js
-      env:
         AWS_S3_BUCKET: ${{ secrets.LODE_RELEASES_BUCKET }}
         AWS_ACCESS_KEY_ID: ${{ secrets.S3_PUBLISHER_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PUBLISHER_SECRET }}
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
