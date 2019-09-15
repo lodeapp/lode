@@ -1,0 +1,56 @@
+name: Test build cross-platform
+
+on:
+  push:
+    branches:
+    - develop
+  pull_request:
+    branches:
+    - develop
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node-version: [10.x]
+        os: [macOS-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Load certificates
+      if: matrix.os == 'macOS-latest'
+      run: |
+        export CERTIFICATE_P12=Certificate.p12;
+        echo ${CERTIFICATE_BASE64} | base64 — decode > $CERTIFICATE_P12;
+        export KEYCHAIN=build.keychain;
+        security create-keychain -p secret $KEYCHAIN;
+        security default-keychain -s $KEYCHAIN;
+        security unlock-keychain -p secret $KEYCHAIN;
+        security import $CERTIFICATE_P12 -k $KEYCHAIN -P $CERTIFICATE_PASSWORD -T /usr/bin/codesign;
+      env:
+        CERTIFICATE_BASE64: ${{ secrets.macOSDeveloperCertificate_base64 }}
+        CERTIFICATE_PASSWORD: ${{ secrets.macOSDeveloperCertificate_password }}
+    - name: Install dependencies
+      run: yarn install
+    - name: Test
+      run: yarn tests
+      env:
+        CI: true
+    - name: Build
+      run: yarn build
+      env:
+        CI: true
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload to S3
+      run: node ./workflow/upload.js
+      env:
+        AWS_S3_BUCKET: ${{ secrets.LODE_RELEASES_BUCKET }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.S3_PUBLISHER_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PUBLISHER_SECRET }}
