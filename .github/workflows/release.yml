@@ -20,22 +20,6 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Load certificates
-      if: matrix.os == 'macOS-latest'
-      run: |
-        export CERTIFICATE_P12=Certificate.p12
-        echo ${CERTIFICATE_BASE64} | base64 --decode > $CERTIFICATE_P12
-        export KEYCHAIN=build.keychain
-        security create-keychain -p secret $KEYCHAIN
-        security default-keychain -s $KEYCHAIN
-        security unlock-keychain -p secret $KEYCHAIN
-        security import $CERTIFICATE_P12 -k $KEYCHAIN -P $CERTIFICATE_PASSWORD -T /usr/bin/codesign
-        security set-key-partition-list -S apple-tool:,apple: -s -k secret $KEYCHAIN
-        security find-identity -v
-        rm -fr *.p12
-      env:
-        CERTIFICATE_BASE64: ${{ secrets.macOSDeveloperCertificate_base64 }}
-        CERTIFICATE_PASSWORD: ${{ secrets.macOSDeveloperCertificate_password }}
     - name: Install dependencies
       run: yarn install
     - name: Test
@@ -46,10 +30,12 @@ jobs:
       run: yarn release
       env:
         CI: true
+        CSC_LINK: ${{ secrets.macOSDeveloperCertificate_base64 }}
+        CSC_KEY_PASSWORD: ${{ secrets.macOSDeveloperCertificate_password }}
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         AWS_S3_BUCKET: ${{ secrets.LODE_RELEASES_BUCKET }}
         AWS_ACCESS_KEY_ID: ${{ secrets.S3_PUBLISHER_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PUBLISHER_SECRET }}
-        APPLE_ID: ${{ secrets.APPLE_ID }}
-        APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
