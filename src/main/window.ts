@@ -1,3 +1,4 @@
+import * as Path from 'path'
 import { pick } from 'lodash'
 import { BrowserWindow as BaseBrowserWindow } from 'electron'
 import { MenuEvent } from './menu'
@@ -24,10 +25,6 @@ class BrowserWindow extends BaseBrowserWindow {
 export class Window {
 
     protected window: BrowserWindow
-
-    protected winUrl = process.env.NODE_ENV === 'development'
-        ? `http://localhost:9080`
-        : `file://${__dirname}/index.html`
 
     protected minWidth = 960
     protected minHeight = 660
@@ -72,7 +69,7 @@ export class Window {
         } else if (__WIN32__) {
             windowOptions.frame = false
         } else if (__LINUX__) {
-            // windowOptions.icon = path.join(__dirname, 'static', 'icon-logo.png')
+            windowOptions.icon = Path.join(__static, 'icons/512x512.png')
         }
 
         this.window = new BrowserWindow(windowOptions)
@@ -88,6 +85,7 @@ export class Window {
     public load() {
 
         this.window.webContents.once('did-finish-load', () => {
+            this.window.webContents.send('did-finish-load')
             if (process.env.NODE_ENV === 'development') {
                 this.window.webContents.openDevTools()
             }
@@ -100,7 +98,11 @@ export class Window {
         this.window.on('focus', () => this.window.webContents.send('focus'))
         this.window.on('blur', () => this.window.webContents.send('blur'))
 
-        this.window.loadURL(this.winUrl)
+        this.window.loadURL(
+            process.env.NODE_ENV === 'development'
+                    ? `http://localhost:9080`
+                    : `file://${__dirname}/index.html`
+        )
     }
 
     public onClose(fn: (event: any) => void) {

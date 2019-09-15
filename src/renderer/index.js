@@ -75,6 +75,12 @@ export default new Vue({
         this.loadProject(remote.getCurrentWindow().getProjectOptions())
 
         ipcRenderer
+            .on('did-finish-load', () => {
+                document.body.classList.add(`platform-${process.platform}`)
+                if (remote.getCurrentWindow().isFocused()) {
+                    document.body.classList.add('is-focused')
+                }
+            })
             .on('blur', () => {
                 document.body.classList.remove('is-focused')
             })
