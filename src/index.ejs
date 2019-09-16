@@ -6,10 +6,5 @@
     </head>
     <body class="light">
         <div id="app"></div>
-        <script>
-            if (process.env.NODE_ENV !== 'development') {
-                window.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
-            }
-        </script>
     </body>
 </html>
