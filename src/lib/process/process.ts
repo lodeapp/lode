@@ -107,7 +107,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
 
         const spawnedProcess = spawn(this.binary, this.args, {
             cwd: this.path,
-            detached: true,
+            detached: false,
             shell: options.ssh,
             windowsHide: true,
             env: Object.assign({}, process.env, {
@@ -336,7 +336,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     public stop (): void {
         this.killed = true
-        process.kill(-this.process!.pid);
+        if (this.process) {
+            this.process!.kill()
+        }
     }
 
     /**
