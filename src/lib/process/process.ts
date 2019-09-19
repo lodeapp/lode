@@ -109,6 +109,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             cwd: this.path,
             detached: true,
             shell: options.ssh,
+            windowsHide: true,
             env: Object.assign({}, process.env, {
                 // Ensure ANSI color is supported
                 FORCE_COLOR: 1
