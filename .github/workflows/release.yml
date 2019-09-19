@@ -22,6 +22,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       run: yarn install
+    - name: Monkey patch electron-builder
+      run: |
+        sed -i 's/\^\[\\w/\^\[.\\w/g' node_modules/builder-util/out/util.js
+      shell: bash
     - name: Test
       run: yarn tests
       env:
