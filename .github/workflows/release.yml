@@ -1,4 +1,4 @@
-name: Release cross-platform
+name: Release
 
 on:
   push:
