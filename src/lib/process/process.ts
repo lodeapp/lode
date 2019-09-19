@@ -1,3 +1,4 @@
+import kill from 'tree-kill'
 import stripAnsi from 'strip-ansi'
 import { EventEmitter } from 'events'
 import * as Path from 'path'
@@ -351,9 +352,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     public stop (): void {
         this.killed = true
-        if (this.process) {
-            this.process!.kill()
-        }
+        kill(this.process!.pid)
     }
 
     /**
