@@ -19,6 +19,10 @@ export type ProcessOptions = {
     sshOptions?: SSHOptions
 }
 
+export interface IProcessEnvironment {
+    [key: string]: any
+}
+
 export interface IProcess extends EventEmitter {
     getId (): ProcessId
     stop (): void
@@ -110,9 +114,12 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             detached: false,
             shell: options.ssh,
             windowsHide: true,
-            env: Object.assign({}, process.env, {
-                // Ensure ANSI color is supported
-                FORCE_COLOR: 1
+            env: this.spawnEnv({
+                ...process.env,
+                ...{
+                    // Ensure ANSI color is supported
+                    FORCE_COLOR: 1
+                }
             })
         })
 
@@ -129,6 +136,14 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     protected spawnArguments (args: Array<string>): Array<string> {
         return args
+    }
+
+    /**
+     * Return the env object with which to spawn the child process.
+     * This is a chance for runners to influence the process environment.
+     */
+    protected spawnEnv (env: IProcessEnvironment): IProcessEnvironment {
+        return env
     }
 
     /**

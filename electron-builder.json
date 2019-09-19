@@ -67,8 +67,7 @@
   }],
   "publish": [
     {
-      "provider": "github",
-      "releaseType": "release"
+      "provider": "github"
     },
     {
       "provider": "s3",
