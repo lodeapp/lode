@@ -191,7 +191,7 @@
                     <p v-markdown>{{ currentFrameworkInstructions }}</p>
                 </div>
             </div>
-            <div class="form-actions">
+            <div v-if="!dedicated" class="form-actions">
                 <button v-if="currentFrameworkInstructions" class="btn btn-outline btn-sm" type="button" @click="instructions = !instructions">
                     <Icon symbol="question" />
                 </button>

@@ -43,7 +43,6 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
 import { FrameworkValidator } from '@lib/frameworks/validator'
@@ -212,13 +211,9 @@ export default {
             // the removal action on their parent repository.
             this.removed.forEach(frameworkId => {
                 this.$root.onModelRemove(frameworkId)
-                this.removeFramework({ repository: this.repository, frameworkId })
+                this.repository.removeFramework(frameworkId)
             })
-        },
-        ...mapActions({
-            removeFramework: 'projects/removeFramework',
-            repositoryChange: 'projects/repositoryChange'
-        })
+        }
     }
 }
 </script>
