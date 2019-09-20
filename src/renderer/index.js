@@ -139,8 +139,14 @@ export default new Vue({
                     case 'log-project':
                         const projectState = state.project(this.project.getId())
                         log.info({
-                            object: projectState.get(),
-                            json: JSON.stringify(projectState.get())
+                            project: {
+                                object: this.project,
+                                string: JSON.stringify(this.project)
+                            },
+                            state: {
+                                json: projectState.get(),
+                                string: JSON.stringify(projectState.get())
+                            }
                         })
                         break
                     case 'log-settings':

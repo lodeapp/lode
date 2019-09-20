@@ -1,3 +1,3 @@
 Fixed:
-    - Processes failing with npm runner
-    - Failing to remove framework from its dedicated settings modal
+    - Stopping framework runs being unresponsive at times
+    - Tests erroneously assuming "queued" status in some edge cases
