@@ -1,3 +1,4 @@
+import kill from 'tree-kill'
 import stripAnsi from 'strip-ansi'
 import { EventEmitter } from 'events'
 import * as Path from 'path'
@@ -17,6 +18,10 @@ export type ProcessOptions = {
     forceRunner?: string | null
     ssh?: boolean
     sshOptions?: SSHOptions
+}
+
+export interface IProcessEnvironment {
+    [key: string]: any
 }
 
 export interface IProcess extends EventEmitter {
@@ -107,11 +112,15 @@ export class DefaultProcess extends EventEmitter implements IProcess {
 
         const spawnedProcess = spawn(this.binary, this.args, {
             cwd: this.path,
-            detached: true,
+            detached: false,
             shell: options.ssh,
-            env: Object.assign({}, process.env, {
-                // Ensure ANSI color is supported
-                FORCE_COLOR: 1
+            windowsHide: true,
+            env: this.spawnEnv({
+                ...process.env,
+                ...{
+                    // Ensure ANSI color is supported
+                    FORCE_COLOR: 1
+                }
             })
         })
 
@@ -128,6 +137,14 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     protected spawnArguments (args: Array<string>): Array<string> {
         return args
+    }
+
+    /**
+     * Return the env object with which to spawn the child process.
+     * This is a chance for runners to influence the process environment.
+     */
+    protected spawnEnv (env: IProcessEnvironment): IProcessEnvironment {
+        return env
     }
 
     /**
@@ -323,7 +340,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     public stop (): void {
         this.killed = true
-        process.kill(-this.process!.pid);
+        kill(this.process!.pid)
     }
 
     /**

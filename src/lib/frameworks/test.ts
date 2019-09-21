@@ -37,6 +37,7 @@ export interface ITestResult {
     status: Status
     feedback?: string | object
     console?: Array<any>
+    params?: string
     stats?: object
     isLast?: boolean
     tests?: Array<ITestResult>
