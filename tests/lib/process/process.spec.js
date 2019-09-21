@@ -7,7 +7,12 @@ const decoded = fs.readJsonSync(Path.join(__dirname, '../../fixtures/process/dec
 
 beforeAll(() => {
     // Capture calls to the global logger and suppress console logs.
-    global.log = { debug () {} }
+    global.log = {
+        debug () {},
+        info () {},
+        warn () {},
+        error () {}
+    }
     global.console = { log () {} }
 })
 
@@ -407,6 +412,27 @@ describe('main/lib/process/DefaultProcess', () => {
             expect(spy.mock.calls.length).toBe(1)
             expect(spy.mock.calls[0][0].report).toEqual(decoded)
             expect(spawned.reportClosed).toBe(true)
+            done()
+        })
+    })
+
+    it('can buffer strings with parenthesis and exclude them from reports', (done) => {
+        process.env.FROM_FILE = Path.join(fixtures, '29.json')
+        const spy = jest.fn()
+        const spawned = new DefaultProcess()
+            .on('report', spy)
+        process.nextTick(() => {
+            expect(spy.mock.calls.length).toBe(1)
+            expect(spy.mock.calls[0][0].report).toEqual(decoded)
+            expect(spawned.chunks).toEqual([
+                '\n<<<REPORT{',
+                '\n(hey)',
+                '\n(ho)',
+                '\n({})',
+                '\n(true)',
+                '\n(isPromise(returnValue)',
+                '}REPORT>>>'
+            ])
             done()
         })
     })

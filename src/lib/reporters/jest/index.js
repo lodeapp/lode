@@ -4,6 +4,7 @@ const _find = require('lodash/find')
 const _findIndex = require('lodash/findIndex')
 const _get = require('lodash/get')
 const _identity = require('lodash/identity')
+const _isEmpty = require('lodash/isEmpty')
 const _pickBy = require('lodash/pickBy')
 const stripAnsi = require('strip-ansi')
 const hasAnsi = require('has-ansi')
@@ -86,8 +87,13 @@ class Base64TestReporter {
 
         try {
             return await new Promise((resolve, reject) => {
-                const error = new MockError('', result.failureMessages[0])
-                const feedback = this.transformFeedback(result.failureMessages[0], error)
+                let message = result.failureMessages[0]
+                if (typeof message === 'object') {
+                    // Also accept Error objects (stringified)
+                    message = message.stack
+                }
+                const error = new MockError('', message)
+                const feedback = this.transformFeedback(message, error)
                 this.reporter.notify(error, {}, (err, report) => {
                     if (err) {
                         throw err
@@ -165,15 +171,14 @@ class Base64TestReporter {
             return null
         }
 
-        return [
-            report.stacktrace.map(frame => {
-                return {
-                    file: _get(frame, 'file', null),
-                    line: _get(frame, 'lineNumber', null),
-                    code: _get(frame, 'code', null)
-                }
-            })
-        ]
+        return _compact(report.stacktrace.map(frame => {
+            frame = _pickBy({
+                file: _get(frame, 'file', null),
+                line: _get(frame, 'lineNumber', null),
+                code: _get(frame, 'code', null)
+            }, property => property !== null)
+            return _isEmpty(frame) ? null : frame
+        }))
     }
 
     transformFeedback (feedback, error) {
@@ -203,8 +208,9 @@ class Base64TestReporter {
     async failedSuiteTest (result) {
         return await this.transform({
             ancestorTitles: [result.testFilePath],
+            failureMessages: [result.testExecError],
             title: 'Test suite failed to run',
-            status: 'error'
+            status: 'failed'
         })
     }
 

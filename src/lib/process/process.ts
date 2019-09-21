@@ -200,10 +200,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             })
         } else {
             // If process errored out but did not emit an error event, we'll
-            // compose it from the chunks we received. If error occurred while
-            // we were building a report buffer, output that, too, as it could
-            // contain a partial report, but it could also contain crucial
-            // information about the error itself.
+            // compose it from the chunks we received.
             if (!this.error) {
                 if (this.reportBuffer) {
                     this.chunks.push(this.reportBuffer)
@@ -260,14 +257,35 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         }
 
         if (this.reports && !this.reportClosed) {
-            // Only add to buffer if it's full or partial base64 string,
-            // as some reporters might occasionally output stray content.
+            // Only add to buffer if it's full or partial base64 string, as some reporters
+            // might occasionally output stray content. We're not testing for well-formed
+            // base64 strings at this point, because they could've been truncated.
             if ((/^[A-Za-z0-9\/\+=\(\)]+$/im).test(chunk)) {
                 this.reportBuffer += chunk
                 // Test if buffer is now a complete report and, if so, extract it
                 if ((/\((?:(?!\)).)+\)/).test(this.reportBuffer)) {
                     this.reportBuffer = this.reportBuffer.replace(/\s*({\s*)?\((?:(?!\)).)+\)\s*}?/g, (match, offset, string) => {
-                        this.report(match)
+                        let report
+                        try {
+                            // Attempt to parse the match into a report. If parsing fails,
+                            // return the match so that it stays part of the buffer, assuming
+                            // it's not a proper base64 string and it should be added to the
+                            // remaining output at the end of the process.
+                            report = JSON.parse(Buffer.from(match.match(/\((.+)\)/)![1], 'base64').toString('utf8'))
+                        } catch (SyntaxError) {
+                            log.warn(`Error parsing report match: ${match}.`)
+                            this.chunks.push(chunk)
+                            return ''
+                        }
+
+                        // Only emit properly parsed reports.
+                        this.emit('report', { report })
+
+                        if (__DEV__) {
+                            console.log(report)
+                        }
+
+                        // If reporting succeeded, remove it from buffer.
                         return ''
                     })
                 }
@@ -283,36 +301,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         if (storeChunk && chunk) {
             this.chunks.push(chunk)
             log.debug(chunk)
-        }
-    }
-
-    /**
-     * Emit a test report that was extracted from the output stream.
-     *
-     * @param encoded The base64 encoded string that the process identified as a report.
-     */
-    protected report (encoded: string): void {
-        const report: object | string = this.parseReport(encoded)
-        this.emit('report', {
-            report
-        })
-        if (__DEV__) {
-            console.log(report)
-        }
-    }
-
-    /**
-     * Parse an encoded report extracted from the output stream.
-     *
-     * @param chunk The data chunk to parse as a report.
-     */
-    protected parseReport (chunk: string): object | string {
-        chunk = Buffer.from(chunk.match(/\((.+)\)/)![1], 'base64').toString('utf8')
-        try {
-            return JSON.parse(chunk)
-        } catch (SyntaxError) {
-            log.warn(`Failed to decode report ${chunk}.`)
-            return chunk
         }
     }
 
