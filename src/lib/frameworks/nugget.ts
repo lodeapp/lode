@@ -68,6 +68,7 @@ export abstract class Nugget extends EventEmitter {
             status: status ? status : result.status,
             feedback: result.feedback,
             console: result.console,
+            params: result.params,
             stats: result.stats,
             tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
         }
