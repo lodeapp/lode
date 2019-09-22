@@ -68,6 +68,7 @@ export abstract class Nugget extends EventEmitter {
             status: status ? status : result.status,
             feedback: result.feedback,
             console: result.console,
+            params: result.params,
             stats: result.stats,
             tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
         }
@@ -218,6 +219,12 @@ export abstract class Nugget extends EventEmitter {
         }
         const from = this.getStatus()
         this.status = to
+
+        // Update the status on the result object, too, if applicable.
+        if (this.result && this.result.status) {
+            this.result.status = to
+        }
+
         this.emit('status', to, from)
     }
 

@@ -667,6 +667,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 .on('report', ({ report }) => {
                     this.progress()
                     try {
+                        if (typeof report === 'string') {
+                            throw Error('Report was malformed.')
+                        }
                         this.running.push(this.debriefSuite(report))
                     } catch (error) {
                         this.emit('error', error)
