@@ -3,6 +3,7 @@ import '@lib/tracker/renderer'
 
 import Vue from 'vue'
 import store from './store'
+import * as Path from 'path'
 import { isArray, isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@lib/state'
@@ -50,6 +51,10 @@ Vue.directive('focusable', Focusable)
 // Register global or recursive components
 Vue.component('Icon', Icon)
 Vue.component('Test', Test)
+
+if (process.env.NODE_ENV !== 'development') {
+    window.__static = Path.join(__dirname, '/static').replace(/\\/g, '\\\\')
+}
 
 export default new Vue({
     components: {

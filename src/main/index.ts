@@ -2,7 +2,8 @@ import '@lib/crash/reporter'
 import '@lib/logger/main'
 import '@lib/tracker/main'
 
-import { app, ipcMain } from 'electron'
+import { compact } from 'lodash'
+import { app, ipcMain, session } from 'electron'
 import { applicationMenu } from './menu'
 import { Window } from './window'
 import { Updater } from './updater'
@@ -63,6 +64,18 @@ function createWindow(projectId: string | null) {
 
 app
     .on('ready', () => {
+        session!.defaultSession!.webRequest.onHeadersReceived((details, callback) => {
+            callback({
+                responseHeaders: {
+                    ...details.responseHeaders,
+                    'Content-Security-Policy': [compact([
+                        'default-src \'self\'',
+                        process.env.NODE_ENV === 'development' ? 'style-src \'self\' \'unsafe-inline\'' : ''
+                    ]).join('; ')]
+                }
+            })
+        })
+
         track.screenview('Application started')
         createWindow(state.getCurrentProject())
         applicationMenu.build()
