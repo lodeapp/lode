@@ -36,6 +36,8 @@ for (const file of files) {
         continue
     }
 
+    console.log(`Preparing to upload '${file}'.`)
+
     s3.upload({
         Body: Fs.readFileSync(filePath),
         Bucket: process.env.AWS_S3_BUCKET,
@@ -45,7 +47,11 @@ for (const file of files) {
             process.platform,
             file
         ]).join('/')
-    }, (res) => {
+    }, (err, data) => {
+        if (err) {
+            console.error(`Failed to upload '${file}'.`, err)
+            process.exit(1)
+        }
         console.log(`Successfully uploaded '${file}'.`)
     })
 }

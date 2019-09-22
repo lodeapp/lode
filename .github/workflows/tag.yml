@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    branches:
+    - develop
+
+jobs:
+  release:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node-version: [10.x]
+        os: [macOS-latest]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Tag
+      run: |
+        TAG=$(node -p -e "require('./package.json').version") && \
+        curl -s -X POST https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        -d @- { "ref": "$GITHUB_REF/v$TAG", "sha": "$GITHUB_SHA" }
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
