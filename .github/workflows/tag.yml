@@ -26,20 +26,22 @@ jobs:
         NOTES=$(cat support/release-notes.md)
         echo "$VERSION"
         echo "$NOTES"
+        PAYLOAD=$(cat <<EOF
+        {
+          "tag_name": "v$VERSION",
+          "target_commitish": "master",
+          "name": "$VERSION",
+          "body": "$NOTES",
+          "draft": true,
+          "prerelease": false
+        }
+        EOF
+        )
+        echo "$PAYLOAD"
         curl -X POST \
           https://api.github.com/repos/$GITHUB_REPOSITORY/releases \
           -H 'Content-Type: application/json' \
           -H "Authorization: token $GITHUB_TOKEN" \
-          -d @<(cat <<EOF
-            {
-              "tag_name": "v$VERSION",
-              "target_commitish": "master",
-              "name": "$VERSION",
-              "body": "$NOTES",
-              "draft": true,
-              "prerelease": false
-            }
-          EOF
-          )
+          -d "$PAYLOAD"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
