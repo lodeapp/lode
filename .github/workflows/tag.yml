@@ -22,18 +22,21 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Tag
       run: |
-        TAG=$(node -p -e "require('./package.json').version")
-        echo $TAG
-        echo $GITHUB_SHA
-        echo https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs
-        echo $GITHUB_REF/v$TAG
+        VERSION=$(node -p -e "require('./package.json').version")
+        NOTES=$(cat support/release-notes.md)
+        echo "$VERSION"
+        echo "$NOTES"
         curl -X POST \
-          https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs \
+          https://api.github.com/repos/$GITHUB_REPOSITORY/releases \
           -H 'Content-Type: application/json' \
           -H 'Authorization: token $GITHUB_TOKEN' \
           -d '{
-          "ref": "$GITHUB_REF/v$TAG",
-          "sha": "$GITHUB_SHA"
+          "tag_name": "v$VERSION",
+          "target_commitish": "master",
+          "name": "$VERSION",
+          "body": "$NOTES",
+          "draft": true,
+          "prerelease": false
         }'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
