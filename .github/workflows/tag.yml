@@ -29,7 +29,7 @@ jobs:
         curl -X POST \
           https://api.github.com/repos/$GITHUB_REPOSITORY/releases \
           -H 'Content-Type: application/json' \
-          -H 'Authorization: token $GITHUB_TOKEN' \
+          -H "Authorization: token $GITHUB_TOKEN" \
           -d '{
           "tag_name": "v$VERSION",
           "target_commitish": "master",
