@@ -9,9 +9,6 @@ const webpack = require('webpack')
 const mainConfig = require('./webpack.main.config')
 const rendererConfig = require('./webpack.renderer.config')
 
-const errorLog = chalk.bgRed.white(' ERROR ') + ' '
-const okayLog = chalk.bgBlue.white(' OKAY ') + ' '
-
 build()
 
 function build () {
