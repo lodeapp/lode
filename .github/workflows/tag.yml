@@ -27,6 +27,12 @@ jobs:
         echo $GITHUB_SHA
         echo https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs
         echo $GITHUB_REF/v$TAG
-        curl -s -X POST https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs -H "Authorization: token $GITHUB_TOKEN" -d @- { "ref": "$GITHUB_REF/v$TAG", "sha": "$GITHUB_SHA" }
+        curl -X POST \
+          https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs \
+          -H 'Content-Type: application/json' \
+          -d '{
+          "ref": "$GITHUB_REF/v$TAG",
+          "sha": "$GITHUB_SHA"
+        }'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
