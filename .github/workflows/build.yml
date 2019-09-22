@@ -44,4 +44,3 @@ jobs:
         AWS_S3_BUCKET: ${{ secrets.LODE_RELEASES_BUCKET }}
         AWS_ACCESS_KEY_ID: ${{ secrets.S3_PUBLISHER_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PUBLISHER_SECRET }}
-        PATH_PREFIX: ${{ GITHUB_REF }}

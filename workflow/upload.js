@@ -42,7 +42,7 @@ for (const file of files) {
         Bucket: process.env.AWS_S3_BUCKET,
         Key: _.compact([
             'dev',
-            process.env.PATH_PREFIX,
+            process.env.GITHUB_REF,
             process.platform,
             file
         ]).join('/')
