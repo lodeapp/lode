@@ -30,6 +30,7 @@ jobs:
         curl -X POST \
           https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs \
           -H 'Content-Type: application/json' \
+          -H 'Authorization: token $GITHUB_TOKEN' \
           -d '{
           "ref": "$GITHUB_REF/v$TAG",
           "sha": "$GITHUB_SHA"
