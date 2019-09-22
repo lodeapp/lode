@@ -39,7 +39,7 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Upload to S3
-      run: node ./workflow/upload.js --prefix $GITHUB_REF
+      run: node ./workflow/upload.js --prefix "$GITHUB_REF"
       env:
         AWS_S3_BUCKET: ${{ secrets.LODE_RELEASES_BUCKET }}
         AWS_ACCESS_KEY_ID: ${{ secrets.S3_PUBLISHER_KEY }}
