@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         node-version: [10.x]
-        os: [macOS-latest, windows-latest, ubuntu-latest]
+        os: [macOS-latest]
 
     steps:
     - uses: actions/checkout@v1
@@ -38,8 +38,9 @@ jobs:
         CI: true
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Upload artifacts
+    - name: Upload macOS artifacts
+      if: matrix.os == 'macOS-latest'
       uses: actions/upload-artifact@v1
       with:
         name: ${{ matrix.os }}
-        path: build
+        path: build/*.zip
