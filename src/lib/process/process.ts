@@ -5,9 +5,9 @@ import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { compact, flattenDeep, get } from 'lodash'
 import { spawn, ChildProcess } from 'child_process'
-import { SSHOptions, SSH } from './ssh'
-import { BufferedSearch } from './search'
-import { ErrorWithCode, ProcessError } from './errors'
+import { SSHOptions, SSH } from '@lib/process/ssh'
+import { BufferedSearch } from '@lib/process/search'
+import { ErrorWithCode, ProcessError } from '@lib/process/errors'
 
 export type ProcessId = string | number
 

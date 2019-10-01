@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { ipcRenderer } from 'electron'
-import { ProcessId, IProcess } from './process'
+import { ProcessId, IProcess } from '@lib/process/process'
 
 /**
  * An implementation of the Process interface that's merely a listener

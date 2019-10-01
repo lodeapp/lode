@@ -41,8 +41,8 @@ Vue.use(new Filters())
 Vue.use(new Code())
 Vue.use(new Input())
 Vue.use(new Modals(store))
-Vue.use(new Strings('en-US'))
-Vue.use(new Durations('en-US'))
+Vue.use(new Strings())
+Vue.use(new Durations())
 
 // Register directives
 Vue.directive('markdown', Markdown(Vue))

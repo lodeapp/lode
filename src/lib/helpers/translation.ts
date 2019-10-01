@@ -4,7 +4,7 @@ export default class Translation {
     protected locale: string
     protected intervalRegExp: RegExp
 
-    constructor (locale: string) {
+    constructor (locale: string = 'en-US') {
         this.locale = locale
         this.intervalRegExp = /^[\{\[]([^\[\]\{\}]*)[\}\]]\s?(.*)/
     }

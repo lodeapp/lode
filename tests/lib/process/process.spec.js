@@ -1,6 +1,21 @@
 import * as Path from 'path'
 import * as fs from 'fs-extra'
 import { DefaultProcess } from '@lib/process/process'
+import { spawn } from 'child_process'
+
+jest.mock('child_process', () => ({
+    spawn: jest.fn().mockReturnValue({
+        on: jest.fn(),
+        stdout: {
+            setEncoding: jest.fn(),
+            on: jest.fn()
+        },
+        stderr: {
+            setEncoding: jest.fn(),
+            on: jest.fn()
+        }
+    })
+}))
 
 const fixtures = Path.join(__dirname, '../../fixtures/process')
 const decoded = fs.readJsonSync(Path.join(__dirname, '../../fixtures/process/decoded.json'))
@@ -17,6 +32,36 @@ beforeAll(() => {
 })
 
 describe('main/lib/process/DefaultProcess', () => {
+    it('spawns processes', () => {
+        const spawned = new DefaultProcess({
+            path: 'pantry',
+            command: 'biscuit --hobnobs --digestives rich=tea',
+            ssh: false
+        })
+        expect(spawn).toHaveBeenCalledTimes(1)
+        expect(spawn).toHaveBeenCalledWith(
+            'biscuit',
+            ['--hobnobs', '--digestives', 'rich=tea'],
+            // Ignore last argument, we'll assert relevant bits individually.
+            expect.any(Object)
+        )
+
+        const options = spawn.mock.calls[0][2]
+        expect(options.cwd).toBe('pantry')
+        expect(options.detached).toBe(false)
+        expect(options.shell).toBe(false)
+        expect(options.windowsHide).toBe(true)
+        expect(options.env).toEqual(expect.objectContaining({
+            NODE_ENV: 'test', // Includes running environment.
+            FORCE_COLOR: 1    // Adds process overrides.
+        }))
+
+        expect(spawned.process.stdout.setEncoding).toHaveBeenCalledTimes(1)
+        expect(spawned.process.stdout.setEncoding).toHaveBeenCalledWith('utf8')
+        expect(spawned.process.stderr.setEncoding).toHaveBeenCalledTimes(1)
+        expect(spawned.process.stderr.setEncoding).toHaveBeenCalledWith('utf8')
+    })
+
     it('emits decoded reports', (done) => {
         process.env.FROM_FILE = Path.join(fixtures, '1.json')
         const spy = jest.fn()

@@ -1,7 +1,7 @@
 import { find } from 'lodash'
-import { ProcessId, ProcessOptions, IProcess, DefaultProcess } from './process'
-import { Runners } from './runners'
-import pool from './pool'
+import { ProcessId, ProcessOptions, IProcess, DefaultProcess } from '@lib/process/process'
+import { Runners } from '@lib/process/runners'
+import pool from '@lib/process/pool'
 
 export class ProcessFactory {
 

@@ -8,8 +8,7 @@
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/src/renderer/$1",
     "^@main/(.*)$": "<rootDir>/src/main/$1",
-    "^@lib/(.*)$": "<rootDir>/src/lib/$1",
-    "^@fixtures/(.*)$": "<rootDir>/tests/fixtures/$1"
+    "^@lib/(.*)$": "<rootDir>/src/lib/$1"
   },
   "testPathIgnorePatterns":
   [

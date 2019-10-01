@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid'
 import { app, ipcRenderer } from 'electron'
 import { ProcessId, ProcessOptions, IProcess } from './process'
-import { ProcessFactory } from './factory'
-import { ProcessListener } from './listener'
+import { ProcessFactory } from '@lib/process/factory'
+import { ProcessListener } from '@lib/process/listener'
 import pool from '@lib/process/pool'
 
 /**

@@ -1,4 +1,4 @@
-import { IProcess } from './process'
+import { IProcess } from '@lib/process/process'
 
 /**
  * An error with a code number property.

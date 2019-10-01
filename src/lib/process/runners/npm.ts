@@ -9,8 +9,8 @@ export class NpmProcess extends DefaultProcess implements IProcess {
      *
      * @param command The command we're checking to match an NPM runner.
      */
-    public static owns (command: string) {
-        return command.toLowerCase().match(/\bnpm run\b/)
+    public static owns (command: string): boolean {
+        return command.toLowerCase().search(/\bnpm run\b/) > -1
     }
 
     /**

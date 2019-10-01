@@ -8,7 +8,7 @@ export default class Strings {
     protected locale: string
     protected translator: Translation
 
-    constructor (locale: string) {
+    constructor (locale: string = 'en-US') {
         this.locale = locale
         this.translator = new Translation(this.locale)
     }
@@ -38,24 +38,24 @@ export default class Strings {
      * Turn a markdown string into HTML
      *
      * @param string The string to convert to Markdown
-     * @param breaks Whether to convert line breaks into br
      */
-    markdown (string: string, breaks: boolean = true): string {
+    markdown (string: string): string {
         return markdown({
-            breaks,
             typographer: true
-        }).render(string)
+        }).renderInline(string)
     }
 
     /**
      * Turn a markdown string into inline HTML
      *
      * @param string The string to convert to Markdown
+     * @param breaks Whether to convert line breaks into br
      */
-    markdownInline (string: string): string {
+    markdownBlock (string: string, breaks: boolean = true): string {
         return markdown({
+            breaks,
             typographer: true
-        }).renderInline(string)
+        }).render(string)
     }
 
     /**

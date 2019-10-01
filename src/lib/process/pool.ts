@@ -1,4 +1,4 @@
-import { ProcessId, IProcess } from './process'
+import { ProcessId, IProcess } from '@lib/process/process'
 
 /**
  * A pool of running processes.

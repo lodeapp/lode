@@ -8,7 +8,7 @@ export class YarnProcess extends DefaultProcess implements IProcess {
      *
      * @param command The command we're checking to match a Yarn runner.
      */
-    public static owns (command: string) {
-        return command.toLowerCase().match(/\byarn\b/)
+    public static owns (command: string): boolean {
+        return command.toLowerCase().search(/\byarn\b/) > -1
     }
 }

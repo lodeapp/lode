@@ -13,6 +13,12 @@
       "outDir": "./dist",
       "types" : [ "node", "lodash" ],
       "typeRoots": [ "./node_modules/@types" ],
+      "baseUrl": "./src",
+      "paths": {
+        "@/*": ["renderer/*"],
+        "@main/*": ["main/*"],
+        "@lib/*": ["lib/*"]
+      },
       "allowJs": true,
       "lib": [
         "dom",

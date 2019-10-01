@@ -1,7 +1,7 @@
 import BaseStrings from '@lib/helpers/strings'
 
 export default class Strings {
-    constructor (locale) {
+    constructor (locale = 'en-US') {
         this.locale = locale
     }
 

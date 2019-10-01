@@ -1,7 +1,7 @@
 import BaseDurations from '@lib/helpers/durations'
 
 export default class Durations {
-    constructor (locale) {
+    constructor (locale = 'en-US') {
         this.locale = locale
     }
 
