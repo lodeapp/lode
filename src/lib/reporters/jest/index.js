@@ -123,14 +123,16 @@ class Base64TestReporter {
         return crypto.createHash('sha1').update(string).digest('hex')
     }
 
-    async transform (result) {
+    async transform (result, file) {
         if (['skipped', 'pending'].includes(result.status)) {
             result.status = 'incomplete'
         }
 
         return {
             ancestors: result.ancestorTitles,
-            id: this.hash(result.ancestorTitles.concat([result.title]).join('¦')),
+            // For the purposes of assigning a unique ID to a test, ensure that
+            // it is prefixed by the file path, even if it means repeating it.
+            id: this.hash([file].concat(result.ancestorTitles, [result.title]).join('¦')),
             name: result.title,
             displayName: result.title,
             status: result.status,
@@ -211,7 +213,7 @@ class Base64TestReporter {
             failureMessages: [result.testExecError],
             title: 'Test suite failed to run',
             status: 'failed'
-        })
+        }, result.testFilePath)
     }
 
     group (suite, ungrouped) {
@@ -255,7 +257,9 @@ class Base64TestReporter {
 
         // Finally, we transform and group the actual test results and prepare
         // the response that will be given to the app.
-        const tests = this.group(test.path, await Promise.all(testResult.testResults.map(async (result) => await this.transform(result))))
+        const tests = this.group(test.path, await Promise.all(testResult.testResults.map(async (result) => {
+            return await this.transform(result, testResult.testFilePath)
+        })))
 
         // If test suite failed to run, add a test inside it for feedback
         if (!tests.length && testResult.failureMessage) {

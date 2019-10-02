@@ -70,6 +70,7 @@ app
                     ...details.responseHeaders,
                     'Content-Security-Policy': [compact([
                         'default-src \'self\'',
+                        'img-src \'self\' data:',
                         process.env.NODE_ENV === 'development' ? 'style-src \'self\' \'unsafe-inline\'' : ''
                     ]).join('; ')]
                 }
