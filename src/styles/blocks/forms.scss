@@ -14,11 +14,14 @@ input {
 }
 
 select {
-    -webkit-appearance: none;
-    box-shadow: 0 1px 3px rgba($black, .075) !important;
 
     &.input-sm {
         height: 28px;
+    }
+
+    &.form-select {
+        background: none;
+        box-shadow: 0 1px 1px $gray-100;
     }
 }
 
