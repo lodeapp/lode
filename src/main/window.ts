@@ -67,7 +67,7 @@ export class Window {
         if (__DARWIN__) {
             windowOptions.titleBarStyle = 'hiddenInset'
         } else if (__WIN32__) {
-            windowOptions.frame = false
+            // windowOptions.frame = false
         } else if (__LINUX__) {
             windowOptions.icon = Path.join(__static, 'icons/512x512.png')
         }

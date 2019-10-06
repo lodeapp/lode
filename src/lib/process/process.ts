@@ -110,6 +110,15 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         log.debug(['Spawning child process', JSON.stringify({ spawn: this.binary, args: this.args, path: this.path })].join(' '))
         log.info(`Executing command: ${this.binary} ${this.args.join(' ')}`)
 
+        // Inspect environment variables.
+        log.info(JSON.stringify(this.spawnEnv({
+            ...process.env,
+            ...{
+                // Ensure ANSI color is supported
+                FORCE_COLOR: 1
+            }
+        })))
+
         const spawnedProcess = spawn(this.binary, this.args, {
             cwd: this.path,
             detached: false,
