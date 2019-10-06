@@ -17,7 +17,8 @@ export type ProcessOptions = {
     path: string
     forceRunner?: string | null
     ssh?: boolean
-    sshOptions?: SSHOptions
+    sshOptions?: SSHOptions,
+    platform?: NodeJS.Platform
 }
 
 export interface IProcessEnvironment {
@@ -51,6 +52,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     protected reportClosed: boolean = false
     protected writeToFile: boolean = false
     protected process?: ChildProcess
+    protected platform?: NodeJS.Platform
 
     constructor (options: ProcessOptions) {
         super()
@@ -81,6 +83,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             return
         }
 
+        // Allow platform to be set via options for testing purposes.
+        this.platform = options.platform || process.platform
+
         // Remember raw command and path for user feedback
         this.command = options.command
         this.path = options.path
@@ -109,15 +114,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
 
         log.debug(['Spawning child process', JSON.stringify({ spawn: this.binary, args: this.args, path: this.path })].join(' '))
         log.info(`Executing command: ${this.binary} ${this.args.join(' ')}`)
-
-        // Inspect environment variables.
-        log.info(JSON.stringify(this.spawnEnv({
-            ...process.env,
-            ...{
-                // Ensure ANSI color is supported
-                FORCE_COLOR: 1
-            }
-        })))
 
         const spawnedProcess = spawn(this.binary, this.args, {
             cwd: this.path,

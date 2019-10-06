@@ -10,27 +10,33 @@ export class NpmProcess extends DefaultProcess implements IProcess {
      * @param command The command we're checking to match an NPM runner.
      */
     public static owns (command: string): boolean {
-        return command.toLowerCase().search(/\bnpm run\b/) > -1
+        return command.toLowerCase().search(/\bnpm(\.cmd)?(?!\.) run\b/) > -1
     }
 
     /**
      * Return the array of arguments with which to spawn the child process.
      * NPM requires arguments to be preceded by '--', so this is where we
-     * will enforce that syntax.
+     * will enforce that syntax. We also need to patch the binary path for
+     * Windows environments.
      */
     protected spawnArguments (args: Array<string>): Array<string> {
         if (!args.length) {
             return args
         }
 
-        // Drop the first two arguments ("npm" and "run").
-        args = drop(args, 2)
+        let binary = args.shift()
+        if (this.platform === 'win32' && binary === 'npm') {
+            binary = 'npm.cmd'
+        }
+
+        // Drop the "run", which we don't need to manipulate.
+        args = drop(args, 1)
 
         // First argument after npm run is our script, so shift it.
         const script = args.shift()
 
         // Recreate the arguments by prefixing remaining ones with '--'.
-        return compact(concat('npm', 'run', (script || ''), '--', args))
+        return compact(concat(binary!, 'run', (script || ''), '--', args))
     }
 
     /**
