@@ -1,7 +1,7 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { get } from 'lodash'
-import { unpacked, loc } from '@lib/helpers/paths'
+import { unpacked, loc, posix } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
 import { ISuite } from '@lib/frameworks/suite'
@@ -129,7 +129,9 @@ export class Jest extends Framework {
         const args: Array<string> = []
 
         suites.forEach((suite: ISuite) => {
-            args.push(suite.getRelativePath())
+            // Push relative paths in POSIX notation, as Jest doesn't seem
+            // to find tests searched with Windows-style path separators.
+            args.push(posix(suite.getRelativePath()))
         })
 
         return args.concat(this.runArgs())

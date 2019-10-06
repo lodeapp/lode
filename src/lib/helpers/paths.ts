@@ -23,3 +23,13 @@ export function unpacked (loc: string): string {
 export function loc (loc: string): string {
     return loc.split('/').join(Path.sep)
 }
+
+/**
+ * Force a path (potentially Windows-specific) into a POSIX one. Not
+ * necessarily bullet-proof, but could be useful for some transformations.
+ *
+ * @param loc The path to process.
+ */
+export function posix (loc: string): string {
+    return loc.split(Path.sep).join('/')
+}
