@@ -42,5 +42,14 @@
         overflow-x: hidden;
         overflow-y: auto;
         padding: 15px;
+        position: relative;
+
+        // Avoid content inside results pane growing indefinitely,
+        // especially when trace headers have very long filenames
+        // which are set to not wrap.
+        & > div {
+            position: absolute;
+            width: calc(100% - 30px);
+        }
     }
 }
