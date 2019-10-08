@@ -8,6 +8,7 @@ import { isArray, isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@lib/state'
 import { Project } from '@lib/frameworks/project'
+import { Titlebar, Color } from 'custom-electron-titlebar'
 
 // Styles
 import '../styles/app.scss'
@@ -77,6 +78,7 @@ export default new Vue({
         }
     },
     created () {
+        this.titlebar()
         this.loadProject(remote.getCurrentWindow().getProjectOptions())
 
         ipcRenderer
@@ -201,6 +203,15 @@ export default new Vue({
         }
     },
     methods: {
+        titlebar () {
+            if (__WIN32__) {
+                const titlebar = new Titlebar({
+                    backgroundColor: Color.fromHex('#6c757d')
+                })
+                document.title = ''
+                titlebar.updateTitle()
+            }
+        },
         loadProject (projectOptions) {
             projectOptions = JSON.parse(projectOptions)
             this.project = isEmpty(projectOptions) ? null : new Project(projectOptions)

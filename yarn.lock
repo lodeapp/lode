@@ -3304,6 +3304,11 @@ currently-unhandled@^0.4.1:
   dependencies:
     array-find-index "^1.0.1"
 
+custom-electron-titlebar@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/custom-electron-titlebar/-/custom-electron-titlebar-3.1.0.tgz#3516652714168a0843323db5b103d25ac8193ae3"
+  integrity sha512-EF7J3YfWkp+2FP2ihm0mGK/l6HmMpZRQR9SwSgOMJWXK0aErqv12KWwiak/vuv7Q/ohgAZCdj4y/0PCjiJmpsQ==
+
 cycle@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/cycle/-/cycle-1.0.3.tgz#21e80b2be8580f98b468f379430662b046c34ad2"
