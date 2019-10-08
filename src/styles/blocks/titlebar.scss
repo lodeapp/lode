@@ -1,0 +1,28 @@
+.titlebar {
+    border-bottom: 1px solid $gray-800;
+
+    .menubar {
+        font-size: var(--font-size);
+        color: $white !important;
+
+        .action-item {
+
+            .action-menu-item {
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: none;
+                }
+            }
+
+            .action-label {
+
+                &.separator {
+                    margin-left: 0 !important;
+                    margin-right: 0 !important;
+                }
+            }
+        }
+
+    }
+}
