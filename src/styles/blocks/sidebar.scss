@@ -12,6 +12,8 @@
 
     @include win32 {
         padding: 0;
+        // Discount titlebar height to prevent overflow.
+        height: calc(100vh - 30px);
     }
 
     & > .draggable {

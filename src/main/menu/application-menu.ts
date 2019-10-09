@@ -118,7 +118,7 @@ class ApplicationMenu {
             fileItems.push(
                 separator,
                 {
-                    label: '&Options…',
+                    label: 'Options…',
                     accelerator: 'CmdOrCtrl+,',
                     click: emit('show-preferences'),
                 },
@@ -132,14 +132,14 @@ class ApplicationMenu {
         template.push({
             label: __DARWIN__ ? 'Edit' : '&Edit',
             submenu: [
-                { role: 'undo', label: __DARWIN__ ? 'Undo' : '&Undo' },
-                { role: 'redo', label: __DARWIN__ ? 'Redo' : '&Redo' },
+                { role: 'undo', label: 'Undo' },
+                { role: 'redo', label: 'Redo' },
                 separator,
-                { role: 'cut', label: __DARWIN__ ? 'Cut' : 'Cu&t' },
-                { role: 'copy', label: __DARWIN__ ? 'Copy' : '&Copy' },
-                { role: 'paste', label: __DARWIN__ ? 'Paste' : '&Paste' },
+                { role: 'cut', label: 'Cut' },
+                { role: 'copy', label: 'Copy' },
+                { role: 'paste', label: 'Paste' },
                 {
-                  label: __DARWIN__ ? 'Select All' : 'Select &all',
+                  label: 'Select all',
                   accelerator: 'CmdOrCtrl+A',
                   click: emit('select-all'),
                 }
@@ -147,10 +147,10 @@ class ApplicationMenu {
         })
 
         template.push({
-            label: __DARWIN__ ? 'View' : '&View',
+            label: '&View',
             submenu: [
                 {
-                    label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle &full screen',
+                    label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle full screen',
                     role: 'togglefullscreen',
                 },
                 separator,
@@ -222,7 +222,7 @@ class ApplicationMenu {
         })
 
         template.push({
-            label: __DARWIN__ ? 'Framework' : '&Framework',
+            label: __DARWIN__ ? 'Framework' : 'F&ramework',
             submenu: [
                 {
                     label: __DARWIN__ ? 'Refresh Framework' : 'Refresh framework',
@@ -286,8 +286,8 @@ class ApplicationMenu {
                         label: __DARWIN__
                             ? 'Show User Data Folder in Finder'
                             : __WIN32__
-                                ? 'S&how user data folder in Explorer'
-                                : 'S&how user data folder in your File Manager',
+                                ? 'Show user data folder in Explorer'
+                                : 'Show user data folder in your File Manager',
                         click() {
                             const path = app.getPath('userData')
                             ensureDir(path)
@@ -314,7 +314,7 @@ class ApplicationMenu {
                     {
                         label: __DARWIN__
                             ? 'Toggle Developer Tools'
-                            : '&Toggle developer tools',
+                            : 'Toggle developer tools',
                         accelerator: (() => {
                             return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
                         })(),
@@ -362,8 +362,8 @@ class ApplicationMenu {
                         label: __DARWIN__
                             ? 'Show Logs in Finder'
                             : __WIN32__
-                                ? 'S&how logs in Explorer'
-                                : 'S&how logs in your File Manager',
+                                ? 'Show logs in Explorer'
+                                : 'Show logs in your File Manager',
                         click() {
                             const path = getLogDirectoryPath()
                             ensureDir(path)
@@ -395,7 +395,7 @@ class ApplicationMenu {
                     ...helpItems,
                     separator,
                     {
-                        label: '&About Lode',
+                        label: 'About Lode',
                         click: emit('show-about')
                     }
                 ]

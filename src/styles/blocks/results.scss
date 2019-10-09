@@ -15,6 +15,11 @@
         flex-direction: column;
         height: 100vh;
 
+        @include win32 {
+            // Discount titlebar height to prevent overflow.
+            height: calc(100vh - 30px);
+        }
+
         & > .header {
             background-color: $secondary;
             padding-bottom: 15px;

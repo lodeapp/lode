@@ -206,7 +206,8 @@ export default new Vue({
         titlebar () {
             if (__WIN32__) {
                 const titlebar = new Titlebar({
-                    backgroundColor: Color.fromHex('#ffffff')
+                    backgroundColor: Color.fromHex('#ffffff'),
+                    overflow: 'hidden'
                 })
                 document.title = ''
                 titlebar.updateTitle()
