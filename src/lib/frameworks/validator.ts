@@ -1,5 +1,6 @@
 import * as Path from 'path'
 import * as Fs from 'fs'
+import isUncPath from 'is-unc-path'
 import { RepositoryOptions } from '@lib/frameworks/repository'
 import { FrameworkOptions } from '@lib/frameworks/framework'
 import { getFrameworkByType } from '@lib/frameworks'
@@ -175,6 +176,8 @@ export class RepositoryValidator extends Validator {
 
         if (!options.path) {
             this.addError('path', 'Please enter a repository path.')
+        } else if (__WIN32__ && isUncPath(options.path)) {
+            this.addError('path', 'UNC paths are not supported.')
         } else if (!this.isDirectory(options.path)) {
             this.addError('path', 'Please enter a valid repository directory.')
         } else if (this.existing.includes(options.path)) {

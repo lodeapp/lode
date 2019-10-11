@@ -5,8 +5,8 @@
         -webkit-appearance: none;
         background-color: transparent;
         border: 0;
-        border-bottom: 1px solid $primary-border;
-        border-left: 1px solid $primary-border;
+        border-bottom: 1px solid var(--primary-border-color);
+        border-left: 1px solid var(--primary-border-color);
         border-top-right-radius: 3px;
         opacity: 0;
         outline: none;

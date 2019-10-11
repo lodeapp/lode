@@ -6,8 +6,8 @@
     min-height: 0;
 
     .tabs {
-        background-color: $secondary;
-        border-bottom: 1px solid $primary-border;
+        background-color: var(--secondary-background-color);
+        border-bottom: 1px solid var(--primary-border-color);
 
         nav {
             padding: 0 var(--spacing-half);

@@ -1,9 +1,9 @@
 .results {
-    background-color: $primary;
+    background-color: var(--primary-background-color);
     flex-grow: 1;
 
     &.blankslate {
-        background-color: $secondary;
+        background-color: var(--secondary-background-color);
         border: 0;
         border-radius: 0;
         box-shadow: none;
@@ -21,7 +21,7 @@
         }
 
         & > .header {
-            background-color: $secondary;
+            background-color: var(--secondary-background-color);
             padding-bottom: 15px;
 
             h2 {

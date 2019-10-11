@@ -48,8 +48,8 @@
     .modal-content {
         @include drop-shadow;
         background-clip: padding-box;
-        background-color: $primary;
-        border: 1px solid $primary-border;
+        background-color: var(--primary-background-color);
+        border: 1px solid var(--primary-border-color);
         border-radius: 3px;
         display: flex;
         flex-direction: column;
@@ -61,7 +61,7 @@
     .modal-header {
         align-items: center;
         border-bottom: 0;
-        border-bottom: 1px solid $primary-border;
+        border-bottom: 1px solid var(--primary-border-color);
         display: flex;
         justify-content: left;
         padding: var(--spacing-and-half);
@@ -107,7 +107,7 @@
                 &:hover,
                 &:focus,
                 &:active {
-                    background-color: darken($secondary, 5%);
+                    background-color: var(--secondary-background-color-dark);
                     outline: 0;
                 }
             }
@@ -188,7 +188,7 @@
 
     .modal-footer {
         align-items: center;
-        border-top: 1px solid $primary-border;
+        border-top: 1px solid var(--primary-border-color);
         display: flex;
         justify-content: flex-end;
         padding: var(--spacing-double);

@@ -1,6 +1,6 @@
 pre {
-    background-color: $secondary;
-    border: 1px solid $primary-border;
+    background-color: var(--secondary-background-color);
+    border: 1px solid var(--primary-border-color);
     border-radius: 3px;
     font-family: var(--font-family-monospace);
     padding: var(--spacing);

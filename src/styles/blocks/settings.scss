@@ -13,7 +13,7 @@
     counter-reset: framework;
 
     h5 {
-        background-color: var(--color-gray-100);
+        background-color: var(--secondary-background-color-dark);
         padding: var(--spacing);
 
         button {
@@ -46,7 +46,7 @@
 }
 
 .framework-settings {
-    border-top: 1px solid $primary-border;
+    border-top: 1px solid var(--primary-border-color);
     box-shadow: inset 0 -4px 0 transparentize($gray-300, .8);
     counter-increment: framework;
     margin: 0;

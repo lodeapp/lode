@@ -4,7 +4,7 @@ button,
 }
 
 .btn {
-    background: var(--color-gray-100);
+    background: var(--secondary-background-color-dark);
     border-color: var(--color-gray-500);
     border-radius: 2px;
     box-shadow: none;
@@ -112,7 +112,7 @@ button,
         &:hover,
         &:focus,
         &:active {
-            background-color: darken($secondary, 5%);
+            background-color: var(--secondary-background-color-dark);
             outline: 0;
         }
     }

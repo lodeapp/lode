@@ -1,5 +1,5 @@
 .titlebar {
-    border-bottom: 1px solid $gray-500;
+    border-bottom: 1px solid var(--sidebar-border-color);
 
     .menubar {
         font-size: var(--font-size);
