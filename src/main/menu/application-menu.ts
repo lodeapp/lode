@@ -343,16 +343,24 @@ class ApplicationMenu {
 
         const helpItems = [
             {
+                label: __DARWIN__ ? 'Report Issue' : 'Report issue',
+                click () {
+                  shell.openExternal(
+                      'https://github.com/lodeapp/lode/issues/new/choose'
+                  ).catch(err => log.error('Failed opening issue creation page', err))
+                },
+            },
+            {
+                label: __DARWIN__ ? 'Contact Support' : 'Contact support',
+                click: emit('feedback')
+            },
+            {
                 label: __DARWIN__ ? 'Show Documentation' : 'Show documentation',
                 click () {
                     shell.openExternal(
                         'https://lode.run/documentation/'
-                    )
+                    ).catch(err => log.error('Failed opening documentation page', err))
                 }
-            },
-            {
-                label: __DARWIN__ ? 'Report a Problem or Feature Request' : 'Report a problem or feature request',
-                click: emit('feedback')
             },
             separator,
             {
