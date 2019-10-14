@@ -351,8 +351,14 @@
                     }
 
                     input:checked {
-                        border-radius: 2px;
-                        box-shadow: 0px 0px 0px 1px white;
+
+                        // On macOS, checkboxes are blue, so we'll add a round
+                        // white border to checkboxes in active nuggets, to
+                        // increase contrast.
+                        @include darwin {
+                            border-radius: 2px;
+                            box-shadow: 0px 0px 0px 1px white;
+                        }
                     }
                 }
             }
