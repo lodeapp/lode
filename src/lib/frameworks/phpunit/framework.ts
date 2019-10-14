@@ -108,6 +108,8 @@ export class PHPUnit extends Framework {
         const args = [
             '-d',
             `lode_bootstrap=${autoload}`,
+            '-d',
+            'display_errors=on',
             '--bootstrap',
             this.runsInRemote
                 ? Path.join(this.getRemotePath(), loc('.lode/phpunit/bootstrap.php'))
