@@ -68,10 +68,10 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                     ? process.env.FROM_FILE!
                     : Path.join(__dirname, `./debug/${process.env.FROM_FILE}.json`)
 
-                log.info(`Re-running process from file ${file}.`)
+                log.debug(`Re-running process from file ${file}.`)
 
                 if (!Fs.existsSync(file)) {
-                    log.info(`File ${file} does not exist.`)
+                    log.debug(`File ${file} does not exist.`)
                 }
 
                 const stored = Fs.readJsonSync(file, { throws: false }) || []
@@ -112,7 +112,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             this.binary = this.args.shift()!
         }
 
-        log.info(['Spawning child process', JSON.stringify({ spawn: this.binary, args: this.args, path: this.path })].join(' '))
+        log.debug(['Spawning child process', JSON.stringify({ spawn: this.binary, args: this.args, path: this.path })].join(' '))
         log.info(`Executing command: ${this.binary} ${this.args.join(' ')}`)
 
         const spawnedProcess = spawn(this.binary, this.args, {
@@ -182,7 +182,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     protected onError (err: ErrorWithCode): void {
 
-        log.info('Process error', err)
+        log.debug('Process error', err)
 
         // If the error's code is a string then it means the code isn't the
         // process's exit code but rather an error coming from Node's bowels,
@@ -205,16 +205,16 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     protected onClose(code: number, signal: string | null) {
 
-        log.info(['Process closing.', JSON.stringify({ code, signal })].join(' '))
+        log.debug(['Process closing.', JSON.stringify({ code, signal })].join(' '))
 
         if (this.process && this.process.killed || this.killed) {
-            log.info('Process killed.')
+            log.debug('Process killed.')
             this.emit('killed', { process: this })
         } else if (code === 0 || (this.reports && this.reportClosed)) {
             // If exit code was non-zero but we were running a report that finished
             // successfully, ignore the error, assuming it relates to a failure in the
             // tests for which we'll give appropriate feedback in the interface.
-            log.info('Process successfully exited.')
+            log.debug('Process successfully exited.')
             this.emit('success', {
                 process: this,
                 lines: this.getLines(),
@@ -322,7 +322,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         // chunk left to store, add it to our output array.
         if (storeChunk && chunk) {
             this.chunks.push(chunk)
-            log.info(chunk)
+            log.debug(chunk)
         }
     }
 
