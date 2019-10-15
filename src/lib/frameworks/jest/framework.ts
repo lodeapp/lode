@@ -3,18 +3,20 @@ import * as Fs from 'fs-extra'
 import { get } from 'lodash'
 import { unpacked, loc, posix } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
-import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
+import { FrameworkOptions, FrameworkDefaults, Framework } from '@lib/frameworks/framework'
 import { ISuite } from '@lib/frameworks/suite'
 import { FrameworkSort } from '@lib/frameworks/sort'
 
 export class Jest extends Framework {
 
-    static readonly defaults: FrameworkOptions = {
-        name: 'Jest',
-        type: 'jest',
-        command: 'yarn test',
-        path: '',
-        proprietary: {}
+    static readonly defaults: FrameworkDefaults = {
+        all: {
+            name: 'Jest',
+            type: 'jest',
+            command: 'yarn test',
+            path: '',
+            proprietary: {}
+        }
     }
 
     /**

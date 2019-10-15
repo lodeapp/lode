@@ -2,7 +2,7 @@ import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { unpacked, loc } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
-import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
+import { FrameworkOptions, FrameworkDefaults, Framework } from '@lib/frameworks/framework'
 import { ISuiteResult, ISuite, Suite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
 import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
@@ -11,13 +11,18 @@ import { FrameworkSort } from '@lib/frameworks/sort'
 
 export class PHPUnit extends Framework {
 
-    static readonly defaults: FrameworkOptions = {
-        name: 'PHPUnit',
-        type: 'phpunit',
-        command: './vendor/bin/phpunit',
-        path: '',
-        proprietary: {
-            autoloadPath: ''
+    static readonly defaults: FrameworkDefaults = {
+        all: {
+            name: 'PHPUnit',
+            type: 'phpunit',
+            command: './vendor/bin/phpunit',
+            path: '',
+            proprietary: {
+                autoloadPath: ''
+            }
+        },
+        win32: {
+            command: 'php vendor/phpunit/phpunit/phpunit'
         }
     }
 
