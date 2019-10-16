@@ -28,7 +28,7 @@ jobs:
       shell: bash
     - name: Monkey patch electron-builder (Windows)
       if: matrix.os == 'windows-latest'
-      run: get-content node_modules\builder-util\out\util.js | %{$_ -replace "^[\w\/=+-]+$", "^[.\w\/=+-]+$"}
+      run: (get-content node_modules\builder-util\out\util.js | %{$_ -replace "\^\[\\w", "^[.\w"}) | set-content node_modules\builder-util\out\util.js
       shell: powershell
     - name: Test
       run: yarn tests
