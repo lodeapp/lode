@@ -18,8 +18,7 @@
         </h4>
         <Trace
             v-if="trace && trace.length"
-            :repository="repository"
-            :framework="framework"
+            :context="context"
             :trace="trace"
             :key="$string.from(trace)"
         />
@@ -34,7 +33,6 @@
 
 <script>
 import _cloneDeep from 'lodash/cloneDeep'
-import _get from 'lodash/get'
 import _isArray from 'lodash/isArray'
 import _reverse from 'lodash/reverse'
 import Ansi from '@/components/Ansi'
@@ -68,12 +66,6 @@ export default {
         }
     },
     computed: {
-        repository () {
-            return _get(this.context, 0)
-        },
-        framework () {
-            return _get(this.context, 1)
-        },
         trace () {
             if (!this.reverse) {
                 return this.content.trace

@@ -5,7 +5,6 @@ const _findIndex = require('lodash/findIndex')
 const _get = require('lodash/get')
 const _identity = require('lodash/identity')
 const _isEmpty = require('lodash/isEmpty')
-const _last = require('lodash/last')
 const _pickBy = require('lodash/pickBy')
 const stripAnsi = require('strip-ansi')
 const hasAnsi = require('has-ansi')
@@ -159,7 +158,8 @@ class Base64TestReporter {
             try {
                 return {
                     content: o.message,
-                    line: _last(o.origin.split(':')),
+                    file: o.origin.replace(/:\d+$/mi, ''),
+                    line: o.origin.replace(/(.+):(\d+)$/mi, '$2'),
                     render: 'ansi',
                     type: o.type
                 }

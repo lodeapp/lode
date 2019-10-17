@@ -207,6 +207,7 @@ export default new Vue({
             if (__WIN32__) {
                 const titlebar = new Titlebar({
                     backgroundColor: Color.fromHex('#ffffff'),
+                    icon: 'static/icons/gem.svg',
                     overflow: 'hidden'
                 })
                 document.title = ''

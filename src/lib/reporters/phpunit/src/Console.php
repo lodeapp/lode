@@ -71,7 +71,7 @@ class Console
 
                     // Update context to contain suite and test.
                     $context = array_merge($context, [
-                        'filename' => (new ReflectionClass($trace['object']))->getFileName(),
+                        'file' => (new ReflectionClass($trace['object']))->getFileName(),
                         'test' => $trace['function'],
                     ]);
 
@@ -115,15 +115,16 @@ class Console
      */
     protected function writeToLog(array $context, $log, $render = 'string')
     {
-        if (!isset($this->logs[$context['filename']])) {
-            $this->logs[$context['filename']] = [];
+        if (!isset($this->logs[$context['file']])) {
+            $this->logs[$context['file']] = [];
         }
 
-        if (!isset($this->logs[$context['filename']][$context['test']])) {
-            $this->logs[$context['filename']][$context['test']] = [];
+        if (!isset($this->logs[$context['file']][$context['test']])) {
+            $this->logs[$context['file']][$context['test']] = [];
         }
 
-        $this->logs[$context['filename']][$context['test']][] = [
+        $this->logs[$context['file']][$context['test']][] = [
+            'file' => $context['file'],
             'type' => Util::get($context, 'type', 'log'),
             'line' => Util::get($context, 'line', null),
             'render' => Util::get($context, 'render', 'ansi'),
