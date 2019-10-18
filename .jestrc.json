@@ -30,6 +30,7 @@
       "tsConfig": "tsconfig.json"
     }
   },
+  "clearMocks": true,
   "collectCoverage": false,
   "collectCoverageFrom": [
     "src/**",

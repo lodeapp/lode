@@ -17,7 +17,8 @@ export type ProcessOptions = {
     path: string
     forceRunner?: string | null
     ssh?: boolean
-    sshOptions?: SSHOptions
+    sshOptions?: SSHOptions,
+    platform?: NodeJS.Platform
 }
 
 export interface IProcessEnvironment {
@@ -51,6 +52,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     protected reportClosed: boolean = false
     protected writeToFile: boolean = false
     protected process?: ChildProcess
+    protected platform?: NodeJS.Platform
 
     constructor (options: ProcessOptions) {
         super()
@@ -80,6 +82,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             }, 0)
             return
         }
+
+        // Allow platform to be set via options for testing purposes.
+        this.platform = options.platform || process.platform
 
         // Remember raw command and path for user feedback
         this.command = options.command

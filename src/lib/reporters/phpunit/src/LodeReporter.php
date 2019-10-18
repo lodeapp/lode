@@ -270,22 +270,22 @@ class LodeReporter extends ResultPrinter
     }
 
     /**
-     * Encode progress before writing.
+     * Output the given progress.
      *
      * @param array $progress
      */
     protected function progress(array $progress): void
     {
         $encoded = base64_encode(json_encode($progress));
-        $this->writeProgress("({$encoded})");
+        $this->writeChunkedProgress("({$encoded})");
     }
 
     /**
-     * Output the given progress.
+     * Output the given progress, splitting in chunks if necessary.
      *
      * @param string $progress
      */
-    protected function writeProgress(string $progress): void
+    protected function writeChunkedProgress(string $progress): void
     {
         if ($this->pristine) {
             $this->printStartDelimiter();

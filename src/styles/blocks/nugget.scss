@@ -27,7 +27,7 @@
         }
 
         &::after {
-            background-color: $primary;
+            background-color: var(--primary-background-color);
             border-radius: 100%;
             border-style: double;
             border-width: 4px;
@@ -41,7 +41,7 @@
     }
 
     & > .header {
-        background-color: $primary-border;
+        background-color: var(--primary-border-color);
         padding: 1px 0 0;
         padding-left: calc(var(--status-block-width) + var(--status-soft-border-width));
         position: relative;
@@ -77,7 +77,7 @@
             display: flex;
             padding: 5px;
             padding-right: 25px;
-            background-color: $primary;
+            background-color: var(--primary-background-color);
         }
 
         .toggle {
@@ -95,7 +95,7 @@
     }
 
     & > .nugget-items {
-        background-color: $secondary;
+        background-color: var(--secondary-background-color);
         list-style: none;
         padding: 0 0 8px var(--status-block-width);
         position: relative;
@@ -104,7 +104,7 @@
         & > :last-child {
 
             &.is-collapsed {
-                border-bottom: 1px solid $primary-border;
+                border-bottom: 1px solid var(--primary-border-color);
             }
         }
     }
@@ -351,8 +351,14 @@
                     }
 
                     input:checked {
-                        border-radius: 2px;
-                        box-shadow: 0px 0px 0px 1px white;
+
+                        // On macOS, checkboxes are blue, so we'll add a round
+                        // white border to checkboxes in active nuggets, to
+                        // increase contrast.
+                        @include darwin {
+                            border-radius: 2px;
+                            box-shadow: 0px 0px 0px 1px white;
+                        }
                     }
                 }
             }

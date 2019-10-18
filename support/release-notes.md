@@ -1,5 +1,8 @@
+New:
+    - Windows compatibility
 Changed:
-    - Code is now compiled specifically for Node.js 12
+    - Improved console context in results pane, with added actions
+    - Improved accuracy when scanning package.json files for Jest testing scripts
 Fixed:
-    - Jest tests could end up with the same id in some circumstances, causing focus to appear on two or more tests at once
-    - Select inputs not having icons
+    - Warnings triggered when running PHPUnit 7, because the Lode reporter's `writeProgress` was not fully compatible with parent
+    - Excessive font weight for framework titles in macOS Catalina

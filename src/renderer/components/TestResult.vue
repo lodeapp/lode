@@ -47,10 +47,20 @@
                     <Parameters :parameters="parameters" />
                 </div>
                 <div v-else-if="console && tab === 'console'">
-                    <Console v-for="(output, index) in console" :key="`console-${index}`" :output="output" />
+                    <Console
+                        v-for="(output, index) in console"
+                        :key="`console-${index}`"
+                        :context="context"
+                        :output="output"
+                    />
                 </div>
                 <div v-else-if="suiteConsole && tab === 'suiteConsole'">
-                    <Console v-for="(output, index) in suiteConsole" :key="`suiteConsole-${index}`" :output="output" />
+                    <Console
+                        v-for="(output, index) in suiteConsole"
+                        :key="`suiteConsole-${index}`"
+                        :context="context"
+                        :output="output"
+                    />
                 </div>
             </div>
             <div v-if="stats && tab === 'stats'">

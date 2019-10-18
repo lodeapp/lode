@@ -1,0 +1,27 @@
+.titlebar {
+    border-bottom: 1px solid var(--sidebar-border-color);
+
+    .menubar {
+        font-size: var(--font-size);
+
+        .action-item {
+
+            .action-menu-item {
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: none;
+                }
+            }
+
+            .action-label {
+
+                &.separator {
+                    margin-left: 0 !important;
+                    margin-right: 0 !important;
+                }
+            }
+        }
+
+    }
+}

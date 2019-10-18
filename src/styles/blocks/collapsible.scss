@@ -86,3 +86,42 @@
         border-bottom-right-radius: 3px;
     }
 }
+
+.console,
+.trace {
+
+    &.collapsible-group,
+    .collapsible-group {
+
+        & > .collapsible {
+            position: relative;
+            z-index: 1;
+
+            & > .header {
+                font-weight: var(--font-weight-normal);
+
+                // Filename inside of trace collapsibles will overflow
+                // from left to right (i.e. clipping the start of the directory
+                // instead of the filename or the last part of the directory).
+                .filename {
+                    direction: rtl;
+                    display: inline-block;
+                    line-height: 1em;
+                    margin-right: var(--spacing-half);
+                    max-width: 80%;
+                    overflow: hidden;
+                    padding: 0 2px;
+                    position: relative;
+                    text-overflow: ellipsis;
+                    top: 2px;
+                    white-space: nowrap;
+                }
+            }
+
+            &.has-context-menu {
+                box-shadow: 0 0 0px 1px var(--color-blue-300);
+                z-index: 2;
+            }
+        }
+    }
+}

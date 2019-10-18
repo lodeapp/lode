@@ -6,8 +6,8 @@
     min-height: 0;
 
     .tabs {
-        background-color: $secondary;
-        border-bottom: 1px solid $primary-border;
+        background-color: var(--secondary-background-color);
+        border-bottom: 1px solid var(--primary-border-color);
 
         nav {
             padding: 0 var(--spacing-half);
@@ -42,5 +42,14 @@
         overflow-x: hidden;
         overflow-y: auto;
         padding: 15px;
+        position: relative;
+
+        // Avoid content inside results pane growing indefinitely,
+        // especially when trace headers have very long filenames
+        // which are set to not wrap.
+        & > div {
+            position: absolute;
+            width: calc(100% - 30px);
+        }
     }
 }
