@@ -1,11 +1,16 @@
 .framework {
-    background: $primary;
+    background: var(--primary-background-color);
     display: flex;
     flex-direction: column;
     height: 100vh;
 
+    @include win32 {
+        // Discount titlebar height to prevent overflow.
+        height: calc(100vh - 30px);
+    }
+
     & > .header {
-        background-color: $primary;
+        background-color: var(--primary-background-color);
         position: sticky;
         top: 0;
         z-index: var(--framework-z-index);
@@ -55,7 +60,7 @@
 
         &.search,
         &.sort {
-            background-color: var(--color-gray-100);
+            background-color: var(--secondary-background-color-dark);
             border-top: 1px solid var(--color-gray-400);
             color: var(--color-gray-600);
             line-height: 1em;
@@ -120,7 +125,7 @@
     }
 
     & > .children {
-        background-color: $secondary;
+        background-color: var(--secondary-background-color);
         flex-grow: 1;
         flex: 1;
         min-height: 0;
@@ -130,7 +135,7 @@
         & > div:last-of-type {
 
             &.is-collapsed {
-                border-bottom: 1px solid $primary-border;
+                border-bottom: 1px solid var(--primary-border-color);
             }
         }
 
@@ -141,7 +146,7 @@
             text-align: center;
 
             & > div {
-                background-color: $secondary;
+                background-color: var(--secondary-background-color);
                 border: 1px solid var(--color-gray-400);
                 box-shadow: 0 0 0 3px rgba(0, 0, 0, .02);
                 display: inline-block;
@@ -160,7 +165,7 @@
             $offset: 4px;
 
             .zigzag {
-                background-color: $secondary;
+                background-color: var(--secondary-background-color);
                 display: block;
                 height: $height;
                 margin: -56px 0 0;
@@ -177,7 +182,7 @@
                 }
 
                 &:before {
-                    background: linear-gradient(-135deg, $primary-border ($height/2), transparent 0) 0 ($height/2), linear-gradient( 135deg, $primary-border ($height/2), transparent 0) 0 ($height/2);
+                    background: linear-gradient(-135deg, var(--primary-border-color) ($height/2), transparent 0) 0 ($height/2), linear-gradient( 135deg, var(--primary-border-color) ($height/2), transparent 0) 0 ($height/2);
                     background-position: top left;
                     background-repeat: repeat-x;
                     background-size: $height $height;
@@ -186,7 +191,7 @@
                 }
 
                 &:after {
-                    background: linear-gradient(-135deg, $secondary ($height/2), transparent 0) 0 ($height/2), linear-gradient( 135deg, $secondary ($height/2), transparent 0) 0 ($height/2);
+                    background: linear-gradient(-135deg, var(--secondary-background-color) ($height/2), transparent 0) 0 ($height/2), linear-gradient( 135deg, var(--secondary-background-color) ($height/2), transparent 0) 0 ($height/2);
                     background-position: top left;
                     background-repeat: repeat-x;
                     background-size: $height $height;

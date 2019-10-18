@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { chunk, find, findIndex, orderBy, trim, trimStart } from 'lodash'
+import { chunk, find, findIndex, get, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { filter as fuzzy } from 'fuzzaldrin'
 import { EventEmitter } from 'events'
@@ -50,6 +50,16 @@ export type FrameworkOptions = {
     proprietary: any
     sort?: FrameworkSort
     sortReverse?: boolean
+}
+
+/**
+ * An object to declare default framework options.
+ */
+export type FrameworkDefaults = {
+    all: FrameworkOptions,
+    darwin?: object,
+    win32?: object,
+    linux?: object
 }
 
 /**
@@ -170,7 +180,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         total: 0
     }
 
-    static readonly defaults?: FrameworkOptions
+    static readonly defaults?: FrameworkDefaults
     static readonly sortDefault: FrameworkSort = 'name'
 
     constructor (options: FrameworkOptions) {
@@ -204,7 +214,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         // Usage of `this.constructor` means that we can allow individual framework
         // implementations to override the static properties with their own defaults.
         this.proprietary = options.proprietary || {
-            ...(this.constructor as typeof Framework).defaults!.proprietary
+            ...(this.constructor as typeof Framework).getDefaults().proprietary
         }
         this.active = options.active || false
         this.sort = options.sort || (this.constructor as typeof Framework).sortDefault
@@ -303,11 +313,26 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 runsInRemote: false,
                 proprietary: {}
             },
-            ...(this.defaults || {})
+            ...this.getDefaults()
         }
         return {
             ...defaults,
             ...options
+        }
+    }
+
+    public static getDefaults (): FrameworkOptions {
+        return {
+            ...{
+                name: '',
+                type: '',
+                command: '',
+                path: '',
+                runsInRemote: false,
+                proprietary: {}
+            },
+            ...(get(this.defaults, 'all', {})),
+            ...(get(this.defaults, process.platform, {}))
         }
     }
 

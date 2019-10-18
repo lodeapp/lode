@@ -9,5 +9,5 @@ export const Frameworks = [Jest, PHPUnit]
 
 export function getFrameworkByType(type: string): typeof Jest | typeof PHPUnit | undefined
 {
-    return find(Frameworks, framework => framework.defaults.type === type)
+    return find(Frameworks, framework => framework.getDefaults().type === type)
 }

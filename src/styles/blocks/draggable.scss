@@ -8,7 +8,7 @@
     position: absolute;
     right: 0;
     top: 0;
-    width: calc(100% - var(--split-gutter-width));
+    width: calc(100% - var(--pane-gutter-width));
 
     // Windows has no draggable helpers because
     // it has a title bar.

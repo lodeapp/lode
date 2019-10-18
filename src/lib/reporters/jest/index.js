@@ -158,7 +158,8 @@ class Base64TestReporter {
             try {
                 return {
                     content: o.message,
-                    line: o.origin.split(':')[1],
+                    file: o.origin.replace(/:\d+$/mi, ''),
+                    line: o.origin.replace(/(.+):(\d+)$/mi, '$2'),
                     render: 'ansi',
                     type: o.type
                 }

@@ -1,19 +1,7 @@
-// Variables
-//
-// This files contains CSS variables accessible to all selectors
-
+// Default
 :root {
-    --split-gutter-width: 11px;
 
-    --sidebar-color: #e9ecef;
-    --sidebar-border-color: #{$gray-500};
-    --sidebar-text-color: #{$gray-800};
-    --sidebar-text-secondary-color: #{$gray-700};
-    --sidebar-active-color: rgba(0, 0, 0, .08);
-
-    //
     // Colors
-    //
     --color-gray-000: #{$gray-000};
     --color-gray-100: #{$gray-100};
     --color-gray-200: #{$gray-200};
@@ -91,14 +79,28 @@
     --color-purple-800: #{$purple-800};
     --color-purple-900: #{$purple-900};
 
-    //
-    // Typography
-    //
+    // Contextual colors
+    --primary-background-color: #{$white};
+    --primary-border-color: #{$gray-300};
+    --secondary-background-color: #{$gray-000};
+    --secondary-background-color-dark: #{$gray-100};
 
+    // Panes
+    --pane-gutter-width: 11px;
+    --pane-border-color: var(--primary-border-color);
+
+    // Sidebar
+    --sidebar-color: #e9ecef;
+    --sidebar-border-color: #{$gray-500};
+    --sidebar-text-color: #{$gray-800};
+    --sidebar-text-secondary-color: #{$gray-700};
+    --sidebar-active-color: rgba(0, 0, 0, .08);
+
+    // Typography
     --font-family-sans-serif: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif;
     --font-family-monospace: 'SFMono-Regular', 'Fira Mono', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
 
-    --font-weight-bold: 900;
+    --font-weight-bold: 800;
     --font-weight-semibold: 600;
     --font-weight-normal: 400;
     --font-weight-light: 300;
@@ -119,10 +121,7 @@
     --text-color-secondary: #{$gray-600};
     --text-color-secondary-discreet: #{lighten($gray-600, 15%)};
 
-    //
     // Spacing
-    //
-
     --spacing: 10px;
     --spacing-and-half: calc(var(--spacing) * 1.5);
     --spacing-double: calc(var(--spacing) * 2);
@@ -131,34 +130,35 @@
     --spacing-half: calc(var(--spacing) / 2);
     --spacing-third: calc(var(--spacing) / 3);
 
-    //
     // Status
-    //
-
     --status-block-width: 25px;
     --status-soft-border-width: 4px;
 
-    //
     // Focus
-    //
-
     --item-selected-background-color: #{theme-color('selected', 100)};
     --item-selected-active-background-color: #{theme-color('selected', 400)};
     --item-selected-active-text-color: #{$white};
 
-    //
     // Modals
-    //
-
     --modal-large: 840px;
     --modal-medium: 560px;
     --modal-small: 380px;
 
-    //
     // Frameworks, etc
-    //
-
     --repository-header-height: 43px;
     --repository-z-index: 10;
     --framework-z-index: 9;
+}
+
+// Overrides
+.platform-win32 {
+
+    &.light {
+        --sidebar-color: #fff;
+        --sidebar-border-color: var(--primary-border-color);
+
+        --primary-background-color: #{$white};
+        --secondary-background-color: #{$white};
+        --secondary-background-color-dark: #{darken($white, 5%)};
+    }
 }

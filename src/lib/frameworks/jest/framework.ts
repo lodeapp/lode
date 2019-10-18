@@ -1,20 +1,22 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { get } from 'lodash'
-import { unpacked, loc } from '@lib/helpers/paths'
+import { unpacked, loc, posix } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
-import { FrameworkOptions, Framework } from '@lib/frameworks/framework'
+import { FrameworkOptions, FrameworkDefaults, Framework } from '@lib/frameworks/framework'
 import { ISuite } from '@lib/frameworks/suite'
 import { FrameworkSort } from '@lib/frameworks/sort'
 
 export class Jest extends Framework {
 
-    static readonly defaults: FrameworkOptions = {
-        name: 'Jest',
-        type: 'jest',
-        command: 'yarn test',
-        path: '',
-        proprietary: {}
+    static readonly defaults: FrameworkDefaults = {
+        all: {
+            name: 'Jest',
+            type: 'jest',
+            command: 'yarn test',
+            path: '',
+            proprietary: {}
+        }
     }
 
     /**
@@ -33,7 +35,7 @@ export class Jest extends Framework {
                 for (let script in scripts) {
                     // Test for whole-word "jest". Should match "jest" shorthand
                     // and also "./node_modules/jest/bin/jest.js", etc.
-                    if (scripts[script].search(/\bjest\b/) > -1) {
+                    if (scripts[script].search(/(?<![^\/\\\s])jest(\.js)?(?!\.)/i) > -1) {
                         return this.hydrate({
                             command: `yarn ${script}`
                         })
@@ -129,7 +131,9 @@ export class Jest extends Framework {
         const args: Array<string> = []
 
         suites.forEach((suite: ISuite) => {
-            args.push(suite.getRelativePath())
+            // Push relative paths in POSIX notation, as Jest doesn't seem
+            // to find tests searched with Windows-style path separators.
+            args.push(posix(suite.getRelativePath()))
         })
 
         return args.concat(this.runArgs())

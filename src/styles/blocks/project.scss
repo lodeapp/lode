@@ -19,14 +19,14 @@
                 border-left: 1px solid var(--sidebar-border-color);
                 cursor: col-resize !important;
                 margin: 0;
-                margin-right: calc(calc(var(--split-gutter-width) - 1px) * -1);
+                margin-right: calc(calc(var(--pane-gutter-width) - 1px) * -1);
                 z-index: 3;
             }
 
             &:not(.sidebar) {
 
                 & + .gutter {
-                    border-left-color: $primary-border;
+                    border-left-color: var(--pane-border-color);
                 }
             }
         }
@@ -34,7 +34,7 @@
         &.empty {
 
             & > .pane:not(.sidebar) {
-                background-color: $secondary;
+                background-color: var(--secondary-background-color);
                 overflow: visible;
                 white-space: nowrap;
                 z-index: 2;
@@ -42,7 +42,7 @@
                 .loading,
                 .cta {
                     align-items: flex-start;
-                    margin-left: calc(var(--spacing-triple) - var(--split-gutter-width));
+                    margin-left: calc(var(--spacing-triple) - var(--pane-gutter-width));
                     padding-top: var(--spacing-double);
 
                     .btn {

@@ -101,7 +101,10 @@ class Feedback
         // Normalize the trace.
         if (is_string($trace)) {
             $trace = array_map(function ($item) {
-                return array_combine(['file', 'line'], explode(':', $item));
+                return array_combine(['file', 'line'], [
+                    preg_replace('/:\d+$/mi', '', $item),
+                    preg_replace('/(.+):(\d+)$/mi', '$2', $item),
+                ]);
             }, array_filter(explode("\n", $trace)));
         }
 

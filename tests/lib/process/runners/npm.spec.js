@@ -1,5 +1,3 @@
-import { spawn } from 'child_process'
-
 jest.mock('child_process', () => ({
     spawn: jest.fn().mockReturnValue({
         on: jest.fn(),
@@ -14,6 +12,7 @@ jest.mock('child_process', () => ({
     })
 }))
 
+import { spawn } from 'child_process'
 import { NpmProcess } from '@lib/process/runners/npm'
 
 beforeAll(() => {
@@ -34,15 +33,49 @@ describe('main/lib/process/runners/NpmProcess', () => {
         expect(NpmProcess.owns('yarn tests')).toBe(false)
         expect(NpmProcess.owns('anpm run tests')).toBe(false)
         expect(NpmProcess.owns('npma run tests')).toBe(false)
+        expect(NpmProcess.owns('npm.cmd run tests')).toBe(true)
+        expect(NpmProcess.owns('npm.cmdx tests')).toBe(false)
+        expect(NpmProcess.owns('inpm.cmd tests')).toBe(false)
+        expect(NpmProcess.owns('yarn.cmd tests')).toBe(false)
+        expect(NpmProcess.owns('yarn.js tests')).toBe(false)
     })
 
     it('spawns with proper arguments', () => {
-        new NpmProcess({ command: 'npm run biscuit --hobnobs --digestives rich=tea' })
+        new NpmProcess({
+            command: 'npm run biscuit --hobnobs --digestives rich=tea',
+            platform: 'darwin' // Force macOS to ensure binary is left intact.
+        })
         expect(spawn).toHaveBeenCalledTimes(1)
         expect(spawn).toHaveBeenCalledWith(
             'npm',
             ['run', 'biscuit', '--', '--hobnobs', '--digestives', 'rich=tea'],
             // Ignore last argument, we'll assert relevant bits individually.
+            expect.any(Object)
+        )
+    })
+
+    it('amends binary in windows environments, if no extension is passed', () => {
+        new NpmProcess({
+            command: 'npm run biscuit --hobnobs --digestives rich=tea',
+            platform: 'win32'
+        })
+        expect(spawn).toHaveBeenCalledTimes(1)
+        expect(spawn).toHaveBeenCalledWith(
+            'npm.cmd',
+            ['run', 'biscuit', '--', '--hobnobs', '--digestives', 'rich=tea'],
+            expect.any(Object)
+        )
+    })
+
+    it('respects binary in windows environments if extension is passed', () => {
+        new NpmProcess({
+            command: 'npm.cmd run biscuit --hobnobs --digestives rich=tea',
+            platform: 'win32'
+        })
+        expect(spawn).toHaveBeenCalledTimes(1)
+        expect(spawn).toHaveBeenCalledWith(
+            'npm.cmd',
+            ['run', 'biscuit', '--', '--hobnobs', '--digestives', 'rich=tea'],
             expect.any(Object)
         )
     })
