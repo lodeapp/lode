@@ -1319,7 +1319,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         if (!this.filters.keyword) {
             return null
         }
-        let keyword: string = trim((this.filters.keyword as string), `"'/`)
+        let keyword: string = trim((this.filters.keyword as string), `"'/\\`)
 
         // We're wilfully ignoring whether the framework runs in remote and
         // testing both cases at all times because if the framework does run
