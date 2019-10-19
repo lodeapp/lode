@@ -4,6 +4,12 @@
 
     & > span {
         font-size: 1rem;
+
+        mark {
+            background-color: var(--color-yellow-200);
+            color: inherit;
+            font-weight: var(--font-weight-semibold);
+        }
     }
 
     & > .dir {
