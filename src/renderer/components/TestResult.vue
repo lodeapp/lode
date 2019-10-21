@@ -177,7 +177,13 @@ export default {
         let index
         this.cycleHandler = (e) => {
             if (this.availableTabs.length > 1) {
-                if (this.$input.isCycleForward(e)) {
+                if (this.$input.isNumeral(e) && this.$input.hasCmdOrCtrl(e)) {
+                    index = event.key - 1 // Tab order starts at 1, not zero.
+                    const seek = this.availableTabs[index]
+                    if (seek) {
+                        this.setTab(seek)
+                    }
+                } else if (this.$input.isCycleForward(e)) {
                     index = _indexOf(this.availableTabs, this.tab) + 1
                     const forward = this.availableTabs[index >= this.availableTabs.length ? 0 : index]
                     if (forward) {

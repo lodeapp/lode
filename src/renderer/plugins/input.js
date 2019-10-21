@@ -45,6 +45,9 @@ export default class Input {
     hasModifierKey (event) {
         return event.ctrlKey || event.metaKey || event.altKey || event.shiftKey
     }
+    hasCmdOrCtrl (event) {
+        return (__WIN32__ && event.ctrlKey) || (!__WIN32__ && event.metaKey)
+    }
     hasAltKey (event) {
         return event.altKey
     }
@@ -62,6 +65,9 @@ export default class Input {
     }
     isRightButton (event) {
         return event.which === 3 || event.button === 2
+    }
+    isNumeral (event) {
+        return event.code.startsWith('Digit')
     }
     isCycleForward (event) {
         if (__WIN32__) {
