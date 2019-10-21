@@ -8,8 +8,7 @@
             hasChildren ? 'has-children' : ''
         ]"
         tabindex="0"
-        @keydown.stop.right="handleExpand"
-        @keydown.stop.left="handleCollapse"
+        @keydown="handleKeydown"
     >
         <div class="seam"></div>
         <div class="header" @click.prevent @mousedown.prevent.stop="handleActivate">
@@ -91,6 +90,15 @@ export default {
                 return
             }
             this.toggleChildren(event)
+        },
+        handleKeydown (event) {
+            if (event.code === 'ArrowRight' && !this.$input.isCycleForward(event)) {
+                event.stopPropagation()
+                this.handleExpand(event)
+            } else if (event.code === 'ArrowLeft' && !this.$input.isCycleBackward(event)) {
+                event.stopPropagation()
+                this.handleCollapse(event)
+            }
         },
         handleExpand (event) {
             if (!this.hasChildren || this.show) {
