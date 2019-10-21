@@ -74,6 +74,7 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex'
 import _get from 'lodash/get'
 import _identity from 'lodash/identity'
 import _indexOf from 'lodash/indexOf'
@@ -113,6 +114,13 @@ export default {
         tab () {
             if (this.active) {
                 return this.active
+            } else if (this.lastActiveTab) {
+                // If store has a previously active tab from other results,
+                // and that same tab exists in this new pane, set that in order
+                // to allow some consistency when navigating between test results.
+                if (_indexOf(this.availableTabs, this.lastActiveTab) > -1) {
+                    return this.lastActiveTab
+                }
             }
 
             // If no tab is active, return the first available one.
@@ -171,7 +179,10 @@ export default {
             }
 
             return this.suite && this.suite.getConsole() && this.suite.getConsole().length ? this.suite.getConsole() : false
-        }
+        },
+        ...mapGetters({
+            lastActiveTab: 'tabs/lastActive'
+        })
     },
     mounted () {
         let index
@@ -206,13 +217,17 @@ export default {
     methods: {
         setTab (tab) {
             this.active = tab
+            this.setLastActiveTab(this.active)
         },
         refreshFramework () {
             if (!this.framework) {
                 return
             }
             this.framework.refresh()
-        }
+        },
+        ...mapActions({
+            setLastActiveTab: 'tabs/setLastActive'
+        })
     }
 }
 </script>
