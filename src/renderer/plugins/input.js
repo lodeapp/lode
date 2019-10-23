@@ -45,6 +45,9 @@ export default class Input {
     hasModifierKey (event) {
         return event.ctrlKey || event.metaKey || event.altKey || event.shiftKey
     }
+    hasCmdOrCtrl (event) {
+        return (__WIN32__ && event.ctrlKey) || (!__WIN32__ && event.metaKey)
+    }
     hasAltKey (event) {
         return event.altKey
     }
@@ -62,6 +65,25 @@ export default class Input {
     }
     isRightButton (event) {
         return event.which === 3 || event.button === 2
+    }
+    isNumeral (event) {
+        return event.code.startsWith('Digit')
+    }
+    isCycleForward (event) {
+        if (__WIN32__) {
+            return (event.code === 'Tab' && event.ctrlKey) || (event.code === 'PageUp' && event.ctrlKey)
+        } else if (event.metaKey) {
+            return (event.code === 'BracketRight' && event.shiftKey) || (event.code === 'ArrowRight' && event.altKey)
+        }
+        return false
+    }
+    isCycleBackward (event) {
+        if (__WIN32__) {
+            return (event.code === 'Tab' && event.shiftKey && event.ctrlKey) || (event.code === 'PageDown' && event.ctrlKey)
+        } else if (event.metaKey) {
+            return (event.code === 'BracketLeft' && event.shiftKey) || (event.code === 'ArrowLeft' && event.altKey)
+        }
+        return false
     }
     modifiesContent (event) {
         return !this.isAuxiliaryAction(event) && !this.isAuxiliaryKey(event)

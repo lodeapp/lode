@@ -74,9 +74,13 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex'
 import _get from 'lodash/get'
+import _identity from 'lodash/identity'
+import _indexOf from 'lodash/indexOf'
 import _isEmpty from 'lodash/isEmpty'
 import _last from 'lodash/last'
+import _pickBy from 'lodash/pickBy'
 import Ansi from '@/components/Ansi'
 import Console from '@/components/Console'
 import Feedback from '@/components/Feedback'
@@ -102,29 +106,35 @@ export default {
     },
     data () {
         return {
-            active: null
+            active: null,
+            cycleHandler: null
         }
     },
     computed: {
         tab () {
             if (this.active) {
                 return this.active
-            } else if (this.error) {
-                return 'error'
-            } else if (this.isTransient) {
-                return 'stats'
-            } else if (this.feedback) {
-                return 'feedback'
-            } else if (this.console) {
-                return 'console'
-            } else if (this.suiteConsole) {
-                return 'suiteConsole'
-            } else if (this.stats) {
-                return 'stats'
-            } else if (this.parameters) {
-                return 'parameters'
+            } else if (this.lastActiveTab) {
+                // If store has a previously active tab from other results,
+                // and that same tab exists in this new pane, set that in order
+                // to allow some consistency when navigating between test results.
+                if (_indexOf(this.availableTabs, this.lastActiveTab) > -1) {
+                    return this.lastActiveTab
+                }
             }
-            return ''
+
+            // If no tab is active, return the first available one.
+            return _get(this.availableTabs, '0', '')
+        },
+        availableTabs () {
+            return Object.keys(_pickBy({
+                error: this.error,
+                feedback: this.feedback && !this.isTransient,
+                console: this.console && !this.isTransient,
+                suiteConsole: this.suiteConsole && !this.isTransient,
+                stats: this.stats,
+                parameters: this.parameter && !this.isTransients
+            }, _identity))
         },
         test () {
             return _last(this.context)
@@ -169,18 +179,55 @@ export default {
             }
 
             return this.suite && this.suite.getConsole() && this.suite.getConsole().length ? this.suite.getConsole() : false
+        },
+        ...mapGetters({
+            lastActiveTab: 'tabs/lastActive'
+        })
+    },
+    mounted () {
+        let index
+        this.cycleHandler = (e) => {
+            if (this.availableTabs.length > 1) {
+                if (this.$input.isNumeral(e) && this.$input.hasCmdOrCtrl(e)) {
+                    index = event.key - 1 // Tab order starts at 1, not zero.
+                    const seek = this.availableTabs[index]
+                    if (seek) {
+                        this.setTab(seek)
+                    }
+                } else if (this.$input.isCycleForward(e)) {
+                    index = _indexOf(this.availableTabs, this.tab) + 1
+                    const forward = this.availableTabs[index >= this.availableTabs.length ? 0 : index]
+                    if (forward) {
+                        this.setTab(forward)
+                    }
+                } else if (this.$input.isCycleBackward(e)) {
+                    index = _indexOf(this.availableTabs, this.tab) - 1
+                    const backward = this.availableTabs[index < 0 ? (this.availableTabs.length - 1) : index]
+                    if (backward) {
+                        this.setTab(backward)
+                    }
+                }
+            }
         }
+        document.addEventListener('keydown', this.cycleHandler)
+    },
+    destroyed () {
+        document.removeEventListener('keydown', this.cycleHandler)
     },
     methods: {
         setTab (tab) {
             this.active = tab
+            this.setLastActiveTab(this.active)
         },
         refreshFramework () {
             if (!this.framework) {
                 return
             }
             this.framework.refresh()
-        }
+        },
+        ...mapActions({
+            setLastActiveTab: 'tabs/setLastActive'
+        })
     }
 }
 </script>
