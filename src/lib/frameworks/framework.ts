@@ -2,7 +2,7 @@ import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { chunk, find, findIndex, get, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
-import { filter as fuzzy } from 'fuzzaldrin'
+import * as fuzzy from 'fuzzysearch'
 import { EventEmitter } from 'events'
 import { ProcessId, IProcess } from '@lib/process/process'
 import { ProcessBridge } from '@lib/process/bridge'
@@ -1220,43 +1220,50 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     public getSuites (): Array<ISuite> {
         if (!this.hasFilters()) {
-            return this.sortSuites(this.suites)
+            return this.sortSuites(this.suites.map(suite => {
+                suite.highlight('')
+                return suite
+            }))
         }
 
         const exact = this.filters.keyword && (this.filters.keyword as string).match(/^[\'\"].+[\'\"]$/g)
         const keyword = this.getFilterKeyword()
         return this.sortSuites(this.suites.filter((suite: ISuite) => {
-            if (
-                (
-                    keyword &&
-                    exact &&
-                    suite.getFilePath().toUpperCase().indexOf(keyword) === -1
-                ) ||
-                (
-                    keyword &&
-                    !exact &&
-                    !fuzzy([suite.getDisplayName().toUpperCase()], keyword).length
-                ) ||
-                (
-                    this.filters.status &&
-                    (
-                        this.filters.status.indexOf(suite.getStatus()) === -1 &&
-                        (this.filters.status.indexOf('selected') === -1 || !suite.selected) &&
-                        // Don't exclude queued or running suites, otherwise running
-                        // a matched status filter would automatically dissolve
-                        // all matches once it starts.
-                        ['queued', 'running'].indexOf(suite.getStatus()) === -1
-                    )
-                )
-            ) {
+            let match = true
+            if (keyword) {
+                if (exact) {
+                    // Exact searches require filtering string to be contained
+                    // within a suite's file path.
+                    match = suite.getFilePath().toUpperCase().indexOf(keyword) > -1
+                    suite.highlight(keyword, true)
+                } else {
+                    match = fuzzy(keyword, suite.getDisplayName().toUpperCase())
+                    suite.highlight(keyword)
+                }
+            } else if (this.filters.status) {
+                match = this.filters.status.indexOf(suite.getStatus()) === -1 &&
+                    (this.filters.status.indexOf('selected') === -1 || !suite.selected) &&
+                    // Don't exclude queued or running suites, otherwise running
+                    // a matched status filter would automatically dissolve
+                    // all matches once it starts.
+                    ['queued', 'running'].indexOf(suite.getStatus()) === -1
+            }
+
+            if (!match) {
+                // Reset suite highlight.
+                suite.highlight('')
+
+                // If suite is to be excluded, de-select it and un-expand it.
                 if (suite.selected) {
                     suite.toggleSelected(false, true)
                 }
                 if (suite.expanded) {
                     suite.toggleExpanded(false, true)
                 }
+
                 return false
             }
+
             return true
         }))
     }
@@ -1312,7 +1319,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         if (!this.filters.keyword) {
             return null
         }
-        let keyword: string = trim((this.filters.keyword as string), `"'/`)
+        let keyword: string = trim((this.filters.keyword as string), `"'/\\`)
 
         // We're wilfully ignoring whether the framework runs in remote and
         // testing both cases at all times because if the framework does run
