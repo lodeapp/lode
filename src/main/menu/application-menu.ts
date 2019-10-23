@@ -24,6 +24,8 @@ enum ZoomDirection {
 
 class ApplicationMenu {
 
+    protected template: Array<Electron.MenuItemConstructorOptions> = []
+
     protected options: { [index: string]: any } = {
         hasFramework: false,
         isCheckingForUpdate: false,
@@ -411,19 +413,32 @@ class ApplicationMenu {
         }
 
         Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+
+        // Update template after rendering.
+        this.template = template
     }
 
-    public build () {
-        this.render()
+    public build (): Promise<Array<Electron.MenuItemConstructorOptions>> {
+        return new Promise((resolve, reject) => {
+            this.render()
+            resolve(this.template)
+        })
     }
 
-    public setOptions (options: any): void {
-        this.options = {
-            ...this.options,
-            ...options
-        }
-        // Rebuild after options are updated.
-        this.render()
+    public setOptions (options: any): Promise<Array<Electron.MenuItemConstructorOptions>> {
+        return new Promise((resolve, reject) => {
+            this.options = {
+                ...this.options,
+                ...options
+            }
+            // Rebuild after options are updated.
+            this.render()
+            resolve(this.template)
+        })
+    }
+
+    public getTemplate (): Array<Electron.MenuItemConstructorOptions> {
+        return this.template
     }
 }
 

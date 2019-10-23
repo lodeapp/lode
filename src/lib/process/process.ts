@@ -264,12 +264,10 @@ export class DefaultProcess extends EventEmitter implements IProcess {
 
         let chunk = rawChunk
 
-        this.rawChunks.push(rawChunk)
-
-        this.emit('data', {
-            process: this,
-            chunk
-        })
+        if (this.writeToFile) {
+            // Only write raw chunks if we're storing this process run in a file.
+            this.rawChunks.push(rawChunk)
+        }
 
         let storeChunk: boolean = true
 

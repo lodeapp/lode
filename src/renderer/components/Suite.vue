@@ -76,7 +76,7 @@ export default {
             return this.context.indexOf(this.suite.getId()) > -1
         },
         relativePath () {
-            return this.suite.getRelativePath()
+            return this.suite.isHighlighted() ? this.suite.getHighlight() : this.suite.getRelativePath()
         },
         filePath () {
             return this.suite.getFilePath()

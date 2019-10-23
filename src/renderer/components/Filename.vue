@@ -4,15 +4,16 @@
             <span v-html="'&lrm;'"></span>{{ dir }}<strong>{{ name }}</strong>{{ extension }}
         </template>
         <template v-else>
-            <span class="dir">{{ dir }}</span>
-            <span class="name">{{ name }}</span>
-            <span class="extension">{{ extension }}</span>
+            <span class="dir" v-html="dir"></span>
+            <span class="name" v-html="name"></span>
+            <span class="extension" v-html="extension"></span>
         </template>
     </span>
 </template>
 
 <script>
 import * as Path from 'path'
+import _escape from 'lodash/escape'
 
 export default {
     name: 'Filename',
@@ -35,8 +36,19 @@ export default {
     },
     created () {
         const dir = this.path.split(Path.sep)
-        this.name = dir.pop() || ''
-        this.dir = dir.length ? dir.join(Path.sep) + (this.name ? Path.sep : '') : ''
+        this.name = this.renderChunk(dir.pop() || '')
+        this.dir = this.renderChunk(dir.length ? dir.join(Path.sep) + (this.name ? Path.sep : '') : '')
+    },
+    methods: {
+        renderChunk (string) {
+            // Since markdown transformations don't work well with punctuation
+            // characters, we need to roll our own highlighting delimiters.
+            // Note that this doesn't work for truncated strings, but we
+            // should never highlight those, either.
+            return _escape(string)
+                .replace(/\[==\]/g, '<mark>')
+                .replace(/\[\!==\]/g, '</mark>')
+        }
     }
 }
 </script>

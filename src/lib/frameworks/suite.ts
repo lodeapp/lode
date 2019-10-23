@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import { get } from 'lodash'
+import { get, escapeRegExp } from 'lodash'
 import { Status, parseStatus } from '@lib/frameworks/status'
 import { ITest, ITestResult, Test } from '@lib/frameworks/test'
 import { Nugget } from '@lib/frameworks/nugget'
@@ -44,6 +44,9 @@ export interface ISuite extends Nugget {
     isFresh (): boolean
     countChildren (): number
     hasChildren(): boolean
+    highlight (keyword: string, exact?: boolean): void
+    getHighlight (): string
+    isHighlighted (): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
     getRunningOrder (): number | null
     getLastUpdated (): string | null
@@ -68,6 +71,8 @@ export class Suite extends Nugget implements ISuite {
     public remotePath: string
     public file!: string
     public result!: ISuiteResult
+
+    protected highlighted: string = ''
 
     constructor (options: SuiteOptions, result: ISuiteResult) {
         super()
@@ -292,5 +297,52 @@ export class Suite extends Nugget implements ISuite {
                     })
             })
         })
+    }
+
+    /**
+     * Highlight a matching portion of the suite's file path
+     * (i.e. as a result of searching).
+     *
+     * @param keyword The string within the file path to highlight.
+     * @param cleanup Whether matching is exact or fuzzy.
+     */
+    public highlight (keyword: string, exact: boolean = false): void {
+        if (!keyword) {
+            this.highlighted = ''
+            return
+        }
+
+        if (exact) {
+            this.highlighted = this.getDisplayName()
+                .replace(new RegExp(escapeRegExp(keyword), 'i'), match => {
+                    return [...match].map(char => '[==]' + char + '[!==]').join('')
+                })
+            return
+        }
+
+        const keywordChars = [...keyword]
+        let match = keywordChars.shift()
+        this.highlighted = [...this.getDisplayName()].map(char => {
+            if (char.toUpperCase() === match) {
+                // Cycle to next keyword character before highlighting character.
+                match = keywordChars.shift()
+                return '[==]' + char + '[!==]'
+            }
+            return char
+        }).join('')
+    }
+
+    /**
+     * Get the suite's highlighted path.
+     */
+    public getHighlight (): string {
+        return this.highlighted
+    }
+
+    /**
+     * Whether the suite is currently highlighted.
+     */
+    public isHighlighted (): boolean {
+        return !!this.highlighted
     }
 }
