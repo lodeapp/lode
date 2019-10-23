@@ -212,6 +212,11 @@ export default new Vue({
                 })
                 document.title = ''
                 titlebar.updateTitle()
+
+                ipcRenderer
+                    .on('menu-updated', () => {
+                        titlebar.updateMenu(remote.Menu.getApplicationMenu())
+                    })
             }
         },
         loadProject (projectOptions) {

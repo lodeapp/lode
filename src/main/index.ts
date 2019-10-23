@@ -104,10 +104,14 @@ ipcMain
         writeLog(level, message)
     })
     .on('refresh-menu', (event: Electron.IpcMainEvent) => {
-        applicationMenu.build()
+        applicationMenu.build().then((template: Array<Electron.MenuItemConstructorOptions>) => {
+            event.sender.send('menu-updated', template)
+        })
     })
     .on('set-menu-options', (event: Electron.IpcMainEvent, options: any) => {
-        applicationMenu.setOptions(options)
+        applicationMenu.setOptions(options).then((template: Array<Electron.MenuItemConstructorOptions>) => {
+            event.sender.send('menu-updated', template)
+        })
     })
     .on('window-should-close', () => {
         process.nextTick(() => {
@@ -129,7 +133,7 @@ ipcMain
     })
     .on('spawn', (event: Electron.IpcMainEvent, id: string, options: ProcessOptions) => {
         const process: IProcess = ProcessFactory.make(options, id)
-        const events = ['close', 'data', 'killed', 'report', 'success']
+        const events = ['close', 'killed', 'report', 'success']
         events.forEach((eventType: string) => {
             process.on(eventType, (...args: any) => {
                 event.sender.send(`${id}:${eventType}`, ...args)
