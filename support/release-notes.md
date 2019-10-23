@@ -1,8 +1,8 @@
 New:
-    - Windows compatibility
+    - Highlight matching part of a test suite's name when filtering - #21
+    - Better tab navigation - #20
 Changed:
-    - Improved console context in results pane, with added actions
-    - Improved accuracy when scanning package.json files for Jest testing scripts
+    - Trim backslashes (i.e. Windows path separators) from filter keywords
 Fixed:
-    - Warnings triggered when running PHPUnit 7, because the Lode reporter's `writeProgress` was not fully compatible with parent
-    - Excessive font weight for framework titles in macOS Catalina
+    - Windows titlebar not updating when needed
+    - Framework settings failing to fetch a framework's display name
