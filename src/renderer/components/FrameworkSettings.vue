@@ -43,9 +43,9 @@
                         <option value="">Select Test Framework</option>
                         <option
                             v-for="available in availableFrameworks"
-                            :key="available.defaults.type"
-                            :value="available.defaults.type"
-                        >{{ available.defaults.name }}</option>
+                            :key="available.getDefaults().type"
+                            :value="available.getDefaults().type"
+                        >{{ available.getDefaults().name }}</option>
                     </select>
                 </dd>
             </dl>
@@ -259,13 +259,14 @@ export default {
             return this.framework.scanStatus === 'removed'
         },
         availableFrameworks () {
+            console.log({ Frameworks })
             return Frameworks
         },
         frameworkType () {
             return getFrameworkByType(this.fields.type)
         },
         currentFrameworkName () {
-            return this.frameworkType ? this.frameworkType.defaults.name : ''
+            return this.frameworkType ? this.frameworkType.getDefaults().name : ''
         },
         currentFrameworkInstructions () {
             return this.frameworkType ? this.frameworkType.instructions() : ''
