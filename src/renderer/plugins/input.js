@@ -71,7 +71,9 @@ export default class Input {
     }
     isCycleForward (event) {
         if (__WIN32__) {
-            return (event.code === 'Tab' && event.ctrlKey) || (event.code === 'PageUp' && event.ctrlKey)
+            // Make sure shift-key isn't pressed, as it would overlap with
+            // backwards cycle otherwise.
+            return (event.code === 'Tab' && event.ctrlKey && !event.shiftKey) || (event.code === 'PageUp' && event.ctrlKey)
         } else if (event.metaKey) {
             return (event.code === 'BracketRight' && event.shiftKey) || (event.code === 'ArrowRight' && event.altKey)
         }
@@ -79,7 +81,7 @@ export default class Input {
     }
     isCycleBackward (event) {
         if (__WIN32__) {
-            return (event.code === 'Tab' && event.shiftKey && event.ctrlKey) || (event.code === 'PageDown' && event.ctrlKey)
+            return (event.code === 'Tab' && event.ctrlKey && event.shiftKey) || (event.code === 'PageDown' && event.ctrlKey)
         } else if (event.metaKey) {
             return (event.code === 'BracketLeft' && event.shiftKey) || (event.code === 'ArrowLeft' && event.altKey)
         }
