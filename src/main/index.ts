@@ -82,7 +82,7 @@ app
         createWindow(state.getCurrentProject())
         applicationMenu.build()
 
-        if (process.env.NODE_ENV === 'production') {
+        if (!__DEV__) {
             // Start auto-updating process.
             new Updater()
         }

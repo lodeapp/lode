@@ -48,7 +48,7 @@ class ApplicationMenu {
             label: isDownloadingUpdate
                 ? 'Downloading Update'
                 : (hasDownloadedUpdate ? 'Restart and Install Update' : 'Check for Updates…'),
-            enabled: !isCheckingForUpdate && !isDownloadingUpdate,
+            enabled: !isCheckingForUpdate && !isDownloadingUpdate && !__DEV__,
             click () {
                 if (hasDownloadedUpdate) {
                     autoUpdater.quitAndInstall()

@@ -1221,7 +1221,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public getSuites (): Array<ISuite> {
         if (!this.hasFilters()) {
             return this.sortSuites(this.suites.map(suite => {
-                suite.highlight('')
+                // suite.highlight('')
                 return suite
             }))
         }
@@ -1235,23 +1235,25 @@ export abstract class Framework extends EventEmitter implements IFramework {
                     // Exact searches require filtering string to be contained
                     // within a suite's file path.
                     match = suite.getFilePath().toUpperCase().indexOf(keyword) > -1
-                    suite.highlight(keyword, true)
+                    // suite.highlight(keyword, true)
                 } else {
                     match = fuzzy(keyword, suite.getDisplayName().toUpperCase())
-                    suite.highlight(keyword)
+                    // suite.highlight(keyword)
                 }
             } else if (this.filters.status) {
-                match = this.filters.status.indexOf(suite.getStatus()) === -1 &&
+                match = !(
+                    this.filters.status.indexOf(suite.getStatus()) === -1 &&
                     (this.filters.status.indexOf('selected') === -1 || !suite.selected) &&
                     // Don't exclude queued or running suites, otherwise running
                     // a matched status filter would automatically dissolve
                     // all matches once it starts.
                     ['queued', 'running'].indexOf(suite.getStatus()) === -1
+                )
             }
 
             if (!match) {
                 // Reset suite highlight.
-                suite.highlight('')
+                // suite.highlight('')
 
                 // If suite is to be excluded, de-select it and un-expand it.
                 if (suite.selected) {
