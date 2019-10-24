@@ -54,6 +54,15 @@ export default {
                     })
                     .separator()
                     .add({
+                        id: 'copy',
+                        label: __DARWIN__
+                            ? 'Copy Repository Path'
+                            : 'Copy repository path',
+                        click: () => {
+                            this.$root.copyToClipboard(this.repositoryPath)
+                        }
+                    })
+                    .add({
                         id: 'reveal',
                         label: __DARWIN__
                             ? 'Reveal in Finder'

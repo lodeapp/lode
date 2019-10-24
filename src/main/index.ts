@@ -2,11 +2,13 @@ import '@lib/crash/reporter'
 import '@lib/logger/main'
 import '@lib/tracker/main'
 
+import Fs from 'fs'
 import { compact } from 'lodash'
-import { app, ipcMain, session } from 'electron'
+import { app, ipcMain, session, shell } from 'electron'
 import { applicationMenu } from './menu'
 import { Window } from './window'
 import { Updater } from './updater'
+import { openDirectorySafe } from './shell'
 import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
@@ -158,4 +160,18 @@ ipcMain
                 event.sender.send(`${id}:stopped`)
             })
             .stop()
+    })
+    .on('show-item-in-folder', (event: Electron.IpcMainEvent, path: string) => {
+        Fs.stat(path, (err, stats) => {
+            if (err) {
+                log.error(`Unable to find file at '${path}'`, err)
+                return
+            }
+
+            if (!__DARWIN__ && stats.isDirectory()) {
+                openDirectorySafe(path)
+            } else {
+                shell.showItemInFolder(path)
+            }
+        })
     })

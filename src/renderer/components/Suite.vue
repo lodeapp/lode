@@ -115,6 +115,7 @@ export default {
                         this.$emit('filter', this.suite)
                     }
                 })
+                .separator()
                 .add({
                     id: 'copy-local',
                     label: __DARWIN__
@@ -132,6 +133,17 @@ export default {
                         : 'Copy Remote file path',
                     click: () => {
                         this.$root.copyToClipboard(this.remoteFilePath)
+                    }
+                })
+                .add({
+                    id: 'reveal',
+                    label: __DARWIN__
+                        ? 'Reveal in Finder'
+                        : __WIN32__
+                            ? 'Show in Explorer'
+                            : 'Show in your File Manager',
+                    click: () => {
+                        this.$root.revealFile(this.filePath)
                     }
                 })
                 .add({

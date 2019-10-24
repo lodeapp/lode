@@ -270,8 +270,13 @@ export default new Vue({
                 .catch(() => {})
         },
         switchProject (projectId) {
-            // Clicking on current project doesn't have any effect.
+            // Clicking on current project shouldn't have any effect.
             if (projectId === this.project.getId()) {
+                // Windows will uncheck the project regardless of it being
+                // selected already, so refresh the menu to undo it.
+                if (__WIN32__) {
+                    this.refreshApplicationMenu()
+                }
                 return false
             }
 
@@ -287,7 +292,13 @@ export default new Vue({
                         this.handleSwitchProject(projectId)
                     })
                 })
-                .catch(() => {})
+                .catch(() => {
+                    // Windows will check the project regardless of
+                    // confirmation, so refresh the menu to undo it.
+                    if (__WIN32__) {
+                        this.refreshApplicationMenu()
+                    }
+                })
         },
         handleSwitchProject (projectId) {
             ipcRenderer.send('switch-project', projectId)
@@ -348,7 +359,7 @@ export default new Vue({
             }
         },
         revealFile (path) {
-            shell.showItemInFolder(path)
+            ipcRenderer.send('show-item-in-folder', path)
         },
         copyToClipboard (string) {
             clipboard.writeText(string)

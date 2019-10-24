@@ -44,6 +44,19 @@ class ApplicationMenu {
         const isCheckingForUpdate = this.options.isCheckingForUpdate
         const isDownloadingUpdate = this.options.isDownloadingUpdate
         const hasDownloadedUpdate = this.options.hasDownloadedUpdate
+        const updater = {
+            label: isDownloadingUpdate
+                ? 'Downloading Update'
+                : (hasDownloadedUpdate ? 'Restart and Install Update' : 'Check for Updates…'),
+            enabled: !isCheckingForUpdate && !isDownloadingUpdate,
+            click () {
+                if (hasDownloadedUpdate) {
+                    autoUpdater.quitAndInstall()
+                }
+                autoUpdater.checkForUpdates()
+            }
+        }
+
 
         if (__DARWIN__) {
             template.push({
@@ -53,18 +66,7 @@ class ApplicationMenu {
                         label: 'About Lode',
                         click: emit('show-about')
                     },
-                    {
-                        label: isDownloadingUpdate
-                            ? 'Downloading Update'
-                            : (hasDownloadedUpdate ? 'Restart and Install Update' : 'Check for Updates…'),
-                        enabled: !isCheckingForUpdate && !isDownloadingUpdate,
-                        click () {
-                            if (hasDownloadedUpdate) {
-                                autoUpdater.quitAndInstall()
-                            }
-                            autoUpdater.checkForUpdates()
-                        }
-                    },
+                    updater,
                     separator,
                     {
                         label: 'Preferences…',
@@ -170,17 +172,6 @@ class ApplicationMenu {
                     label: __DARWIN__ ? 'Zoom Out' : 'Zoom out',
                     accelerator: 'CmdOrCtrl+-',
                     click: zoom(ZoomDirection.Out),
-                },
-                separator,
-                {
-                    label: '&Reload',
-                    accelerator: 'CmdOrCtrl+Shift+0',
-                    click(item: any, focusedWindow: Electron.BrowserWindow) {
-                        if (focusedWindow) {
-                            focusedWindow.reload()
-                        }
-                    },
-                    visible: __DEV__
                 }
             ]
         })
@@ -275,6 +266,17 @@ class ApplicationMenu {
             template.push({
                 label: __DARWIN__ ? 'Development' : '&Development',
                 submenu: [
+                    {
+                        label: '&Reload',
+                        accelerator: 'CmdOrCtrl+Shift+0',
+                        click(item: any, focusedWindow: Electron.BrowserWindow) {
+                            if (focusedWindow) {
+                                focusedWindow.reload()
+                            }
+                        },
+                        visible: __DEV__
+                    },
+                    separator,
                     {
                         label: __DARWIN__ ? 'Log Project' : 'Log project',
                         click: emit('log-project')
@@ -402,12 +404,13 @@ class ApplicationMenu {
             template.push({
                 label: '&Help',
                 submenu: [
-                    ...helpItems,
-                    separator,
                     {
                         label: 'About Lode',
                         click: emit('show-about')
-                    }
+                    },
+                    updater,
+                    separator,
+                    ...helpItems
                 ]
             })
         }
