@@ -1240,8 +1240,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
                     match = fuzzy(keyword, suite.getDisplayName().toUpperCase())
                     // suite.highlight(keyword)
                 }
-            } else if (this.filters.status) {
-                match = !(
+            }
+            if (this.filters.status) {
+                // Only match if this hasn't been previously filtered out.
+                match = match && !(
                     this.filters.status.indexOf(suite.getStatus()) === -1 &&
                     (this.filters.status.indexOf('selected') === -1 || !suite.selected) &&
                     // Don't exclude queued or running suites, otherwise running
