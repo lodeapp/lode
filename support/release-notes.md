@@ -1,2 +1,3 @@
 Fixed:
-    - Fix Windows tab cycling always going forwards
+    - Keyword filter matching overriding status matches
+    - Windows tab cycling always going forwards
