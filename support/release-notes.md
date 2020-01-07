@@ -1,3 +1,2 @@
-Fixed:
-    - Keyword filter matching overriding status matches
-    - Windows tab cycling always going forwards
+Changed:
+    - Updated Electron to 6.1.7
