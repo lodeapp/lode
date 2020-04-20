@@ -35,7 +35,7 @@ export interface IProject extends EventEmitter {
     refresh (): void
     stop (): Promise<void>
     isRunning (): boolean
-    isRrefreshing (): boolean
+    isRefreshing (): boolean
     isBusy (): boolean
     empty (): boolean
     persist (): ProjectOptions
@@ -122,8 +122,8 @@ export class Project extends EventEmitter implements IProject {
     /**
      * Whether this project is refreshing.
      */
-    public isRrefreshing (): boolean {
-        return this.repositories.some((repository: IRepository) => repository.isRrefreshing())
+    public isRefreshing (): boolean {
+        return this.repositories.some((repository: IRepository) => repository.isRefreshing())
     }
 
     /**

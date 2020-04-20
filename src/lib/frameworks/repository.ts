@@ -45,7 +45,7 @@ export interface IRepository extends EventEmitter {
     scan (): Promise<Array<FrameworkOptions>>
     toggle (): void
     isRunning (): boolean
-    isRrefreshing (): boolean
+    isRefreshing (): boolean
     isBusy (): boolean
     isExpanded (): boolean
     persist (): RepositoryOptions
@@ -131,8 +131,8 @@ export class Repository extends EventEmitter implements IRepository {
     /**
      * Whether this repository is refreshing.
      */
-    public isRrefreshing (): boolean {
-        return this.frameworks.some((framework: IFramework) => framework.isRrefreshing())
+    public isRefreshing (): boolean {
+        return this.frameworks.some((framework: IFramework) => framework.isRefreshing())
     }
 
     /**

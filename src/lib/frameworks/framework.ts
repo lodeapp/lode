@@ -89,7 +89,7 @@ export interface IFramework extends EventEmitter {
     refresh (): void
     stop (): Promise<void>
     isRunning (): boolean
-    isRrefreshing (): boolean
+    isRefreshing (): boolean
     isBusy (): boolean
     empty (): boolean
     count (): number
@@ -533,7 +533,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Whether this framework is refreshing.
      */
-    public isRrefreshing (): boolean {
+    public isRefreshing (): boolean {
         return this.status === 'refreshing'
     }
 
@@ -541,7 +541,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Whether this framework is busy.
      */
     public isBusy (): boolean {
-        return this.isRunning() || this.isRrefreshing() || this.status === 'queued'
+        return this.isRunning() || this.isRefreshing() || this.status === 'queued'
     }
 
     /**
