@@ -1,23 +1,14 @@
 import * as Path from 'path'
-import { get, escapeRegExp } from 'lodash'
+import { get } from 'lodash'
 import { Status, parseStatus } from '@lib/frameworks/status'
+import { IFramework } from '@lib/frameworks/framework'
 import { ITest, ITestResult, Test } from '@lib/frameworks/test'
 import { Nugget } from '@lib/frameworks/nugget'
 
-export type SuiteOptions = {
-    path: string,
-    root: string,
-    runsInRemote?: boolean
-    remotePath?: string
-}
-
 export interface ISuite extends Nugget {
     readonly file: string
-    readonly path: string
-    readonly root: string
     tests: Array<ITest>
     selected: boolean
-    canToggleTests: boolean
 
     getId (): string
     getFile (): string
@@ -30,6 +21,7 @@ export interface ISuite extends Nugget {
     getConsole (): Array<any>
     testsLoaded (): boolean
     rebuildTests (result: ISuiteResult): void
+    canToggleTests (): boolean
     toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
     toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
     idle (selective: boolean): void
@@ -39,14 +31,10 @@ export interface ISuite extends Nugget {
     errorQueued (selective: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
     persist (): ISuiteResult
-    refresh (options: SuiteOptions): void
     setFresh (fresh: boolean): void
     isFresh (): boolean
     countChildren (): number
     hasChildren(): boolean
-    highlight (keyword: string, exact?: boolean): void
-    getHighlight (): string
-    isHighlighted (): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
     getRunningOrder (): number | null
     getLastUpdated (): string | null
@@ -61,26 +49,21 @@ export interface ISuiteResult {
     meta?: object | null
     console?: Array<any>
     testsLoaded?: boolean
-    version?: string
 }
 
 export class Suite extends Nugget implements ISuite {
-    public path: string
-    public root: string
-    public runsInRemote: boolean
-    public remotePath: string
     public file!: string
     public result!: ISuiteResult
+    protected framework: IFramework
 
-    protected highlighted: string = ''
-
-    constructor (options: SuiteOptions, result: ISuiteResult) {
+    constructor (framework: IFramework, result: ISuiteResult) {
         super()
-        this.path = options.path
-        this.root = options.root
-        this.runsInRemote = options.runsInRemote || false
-        options.remotePath = options.remotePath || ''
-        this.remotePath = options.remotePath.startsWith('/') ? options.remotePath : '/' + options.remotePath
+        this.framework = framework
+        // this.path = options.path
+        // this.root = options.root
+        // this.runsInRemote = options.runsInRemote || false
+        // options.remotePath = options.remotePath || ''
+        // this.remotePath = options.remotePath.startsWith('/') ? options.remotePath : '/' + options.remotePath
         this.build(result)
     }
 
@@ -96,19 +79,6 @@ export class Suite extends Nugget implements ISuite {
                 ? this.tests.map((test: ITest) => test.persist())
                 : this.getTestResults().map((test: ITestResult) => this.defaults(test)),
         }
-    }
-
-    /**
-     * Refresh this suite's metadata.
-     *
-     * @param options The suite's new options.
-     */
-    public refresh (options: SuiteOptions): void {
-        this.path = options.path
-        this.root = options.root
-        this.runsInRemote = options.runsInRemote || false
-        options.remotePath = options.remotePath || ''
-        this.remotePath = options.remotePath.startsWith('/') ? options.remotePath : '/' + options.remotePath
     }
 
     /**
@@ -149,6 +119,13 @@ export class Suite extends Nugget implements ISuite {
             // or old tests have been removed.
             this.updateStatus()
         })
+    }
+
+    /**
+     * Whether the suite can run tests selectively.
+     */
+    public canToggleTests (): boolean {
+        return this.framework.canToggleTests
     }
 
     /**
@@ -199,20 +176,34 @@ export class Suite extends Nugget implements ISuite {
      * Get this suite's local file path, regardless of running remotely.
      */
     public getFilePath (): string {
-        if (!this.runsInRemote) {
+        if (!this.framework.runsInRemote) {
             return this.file
         }
 
-        return Path.join(this.root, Path.relative(Path.join(this.remotePath, this.path), this.file))
+        return Path.join(
+            this.framework.fullPath,
+            Path.relative(
+                Path.join(
+                    this.framework.getRemotePath(),
+                    this.framework.path
+                ),
+                this.file
+            )
+        )
     }
 
     /**
      * Get this suite's relative file path.
      */
     public getRelativePath (): string {
-        return this.runsInRemote && this.remotePath === '/'
+        return this.framework.runsInRemote && this.framework.getRemotePath() === '/'
             ? this.file
-            : Path.relative(this.runsInRemote ? (Path.join(this.remotePath, this.path)) : this.root, this.file)
+            : Path.relative(
+                this.framework.runsInRemote
+                    ? (Path.join(this.framework.getRemotePath(), this.framework.path))
+                    : this.framework.fullPath,
+                this.file
+            )
     }
 
     /**
@@ -297,52 +288,5 @@ export class Suite extends Nugget implements ISuite {
                     })
             })
         })
-    }
-
-    /**
-     * Highlight a matching portion of the suite's file path
-     * (i.e. as a result of searching).
-     *
-     * @param keyword The string within the file path to highlight.
-     * @param cleanup Whether matching is exact or fuzzy.
-     */
-    public highlight (keyword: string, exact: boolean = false): void {
-        if (!keyword) {
-            this.highlighted = ''
-            return
-        }
-
-        if (exact) {
-            this.highlighted = this.getDisplayName()
-                .replace(new RegExp(escapeRegExp(keyword), 'i'), match => {
-                    return [...match].map(char => '[==]' + char + '[!==]').join('')
-                })
-            return
-        }
-
-        const keywordChars = [...keyword]
-        let match = keywordChars.shift()
-        this.highlighted = [...this.getDisplayName()].map(char => {
-            if (char.toUpperCase() === match) {
-                // Cycle to next keyword character before highlighting character.
-                match = keywordChars.shift()
-                return '[==]' + char + '[!==]'
-            }
-            return char
-        }).join('')
-    }
-
-    /**
-     * Get the suite's highlighted path.
-     */
-    public getHighlight (): string {
-        return this.highlighted
-    }
-
-    /**
-     * Whether the suite is currently highlighted.
-     */
-    public isHighlighted (): boolean {
-        return !!this.highlighted
     }
 }

@@ -10,7 +10,7 @@
             @contextmenu.native.stop.prevent="onContextMenu(output, 0, $event)"
         >
             <template v-slot:header>
-                <Filename :path="toRelative(output.file)" :truncate="true" @dblclick.native.stop />
+                <Filename :key="toRelative(output.file)" :truncate="true" @dblclick.native.stop />
                 <span v-if="output.line" class="Label Label--outline Label--idle">{{ 'Line :0' | set(output.line) }}</span>
                 <span class="Label Label--outline Label--normal"><code>{{ output.type }}</code></span>
             </template>

@@ -1,2 +1,2 @@
-Fixed:
-    - Fix Windows tab cycling always going forwards
+Changed:
+    - Updated Electron to 6.1.7

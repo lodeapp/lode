@@ -7,6 +7,7 @@ const electron = require('electron')
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
 const webpackHotMiddleware = require('webpack-hot-middleware')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 const mainConfig = require('./webpack.main.config')
 const rendererConfig = require('./webpack.renderer.config')
@@ -143,6 +144,20 @@ function electronLog (data, color) {
 }
 
 function init () {
+    // Analyze bundle (i.e. yarn size / yarn size:main)
+    if (process.env.SIZE) {
+        const config = process.env.PROCESS === 'main' ? mainConfig : rendererConfig
+        config.plugins.push(new BundleAnalyzerPlugin())
+        config.mode = 'production'
+        webpack(config, (err, stats) => {
+            if (err || stats.hasErrors()) {
+                console.error(err)
+                return
+            }
+        })
+        return
+    }
+
     Promise.all([startRenderer(), startMain()])
         .then(() => {
             startElectron()

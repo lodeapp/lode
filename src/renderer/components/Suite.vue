@@ -21,14 +21,14 @@
                     @mousedown.stop="onSelectiveClick"
                 >
             </div>
-            <Filename :path="relativePath" :key="relativePath" />
+            <Filename :key="suite.getRelativePath()" />
         </template>
         <Test
             v-for="test in suite.tests"
             :key="test.getId()"
             :test="test"
             :running="running"
-            :selectable="canToggleTests"
+            :selectable="suite.canToggleTests()"
             @open="openFile"
             @activate="onChildActivation"
         />
@@ -66,29 +66,14 @@ export default {
                 this.suite.toggleSelected(checked)
             }
         },
-        canToggleTests () {
-            return this.suite.canToggleTests
-        },
-        testsLoaded () {
-            return this.suite.testsLoaded()
-        },
         isChildActive () {
             return this.context.indexOf(this.suite.getId()) > -1
-        },
-        relativePath () {
-            return this.suite.isHighlighted() ? this.suite.getHighlight() : this.suite.getRelativePath()
         },
         filePath () {
             return this.suite.getFilePath()
         },
         remoteFilePath () {
             return this.suite.file !== this.filePath ? this.suite.file : false
-        },
-        fileExists () {
-            return this.$fileystem.exists(this.filePath)
-        },
-        fileIsSafe () {
-            return this.$fileystem.isSafe(this.filePath)
         },
         ...mapGetters({
             context: 'context/context'
@@ -124,7 +109,7 @@ export default {
                     click: () => {
                         this.$root.copyToClipboard(this.filePath)
                     },
-                    enabled: this.fileExists
+                    enabled: this.fileExists()
                 })
                 .addIf(this.remoteFilePath, {
                     id: 'copy-remote',
@@ -170,10 +155,16 @@ export default {
                 })
                 .open()
         },
+        fileExists () {
+            return this.$fileystem.exists(this.filePath)
+        },
+        fileIsSafe () {
+            return this.$fileystem.isSafe(this.filePath)
+        },
         // This is used by the suite's children to see if they
         // can add an "open" item to their context menu.
         canOpen () {
-            return this.fileIsSafe && this.fileExists
+            return this.fileIsSafe() && this.fileExists()
         },
         openFile () {
             this.$root.openFile(this.filePath)

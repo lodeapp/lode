@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "Lode",
-  "version": "0.28.2",
+  "version": "0.28.4",
   "author": "Tomas Buteler <info@lode.run>",
   "description": "A universal GUI for unit testing",
   "license": "MIT",
@@ -36,7 +36,9 @@
     "coverage": "yarn run tests --coverage",
     "tests": "jest --config .jestrc.json",
     "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter src",
-    "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src"
+    "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src",
+    "size": "SIZE=true yarn run dev",
+    "size:main": "SIZE=true PROCESS=main yarn run dev"
   },
   "dependencies": {
     "@bugsnag/js": "^6.4.0",
@@ -54,7 +56,7 @@
     "has-ansi": "^3.0.0",
     "highlight.js": "^9.15.6",
     "is-unc-path": "^1.0.0",
-    "latinize": "^0.4.0",
+    "latinize": "^0.4.1",
     "lodash": "^4.17.13",
     "markdown-it": "^10.0.0",
     "overlayscrollbars": "^1.7.1",
@@ -131,6 +133,7 @@
     "vue-style-loader": "^4.1.2",
     "vue-template-compiler": "^2.5.16",
     "webpack": "^4.39.2",
+    "webpack-bundle-analyzer": "^3.7.0",
     "webpack-cli": "^3.3.6",
     "webpack-dev-server": "^3.1.4",
     "webpack-hot-middleware": "^2.22.2"

@@ -2,8 +2,8 @@
     <div
         class="status"
         :class="[`status--${status}`]"
-        :aria-label="displayStatus(status)"
-        :title="displayStatus(status)"
+        :aria-label="label"
+        :title="label"
     >
         <span class="indicator">
             <Icon v-if="status === 'error'" symbol="issue-opened" />
@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { labels } from '@lib/frameworks/status'
 
 export default {
     name: 'Indicator',
@@ -25,10 +25,10 @@ export default {
             required: true
         }
     },
-    computed: {
-        ...mapGetters({
-            displayStatus: 'status/display'
-        })
+    data () {
+        return {
+            label: labels[this.status]
+        }
     }
 }
 </script>
