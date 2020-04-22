@@ -172,7 +172,21 @@ class ApplicationMenu {
                     label: __DARWIN__ ? 'Zoom Out' : 'Zoom out',
                     accelerator: 'CmdOrCtrl+-',
                     click: zoom(ZoomDirection.Out),
-                }
+                },
+                separator,
+                {
+                        label: __DARWIN__
+                            ? 'Toggle Developer Tools'
+                            : 'Toggle developer tools',
+                        accelerator: (() => {
+                            return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
+                        })(),
+                        click(item: any, focusedWindow: Electron.BrowserWindow) {
+                            if (focusedWindow) {
+                                focusedWindow.webContents.toggleDevTools()
+                            }
+                        },
+                    }
             ]
         })
 
@@ -313,20 +327,6 @@ class ApplicationMenu {
                     {
                         label: 'Crash renderer process',
                         click: emit('crash'),
-                    },
-                    separator,
-                    {
-                        label: __DARWIN__
-                            ? 'Toggle Developer Tools'
-                            : 'Toggle developer tools',
-                        accelerator: (() => {
-                            return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
-                        })(),
-                        click(item: any, focusedWindow: Electron.BrowserWindow) {
-                            if (focusedWindow) {
-                                focusedWindow.webContents.toggleDevTools()
-                            }
-                        },
                     }
                 ]
             })

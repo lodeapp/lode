@@ -1,12 +1,11 @@
 <template>
     <span class="filename" :class="{ 'filename--truncate': truncate }">
         <template v-if="truncate">
-            <span v-html="'&lrm;'"></span>{{ dir }}<strong>{{ name }}</strong>{{ extension }}
+            <span v-html="'&lrm;'"></span>{{ dir }}<strong>{{ name }}</strong>
         </template>
         <template v-else>
             <span class="dir" v-html="dir"></span>
             <span class="name" v-html="name"></span>
-            <span class="extension" v-html="extension"></span>
         </template>
     </span>
 </template>
@@ -26,8 +25,7 @@ export default {
     data () {
         return {
             dir: '',
-            name: '',
-            extension: ''
+            name: ''
         }
     },
     created () {
