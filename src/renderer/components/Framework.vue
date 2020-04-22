@@ -3,16 +3,18 @@
         <div
             class="framework has-status"
             :class="[
-                `status--${framework.status}`,
+                `status--${status}`,
                 selective ? 'selective' : ''
             ]"
         >
             <div class="header">
                 <div class="title">
-                    <Indicator :status="framework.status" />
+                    <Indicator :status="status" />
                     <h3 class="heading">
                         <span class="name">
-                            {{ framework.getDisplayName() }}
+                            <!-- @TODO: redo display name -->
+                            <!-- {{ framework.getDisplayName() }} -->
+                            {{ framework.name }}
                         </span>
                     </h3>
                     <div class="actions">
@@ -48,7 +50,7 @@
                     </div>
                 </div>
                 <div class="filters">
-                    <template v-if="!framework.empty()">
+                    <template v-if="count > 0">
                         <Ledger :framework="framework" />
                     </template>
                     <template v-else-if="queued">
@@ -61,7 +63,7 @@
                         No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
                     </template>
                 </div>
-                <div v-if="framework.count()" class="filters search" :class="{ 'is-searching': keyword }">
+                <div v-if="count" class="filters search" :class="{ 'is-searching': keyword }">
                     <Icon symbol="search" />
                     <input
                         type="search"
@@ -70,7 +72,7 @@
                         v-model="keyword"
                     >
                 </div>
-                <div v-if="framework.count()" class="filters sort">
+                <div v-if="count" class="filters sort">
                     <button type="button" @click.prevent="onSortClick">
                         <template v-if="visible > 1">
                             {{ ':n item sorted by :0|:n items sorted by :0' | plural(visible) | set(displaySort) }}
@@ -87,7 +89,7 @@
                     v-for="suite in suites"
                     :suite="suite"
                     :running="running"
-                    :key="suite.getId()"
+                    :key="suite.file"
                     @activate="onChildActivation"
                     @refresh="refresh"
                     @filter="filterSuite"
@@ -106,7 +108,8 @@
 </template>
 
 <script>
-import _debounce from 'lodash/debounce'
+// @TODO: redo filtering
+// import _debounce from 'lodash/debounce'
 import { ipcRenderer } from 'electron'
 import { Menu } from '@main/menu'
 import { sortDisplayName } from '@lib/frameworks/sort'
@@ -114,6 +117,7 @@ import Indicator from '@/components/Indicator'
 import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
+import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
     name: 'Framework',
@@ -123,60 +127,91 @@ export default {
         Suite
     },
     mixins: [
-        HasFrameworkMenu
+        HasFrameworkMenu,
+        HasStatus
     ],
     props: {
+        repositoryId: {
+            type: String,
+            required: true
+        },
         framework: {
             type: Object,
             required: true
         }
     },
     computed: {
+        frameworkContext () {
+            return {
+                repository: this.repositoryId,
+                framework: this.model.id
+            }
+        },
+        model () {
+            return this.framework
+        },
+        count () {
+            return this.framework.suites.length
+        },
         suites () {
-            return this.framework.getSuites()
+            // @TODO: redo suite filtering
+            // return this.framework.getSuites()
+            return this.framework.suites
         },
         running () {
-            return this.framework.status === 'running'
+            return this.status === 'running'
         },
         refreshing () {
-            return this.framework.status === 'refreshing'
+            return this.status === 'refreshing'
         },
         queued () {
-            return this.framework.status === 'queued'
+            return this.status === 'queued'
         },
         selective () {
-            return this.framework.isSelective()
+            // @TODO: redo is selective
+            // return this.framework.isSelective()
+            return false
         },
         selected () {
             return this.framework.getSelected()
         },
         filtering () {
-            return this.framework.hasFilters()
+            // @TODO: redo filtering
+            // return this.framework.hasFilters()
+            return false
         },
         visible () {
-            return this.framework.getSuites().length
+            return this.suites.length
         },
         hidden () {
-            return this.framework.count() - this.visible
+            return this.count - this.visible
         },
         noResults () {
-            return this.hidden === this.framework.count()
+            return this.hidden === this.count
         },
-        keyword: {
-            get () {
-                return this.framework.getFilter('keyword')
-            },
-            set: _debounce(function (value) {
-                this.framework.setFilter('keyword', value)
-            }, 150)
+        // @TODO: redo filtering
+        // keyword: {
+        //     get () {
+        //         return this.framework.getFilter('keyword')
+        //     },
+        //     set: _debounce(function (value) {
+        //         this.framework.setFilter('keyword', value)
+        //     }, 150)
+        // },
+        keyword () {
+            return ''
         },
-        sort: {
-            get () {
-                return this.framework.getSort()
-            },
-            set (value) {
-                this.framework.setSort(value)
-            }
+        // @TODO: redo sorting
+        // sort: {
+        //     get () {
+        //         return this.framework.getSort()
+        //     },
+        //     set (value) {
+        //         this.framework.setSort(value)
+        //     }
+        // },
+        sort () {
+            return 'name'
         },
         displaySort () {
             return sortDisplayName(this.sort)
@@ -193,13 +228,13 @@ export default {
     },
     methods: {
         refresh () {
-            this.framework.refresh()
+            ipcRenderer.send('framework-refresh', this.frameworkContext)
         },
         start () {
-            this.framework.start()
+            ipcRenderer.send('framework-start', this.frameworkContext)
         },
         async stop () {
-            await this.framework.stop()
+            ipcRenderer.send('framework-stop', this.frameworkContext)
         },
         onChildActivation (context) {
             this.$emit('activate', context)

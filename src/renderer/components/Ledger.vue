@@ -1,11 +1,12 @@
 <template>
     <div class="progress-breakdown">
         <span
-            v-if="framework.isSelective() || isActive('selected')"
             class="Label Label--outline Label--selected"
             :class="[isActive('selected') ? 'is-active' : '']"
             @click="toggle('selected')"
         >
+            <!-- @TODO: redo selective -->
+            <!-- v-if="framework.isSelective() || isActive('selected')" -->
             <span>{{ selected.length }}</span>
             {{ 'selected|selected' | plural(selected.length) }}
         </span>
@@ -53,17 +54,23 @@ export default {
     },
     computed: {
         selected () {
-            return this.framework.getSelected().suites
+            // @TODO: redo selected
+            // return this.framework.getSelected().suites
+            return []
         },
         ledger () {
             // Modify ledger to consolidate running and queued states.
-            const ledger = _cloneDeep(this.framework.getLedger())
+            // @TODO: redo ledger
+            // const ledger = _cloneDeep(this.framework.getLedger())
+            const ledger = {}
             ledger['queued'] += ledger['running']
             delete ledger['running']
             return ledger
         },
         filters () {
-            return this.framework.getFilter('status') || []
+            // @TODO: redo filtering
+            // return this.framework.getFilter('status') || []
+            return []
         }
     },
     methods: {

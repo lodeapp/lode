@@ -4,7 +4,8 @@ import '@lib/tracker/renderer'
 import Vue from 'vue'
 import store from './store'
 import * as Path from 'path'
-import { isArray, isEmpty } from 'lodash'
+import { isArray, pickBy } from 'lodash'
+import { mapGetters } from 'vuex'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@lib/state'
 import { Project } from '@lib/frameworks/project'
@@ -63,14 +64,18 @@ export default new Vue({
     },
     data () {
         return {
-            modals: [],
-            project: null
+            modals: []
         }
     },
     computed: {
         progress () {
-            return this.project ? this.project.getProgress() : -1
-        }
+            // @TODO: redo progress calculation
+            // return this.project ? this.project.getProgress() : -1
+            return -1
+        },
+        ...mapGetters({
+            project: 'project/project'
+        })
     },
     watch: {
         progress (value) {
@@ -108,6 +113,9 @@ export default new Vue({
                 this.loadProject(projectOptions)
                 this.gc()
             })
+            .on('status', (event, id, status) => {
+                this.$store.dispatch('status/set', { id, status })
+            })
             .on('menu-event', (event, { name, properties }) => {
                 switch (name) {
                     case 'show-about':
@@ -119,7 +127,7 @@ export default new Vue({
                     case 'new-project':
                         this.addProject()
                         break
-                    case 'switch-project':
+                    case 'project-switch':
                         this.switchProject(properties)
                         break
                     case 'select-all':
@@ -219,9 +227,58 @@ export default new Vue({
                     })
             }
         },
-        loadProject (projectOptions) {
-            projectOptions = JSON.parse(projectOptions)
-            this.project = isEmpty(projectOptions) ? null : new Project(projectOptions)
+        mapStatuses (project) {
+            const mapTests = (nugget, statuses) => {
+                (nugget.tests || []).forEach(test => {
+                    statuses[test.id] = null
+                    mapTests(test, statuses)
+                })
+            }
+            const statuses = {
+                [project.id]: null
+            }
+            project.repositories.forEach(repository => {
+                statuses[repository.id] = null
+                repository.frameworks.forEach(framework => {
+                    statuses[framework.id] = null
+                    framework.suites.forEach(suite => {
+                        statuses[suite.file] = null
+                        mapTests(suite, statuses)
+                    })
+                })
+            })
+
+            return statuses
+        },
+        loadProject (project) {
+            console.log(pickBy)
+            project = JSON.parse(project)
+            const compactTests = nugget => {
+                nugget.tests = (nugget.tests || []).map(compactTests)
+                return pickBy(nugget, property => {
+                    return property && !!property.length
+                })
+            }
+            project.repositories = project.repositories.map(repository => {
+                repository.frameworks = repository.frameworks.map(framework => {
+                    framework.suites = framework.suites.map(suite => {
+                        suite.tests = suite.tests.map(compactTests)
+                        return pickBy(suite, property => {
+                            return property && !!property.length
+                        })
+                    })
+                    return framework
+                })
+                return repository
+            })
+            this.$store.replaceState({
+                ...this.$store.state,
+                ...{ status: {
+                    ...this.$store.state.status,
+                    ...{ status: this.mapStatuses(project) }
+                }},
+                project
+            })
             this.refreshApplicationMenu()
         },
         addProject () {
@@ -301,7 +358,7 @@ export default new Vue({
                 })
         },
         handleSwitchProject (projectId) {
-            ipcRenderer.send('switch-project', projectId)
+            ipcRenderer.send('project-switch', projectId)
         },
         addRepositories (directories) {
             if (!isArray(directories)) {

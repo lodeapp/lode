@@ -1,16 +1,26 @@
 <template>
     <div
-        class="header"
-        @mousedown="activate"
-        @contextmenu="openMenu"
+        class="sidebar-item sidebar-item--framework has-status"
+        :class="[
+            `status--${status}`,
+            isActive ? 'is-active' : ''
+        ]"
     >
-        <div class="title">
-            <Indicator :status="framework.status" />
-            <h4 class="heading">
-                <span class="name" :title="framework.getDisplayName()">
-                    {{ framework.getDisplayName() }}
-                </span>
-            </h4>
+        <div
+            class="header"
+            @mousedown="activate"
+            @contextmenu="openMenu"
+        >
+            <div class="title">
+                <Indicator :status="status" />
+                <h4 class="heading">
+                    <span class="name" :title="framework.name">
+                        <!-- @TODO: redo display name; also line above -->
+                        <!-- {{ framework.getDisplayName() }} -->
+                        {{ framework.name }}
+                    </span>
+                </h4>
+            </div>
         </div>
     </div>
 </template>
@@ -18,6 +28,7 @@
 <script>
 import Indicator from '@/components/Indicator'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
+import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
     name: 'SidebarFramework',
@@ -25,7 +36,8 @@ export default {
         Indicator
     },
     mixins: [
-        HasFrameworkMenu
+        HasFrameworkMenu,
+        HasStatus
     ],
     props: {
         framework: {
@@ -33,10 +45,17 @@ export default {
             required: true
         }
     },
+    computed: {
+        model () {
+            return this.framework
+        },
+        isActive () {
+            return this.$store.getters['context/framework'] === this.framework.id
+        }
+    },
     methods: {
         activate () {
-            this.framework.setActive(true)
-            this.$emit('activate', this.framework.getId())
+            this.$emit('activate', this.framework.id)
         }
     }
 }

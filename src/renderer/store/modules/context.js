@@ -1,34 +1,43 @@
 export default {
     namespaced: true,
     state: {
-        active: '',
-        context: []
+        test: '',
+        framework: '',
+        breadcrumbs: []
     },
     mutations: {
         ADD (state, payload) {
-            if (state.context.indexOf(payload) === -1) {
-                state.context.unshift(payload)
+            if (state.breadcrumbs.indexOf(payload) === -1) {
+                state.breadcrumbs.unshift(payload)
             }
         },
         SET (state, payload) {
             const test = payload.pop()
-            payload.forEach(context => {
-                state.context.unshift(context)
+            payload.forEach(breadcrumbs => {
+                state.breadcrumbs.unshift(breadcrumbs)
             })
-            state.active = test
+            state.test = test
         },
         TEST (state, payload) {
-            state.active = payload
-            state.context = []
+            state.test = payload
+            state.breadcrumbs = []
+        },
+        FRAMEWORK (state, payload) {
+            state.framework = payload
+            state.breadcrumbs = []
+        },
+        CLEAR_FRAMEWORK (state) {
+            state.framework = ''
+            state.breadcrumbs = []
         },
         CLEAR (state) {
-            state.active = ''
-            state.context = []
+            state.test = ''
+            state.breadcrumbs = []
         }
     },
     actions: {
         onRemove: ({ state, commit, dispatch }, modelId) => {
-            if (state.context.indexOf(modelId) > -1) {
+            if (state.breadcrumbs.indexOf(modelId) > -1) {
                 commit('CLEAR')
             }
         },
@@ -38,13 +47,16 @@ export default {
     },
     getters: {
         test: (state) => {
-            return state.active
+            return state.test
         },
-        context: (state) => {
-            return state.context
+        framework: (state) => {
+            return state.framework
+        },
+        breadcrumbs: (state) => {
+            return state.breadcrumbs
         },
         inContext: (state) => id => {
-            return state.context.indexOf(id) > -1
+            return state.breadcrumbs.indexOf(id) > -1
         }
     }
 }

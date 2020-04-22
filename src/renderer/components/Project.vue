@@ -15,13 +15,13 @@
                         <div
                             class="sidebar-item has-status"
                             :class="[
-                                `status--${$root.project.status}`,
+                                `status--${status}`,
                                 menuActive ? 'is-menu-active' : '',
                             ]"
                         >
                             <div class="header">
                                 <div class="title" @contextmenu="openMenu">
-                                    <Indicator :status="$root.project.status" />
+                                    <Indicator :status="status" />
                                     <h4 class="heading">
                                         <span class="name" :title="$root.project.name">
                                             {{ $root.project.name }}
@@ -43,28 +43,12 @@
                         <SidebarRepository
                             v-for="repository in $root.project.repositories"
                             :repository="repository"
-                            :key="repository.getId()"
+                            :key="repository.id"
                             @scan="$root.scanRepository"
                             @locate="locateRepository"
                             @remove="removeRepository"
-                        >
-                            <div
-                                v-for="framework in repository.frameworks"
-                                :key="framework.getId()"
-                                class="sidebar-item sidebar-item--framework has-status"
-                                :class="[
-                                    `status--${framework.status}`,
-                                    framework.isActive() ? 'is-active' : ''
-                                ]"
-                            >
-                                <SidebarFramework
-                                    :framework="framework"
-                                    @activate="onFrameworkActivation($event, repository)"
-                                    @manage="manageFramework"
-                                    @remove="removeFramework"
-                                />
-                            </div>
-                        </SidebarRepository>
+                            @framework-activate="onFrameworkActivation"
+                        />
                     </section>
                 </Pane>
                 <Pane id="list">
@@ -101,7 +85,8 @@
                         <Framework
                             v-if="framework"
                             v-show="!frameworkLoading"
-                            :key="framework.getId()"
+                            :key="framework.id"
+                            :repository-id="repository.id"
                             :framework="framework"
                             @manage="manageFramework"
                             @remove="removeFramework"
@@ -115,7 +100,7 @@
                     <Results
                         v-if="framework"
                         v-show="!repositoryMissing && !frameworkLoading"
-                        :key="framework.getId()"
+                        :key="framework.id"
                         :context="fullContext"
                         @reset="resetContext"
                     />
@@ -127,28 +112,29 @@
 
 <script>
 import { remote } from 'electron'
+import _findIndex from 'lodash/findIndex'
 import Pane from '@/components/Pane'
 import SidebarRepository from '@/components/SidebarRepository'
-import SidebarFramework from '@/components/SidebarFramework'
 import Indicator from '@/components/Indicator'
 import Framework from '@/components/Framework'
 import Results from '@/components/Results'
 import Split from '@/components/Split'
 import HasProjectMenu from '@/components/mixins/HasProjectMenu'
+import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
     name: 'Project',
     components: {
         Pane,
         SidebarRepository,
-        SidebarFramework,
         Indicator,
         Framework,
         Results,
         Split
     },
     mixins: [
-        HasProjectMenu
+        HasProjectMenu,
+        HasStatus
     ],
     data () {
         return {
@@ -161,11 +147,14 @@ export default {
         }
     },
     computed: {
+        model () {
+            return this.$root.project
+        },
         fullContext () {
             return [this.repository, this.framework].concat(this.context)
         },
         noRepositories () {
-            return this.$root.project.empty()
+            return !(this.$root.project.repositories || []).length
         },
         emptyStatus () {
             return this.$root.project.repositories.length === this.$root.project.repositories.filter(repository => {
@@ -177,22 +166,26 @@ export default {
         }
     },
     created () {
-        this.$root.project.on('ready', () => {
-            // Register initial listeners once the project is fully built.
-            // Subsequent listeners will be registered when the appropriate
-            // events are emitted. All listeners are purged from the parent
-            // model when a child is removed.
-            this.$root.project.on('repositoryAdded', this.onRepositoryAdded)
-            this.$root.project.repositories.forEach(repository => {
-                repository.on('frameworkAdded', this.onFrameworkAdded)
-                repository.frameworks.forEach(framework => {
-                    this.registerFrameworkListeners(framework)
-                })
-            })
-            // Trigger project change to mount default model.
-            this.onProjectChange()
-            this.loading = false
-        })
+        this.onProjectChange()
+        this.loading = false
+
+        // @TODO: redo listeners
+        // this.$root.project.on('ready', () => {
+        //     // Register initial listeners once the project is fully built.
+        //     // Subsequent listeners will be registered when the appropriate
+        //     // events are emitted. All listeners are purged from the parent
+        //     // model when a child is removed.
+        //     this.$root.project.on('repositoryAdded', this.onRepositoryAdded)
+        //     this.$root.project.repositories.forEach(repository => {
+        //         repository.on('frameworkAdded', this.onFrameworkAdded)
+        //         repository.frameworks.forEach(framework => {
+        //             this.registerFrameworkListeners(framework)
+        //         })
+        //     })
+        //     // Trigger project change to mount default model.
+        //     this.onProjectChange()
+        //     this.loading = false
+        // })
     },
     methods: {
         scanEmptyRepositories () {
@@ -200,22 +193,22 @@ export default {
                 // Scan repositories which are currently empty.
                 this.$root.project.repositories
                     .filter(repository => !repository.frameworks.length)
-                    .map(repository => repository.getId()),
+                    .map(repository => repository.id),
                 0
             )
         },
         removeRepository (repository) {
             // If the repository we're removing is the currently active one,
             // make sure to clear the Vuex context, too
-            if (repository.getId() === this.repository.getId()) {
+            if (repository.id === this.repository.id) {
                 this.resetContext()
                 this.$store.commit('context/CLEAR')
                 this.repository = null
                 this.framework = null
             }
 
-            this.$root.onModelRemove(repository.getId())
-            this.$root.project.removeRepository(repository.getId())
+            this.$root.onModelRemove(repository.id)
+            this.$root.project.removeRepository(repository.id)
             this.$root.project.save()
             this.onProjectChange()
         },
@@ -240,7 +233,7 @@ export default {
         removeFramework (frameworkId) {
             // If the framework we're removing is the currently active one,
             // make sure to clear the Vuex context, too
-            if (frameworkId === this.framework.getId()) {
+            if (frameworkId === this.framework.id) {
                 this.resetContext()
                 this.$store.commit('context/CLEAR')
             }
@@ -264,21 +257,15 @@ export default {
                     this.$root.onModelRemove(suiteId)
                 })
         },
-        clearActiveFrameworks (except = null) {
-            this.$root.project.repositories.forEach(repository => {
-                repository.frameworks.forEach(framework => {
-                    if (framework.getId() !== except) {
-                        framework.setActive(false)
-                    }
-                })
-            })
+        clearActiveFramework (except = null) {
+            this.$store.context.commit('context/CLEAR_FRAMEWORK')
         },
         onProjectChange () {
             let setRepository = this.repository
             let setFramework = this.framework
 
             if (!this.$root.project.repositories.length) {
-                this.clearActiveFrameworks()
+                this.clearActiveFramework()
                 this.repository = null
                 this.framework = null
             } else {
@@ -288,7 +275,9 @@ export default {
                     }
 
                     repository.frameworks.forEach(framework => {
-                        if (!setFramework || framework.isActive()) {
+                        // @TODO: redo is active
+                        // if (!setFramework || framework.isActive()) {
+                        if (!setFramework || false) {
                             setFramework = framework
                             setRepository = repository
                         }
@@ -300,9 +289,10 @@ export default {
                 }
                 if (setFramework) {
                     this.framework = setFramework
-                    if (!this.framework.isActive()) {
-                        this.framework.setActive(true)
-                    }
+                    // @TODO: redo is active
+                    // if (!this.framework.isActive()) {
+                    //     this.framework.setActive(true)
+                    // }
                 }
             }
 
@@ -317,31 +307,36 @@ export default {
         onFrameworkAdded (framework) {
             this.registerFrameworkListeners(framework)
             framework.setActive(true)
-            this.clearActiveFrameworks(framework.getId())
             this.onProjectChange()
+        },
+        onFrameworkChanged (frameworkId) {
+            this.$store.commit('context/FRAMEWORK', frameworkId)
+            this.frameworkLoading = true
         },
         onFrameworkMounted () {
             this.frameworkLoading = false
         },
         onFrameworkActivation (frameworkId, repository) {
             // Do nothing when clicking on currently active framework.
-            if (frameworkId === this.framework.getId()) {
+            if (frameworkId === this.framework.id) {
                 return
             }
-
+            // @TODO: new means of checking if repository exist...
             // Check if repository still exists before proceeding, but continue
             // even if it does not so we can better handle changes or relocation.
-            repository.exists()
-
-            this.clearActiveFrameworks(frameworkId)
-
+            // repository.exists()
+            // If given repository somehow doesn't contain the framework, abort.
+            const frameworkIndex = _findIndex(repository.frameworks, framework => framework.id === frameworkId)
+            if (frameworkIndex === -1) {
+                return
+            }
+            this.onFrameworkChanged(frameworkId)
             // If there's currently an active test, remember it.
             if (this.context.length) {
-                this.persistContext[this.framework.getId()] = this.context.map(context => context.getId())
+                this.persistContext[this.framework.id] = this.context.map(context => context.id || context.file)
             }
             this.resetContext()
             this.$store.commit('context/CLEAR')
-            this.frameworkLoading = true
             setTimeout(() => {
                 // Activate the test previously active for this framework.
                 if (this.persistContext[frameworkId]) {
@@ -351,10 +346,10 @@ export default {
                 // once context has been set.
                 this.$nextTick(() => {
                     this.repository = repository
-                    this.framework = this.repository.getFrameworkById(frameworkId)
+                    this.framework = this.repository.frameworks[frameworkIndex]
                     this.$root.gc()
                 })
-            }, 10)
+            })
         },
         onTestActivation (context) {
             this.context = context

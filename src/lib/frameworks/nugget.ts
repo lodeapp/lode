@@ -1,5 +1,5 @@
 import { debounce, find, get, isArray, max, maxBy, pickBy, sum } from 'lodash'
-import { EventEmitter } from 'events'
+import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
 
@@ -7,7 +7,7 @@ import { Status, parseStatus } from '@lib/frameworks/status'
  * Nuggets are the testable elements inside a repository
  * (i.e. either a suite or a test).
  */
-export abstract class Nugget extends EventEmitter {
+export abstract class Nugget extends ProjectEventEmitter {
     protected status: Status = 'idle'
     public tests: Array<ITest> = []
     public selected: boolean = false
@@ -97,7 +97,9 @@ export abstract class Nugget extends EventEmitter {
         let test: ITest | undefined | boolean = force ? false : this.findTest(result.id)
         if (!test) {
             test = this.newTest(result)
-            test.on('selective', this.updateCountsListener)
+            test
+                .on('project-event', this.projectEventListener.bind(this))
+                .on('selective', this.updateCountsListener)
             // If nugget is selected, newly created test should be, too.
             test.selected = this.selected
             this.tests.push(test)
@@ -327,29 +329,6 @@ export abstract class Nugget extends EventEmitter {
         if (this.canToggleTests() && cascade !== false) {
             this.tests.forEach(test => {
                 test.toggleSelected(this.selected)
-            })
-        }
-        return Promise.resolve()
-    }
-
-    /**
-     * Toggle this nugget's expanded state.
-     *
-     * @param toggle Whether it should be expanded or collapsed. Leave blank for inverting toggle.
-     * @param cascade Whether toggling should apply to nugget's children.
-     */
-    public async toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void> {
-        this.expanded = typeof toggle === 'undefined' ? !this.expanded : toggle
-
-        if (this.expanded) {
-            await this.bloom()
-        } else {
-            await this.wither()
-        }
-
-        if (cascade !== false) {
-            this.tests.forEach(test => {
-                test.toggleExpanded(this.expanded)
             })
         }
         return Promise.resolve()

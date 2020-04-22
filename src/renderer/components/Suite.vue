@@ -3,7 +3,7 @@
         :model="suite"
         class="suite"
         :class="{ 'is-child-active': isChildActive }"
-        :has-children="suite.testsLoaded() && suite.hasChildren()"
+        :has-children="suite.testsLoaded && suite.tests.length > 0"
         @contextmenu.native.stop.prevent="onContextMenu"
         @keydown.native.self.stop.prevent.space="onSelectiveClick"
     >
@@ -25,7 +25,7 @@
         </template>
         <Test
             v-for="test in suite.tests"
-            :key="test.getId()"
+            :key="test.id"
             :test="test"
             :running="running"
             :selectable="suite.canToggleTests()"
@@ -67,16 +67,18 @@ export default {
             }
         },
         isChildActive () {
-            return this.context.indexOf(this.suite.getId()) > -1
+            return this.context.indexOf(this.suite.file) > -1
         },
         filePath () {
-            return this.suite.getFilePath()
+            // @TODO: redo path
+            // return this.suite.getFilePath()
+            return this.suite.file
         },
         remoteFilePath () {
             return this.suite.file !== this.filePath ? this.suite.file : false
         },
         ...mapGetters({
-            context: 'context/context'
+            context: 'context/breadcrumbs'
         })
     },
     methods: {
@@ -88,7 +90,7 @@ export default {
         },
         onChildActivation (context) {
             context.unshift(this.suite)
-            this.$store.commit('context/ADD', this.suite.getId())
+            this.$store.commit('context/ADD', this.suite.file)
             this.$emit('activate', context)
         },
         onContextMenu (event) {

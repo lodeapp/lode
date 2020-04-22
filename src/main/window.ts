@@ -3,22 +3,37 @@ import { pick } from 'lodash'
 import { BrowserWindow as BaseBrowserWindow } from 'electron'
 import { MenuEvent } from './menu'
 import { state } from '@lib/state'
-import { Project as ProjectState } from '@lib/state/project'
+import { ProjectIdentifier, Project } from '@lib/frameworks/project'
 
 let windowStateKeeper: any | null = null
 
-class BrowserWindow extends BaseBrowserWindow {
-    protected projectState: ProjectState | null = null
+export class BrowserWindow extends BaseBrowserWindow {
+
+    protected project: Project | null = null
+
     public setProject(projectId: string): void {
-        this.projectState = state.project(projectId)
+        const identifier: ProjectIdentifier = pick(state.project(projectId).get('options', {}), ['id', 'name'])
+        this.project = new Project(identifier)
+
+        // @TODO: when setting another project, make sure previous one's
+        // listeners are no longer active.
+        this.project.on('project-event', this.projectEventListener.bind(this))
+    }
+
+    public getProject(): Project | null {
+        return this.project
     }
 
     public getProjectOptions (): string {
-        return JSON.stringify(this.projectState ? pick(this.projectState.get('options', {}), ['id', 'name']) : {})
+        return JSON.stringify(this.project ? this.project.persist() : {})
     }
 
     public isBusy (): boolean {
-        return !!this.projectState && this.projectState.isBusy()
+        return !!this.project && this.project.isBusy()
+    }
+
+    protected projectEventListener ({ event, args }: { event: string, args: Array<any> }): void {
+        this.webContents.send(event, ...args)
     }
 }
 
@@ -91,7 +106,10 @@ export class Window {
         })
 
         this.window.webContents.on('did-finish-load', () => {
-            this.window.webContents.send('did-finish-load')
+            this.window.webContents.send('did-finish-load', {
+                focus: this.window.isFocused(),
+                projectOptions: this.window.getProjectOptions()
+            })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
         })
 
@@ -113,8 +131,12 @@ export class Window {
         this.window.on('closed', fn)
     }
 
-    public setProject (projectId: string) {
+    public setProject (projectId: string): void {
         this.window.setProject(projectId)
+    }
+
+    public getProject (): Project | null {
+        return this.window.getProject()
     }
 
     public getProjectOptions (): string {

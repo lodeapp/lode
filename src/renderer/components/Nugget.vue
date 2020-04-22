@@ -31,9 +31,13 @@
 <script>
 import { mapGetters } from 'vuex'
 import { labels } from '@lib/frameworks/status'
+import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
     name: 'Nugget',
+    mixins: [
+        HasStatus
+    ],
     props: {
         model: {
             type: Object,
@@ -50,10 +54,7 @@ export default {
     },
     computed: {
         show () {
-            return this.model.expanded
-        },
-        status () {
-            return this.model.getStatus()
+            return this.$store.getters['expand/expanded'](this.identifier)
         },
         label () {
             return labels[this.status]
@@ -61,14 +62,6 @@ export default {
         ...mapGetters({
             inContext: 'context/inContext'
         })
-    },
-    mounted () {
-        // If nugget is already in context (i.e. persisted contexts) then expand
-        // it, because in all likelihood a child test will have to be activated,
-        // in which case it needs to be mounted first.
-        if (this.inContext(this.model.getId())) {
-            this.model.toggleExpanded()
-        }
     },
     methods: {
         handleActivate (event) {
@@ -109,7 +102,11 @@ export default {
             if (!this.hasChildren) {
                 return
             }
-            this.model.toggleExpanded(!this.model.expanded, this.$input.hasAltKey(event))
+            this.toggleExpanded()
+        },
+        toggleExpanded () {
+            // this.$input.hasAltKey(event)
+            this.$store.dispatch('expand/toggle', { id: this.identifier })
         },
 
         /**

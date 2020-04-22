@@ -3,10 +3,10 @@ import * as Fs from 'fs-extra'
 import { chunk, find, findIndex, get, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import * as fuzzy from 'fuzzysearch'
-import { EventEmitter } from 'events'
 import { ProcessId, IProcess } from '@lib/process/process'
 import { ProcessBridge } from '@lib/process/bridge'
 import { queue } from '@lib/process/queue'
+import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, StatusLedger, parseStatus } from '@lib/frameworks/status'
@@ -14,6 +14,14 @@ import { ProgressLedger } from '@lib/frameworks/progress'
 import { FrameworkSort, sortOptions, sortDirection } from '@lib/frameworks/sort'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 import { SSHOptions } from '@lib/process/ssh'
+
+/**
+ * Context to identify a framework with.
+ */
+export type FrameworkContext = {
+    repository: string
+    framework: string
+}
 
 /**
  * A list of test suites.
@@ -65,7 +73,7 @@ export type FrameworkDefaults = {
 /**
  * The Framework interface.
  */
-export interface IFramework extends EventEmitter {
+export interface IFramework extends ProjectEventEmitter {
     name: string
     type: string
     command: string
@@ -122,7 +130,7 @@ export interface IFramework extends EventEmitter {
  * The Framework class represents a testing framework (e.g. Jest, PHPUnit)
  * and contains a set of test suites (files).
  */
-export abstract class Framework extends EventEmitter implements IFramework {
+export abstract class Framework extends ProjectEventEmitter implements IFramework {
     public name!: string
     public type!: string
     public command!: string
@@ -503,7 +511,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         })
         .then(() => {
             this.killed = false
-            this.idleQueued()
+            // this.idleQueued()
             this.updateStatus()
             this.emit('change', this)
             log.info(`Stopping ${this.name}`)
@@ -556,7 +564,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected async run (): Promise<void> {
         this.suites.forEach(suite => {
-            suite.queue(false)
+            // suite.queue(false)
         })
 
         return new Promise((resolve, reject) => {
@@ -577,7 +585,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
                         this.cleanStaleSuites()
                         this.suites.forEach(suite => {
-                            suite.queue(false)
+                            // suite.queue(false)
                         })
                         this.report(this.runArgs())
                             .then((outcome: string) => {
@@ -612,7 +620,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         suites.forEach(suite => {
-            suite.queue(this.selective)
+            // suite.queue(this.selective)
         })
 
         return new Promise((resolve, reject) => {
@@ -773,7 +781,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param message The error message
      */
     protected onError (message: string): void {
-        this.idleQueued()
+        // this.idleQueued()
         this.updateStatus('error')
         this.emit('error', message)
         this.emit('change', this)
@@ -786,13 +794,13 @@ export abstract class Framework extends EventEmitter implements IFramework {
     protected idleQueued (): void {
         if (this.selective) {
             this.selected.suites.forEach(suite => {
-                suite.idleQueued(true)
+                // suite.idleQueued(true)
             })
             return
         }
 
         this.suites.forEach(suite => {
-            suite.idleQueued(false)
+            // suite.idleQueued(false)
         })
     }
 
@@ -879,6 +887,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             if (!suite) {
                 suite = this.newSuite(result)
                 suite
+                    .on('project-event', this.projectEventListener.bind(this))
                     .on('selective', this.updateSelected.bind(this))
                     .on('status', this.updateLedger.bind(this))
                 this.updateLedger(suite.getStatus())
@@ -1226,9 +1235,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 // If suite is to be excluded, de-select it and un-expand it.
                 if (suite.selected) {
                     suite.toggleSelected(false, true)
-                }
-                if (suite.expanded) {
-                    suite.toggleExpanded(false, true)
                 }
 
                 return false

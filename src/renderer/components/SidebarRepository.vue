@@ -2,14 +2,14 @@
     <div
         class="sidebar-item has-status"
         :class="[
-            `status--${repository.status}`,
+            `status--${status}`,
             menuActive ? 'is-menu-active' : '',
             repository.frameworks.length ? '' : 'is-empty'
         ]"
     >
         <div class="header" @contextmenu="openMenu" @click="toggle">
             <div class="title">
-                <Indicator :status="repository.status" />
+                <Indicator :status="status" />
                 <h4 class="heading">
                     <Icon class="toggle" :symbol="show ? 'chevron-down' : 'chevron-right'" />
                     <span class="name" :title="repository.name">
@@ -19,22 +19,36 @@
             </div>
         </div>
         <div v-if="show">
-            <slot></slot>
+            <SidebarFramework
+                v-for="framework in repository.frameworks"
+                :key="framework.id"
+                :framework="framework"
+                @activate="onFrameworkActivation"
+            />
+            <!-- @TODO: redo listeners -->
+            <!--
+                @manage="manageFramework"
+                @remove="removeFramework"
+             -->
         </div>
     </div>
 </template>
 
 <script>
 import Indicator from '@/components/Indicator'
+import SidebarFramework from '@/components/SidebarFramework'
 import HasRepositoryMenu from '@/components/mixins/HasRepositoryMenu'
+import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
     name: 'SidebarRepository',
     components: {
-        Indicator
+        Indicator,
+        SidebarFramework
     },
     mixins: [
-        HasRepositoryMenu
+        HasRepositoryMenu,
+        HasStatus
     ],
     props: {
         repository: {
@@ -43,8 +57,13 @@ export default {
         }
     },
     computed: {
+        model () {
+            return this.repository
+        },
         show () {
-            return this.repository.isExpanded()
+            // @TODO: redo is expanded
+            // return this.repository.isExpanded()
+            return true
         }
     },
     methods: {
@@ -59,6 +78,9 @@ export default {
         },
         toggle () {
             this.repository.toggle()
+        },
+        onFrameworkActivation (frameworkId) {
+            this.$emit('framework-activate', frameworkId, this.repository)
         }
     }
 }

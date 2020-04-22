@@ -23,7 +23,6 @@ export interface ISuite extends Nugget {
     rebuildTests (result: ISuiteResult): void
     canToggleTests (): boolean
     toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
-    toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
     idle (selective: boolean): void
     queue (selective: boolean): void
     error (selective: boolean): void

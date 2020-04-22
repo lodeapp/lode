@@ -104,7 +104,7 @@ class ApplicationMenu {
                             label: project.name,
                             type: <MenuItemType>'checkbox',
                             checked: currentProject === project.id,
-                            click: emit('switch-project', project.id, (menuItem: Electron.MenuItem) => {
+                            click: emit('project-switch', project.id, (menuItem: Electron.MenuItem) => {
                                 // Don't toggle the item, unless it's the current project,
                                 // as the switch might still be cancelled by the user. If
                                 // switch project is confirmed, menu will be rebuilt anyway.

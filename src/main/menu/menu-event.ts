@@ -22,4 +22,4 @@ export type MenuEvent =
   | 'show-preferences'
   | 'stop-all'
   | 'stop-framework'
-  | 'switch-project'
+  | 'project-switch'
