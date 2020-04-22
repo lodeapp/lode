@@ -6651,10 +6651,10 @@ latest-version@^5.0.0:
   dependencies:
     package-json "^6.3.0"
 
-latinize@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/latinize/-/latinize-0.4.0.tgz#27439b21e4eb7506c37717b638f1df2c49075a48"
-  integrity sha1-J0ObIeTrdQbDdxe2OPHfLEkHWkg=
+latinize@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/latinize/-/latinize-0.4.1.tgz#1b82d6e0687f2722dfdf67a19302fc345a772738"
+  integrity sha512-A4miz97dNF+EbNgQdayPAEtud5eRpCGPwJy7JQFD1hBQcOzOgBS4m721zoREuPqpz1yKm8hYT2ANlh7pirapsA==
 
 lazy-cache@^1.0.3:
   version "1.0.4"
