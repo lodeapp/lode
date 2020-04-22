@@ -3,7 +3,6 @@
         class="nugget"
         :class="[
             `status--${status}`,
-            `is-${model.selected ? 'selected' : 'unselected'}`,
             `is-${show ? 'expanded' : 'collapsed'}`,
             hasChildren ? 'has-children' : ''
         ]"
