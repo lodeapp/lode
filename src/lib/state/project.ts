@@ -39,7 +39,7 @@ export class Project {
     }
 
     public save (options: ProjectOptions): void {
-        options = {...this.store.get('options'), ...options}
+        options = { ...this.store.get('options'), ...options }
         this.store.set('options', options)
         if (ipcRenderer) {
             ipcRenderer.emit('project-saved', JSON.stringify(options))

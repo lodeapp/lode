@@ -1,4 +1,4 @@
-import _get from 'lodash/get'
+import { get } from 'lodash'
 import { Status } from '@lib/frameworks/status'
 import { Nugget } from '@lib/frameworks/nugget'
 
@@ -79,8 +79,8 @@ export class Test extends Nugget implements ITest {
         // We allow result status to be empty from reporters, but we'll
         // amend them before building the actual test.
         result.status = this.getRecursiveStatus(result)
-        this.updateStatus(result.status || 'idle')
         this.result = this.mergeResults(result)
+        this.updateStatus(result.status || 'idle')
         if (result.tests && result.tests.length) {
             this.debriefTests(result.tests, cleanup)
         }
@@ -95,7 +95,7 @@ export class Test extends Nugget implements ITest {
     protected mergeResults (result: ITestResult): ITestResult {
         // If result already has the "first seen" property, it's likely the test
         // being persisted from store, in which case we'll let that date prevail.
-        if (_get(result, 'stats.first')) {
+        if (get(result, 'stats.first')) {
             return result
         }
         // Otherwise, set the "first seen" date according to current existing
@@ -103,9 +103,10 @@ export class Test extends Nugget implements ITest {
         result.stats = {
             ...(result.stats || {}),
             ...{
-                first: _get(this.result || {}, 'stats.first', new Date().toISOString())
+                first: get(this.result || {}, 'stats.first', new Date().toISOString())
             }
         }
+
         return result
     }
 
@@ -143,7 +144,7 @@ export class Test extends Nugget implements ITest {
      * Get this nugget's console output.
      */
     public getConsole (): Array<any> {
-        return this.result.console!
+        return this.result.console || []
     }
 
     /**

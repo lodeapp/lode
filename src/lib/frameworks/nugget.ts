@@ -1,4 +1,4 @@
-import { debounce, find, get, max, maxBy, sum } from 'lodash'
+import { debounce, find, get, isArray, max, maxBy, pickBy, sum } from 'lodash'
 import { EventEmitter } from 'events'
 import { ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
@@ -13,7 +13,6 @@ export abstract class Nugget extends EventEmitter {
     public selected: boolean = false
     public expanded: boolean = false
     public partial: boolean = false
-    public canToggleTests: boolean = false
     public updateCountsListener: any
     public result?: any
 
@@ -61,17 +60,19 @@ export abstract class Nugget extends EventEmitter {
      * @param status Which status to recursively set. False will persist current status.
      */
     protected defaults (result: ITestResult, status: Status | false = 'idle'): ITestResult {
-        return {
+        return (pickBy({
             id: result.id,
             name: result.name,
-            displayName: result.displayName || result.name,
+            displayName: result.displayName !== result.name ? result.displayName : null,
             status: status ? status : result.status,
             feedback: result.feedback,
             console: result.console,
             params: result.params,
             stats: result.stats,
             tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
-        }
+        }, property => {
+            return isArray(property) ? property.length : !!property
+        }) as any)
     }
 
     /**
@@ -300,6 +301,13 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
+     * Whether the nugget can run tests selectively.
+     */
+    public canToggleTests (): boolean {
+        return false
+    }
+
+    /**
      * Toggle this nugget's selected state.
      *
      * @param toggle Whether it should be toggled on or off. Leave blank for inverting toggle.
@@ -316,7 +324,7 @@ export abstract class Nugget extends EventEmitter {
         }
 
         this.emit('selective', this)
-        if (this.canToggleTests && cascade !== false) {
+        if (this.canToggleTests() && cascade !== false) {
             this.tests.forEach(test => {
                 test.toggleSelected(this.selected)
             })
@@ -412,7 +420,7 @@ export abstract class Nugget extends EventEmitter {
         this.setFresh(false)
         this.updateStatus('idle')
         this.tests
-            .filter(test => selective && this.canToggleTests ? test.selected : true)
+            .filter(test => selective && this.canToggleTests() ? test.selected : true)
             .forEach(test => {
                 test.resetResult()
                 test.idle(selective)
@@ -436,7 +444,7 @@ export abstract class Nugget extends EventEmitter {
         this.setFresh(false)
         this.updateStatus('queued')
         this.tests
-            .filter(test => selective && this.canToggleTests ? test.selected : true)
+            .filter(test => selective && this.canToggleTests() ? test.selected : true)
             .forEach(test => {
                 test.resetResult()
                 test.queue(selective)
@@ -460,7 +468,7 @@ export abstract class Nugget extends EventEmitter {
         this.setFresh(false)
         this.updateStatus('error')
         this.tests
-            .filter(test => selective && this.canToggleTests ? test.selected : true)
+            .filter(test => selective && this.canToggleTests() ? test.selected : true)
             .forEach(test => {
                 test.resetResult()
                 test.error(selective)

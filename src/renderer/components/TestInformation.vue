@@ -9,7 +9,7 @@
             <tbody>
                 <tr>
                     <td class="heading">Status</td>
-                    <td>{{ displayStatus(status) }}</td>
+                    <td>{{ label }}</td>
                 </tr>
                 <tr v-if="typeof stats.first !== 'undefined'">
                     <td class="heading">First seen</td>
@@ -37,7 +37,7 @@
 <script>
 import moment from 'moment'
 import _isEmpty from 'lodash/isEmpty'
-import { mapGetters } from 'vuex'
+import { labels } from '@lib/frameworks/status'
 import Duration from '@/components/Duration'
 
 export default {
@@ -57,6 +57,7 @@ export default {
     },
     data () {
         return {
+            label: labels[this.status],
             timeKey: this.$string.random(),
             timeInterval: null
         }
@@ -70,10 +71,7 @@ export default {
         },
         firstSeen () {
             return moment(this.stats.first).format('MMMM Do YYYY, HH:mm:ss')
-        },
-        ...mapGetters({
-            displayStatus: 'status/display'
-        })
+        }
     },
     mounted () {
         this.timeInterval = window.setInterval(() => {

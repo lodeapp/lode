@@ -3,8 +3,8 @@
         class="nugget"
         :class="[
             `status--${status}`,
-            `is-${selectStatus}`,
-            `is-${expandStatus}`,
+            `is-${model.selected ? 'selected' : 'unselected'}`,
+            `is-${show ? 'expanded' : 'collapsed'}`,
             hasChildren ? 'has-children' : ''
         ]"
         tabindex="0"
@@ -12,7 +12,7 @@
     >
         <div class="seam"></div>
         <div class="header" @click.prevent @mousedown.prevent.stop="handleActivate">
-            <div class="status" :aria-label="displayStatus(status)" :title="displayStatus(status)">
+            <div class="status" :aria-label="label" :title="label">
                 <Icon v-if="status === 'error'" symbol="issue-opened" />
             </div>
             <div class="header-inner">
@@ -30,6 +30,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { labels } from '@lib/frameworks/status'
 
 export default {
     name: 'Nugget',
@@ -41,10 +42,6 @@ export default {
         hasChildren: {
             type: Boolean,
             default: true
-        },
-        expanded: {
-            type: Boolean,
-            default: false
         },
         handler: {
             type: Function,
@@ -58,14 +55,10 @@ export default {
         status () {
             return this.model.getStatus()
         },
-        selectStatus () {
-            return this.model.selected ? 'selected' : 'unselected'
-        },
-        expandStatus () {
-            return this.show ? 'expanded' : 'collapsed'
+        label () {
+            return labels[this.status]
         },
         ...mapGetters({
-            displayStatus: 'status/display',
             inContext: 'context/inContext'
         })
     },

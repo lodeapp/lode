@@ -28,13 +28,13 @@ const addendum = {
     licenses: {
         'cycle@1.0.3': 'Public domain',
         'file-stream-rotator@0.3.1': 'MIT',
-        'latinize@0.4.0': 'BSD',
+        'latinize@0.4.1': 'BSD',
         'json-schema@0.2.3': 'BSD'
     },
     // Author information for copyright notices, in case we don't have the
     // actual license text and need to generate it on-the-fly.
     authors: {
-        'latinize@0.4.0': 'Jakub Dundalek <dundalek@gmail.com> (http://dundalek.com/)',
+        'latinize@0.4.1': 'Jakub Dundalek <dundalek@gmail.com> (http://dundalek.com/)',
         'json-schema@0.2.3': 'Kris Zyp',
         'desktop@1.6.1': 'GitHub, Inc',
         'electron@2.0.8': 'GitHub, Inc'

@@ -82,9 +82,12 @@ export interface IFramework extends EventEmitter {
     process?: ProcessId
     status: FrameworkStatus
     queue: { [index: string]: Function }
+    canToggleTests: boolean
 
     getId (): string
     getDisplayName (): string
+    getRemotePath (): string
+    getFullRemotePath (): string
     start (): void
     refresh (): void
     stop (): Promise<void>
@@ -138,9 +141,10 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public killed: boolean = false
     public status: FrameworkStatus = 'loading'
     public queue: { [index: string]: Function } = {}
+    public canToggleTests: boolean = false
 
     protected id!: string
-    protected version?: string
+
     protected parsed: boolean = false
     protected ready: boolean = false
     protected suites: Array<ISuite> = []
@@ -378,8 +382,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
             || this.sshHost !== options.sshHost
             || this.repositoryPath !== options.repositoryPath
 
-        const pathsChanged = options.path !== this.path || (this.runsInRemote && options.remotePath !== this.remotePath)
-
         // If framework doesn't run in remote, reset
         // SSH options, lest they linger inadvertently.
         if (!options.runsInRemote) {
@@ -402,10 +404,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
             // will potentially have changed (i.e. their absolute file path)
             this.resetSuites()
             this.refresh()
-        } else if (pathsChanged) {
-            // Else if only framework paths have changed, we'll refresh just
-            // the underlying suites to update their relative paths.
-            this.refreshSuites()
         }
 
         this.emit('change', this)
@@ -423,13 +421,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     public getDisplayName (): string {
         return this.name
-    }
-
-    /**
-     * Get this framework's version, if set.
-     */
-    public getVersion (): string | undefined {
-        return this.version
     }
 
     /**
@@ -858,12 +849,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected newSuite (result: ISuiteResult): ISuite {
         const suiteClass = this.suiteClass()
-        return new suiteClass({
-            path: this.path,
-            root: this.fullPath,
-            runsInRemote: this.runsInRemote,
-            remotePath: this.getRemotePath()
-        }, result)
+        return new suiteClass(this, result)
     }
 
     /**
@@ -920,20 +906,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
         this.selective = false
         this.resetLedger()
-    }
-
-    /**
-     * Refresh the framework's suites with new instantiation options.
-     */
-    protected refreshSuites (): void {
-        this.suites.forEach(suite => {
-            suite.refresh({
-                path: this.path,
-                root: this.fullPath,
-                runsInRemote: this.runsInRemote,
-                remotePath: this.getRemotePath()
-            })
-        })
     }
 
     /**
@@ -1221,7 +1193,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
     public getSuites (): Array<ISuite> {
         if (!this.hasFilters()) {
             return this.sortSuites(this.suites.map(suite => {
-                // suite.highlight('')
                 return suite
             }))
         }
@@ -1235,10 +1206,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
                     // Exact searches require filtering string to be contained
                     // within a suite's file path.
                     match = suite.getFilePath().toUpperCase().indexOf(keyword) > -1
-                    // suite.highlight(keyword, true)
                 } else {
                     match = fuzzy(keyword, suite.getDisplayName().toUpperCase())
-                    // suite.highlight(keyword)
                 }
             }
             if (this.filters.status) {
@@ -1254,9 +1223,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
             }
 
             if (!match) {
-                // Reset suite highlight.
-                // suite.highlight('')
-
                 // If suite is to be excluded, de-select it and un-expand it.
                 if (suite.selected) {
                     suite.toggleSelected(false, true)

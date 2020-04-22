@@ -10,6 +10,7 @@ import { FrameworkValidator } from '@lib/frameworks/validator'
 import { FrameworkSort } from '@lib/frameworks/sort'
 
 export class PHPUnit extends Framework {
+    public canToggleTests: boolean = true
 
     static readonly defaults: FrameworkDefaults = {
         all: {
