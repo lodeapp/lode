@@ -22,7 +22,23 @@
     "entitlements": "./support/entitlements.mac.plist",
     "entitlementsInherit": "./support/entitlements.mac.plist",
     "target": [
-      "zip"
+      "zip",
+      "dmg"
+    ]
+  },
+  "dmg": {
+    "contents": [
+      {
+        "x": 410,
+        "y": 150,
+        "type": "link",
+        "path": "/Applications"
+      },
+      {
+        "x": 130,
+        "y": 150,
+        "type": "file"
+      }
     ]
   },
   "win": {
