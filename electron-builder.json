@@ -47,9 +47,6 @@
       "appimage"
     ]
   },
-  "publish": [{
-    "provider": "github"
-  }],
   "publish": [
     {
       "provider": "github"
