@@ -42,6 +42,7 @@ jobs:
       run: yarn build:dev
       env:
         CI: true
+        DEBUG: electron-builder
         CSC_LINK: ${{ secrets.macOSDeveloperCertificate_base64 }}
         CSC_KEY_PASSWORD: ${{ secrets.macOSDeveloperCertificate_password }}
         APPLE_ID: ${{ secrets.APPLE_ID }}
