@@ -31,7 +31,7 @@ jobs:
       run: (get-content node_modules\builder-util\out\util.js | %{$_ -replace "\^\[\\w", "^[.\w"}) | set-content node_modules\builder-util\out\util.js
       shell: powershell
     - name: Test
-      run: yarn tests
+      run: yarn test
       env:
         CI: true
     - name: Release

@@ -22,7 +22,7 @@ jobs:
     - name: Lint
       run: yarn lint
     - name: Test
-      run: yarn tests
+      run: yarn test
       env:
         CI: true
     - name: Package
