@@ -36,6 +36,12 @@ jobs:
       run: yarn build:dev
       env:
         CI: true
+        CSC_LINK: ${{ secrets.macOSDeveloperCertificate_base64 }}
+        CSC_KEY_PASSWORD: ${{ secrets.macOSDeveloperCertificate_password }}
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+        WIN_CSC_LINK: ${{ secrets.CodeSigningCertificate_base64 }}
+        WIN_CSC_KEY_PASSWORD: ${{ secrets.CodeSigningCertificate_password }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Upload artifacts

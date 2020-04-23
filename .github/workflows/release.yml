@@ -46,6 +46,3 @@ jobs:
         WIN_CSC_KEY_PASSWORD: ${{ secrets.CodeSigningCertificate_password }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        AWS_S3_BUCKET: ${{ secrets.LODE_RELEASES_BUCKET }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.S3_PUBLISHER_KEY }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PUBLISHER_SECRET }}
