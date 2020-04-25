@@ -11,27 +11,25 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [10.x]
+        node-version: [12.x]
         os: [macOS-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v1
+    - name: System info (macOS)
+      if: matrix.os == 'macOS-latest'
+      run: sw_vers
+    - name: System info (Windows)
+      if: matrix.os == 'windows-latest'
+      run: systeminfo
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       run: yarn install
-    - name: Monkey patch electron-builder (macOS)
-      if: matrix.os == 'macOS-latest'
-      run: sed -i '' 's/\^\[\\w/\^\[.\\w/g' node_modules/builder-util/out/util.js
-      shell: bash
-    - name: Monkey patch electron-builder (Windows)
-      if: matrix.os == 'windows-latest'
-      run: (get-content node_modules\builder-util\out\util.js | %{$_ -replace "\^\[\\w", "^[.\w"}) | set-content node_modules\builder-util\out\util.js
-      shell: powershell
     - name: Test
-      run: yarn tests
+      run: yarn test
       env:
         CI: true
     - name: Release
@@ -46,6 +44,3 @@ jobs:
         WIN_CSC_KEY_PASSWORD: ${{ secrets.CodeSigningCertificate_password }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        AWS_S3_BUCKET: ${{ secrets.LODE_RELEASES_BUCKET }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.S3_PUBLISHER_KEY }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PUBLISHER_SECRET }}

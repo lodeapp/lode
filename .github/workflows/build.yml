@@ -17,11 +17,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [10.x]
+        node-version: [12.x]
         os: [macOS-latest, windows-latest, ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v1
+    - name: System info (macOS)
+      if: matrix.os == 'macOS-latest'
+      run: sw_vers
+    - name: System info (Windows)
+      if: matrix.os == 'windows-latest'
+      run: systeminfo
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
@@ -29,13 +35,19 @@ jobs:
     - name: Install dependencies
       run: yarn install
     - name: Test
-      run: yarn tests
+      run: yarn test
       env:
         CI: true
     - name: Build
       run: yarn build:dev
       env:
         CI: true
+        CSC_LINK: ${{ secrets.macOSDeveloperCertificate_base64 }}
+        CSC_KEY_PASSWORD: ${{ secrets.macOSDeveloperCertificate_password }}
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+        WIN_CSC_LINK: ${{ secrets.CodeSigningCertificate_base64 }}
+        WIN_CSC_KEY_PASSWORD: ${{ secrets.CodeSigningCertificate_password }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Upload artifacts
