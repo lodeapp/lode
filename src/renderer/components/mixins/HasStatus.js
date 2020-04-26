@@ -1,10 +1,27 @@
+import { ipcRenderer } from 'electron'
+
 export default {
+    data () {
+        return {
+            status: this.model.status || 'idle'
+        }
+    },
     computed: {
         identifier () {
             return this.model.id || this.model.file
-        },
-        status () {
-            return this.$store.getters['status/status'](this.identifier)
+        }
+    },
+    created () {
+        // @TODO: check frameworks being instantiated twice when switching in sidebar
+        // console.log('created')
+        ipcRenderer.on(`${this.identifier}:status`, this.statusListener)
+    },
+    destroyed () {
+        ipcRenderer.removeListener(`${this.identifier}:status`, this.statusListener)
+    },
+    methods: {
+        statusListener (event, to, from) {
+            this.status = to
         }
     }
 }

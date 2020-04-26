@@ -4,7 +4,7 @@
             <div v-if="loading" class="loading">
                 <div class="loading-group">
                     <div class="spinner"></div>
-                    <h2>{{ 'Loading :0…' | set($root.project.name) }}</h2>
+                    <h2>{{ 'Loading :0…' | set(model.name) }}</h2>
                 </div>
             </div>
             <Split v-else :class="{ 'empty': noRepositories || emptyStatus || frameworkLoading || repositoryMissing }">
@@ -23,8 +23,8 @@
                                 <div class="title" @contextmenu="openMenu">
                                     <Indicator :status="status" />
                                     <h4 class="heading">
-                                        <span class="name" :title="$root.project.name">
-                                            {{ $root.project.name }}
+                                        <span class="name" :title="model.name">
+                                            {{ model.name }}
                                         </span>
                                     </h4>
                                 </div>
@@ -41,8 +41,8 @@
                         <div class="shadow"></div>
                         <div class="shadow-overlay"></div>
                         <SidebarRepository
-                            v-for="repository in $root.project.repositories"
-                            :repository="repository"
+                            v-for="repository in model.repositories"
+                            :model="repository"
                             :key="repository.id"
                             @scan="$root.scanRepository"
                             @locate="locateRepository"
@@ -55,7 +55,7 @@
                     <div class="draggable"></div>
                     <template v-if="noRepositories">
                         <div class="cta">
-                            <h2>{{ 'Add repositories to :0' | set($root.project.name) }}</h2>
+                            <h2>{{ 'Add repositories to :0' | set(model.name) }}</h2>
                             <p>Lode can have multiple repositories and frameworks inside a project.</p>
                             <button class="btn btn-primary" @click="this.$root.addRepositories">Add repositories</button>
                         </div>
@@ -87,7 +87,7 @@
                             v-show="!frameworkLoading"
                             :key="framework.id"
                             :repository-id="repository.id"
-                            :framework="framework"
+                            :model="framework"
                             @manage="manageFramework"
                             @remove="removeFramework"
                             @activate="onTestActivation"
@@ -136,6 +136,12 @@ export default {
         HasProjectMenu,
         HasStatus
     ],
+    props: {
+        model: {
+            type: Object,
+            required: true
+        }
+    },
     data () {
         return {
             context: [],
@@ -147,17 +153,14 @@ export default {
         }
     },
     computed: {
-        model () {
-            return this.$root.project
-        },
         fullContext () {
             return [this.repository, this.framework].concat(this.context)
         },
         noRepositories () {
-            return !(this.$root.project.repositories || []).length
+            return !(this.model.repositories || []).length
         },
         emptyStatus () {
-            return this.$root.project.repositories.length === this.$root.project.repositories.filter(repository => {
+            return this.model.repositories.length === this.model.repositories.filter(repository => {
                 return !repository.frameworks.length
             }).length
         },
@@ -170,13 +173,13 @@ export default {
         this.loading = false
 
         // @TODO: redo listeners
-        // this.$root.project.on('ready', () => {
+        // this.model.on('ready', () => {
         //     // Register initial listeners once the project is fully built.
         //     // Subsequent listeners will be registered when the appropriate
         //     // events are emitted. All listeners are purged from the parent
         //     // model when a child is removed.
-        //     this.$root.project.on('repositoryAdded', this.onRepositoryAdded)
-        //     this.$root.project.repositories.forEach(repository => {
+        //     this.model.on('repositoryAdded', this.onRepositoryAdded)
+        //     this.model.repositories.forEach(repository => {
         //         repository.on('frameworkAdded', this.onFrameworkAdded)
         //         repository.frameworks.forEach(framework => {
         //             this.registerFrameworkListeners(framework)
@@ -191,7 +194,7 @@ export default {
         scanEmptyRepositories () {
             this.$root.scanRepositories(
                 // Scan repositories which are currently empty.
-                this.$root.project.repositories
+                this.model.repositories
                     .filter(repository => !repository.frameworks.length)
                     .map(repository => repository.id),
                 0
@@ -208,8 +211,8 @@ export default {
             }
 
             this.$root.onModelRemove(repository.id)
-            this.$root.project.removeRepository(repository.id)
-            this.$root.project.save()
+            this.model.removeRepository(repository.id)
+            this.model.save()
             this.onProjectChange()
         },
         async locateRepository (repository) {
@@ -264,12 +267,12 @@ export default {
             let setRepository = this.repository
             let setFramework = this.framework
 
-            if (!this.$root.project.repositories.length) {
+            if (!this.model.repositories.length) {
                 this.clearActiveFramework()
                 this.repository = null
                 this.framework = null
             } else {
-                this.$root.project.repositories.forEach(repository => {
+                this.model.repositories.forEach(repository => {
                     if (!setRepository) {
                         setRepository = repository
                     }

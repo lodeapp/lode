@@ -29,7 +29,7 @@ export interface ISuite extends Nugget {
     idleQueued (selective: boolean): void
     errorQueued (selective: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
-    persist (): ISuiteResult
+    persist (status?: Status | false): ISuiteResult
     setFresh (fresh: boolean): void
     isFresh (): boolean
     countChildren (): number
@@ -68,15 +68,17 @@ export class Suite extends Nugget implements ISuite {
 
     /**
      * Prepares the suite for persistence.
+     *
+     * @param status Which status to recursively set on tests. False will persist current status.
      */
-    public persist (): ISuiteResult {
+    public persist (status: Status | false = 'idle'): ISuiteResult {
         return {
             file: this.file,
             meta: this.getMeta(),
             testsLoaded: this.testsLoaded(),
             tests: this.bloomed
-                ? this.tests.map((test: ITest) => test.persist())
-                : this.getTestResults().map((test: ITestResult) => this.defaults(test)),
+                ? this.tests.map((test: ITest) => test.persist(status))
+                : this.getTestResults().map((test: ITestResult) => this.defaults(test, status)),
         }
     }
 

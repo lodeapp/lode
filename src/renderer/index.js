@@ -4,11 +4,9 @@ import '@lib/tracker/renderer'
 import Vue from 'vue'
 import store from './store'
 import * as Path from 'path'
-import { isArray, pickBy } from 'lodash'
-import { mapGetters } from 'vuex'
+import { isArray, isEmpty } from 'lodash'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 import { state } from '@lib/state'
-import { Project } from '@lib/frameworks/project'
 import { Titlebar, Color } from 'custom-electron-titlebar'
 
 // Styles
@@ -31,8 +29,8 @@ import Focusable from './directives/focusable'
 
 // Global / recursive components
 import App from '@/components/App'
-import Test from '@/components/Test'
 import Icon from '@/components/Icon'
+import Nugget from '@/components/Nugget'
 
 Vue.config.productionTip = false
 
@@ -52,7 +50,7 @@ Vue.directive('focusable', Focusable)
 
 // Register global or recursive components
 Vue.component('Icon', Icon)
-Vue.component('Test', Test)
+Vue.component('Nugget', Nugget)
 
 if (process.env.NODE_ENV !== 'development') {
     window.__static = Path.join(__dirname, '/static').replace(/\\/g, '\\\\')
@@ -64,7 +62,8 @@ export default new Vue({
     },
     data () {
         return {
-            modals: []
+            modals: [],
+            project: null
         }
     },
     computed: {
@@ -72,10 +71,7 @@ export default new Vue({
             // @TODO: redo progress calculation
             // return this.project ? this.project.getProgress() : -1
             return -1
-        },
-        ...mapGetters({
-            project: 'project/project'
-        })
+        }
     },
     watch: {
         progress (value) {
@@ -251,34 +247,42 @@ export default new Vue({
             return statuses
         },
         loadProject (project) {
-            console.log(pickBy)
             project = JSON.parse(project)
-            const compactTests = nugget => {
-                nugget.tests = (nugget.tests || []).map(compactTests)
-                return pickBy(nugget, property => {
-                    return property && !!property.length
+            if (isEmpty(project)) {
+                this.project = null
+            } else {
+                this.$store.replaceState({
+                    ...this.$store.state
+                    // ...{ status: this.mapStatuses(project) }
                 })
-            }
-            project.repositories = project.repositories.map(repository => {
-                repository.frameworks = repository.frameworks.map(framework => {
-                    framework.suites = framework.suites.map(suite => {
-                        suite.tests = suite.tests.map(compactTests)
-                        return pickBy(suite, property => {
-                            return property && !!property.length
-                        })
+                project.repositories = project.repositories.map(repository => {
+                    repository.frameworks = repository.frameworks.map(framework => {
+                        delete framework.suites
+                        return framework
                     })
-                    return framework
+                    return repository
                 })
-                return repository
-            })
-            this.$store.replaceState({
-                ...this.$store.state,
-                ...{ status: {
-                    ...this.$store.state.status,
-                    ...{ status: this.mapStatuses(project) }
-                }},
-                project
-            })
+                this.project = project
+            }
+            // const compactTests = nugget => {
+            //     nugget.tests = (nugget.tests || []).map(compactTests)
+            //     return omit(pickBy(nugget, property => {
+            //         return property && !!property.length
+            //     }), ['feedback', 'console', 'params', 'stats'])
+            // }
+            // project.repositories = project.repositories.map(repository => {
+            //     repository.frameworks = repository.frameworks.map(framework => {
+            //         framework.suites = framework.suites.map(suite => {
+            //             suite.tests = suite.tests.map(compactTests)
+            //             return pickBy(suite, property => {
+            //                 return property && !!property.length
+            //             })
+            //         })
+            //         return framework
+            //     })
+            //     return repository
+            // })
+
             this.refreshApplicationMenu()
         },
         addProject () {
@@ -287,7 +291,9 @@ export default new Vue({
                     // Stop current project before adding a new one.
                     (this.project ? this.project.stop() : Promise.resolve()).then(() => {
                         store.commit('context/CLEAR')
-                        const project = new Project(options)
+                        // @TODO: redo project creation without Node integration
+                        // const project = new Project(options)
+                        const project = {}
                         ipcRenderer.once('project-switched', () => {
                             this.addRepositories()
                         })

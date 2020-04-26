@@ -7,8 +7,8 @@ export default {
             menu: new Menu()
                 .add({
                     // @TODO: redo display name
-                    // label: this.framework.getDisplayName(),
-                    label: this.framework.name,
+                    // label: this.model.getDisplayName(),
+                    label: this.model.name,
                     enabled: false
                 })
                 .add({
@@ -43,12 +43,12 @@ export default {
                 .open()
         },
         manage () {
-            this.$emit('manage', this.framework)
+            this.$emit('manage', this.model)
         },
         remove () {
-            this.$modal.confirm('RemoveFramework', { framework: this.framework })
+            this.$modal.confirm('RemoveFramework', { framework: this.model })
                 .then(() => {
-                    this.$emit('remove', this.framework.getId())
+                    this.$emit('remove', this.model.getId())
                 })
                 .catch(() => {})
         }

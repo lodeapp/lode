@@ -1,11 +1,10 @@
 export default {
     namespaced: true,
     state: {
-        status: {}
     },
     mutations: {
         SET (state, payload) {
-            state.status[payload.id] = payload.status
+            state[payload.id] = payload.status
         }
     },
     actions: {
@@ -15,7 +14,7 @@ export default {
     },
     getters: {
         status: (state) => id => {
-            return state.status[id] || 'idle'
+            return state[id] || 'idle'
         }
     }
 }

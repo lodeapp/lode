@@ -22,7 +22,11 @@ export abstract class ProjectEventEmitter extends EventEmitter {
      */
     public emit (event: string | symbol, ...args: any[]): boolean {
         // Emit project event before deferring back to parent implementation.
-        super.emit('project-event', { event, args: [this.getId()].concat(args) })
+        super.emit('project-event', {
+            id: this.getId(),
+            event,
+            args
+        })
         return super.emit(event, ...args)
     }
 

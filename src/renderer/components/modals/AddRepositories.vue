@@ -50,7 +50,6 @@
 import { remote } from 'electron'
 import _find from 'lodash/find'
 import _uniqBy from 'lodash/uniqBy'
-import { RepositoryValidator } from '@lib/frameworks/validator'
 
 import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
@@ -111,7 +110,9 @@ export default {
         addRow (path = '') {
             this.slots.push({
                 key: this.$string.random(),
-                validator: new RepositoryValidator(this.$root.project.repositories.map(repository => repository.getPath())),
+                validator: {},
+                // @TODO: redo validation without Node integration
+                // validator: new RepositoryValidator(this.$root.project.repositories.map(repository => repository.getPath())),
                 path
             })
             if (!path) {

@@ -40,14 +40,14 @@ export default {
         HasStatus
     ],
     props: {
-        framework: {
+        model: {
             type: Object,
             required: true
         }
     },
     computed: {
-        model () {
-            return this.framework
+        framework () {
+            return this.model
         },
         isActive () {
             return this.$store.getters['context/framework'] === this.framework.id

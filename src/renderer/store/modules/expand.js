@@ -1,24 +1,25 @@
+import Vue from 'vue'
+
 export default {
     namespaced: true,
-    state: {
-        expanded: {}
-    },
+    state: {},
     mutations: {
-        TOGGLE (state, payload) {
-            state.expanded = {
-                ...state.expanded,
-                [payload.id]: !state.expanded[payload.id]
+        TOGGLE (state, identifier) {
+            if (!state[identifier]) {
+                Vue.set(state, identifier, true)
+                return
             }
+            Vue.delete(state, identifier)
         }
     },
     actions: {
-        toggle: ({ state, commit }, payload) => {
-            commit('TOGGLE', payload)
+        toggle: ({ state, commit }, identifier) => {
+            commit('TOGGLE', identifier)
         }
     },
     getters: {
         expanded: (state) => id => {
-            return !!state.expanded[id]
+            return !!state[id]
         }
     }
 }

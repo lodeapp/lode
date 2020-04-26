@@ -32,8 +32,8 @@ export class BrowserWindow extends BaseBrowserWindow {
         return !!this.project && this.project.isBusy()
     }
 
-    protected projectEventListener ({ event, args }: { event: string, args: Array<any> }): void {
-        this.webContents.send(event, ...args)
+    protected projectEventListener ({ id, event, args }: { id: string, event: string, args: Array<any> }): void {
+        this.webContents.send(`${id}:${event}`, ...args, id)
     }
 }
 

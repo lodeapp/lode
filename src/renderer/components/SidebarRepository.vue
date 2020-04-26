@@ -22,7 +22,7 @@
             <SidebarFramework
                 v-for="framework in repository.frameworks"
                 :key="framework.id"
-                :framework="framework"
+                :model="framework"
                 @activate="onFrameworkActivation"
             />
             <!-- @TODO: redo listeners -->
@@ -51,14 +51,14 @@ export default {
         HasStatus
     ],
     props: {
-        repository: {
+        model: {
             type: Object,
             required: true
         }
     },
     computed: {
-        model () {
-            return this.repository
+        repository () {
+            return this.model
         },
         show () {
             // @TODO: redo is expanded

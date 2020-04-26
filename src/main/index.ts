@@ -14,6 +14,7 @@ import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
 import { log as writeLog } from '@lib/logger'
 import { FrameworkContext } from '@lib/frameworks/framework'
+import { ISuite } from '@lib/frameworks/suite'
 
 // Expose garbage collector
 app.commandLine.appendSwitch('js-flags', '--expose_gc')
@@ -143,6 +144,20 @@ ipcMain
             const framework = project.getFrameworkByContext(context)
             if (framework) {
                 framework.stop()
+                return
+            }
+        }
+        log.error(`Unable to find framework to run with context '${JSON.stringify(context)}'`)
+    })
+    .on('framework-get-suites', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
+        const project = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow).getProject()
+        if (project) {
+            const framework = project.getFrameworkByContext(context)
+            if (framework) {
+                event.sender.send(
+                    'framework-suites',
+                    JSON.stringify(framework.getSuites().map((suite: ISuite) => suite.persist()))
+                )
                 return
             }
         }

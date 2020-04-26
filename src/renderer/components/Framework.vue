@@ -4,7 +4,7 @@
             class="framework has-status"
             :class="[
                 `status--${status}`,
-                selective ? 'selective' : ''
+                selected > 0 ? 'selective' : ''
             ]"
         >
             <div class="header">
@@ -30,9 +30,9 @@
                             tabindex="-1"
                             @click="start"
                         >
-                            <template v-if="selective">
+                            <template v-if="selected > 0">
                                 Run selected
-                                <span class="Counter">{{ selected.suites.length }}</span>
+                                <span class="Counter">{{ selected }}</span>
                             </template>
                             <template v-else-if="filtering && !noResults">
                                 {{ 'Run match|Run matches' | plural(suites.length) }}
@@ -85,15 +85,19 @@
                 </div>
             </div>
             <div class="children">
-                <Suite
+                <Nugget
                     v-for="suite in suites"
-                    :suite="suite"
-                    :running="running"
+                    class="suite"
+                    :model="suite"
                     :key="suite.file"
-                    @activate="onChildActivation"
-                    @refresh="refresh"
-                    @filter="filterSuite"
-                />
+                    :has-children="suite.testsLoaded !== false && suite.tests.length > 0"
+                    :children="suite.tests"
+                    :running="running"
+                    :selectable="true"
+                    @context-menu="onSuiteContextMenu"
+                >
+                    <Filename :key="suite.file" />
+                </Nugget>
                 <footer v-if="hidden" class="cutoff">
                     <div>
                         <div v-if="noResults">No results</div>
@@ -113,8 +117,8 @@
 import { ipcRenderer } from 'electron'
 import { Menu } from '@main/menu'
 import { sortDisplayName } from '@lib/frameworks/sort'
+import Filename from '@/components/Filename'
 import Indicator from '@/components/Indicator'
-import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 import HasStatus from '@/components/mixins/HasStatus'
@@ -122,9 +126,9 @@ import HasStatus from '@/components/mixins/HasStatus'
 export default {
     name: 'Framework',
     components: {
+        Filename,
         Indicator,
-        Ledger,
-        Suite
+        Ledger
     },
     mixins: [
         HasFrameworkMenu,
@@ -135,28 +139,29 @@ export default {
             type: String,
             required: true
         },
-        framework: {
+        model: {
             type: Object,
             required: true
         }
     },
+    data () {
+        return {
+            suites: [],
+            selected: 0
+        }
+    },
     computed: {
+        framework () {
+            return this.model
+        },
         frameworkContext () {
             return {
                 repository: this.repositoryId,
                 framework: this.model.id
             }
         },
-        model () {
-            return this.framework
-        },
         count () {
-            return this.framework.suites.length
-        },
-        suites () {
-            // @TODO: redo suite filtering
-            // return this.framework.getSuites()
-            return this.framework.suites
+            return this.suites.length
         },
         running () {
             return this.status === 'running'
@@ -166,14 +171,6 @@ export default {
         },
         queued () {
             return this.status === 'queued'
-        },
-        selective () {
-            // @TODO: redo is selective
-            // return this.framework.isSelective()
-            return false
-        },
-        selected () {
-            return this.framework.getSelected()
         },
         filtering () {
             // @TODO: redo filtering
@@ -188,6 +185,9 @@ export default {
         },
         noResults () {
             return this.hidden === this.count
+        },
+        canToggleTests () {
+            return this.framework.canToggleTests
         },
         // @TODO: redo filtering
         // keyword: {
@@ -218,23 +218,38 @@ export default {
         }
     },
     created () {
+        this.getSuites()
         ipcRenderer.on('menu-event', this.onAppMenuEvent)
-    },
-    mounted () {
-        this.$emit('mounted')
     },
     beforeDestroy () {
         ipcRenderer.removeListener('menu-event', this.onAppMenuEvent)
     },
     methods: {
+        async getSuites () {
+            console.log('getting suites')
+            return new Promise((resolve, reject) => {
+                ipcRenderer
+                    .once('framework-suites', (event, suites) => {
+                        this.suites = JSON.parse(suites)
+                        this.$emit('mounted')
+                        resolve()
+                    })
+                    .send('framework-get-suites', this.frameworkContext)
+            })
+        },
         refresh () {
             ipcRenderer.send('framework-refresh', this.frameworkContext)
         },
         start () {
             ipcRenderer.send('framework-start', this.frameworkContext)
         },
-        async stop () {
+        stop () {
             ipcRenderer.send('framework-stop', this.frameworkContext)
+        },
+        onChildSelect (selected, context) {
+            console.log('selecting on framework', this.frameworkContext, selected, context)
+            this.selected += (selected ? 1 : -1)
+            ipcRenderer.send('framework-select', this.frameworkContext, selected, context)
         },
         onChildActivation (context) {
             this.$emit('activate', context)
@@ -295,6 +310,91 @@ export default {
                 })
                 .attachTo(this.$el.querySelector('.sort button'))
                 .open()
+        },
+        onSuiteContextMenu (suite) {
+            // @TODO: redo path
+            // return this.suite.getFilePath()
+            const filePath = suite.file
+            const remoteFilePath = suite.file !== filePath ? suite.file : false
+            new Menu()
+                .add({
+                    id: 'filter',
+                    label: __DARWIN__ ? 'Filter this Item' : 'Filter this item',
+                    click: () => {
+                        this.filterSuite(suite)
+                    }
+                })
+                .separator()
+                .add({
+                    id: 'copy-local',
+                    label: __DARWIN__
+                        ? remoteFilePath ? 'Copy Local File Path' : 'Copy File Path'
+                        : remoteFilePath ? 'Copy local file path' : 'Copy file path',
+                    click: () => {
+                        this.$root.copyToClipboard(filePath)
+                    },
+                    enabled: this.fileExists(filePath)
+                })
+                .addIf(remoteFilePath, {
+                    id: 'copy-remote',
+                    label: __DARWIN__
+                        ? 'Copy Remote File Path'
+                        : 'Copy Remote file path',
+                    click: () => {
+                        this.$root.copyToClipboard(remoteFilePath)
+                    }
+                })
+                .add({
+                    id: 'reveal',
+                    label: __DARWIN__
+                        ? 'Reveal in Finder'
+                        : __WIN32__
+                            ? 'Show in Explorer'
+                            : 'Show in your File Manager',
+                    click: () => {
+                        this.$root.revealFile(filePath)
+                    }
+                })
+                .add({
+                    id: 'open',
+                    label: __DARWIN__
+                        ? 'Open with Default Program'
+                        : 'Open with default program',
+                    click: () => {
+                        this.openFile(filePath)
+                    },
+                    enabled: this.canOpen(filePath)
+                })
+                // @TODO: redo injecting context menu items
+                // .addMultiple(this.suite.contextMenu())
+                .separator()
+                // @TODO: redo refreshing of metadata
+                .add({
+                    label: __DARWIN__
+                        ? 'Refresh Metadata'
+                        : 'Refresh metadata',
+                    click: () => {
+                        this.suite.resetMeta()
+                        this.refresh()
+                    },
+                    // enabled: !!this.suite.getMeta()
+                    enabled: false
+                })
+                .open()
+        },
+        fileExists (path) {
+            return this.$fileystem.exists(path)
+        },
+        fileIsSafe (path) {
+            return this.$fileystem.isSafe(path)
+        },
+        // This is used by the suite's children to see if they
+        // can add an "open" item to their context menu.
+        canOpen (path) {
+            return this.fileIsSafe(path) && this.fileExists(path)
+        },
+        openFile (path) {
+            this.$root.openFile(path)
         }
     }
 }

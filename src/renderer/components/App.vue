@@ -5,7 +5,7 @@
                 <h1>Welcome to Lode.</h1>
                 <button class="btn btn-primary" @click="$root.addProject">Add your first project</button>
             </div>
-            <Project v-else :key="$root.project.id" />
+            <Project v-else :model="$root.project" :key="$root.project.id" />
             <ModalController />
         </div>
     </div>

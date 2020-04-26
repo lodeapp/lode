@@ -45,7 +45,6 @@
 <script>
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
-import { FrameworkValidator } from '@lib/frameworks/validator'
 
 import Modal from '@/components/modals/Modal'
 import FrameworkSettings from '@/components/FrameworkSettings'
@@ -143,9 +142,10 @@ export default {
             // Add a reactive validator instance to the mapped frameworks
             this.frameworks.forEach(framework => {
                 this.$set(framework, 'key', framework.id || this.$string.random())
-                this.$set(framework, 'validator', new FrameworkValidator({
-                    repositoryPath: this.repository.getPath()
-                }))
+                // @TODO: redo validation without Node integration
+                // this.$set(framework, 'validator', new FrameworkValidator({
+                //     repositoryPath: this.repository.getPath()
+                // }))
             })
         },
         async handleScan () {

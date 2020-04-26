@@ -4,7 +4,7 @@ import { chunk, find, findIndex, get, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import * as fuzzy from 'fuzzysearch'
 import { ProcessId, IProcess } from '@lib/process/process'
-import { ProcessBridge } from '@lib/process/bridge'
+import { ProcessFactory } from '@lib/process/factory'
 import { queue } from '@lib/process/queue'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { ParsedRepository } from '@lib/frameworks/repository'
@@ -14,6 +14,7 @@ import { ProgressLedger } from '@lib/frameworks/progress'
 import { FrameworkSort, sortOptions, sortDirection } from '@lib/frameworks/sort'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 import { SSHOptions } from '@lib/process/ssh'
+import pool from '@lib/process/pool'
 
 /**
  * Context to identify a framework with.
@@ -58,6 +59,7 @@ export type FrameworkOptions = {
     proprietary: any
     sort?: FrameworkSort
     sortReverse?: boolean
+    canToggleTests?: boolean
 }
 
 /**
@@ -368,6 +370,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             proprietary: this.proprietary,
             sort: this.sort,
             sortReverse: this.sortReverse,
+            canToggleTests: this.canToggleTests,
             suites: this.suites.map((suite: ISuite) => suite.persist())
         }
     }
@@ -502,12 +505,21 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             // If process exists, kill it, otherwise resolve directly
             if (!this.process) {
                 resolve()
-            } else {
-                // Get the running process from the active process pool
-                ProcessBridge.stop(this.process!).then(() => {
+                return
+            }
+
+            // Get the running process from the active process pool
+            const running = pool.findProcess(this.process!)
+            if (!running) {
+                resolve()
+                return
+            }
+
+            running!
+                .on('killed', () => {
                     resolve()
                 })
-            }
+                .stop()
         })
         .then(() => {
             this.killed = false
@@ -812,7 +824,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param args The arguments to spawn the process with.
      */
     protected spawn (args: Array<string>): IProcess {
-        const process = ProcessBridge.make({
+        const process = ProcessFactory.make({
             command: this.command,
             args,
             path: this.repositoryPath,
