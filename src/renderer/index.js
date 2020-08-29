@@ -80,14 +80,14 @@ export default new Vue({
     },
     created () {
         this.titlebar()
-        this.loadProject(remote.getCurrentWindow().getProjectOptions())
 
         ipcRenderer
-            .on('did-finish-load', () => {
+            .on('did-finish-load', (event, properties) => {
                 document.body.classList.add(`platform-${process.platform}`)
-                if (remote.getCurrentWindow().isFocused()) {
+                if (properties.focus) {
                     document.body.classList.add('is-focused')
                 }
+                this.loadProject(properties.projectOptions)
             })
             .on('blur', () => {
                 document.body.classList.remove('is-focused')
@@ -95,19 +95,8 @@ export default new Vue({
             .on('focus', () => {
                 document.body.classList.add('is-focused')
             })
-            .on('close', () => {
-                // Disassemble is not synchronous. We're giving a small timeout
-                // to increase the lieklihood it's finished before green-lighting
-                // the closing of the window, but this is not guaranteed.
-                this.project.stop().then(() => {
-                    setTimeout(() => {
-                        ipcRenderer.send('window-should-close')
-                    }, 10)
-                })
-            })
             .on('project-switched', (event, projectOptions) => {
                 this.loadProject(projectOptions)
-                this.gc()
             })
             .on('status', (event, id, status) => {
                 this.$store.dispatch('status/set', { id, status })
@@ -175,8 +164,7 @@ export default new Vue({
                     case 'reset-settings':
                         this.$modal.confirm('ResetSettings')
                             .then(() => {
-                                ipcRenderer.sendSync('reset-settings')
-                                remote.getCurrentWindow().reload()
+                                ipcRenderer.send('reset-settings')
                             })
                             .catch(() => {})
                         break
@@ -248,57 +236,16 @@ export default new Vue({
         },
         loadProject (project) {
             project = JSON.parse(project)
-            if (isEmpty(project)) {
-                this.project = null
-            } else {
-                this.$store.replaceState({
-                    ...this.$store.state
-                    // ...{ status: this.mapStatuses(project) }
-                })
-                project.repositories = project.repositories.map(repository => {
-                    repository.frameworks = repository.frameworks.map(framework => {
-                        delete framework.suites
-                        return framework
-                    })
-                    return repository
-                })
-                this.project = project
-            }
-            // const compactTests = nugget => {
-            //     nugget.tests = (nugget.tests || []).map(compactTests)
-            //     return omit(pickBy(nugget, property => {
-            //         return property && !!property.length
-            //     }), ['feedback', 'console', 'params', 'stats'])
-            // }
-            // project.repositories = project.repositories.map(repository => {
-            //     repository.frameworks = repository.frameworks.map(framework => {
-            //         framework.suites = framework.suites.map(suite => {
-            //             suite.tests = suite.tests.map(compactTests)
-            //             return pickBy(suite, property => {
-            //                 return property && !!property.length
-            //             })
-            //         })
-            //         return framework
-            //     })
-            //     return repository
-            // })
-
+            this.project = isEmpty(project) ? null : project
             this.refreshApplicationMenu()
         },
         addProject () {
             this.$modal.confirm('EditProject', { add: true })
-                .then(options => {
-                    // Stop current project before adding a new one.
-                    (this.project ? this.project.stop() : Promise.resolve()).then(() => {
-                        store.commit('context/CLEAR')
-                        // @TODO: redo project creation without Node integration
-                        // const project = new Project(options)
-                        const project = {}
-                        ipcRenderer.once('project-switched', () => {
-                            this.addRepositories()
-                        })
-                        this.handleSwitchProject(project.getId())
+                .then(identifier => {
+                    ipcRenderer.once('project-switched', () => {
+                        this.addRepositories()
                     })
+                    ipcRenderer.send('project-switch', identifier)
                 })
                 .catch(() => {})
         },
@@ -372,34 +319,44 @@ export default new Vue({
             }
             this.$modal.confirm('AddRepositories', { directories })
                 .then(({ repositories, autoScan }) => {
+                    repositories = JSON.parse(repositories)
+                    this.project.repositories = repositories
                     if (autoScan) {
-                        this.scanRepositories(repositories.map(repository => repository.getId()), 0)
+                        this.scanRepositories(repositories, 0)
                     }
                 })
                 .catch(() => {})
         },
-        scanRepositories (repositoryIds, index) {
-            const id = repositoryIds[index]
-            const repository = this.project.getRepositoryById(id)
-            if (!repository) {
-                return
-            }
+        scanRepositories (repositories, n) {
             // Scan repository and queue the following one the modal callback.
-            this.scanRepository(repository, () => {
-                this.scanRepositories(repositoryIds, (index + 1))
+            this.scanRepository(repositories[n], () => {
+                if ((n + 1) >= repositories.length) {
+                    return
+                }
+                this.scanRepositories(repositories, (n + 1))
             })
         },
-        scanRepository (repository, callback = null) {
-            if (!repository.exists()) {
+        async scanRepository (repository, callback = null) {
+            const exists = await this.fileExists(repository.path)
+            if (!exists) {
+                // @TODO: update the repository to mark it doesn't exist
                 if (callback) {
                     callback()
                 }
                 return
             }
+
             this.$modal.open('ManageFrameworks', {
                 repository,
                 scan: true
             }, callback)
+        },
+        async removeFramework (repositoryId, frameworkId) {
+            this.onModelRemove(frameworkId)
+            ipcRenderer.send('framework-remove', {
+                repository: repositoryId,
+                framework: frameworkId
+            })
         },
         refreshApplicationMenu () {
             ipcRenderer.send('refresh-menu')
@@ -421,6 +378,15 @@ export default new Vue({
                 })
             }
         },
+        async fileExists (path) {
+            return new Promise((resolve, reject) => {
+                ipcRenderer
+                    .once(`${path}:exists`, (event, exists) => {
+                        resolve(exists)
+                    })
+                    .send('check-if-file-exists', path)
+            })
+        },
         revealFile (path) {
             ipcRenderer.send('show-item-in-folder', path)
         },
@@ -441,15 +407,6 @@ export default new Vue({
             window.setImmediate(() => {
                 throw new Error('Boomtown!')
             })
-        },
-        gc () {
-            try {
-                if (global.gc) {
-                    global.gc()
-                }
-            } catch (error) {
-                // ...
-            }
         },
         onModelRemove (modelId) {
             store.dispatch('context/onRemove', modelId)

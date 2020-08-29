@@ -210,6 +210,7 @@
 <script>
 import * as Path from 'path'
 import { remote } from 'electron'
+import { getFrameworkByType, Frameworks } from '@lib/frameworks'
 
 export default {
     name: 'FrameworkSettings',
@@ -258,15 +259,10 @@ export default {
             return this.framework.scanStatus === 'removed'
         },
         availableFrameworks () {
-            // @TODO: return available frameworks without Node integration
-            // console.log({ Frameworks })
-            // return Frameworks
-            return {}
+            return Frameworks
         },
         frameworkType () {
-            // @TODO: return framework type without Node integration
-            // return getFrameworkByType(this.fields.type)
-            return ''
+            return getFrameworkByType(this.fields.type)
         },
         currentFrameworkName () {
             return this.frameworkType ? this.frameworkType.getDefaults().name : ''

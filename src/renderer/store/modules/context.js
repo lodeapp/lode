@@ -1,43 +1,32 @@
+import _last from 'lodash/last'
+
 export default {
     namespaced: true,
     state: {
-        test: '',
+        repository: '',
         framework: '',
-        breadcrumbs: []
+        nuggets: []
     },
     mutations: {
-        ADD (state, payload) {
-            if (state.breadcrumbs.indexOf(payload) === -1) {
-                state.breadcrumbs.unshift(payload)
-            }
-        },
-        SET (state, payload) {
-            const test = payload.pop()
-            payload.forEach(breadcrumbs => {
-                state.breadcrumbs.unshift(breadcrumbs)
-            })
-            state.test = test
-        },
-        TEST (state, payload) {
-            state.test = payload
-            state.breadcrumbs = []
+        REPOSITORY (state, payload) {
+            state.repository = payload
+            state.framework = ''
         },
         FRAMEWORK (state, payload) {
             state.framework = payload
-            state.breadcrumbs = []
         },
-        CLEAR_FRAMEWORK (state) {
-            state.framework = ''
-            state.breadcrumbs = []
+        NUGGET (state, payload) {
+            if (state.nuggets.indexOf(payload) === -1) {
+                state.nuggets.unshift(payload)
+            }
         },
         CLEAR (state) {
-            state.test = ''
-            state.breadcrumbs = []
+            state.nuggets = []
         }
     },
     actions: {
         onRemove: ({ state, commit, dispatch }, modelId) => {
-            if (state.breadcrumbs.indexOf(modelId) > -1) {
+            if (state.nuggets.indexOf(modelId) > -1) {
                 commit('CLEAR')
             }
         },
@@ -47,16 +36,25 @@ export default {
     },
     getters: {
         test: (state) => {
-            return state.test
+            return _last(state.nuggets)
+        },
+        repository: (state) => {
+            return state.repository
         },
         framework: (state) => {
             return state.framework
         },
-        breadcrumbs: (state) => {
-            return state.breadcrumbs
+        frameworkContext: (state) => {
+            return {
+                repository: state.repository,
+                framework: state.framework
+            }
+        },
+        nuggets: (state) => {
+            return state.nuggets
         },
         inContext: (state) => id => {
-            return state.breadcrumbs.indexOf(id) > -1
+            return state.nuggets.indexOf(id) > -1
         }
     }
 }

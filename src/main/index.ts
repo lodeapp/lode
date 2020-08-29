@@ -13,11 +13,12 @@ import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
 import { log as writeLog } from '@lib/logger'
-import { FrameworkContext } from '@lib/frameworks/framework'
+import { ProjectIdentifier, ProjectEntities, IProject } from '@lib/frameworks/project'
+import { IRepository } from '@lib/frameworks/repository'
+import { FrameworkContext, IFramework, FrameworkOptions } from '@lib/frameworks/framework'
+import { Nugget } from '@lib/frameworks/nugget'
 import { ISuite } from '@lib/frameworks/suite'
-
-// Expose garbage collector
-app.commandLine.appendSwitch('js-flags', '--expose_gc')
+import { ITest } from '@lib/frameworks/test'
 
 // Merge environment variables from shell, if needed.
 mergeEnvFromShell()
@@ -40,26 +41,57 @@ if (process.env.NODE_ENV !== 'development') {
     }
 }
 
-let mainWindow: Window | null = null
+function getProject (event: Electron.IpcMainEvent): IProject {
+    return (BrowserWindow.fromWebContents(event.sender) as BrowserWindow).getProject()!
+}
 
-function createWindow(projectId: string | null) {
-    const window = new Window(projectId)
-
-    window.onClose((event: Electron.IpcMainEvent) => {
-        if (window.isBusy()) {
-            log.info('Window is busy. Attempting teardown of pending renderer processes.')
-            event.preventDefault()
-            window.send('close')
+function getRepository (event: Electron.IpcMainEvent, repositoryId: string): Promise<IRepository> {
+    return new Promise(async (resolve, reject) => {
+        const project: IProject = getProject(event)
+        const repository: IRepository = project.getRepositoryById(repositoryId)!
+        if (repository) {
+            resolve(repository!)
+            return
         }
+        log.error(`Error while getting repository ${repositoryId}.`)
+        reject()
     })
+}
 
-    window.onClosed(() => {
-        mainWindow = null
-        app.quit()
+function entities (event: Electron.IpcMainEvent, context: FrameworkContext, identifiers: Array<string> = []): Promise<ProjectEntities> {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const project: IProject = getProject(event)
+            const repository: IRepository | undefined = project.getRepositoryById(context.repository)
+            if (repository) {
+                const framework: IFramework | undefined = repository.getFrameworkById(context.framework)
+                if (framework) {
+                    const entities = { project, repository, framework }
+                    if (!identifiers.length) {
+                        resolve(entities)
+                        return
+                    }
+                    let nugget: any
+                    const nuggets: Array<Nugget> = []
+                    do {
+                        // First nugget is always a suite, all others are tests.
+                        nugget = nugget ? nugget.findTest(identifiers.shift()!) : framework.getSuiteById(identifiers.shift()!)
+                        if (!nugget) {
+                            throw Error
+                        }
+                        nuggets.push(nugget)
+                        if (!nugget.expanded) {
+                            await nugget.toggleExpanded(true, false)
+                        }
+                    } while (identifiers.length > 0)
+                    resolve({ ...entities, nuggets, nugget })
+                    return
+                }
+            }
+        } catch (_) {}
+        log.error(`Unable to find requested entities '${JSON.stringify({ context, identifiers })}'`)
+        reject()
     })
-
-    window.load()
-    mainWindow = window
 }
 
 app
@@ -77,22 +109,12 @@ app
         })
 
         track.screenview('Application started')
-        createWindow(state.getCurrentProject())
+        Window.init(state.getCurrentProject())
         applicationMenu.build()
 
         if (!__DEV__) {
             // Start auto-updating process.
             new Updater()
-        }
-    })
-    .on('window-all-closed', () => {
-        if (__DARWIN__) {
-            app.quit()
-        }
-    })
-    .on('activate', () => {
-        if (mainWindow === null) {
-            createWindow(state.getCurrentProject())
         }
     })
 
@@ -113,59 +135,123 @@ ipcMain
             event.sender.send('menu-updated', template)
         })
     })
-    .on('window-should-close', () => {
-        process.nextTick(() => {
-            if (mainWindow) {
-                mainWindow.close()
-            }
+    .on('project-switch', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier) => {
+        const window = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow)
+        const project: IProject | null = window.getProject()
+        window.setProject(identifier)
+        event.sender.send('project-switched', window.getProjectOptions())
+        state.set('currentProject', window.getProject()!.getId())
+        if (project) {
+            project.stop()
+        }
+    })
+    .on('project-get-repositories', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier) => {
+        const window = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow)
+        const project: IProject | null = window.getProject()
+        if (project) {
+            event.sender.send(
+                `${project.getId()}:repositories`,
+                JSON.stringify(project.repositories.map((repository: IRepository) => repository.render()))
+            )
+        }
+    })
+    .on('repository-add', (event: Electron.IpcMainEvent, paths: Array<string>) => {
+        const project: IProject = getProject(event)
+        Promise.all(paths.map(path => {
+            return project.addRepository({ path })
+        })).then(repositories => {
+            project.save()
+            event.sender.send('repository-added', JSON.stringify(project.repositories.map(repository => repository.render())))
         })
     })
-    .on('project-switch', (event: Electron.IpcMainEvent, projectId: string) => {
-        state.set('currentProject', projectId)
-        if (mainWindow) {
-            mainWindow.setProject(projectId)
-            event.sender.send('project-switched', mainWindow.getProjectOptions())
-        }
+    .on('repository-remove', (event: Electron.IpcMainEvent, repositoryId: string) => {
+        const project: IProject = getProject(event)
+        project.removeRepository(repositoryId)
+    })
+    .on('repository-scan', async (event: Electron.IpcMainEvent, repositoryId: string) => {
+        const repository: IRepository = await getRepository(event, repositoryId)
+        const pending: Array<FrameworkOptions> = await repository.scan()
+        event.sender.send(`${repositoryId}.repository-scanned`, JSON.stringify(pending))
+    })
+    .on('repository-refresh', async (event: Electron.IpcMainEvent, repositoryId: string) => {
+        (await getRepository(event, repositoryId)).refresh()
+    })
+    .on('repository-start', async (event: Electron.IpcMainEvent, repositoryId: string) => {
+        (await getRepository(event, repositoryId)).start()
+    })
+    .on('repository-stop', async (event: Electron.IpcMainEvent, repositoryId: string) => {
+        (await getRepository(event, repositoryId)).stop()
+    })
+    .on('repository-get-frameworks', async (event: Electron.IpcMainEvent, repositoryId: string) => {
+        const repository: IRepository = await getRepository(event, repositoryId)
+        event.sender.send(`${repository.getId()}:frameworks`, JSON.stringify(repository.frameworks.map(framework => framework.render())))
+    })
+    .on('framework-add', async (event: Electron.IpcMainEvent, repositoryId: string, options: FrameworkOptions) => {
+        const repository: IRepository = await getRepository(event, repositoryId)
+        repository.addFramework(options).then(framework => {
+            framework.refresh()
+        })
+        event.sender.send(`${repositoryId}:frameworks`, JSON.stringify(repository.frameworks.map(framework => framework.render())))
+    })
+    .on('framework-remove', async (event: Electron.IpcMainEvent, context: FrameworkContext) => {
+        entities(event, context).then(({ repository, framework }) => {
+            repository.removeFramework(framework.getId())
+            event.sender.send(`${repository.getId()}:frameworks`, JSON.stringify(repository.frameworks.map(framework => framework.render())))
+        })
+    })
+    .on('framework-update', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
+        // const index = _findIndex(this.repository.frameworks, existing => existing.id === framework.id)
+        // this.repository.frameworks[index].updateOptions({
+        //     ...framework,
+        //     ...{ repositoryPath: this.repository.getPath() }
+        // })
+        // return true
+    })
+    .on('framework-refresh', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
+        entities(event, context).then(({ framework }) => {
+            framework.refresh()
+        })
     })
     .on('framework-start', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        const project = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow).getProject()
-        if (project) {
-            const framework = project.getFrameworkByContext(context)
-            if (framework) {
-                framework.start()
-                return
-            }
-        }
-        log.error(`Unable to find framework to run with context '${JSON.stringify(context)}'`)
+        entities(event, context).then(({ framework }) => {
+            framework.start()
+        })
     })
     .on('framework-stop', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        const project = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow).getProject()
-        if (project) {
-            const framework = project.getFrameworkByContext(context)
-            if (framework) {
-                framework.stop()
-                return
-            }
-        }
-        log.error(`Unable to find framework to run with context '${JSON.stringify(context)}'`)
+        entities(event, context).then(({ framework }) => {
+            framework.stop()
+        })
     })
     .on('framework-get-suites', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        const project = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow).getProject()
-        if (project) {
-            const framework = project.getFrameworkByContext(context)
-            if (framework) {
+        entities(event, context).then(({ framework }) => {
+            event.sender.send(
+                `${framework.getId()}:refreshed`,
+                JSON.stringify(framework.getSuites().map((suite: ISuite) => suite.render()))
+            )
+        })
+    })
+    .on('framework-toggle-child', async (event: Electron.IpcMainEvent, context: FrameworkContext, identifiers: Array<string>, toggle: boolean) => {
+        entities(event, context, identifiers).then(({ nugget }) => {
+            if (toggle) {
+                // If we're expanding it, send the tests to the renderer.
                 event.sender.send(
-                    'framework-suites',
-                    JSON.stringify(framework.getSuites().map((suite: ISuite) => suite.persist()))
+                    `${nugget!.getId()}:framework-tests`,
+                    JSON.stringify(nugget!.tests.map((test: ITest) => test.render(false)))
                 )
                 return
             }
-        }
-        log.error(`Unable to find framework to run with context '${JSON.stringify(context)}'`)
+            // If collapsing, just wither the nugget, no response is needed.
+            nugget!.toggleExpanded(false, true)
+        })
     })
     .on('reset-settings', (event: Electron.IpcMainEvent) => {
         state.reset()
-        event.returnValue = true
+        const window = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow)
+        window.clear()
+        window.reload()
+    })
+    .on('check-if-file-exists', (event: Electron.IpcMainEvent, path: string) => {
+        event.sender.send(`${path}:exists`, Fs.existsSync(path))
     })
     .on('show-item-in-folder', (event: Electron.IpcMainEvent, path: string) => {
         Fs.stat(path, (err, stats) => {

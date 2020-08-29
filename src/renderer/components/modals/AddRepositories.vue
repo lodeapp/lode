@@ -47,12 +47,12 @@
 </template>
 
 <script>
-import { remote } from 'electron'
+import { ipcRenderer, remote } from 'electron'
 import _find from 'lodash/find'
 import _uniqBy from 'lodash/uniqBy'
-
 import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
+import { RepositoryValidator } from '@lib/frameworks/validator'
 
 export default {
     name: 'AddRepositories',
@@ -110,9 +110,10 @@ export default {
         addRow (path = '') {
             this.slots.push({
                 key: this.$string.random(),
-                validator: {},
-                // @TODO: redo validation without Node integration
+                // @TODO: instantiate validator with existing paths
                 // validator: new RepositoryValidator(this.$root.project.repositories.map(repository => repository.getPath())),
+                // @TODO: redo validation without Node integration
+                validator: new RepositoryValidator([]),
                 path
             })
             if (!path) {
@@ -141,21 +142,20 @@ export default {
             this.add()
         },
         add () {
-            this.slots.forEach((slot, index) => {
+            this.slots.forEach(slot => {
                 slot.validator.validate({ path: slot.path })
             })
 
             if (!this.hasErrors) {
                 this.loading = true
-                Promise.all(_uniqBy(this.slots, 'path').map((slot, index) => {
-                    return this.$root.project.addRepository({ path: slot.path })
-                })).then(repositories => {
-                    this.$root.project.save()
-                    this.confirm({
-                        repositories,
-                        autoScan: this.autoScan
+                ipcRenderer
+                    .once('repository-added', (event, repositories) => {
+                        this.confirm({
+                            repositories,
+                            autoScan: this.autoScan
+                        })
                     })
-                })
+                    .send('repository-add', _uniqBy(this.slots, 'path').map(slot => slot.path))
             }
         }
     }

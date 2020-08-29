@@ -48,7 +48,7 @@ export default {
         remove () {
             this.$modal.confirm('RemoveFramework', { framework: this.model })
                 .then(() => {
-                    this.$emit('remove', this.model.getId())
+                    this.$emit('remove', this.model.id)
                 })
                 .catch(() => {})
         }

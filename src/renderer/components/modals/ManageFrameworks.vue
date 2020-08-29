@@ -1,5 +1,5 @@
 <template>
-    <Modal :title="singleFramework ? 'Framework Settings' : 'Manage test frameworks'" :key="repository.getId()">
+    <Modal :title="singleFramework ? 'Framework Settings' : 'Manage test frameworks'" :key="repository.id">
         <div class="fluid">
             <div class="repository-settings">
                 <h5 v-if="!singleFramework">
@@ -43,9 +43,10 @@
 </template>
 
 <script>
+import { ipcRenderer } from 'electron'
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
-
+import { FrameworkValidator } from '@lib/frameworks/validator'
 import Modal from '@/components/modals/Modal'
 import FrameworkSettings from '@/components/FrameworkSettings'
 
@@ -86,7 +87,7 @@ export default {
             if (!this.singleFramework) {
                 return this.frameworks
             }
-            return this.frameworks.filter(framework => framework.id === this.framework.getId())
+            return this.frameworks.filter(framework => framework.id === this.framework.id)
         },
         amountActive () {
             return this.frameworks.filter(framework => !framework.scanStatus).length
@@ -109,29 +110,28 @@ export default {
     },
     methods: {
         parseFrameworks (scanned = false, pending = []) {
-            const types = pending.map(options => options.type)
-            const frameworks = this.repository.frameworks.map(framework => {
+            const types = pending.map(p => p.type)
+            const frameworks = (this.repository.frameworks || []).map(framework => {
                 // If an existing framework has been removed, but user has
                 // triggered scan again, continue. This means the existing
                 // framework object will be removed, while a new, pristine
                 // object will be added.
-                if (this.removed.includes(framework.getId())) {
+                if (this.removed.includes(framework.id)) {
                     return false
                 }
 
-                const options = framework.persist()
                 if (!scanned || framework.type === 'custom') {
-                    return options
+                    return framework
                 }
                 if (!types.includes(framework.type)) {
                     // If type is not custom and is not found in the scanned array, mark as removed.
-                    options.scanStatus = 'removed'
+                    framework.scanStatus = 'removed'
                 } else {
                     // But if type exists in the scan, remove from scanned array.
-                    pending = pending.filter(options => options.type !== framework.type)
+                    pending = pending.filter(p => p.type !== framework.type)
                 }
 
-                return options
+                return framework
             })
 
             // Parsed frameworks are joined by pending ones (if any) when we're
@@ -143,18 +143,19 @@ export default {
             this.frameworks.forEach(framework => {
                 this.$set(framework, 'key', framework.id || this.$string.random())
                 // @TODO: redo validation without Node integration
-                // this.$set(framework, 'validator', new FrameworkValidator({
-                //     repositoryPath: this.repository.getPath()
-                // }))
+                this.$set(framework, 'validator', new FrameworkValidator({
+                    repositoryPath: this.repository.path
+                }))
             })
         },
         async handleScan () {
             this.scanning = true
-            await this.repository.scan()
-                .then(pending => {
-                    this.parseFrameworks(true, pending)
+            ipcRenderer
+                .once(`${this.repository.id}.repository-scanned`, (event, pending) => {
+                    this.parseFrameworks(true, JSON.parse(pending))
                     this.scanning = false
                 })
+                .send('repository-scan', this.repository.id)
         },
         handleChange (framework, values) {
             const index = _findIndex(this.frameworks, { key: framework.key })
@@ -183,23 +184,17 @@ export default {
                     .forEach(framework => {
                         // If the framework has an id (i.e. exists), update it, otherwise add.
                         if (framework.id) {
-                            const index = _findIndex(this.repository.frameworks, existing => existing.getId() === framework.id)
-                            this.repository.frameworks[index].updateOptions({
-                                ...framework,
-                                ...{ repositoryPath: this.repository.getPath() }
-                            })
+                            ipcRenderer
+                                .once(`${framework.id}.framework-updated`, (event, tests) => {
+                                    // @TODO: update framework options in renderer
+                                })
+                                .send('framework-update', { repository: this.repository.id, framework: framework.id }, framework)
                             return true
                         }
-                        this.repository.addFramework(framework)
-                            .then(framework => {
-                                setTimeout(() => {
-                                    framework.refresh()
-                                }, 50)
-                            })
+                        ipcRenderer.send('framework-add', this.repository.id, framework)
                     })
 
                 this.removeFrameworks()
-                this.repository.save()
 
                 this.$emit('hide')
             }
@@ -209,9 +204,8 @@ export default {
             this.removed = [...new Set(this.removed)]
             // Iterate through frameworks marked for removal and trigger
             // the removal action on their parent repository.
-            this.removed.forEach(frameworkId => {
-                this.$root.onModelRemove(frameworkId)
-                this.repository.removeFramework(frameworkId)
+            this.removed.forEach(framework => {
+                this.$root.removeFramework(this.repository.id, framework.id)
             })
         }
     }

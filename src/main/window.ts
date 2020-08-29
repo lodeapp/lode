@@ -1,8 +1,6 @@
 import * as Path from 'path'
-import { pick } from 'lodash'
-import { BrowserWindow as BaseBrowserWindow } from 'electron'
+import { app, BrowserWindow as BaseBrowserWindow } from 'electron'
 import { MenuEvent } from './menu'
-import { state } from '@lib/state'
 import { ProjectIdentifier, Project } from '@lib/frameworks/project'
 
 let windowStateKeeper: any | null = null
@@ -11,8 +9,9 @@ export class BrowserWindow extends BaseBrowserWindow {
 
     protected project: Project | null = null
 
-    public setProject(projectId: string): void {
-        const identifier: ProjectIdentifier = pick(state.project(projectId).get('options', {}), ['id', 'name'])
+    public setProject(identifier: ProjectIdentifier): void {
+        // Instantiate new project from identifier. If it does not yet exist
+        // in the store, it'll be created.
         this.project = new Project(identifier)
 
         // @TODO: when setting another project, make sure previous one's
@@ -25,11 +24,15 @@ export class BrowserWindow extends BaseBrowserWindow {
     }
 
     public getProjectOptions (): string {
-        return JSON.stringify(this.project ? this.project.persist() : {})
+        return JSON.stringify(this.project ? this.project.render() : {})
     }
 
     public isBusy (): boolean {
         return !!this.project && this.project.isBusy()
+    }
+
+    public clear (): void {
+        this.project = null
     }
 
     protected projectEventListener ({ id, event, args }: { id: string, event: string, args: Array<any> }): void {
@@ -44,7 +47,7 @@ export class Window {
     protected minWidth = 960
     protected minHeight = 660
 
-    public constructor(projectId: string | null) {
+    public constructor(identifier: ProjectIdentifier | null) {
 
         if (!windowStateKeeper) {
             // `electron-window-state` requires Electron's `screen` module, which can
@@ -74,7 +77,9 @@ export class Window {
                 disableBlinkFeatures: 'Auxclick',
                 backgroundThrottling: false,
                 scrollBounce: true,
-                nodeIntegration: true
+                nodeIntegration: true,
+                contextIsolation: false,
+                enableRemoteModule: true
             },
             acceptFirstMouse: true
         }
@@ -92,13 +97,28 @@ export class Window {
         // Remember window state on change
         savedWindowState.manage(this.window)
 
-        if (projectId) {
-            this.setProject(projectId)
+        if (identifier) {
+            this.setProject(identifier)
         }
     }
 
-    public load() {
+    public static init (identifier: ProjectIdentifier | null) {
+        const window = new this(identifier)
 
+        window.onClosed(async () => {
+            if (window.isBusy()) {
+                log.info('Window is busy. Attempting teardown of pending processes.')
+                try {
+                    await window.getProject()!.stop()
+                } catch (_) {}
+            }
+            app.quit()
+        })
+
+        window.load()
+    }
+
+    public load() {
         this.window.webContents.once('did-finish-load', () => {
             if (process.env.NODE_ENV === 'development') {
                 this.window.webContents.openDevTools()
@@ -131,8 +151,8 @@ export class Window {
         this.window.on('closed', fn)
     }
 
-    public setProject (projectId: string): void {
-        this.window.setProject(projectId)
+    public setProject (identifier: ProjectIdentifier): void {
+        this.window.setProject(identifier)
     }
 
     public getProject (): Project | null {
@@ -143,48 +163,51 @@ export class Window {
         return this.window.getProjectOptions()
     }
 
-    public isBusy() {
+    public isBusy (): boolean {
         return this.window.isBusy()
     }
 
-    public isMinimized() {
+    public clear (): void {
+        return this.window.clear()
+    }
+
+    public isMinimized (): boolean {
         return this.window.isMinimized()
     }
 
-    public isVisible() {
+    public isVisible (): boolean {
         return this.window.isVisible()
     }
 
-    public restore() {
+    public restore (): void {
         this.window.restore()
     }
 
-    public focus() {
+    public focus (): void {
         this.window.focus()
     }
 
-    public close() {
+    public close (): void {
         this.window.close()
     }
 
     // Show the window
-    public show() {
+    public show (): void {
         this.window.show()
     }
 
-    public send(channel: string) {
+    public send (channel: string): void {
         this.window.webContents.send(channel)
     }
 
     // Send the menu event to the renderer
-    public sendMenuEvent(name: MenuEvent) {
+    public sendMenuEvent (name: MenuEvent): void {
         this.show()
-
         this.window.webContents.send('menu-event', { name })
     }
 
     // Report the exception to the renderer.
-    public sendException(error: Error) {
+    public sendException (error: Error): void {
         // `Error` can't be JSONified so it doesn't transport nicely over IPC. So
         // we'll just manually copy the properties we care about.
         const friendlyError = {
@@ -195,7 +218,7 @@ export class Window {
         this.window.webContents.send('main-process-exception', friendlyError)
     }
 
-    public destroy() {
+    public destroy (): void {
         this.window.destroy()
     }
 }

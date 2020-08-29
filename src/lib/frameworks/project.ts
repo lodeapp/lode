@@ -7,13 +7,14 @@ import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
 import { ProgressLedger } from '@lib/frameworks/progress'
 import { RepositoryOptions, IRepository, Repository } from '@lib/frameworks/repository'
 import { FrameworkContext, IFramework } from '@lib/frameworks/framework'
+import { Nugget } from '@lib/frameworks/nugget'
 
 /**
  * The minimal options to identify a project by.
  */
 export type ProjectIdentifier = {
-    id: string
-    name: string
+    id?: string
+    name?: string
 }
 
 /**
@@ -21,6 +22,14 @@ export type ProjectIdentifier = {
  */
 export type ProjectActiveModels = {
     framework: string | null
+}
+
+export type ProjectEntities = {
+    project: IProject
+    repository: IRepository
+    framework: IFramework
+    nuggets?: Array<Nugget>
+    nugget?: Nugget
 }
 
 /**
@@ -31,6 +40,7 @@ export type ProjectOptions = {
     name: string
     active?: ProjectActiveModels
     repositories?: Array<RepositoryOptions>
+    status?: FrameworkStatus
 }
 
 export interface IProject extends ProjectEventEmitter {
@@ -47,7 +57,8 @@ export interface IProject extends ProjectEventEmitter {
     isRefreshing (): boolean
     isBusy (): boolean
     empty (): boolean
-    persist (): ProjectOptions
+    persist (shallow?: boolean): ProjectOptions
+    render (): ProjectOptions
     save (): void
     updateOptions (options: ProjectOptions): void
     addRepository (options: RepositoryOptions): Promise<IRepository>
@@ -75,9 +86,9 @@ export class Project extends ProjectEventEmitter implements IProject {
 
     constructor (identifier: ProjectIdentifier) {
         super()
-        this.name = identifier.name
         this.id = identifier.id || uuid()
-        this.state = state.project(this.id)
+        this.state = state.project({ ...identifier, id: this.id })
+        this.name = this.state.get('options.name')
 
         // Load options from the persistent project state.
         const options = this.state.get('options')
@@ -118,6 +129,7 @@ export class Project extends ProjectEventEmitter implements IProject {
      * Stop any repository in this project that might be running.
      */
     public async stop (): Promise<void> {
+        console.log('GOT STOP INSTRUCTION')
         return new Promise((resolve, reject) => {
             Promise.all(this.repositories.map((repository: IRepository) => {
                 return repository.stop()
@@ -158,15 +170,31 @@ export class Project extends ProjectEventEmitter implements IProject {
     }
 
     /**
-     * Prepares the repository for persistence.
+     * Prepares the project for persistence.
+     *
+     * @param shallow Whether to skip over deeply nested resources.
      */
-    public persist (): ProjectOptions {
-        return {
+    public persist (shallow: boolean = false): ProjectOptions {
+        const persist: ProjectOptions = {
             id: this.id,
             name: this.name,
-            active: this.active,
-            repositories: this.repositories.map(repository => repository.persist())
+            active: this.active
         }
+
+        if (!shallow) {
+            persist.repositories = this.repositories.map(repository => shallow ? repository.render() : repository.persist())
+        } else {
+            persist.status = this.status
+        }
+
+        return persist
+    }
+
+    /**
+     * Prepares the project for sending out to renderer process.
+     */
+    public render (): ProjectOptions {
+        return this.persist(true)
     }
 
     /**
@@ -312,6 +340,7 @@ export class Project extends ProjectEventEmitter implements IProject {
             this.updateStatus()
             this.emit('repositoryAdded', repository)
             resolve(repository)
+            this.save()
         })
     }
 
@@ -332,6 +361,7 @@ export class Project extends ProjectEventEmitter implements IProject {
         if (!this.repositories.length) {
             this.hasRepositories = false
         }
+        this.save()
     }
 
     /**

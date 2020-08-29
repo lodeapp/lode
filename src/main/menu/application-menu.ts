@@ -37,7 +37,7 @@ class ApplicationMenu {
         const template = new Array<Electron.MenuItemConstructorOptions>()
         const separator: Electron.MenuItemConstructorOptions = { type: 'separator' }
 
-        const currentProject: string | null = state.getCurrentProject()
+        const currentProject: ProjectIdentifier | null = state.getCurrentProject()
         const projects: Array<ProjectIdentifier> = state.getAvailableProjects()
 
         const hasFramework = this.options.hasFramework
@@ -103,12 +103,12 @@ class ApplicationMenu {
                         return {
                             label: project.name,
                             type: <MenuItemType>'checkbox',
-                            checked: currentProject === project.id,
+                            checked: !!currentProject && currentProject.id === project.id,
                             click: emit('project-switch', project.id, (menuItem: Electron.MenuItem) => {
                                 // Don't toggle the item, unless it's the current project,
                                 // as the switch might still be cancelled by the user. If
                                 // switch project is confirmed, menu will be rebuilt anyway.
-                                menuItem.checked = currentProject === project.id
+                                menuItem.checked = !!currentProject && currentProject.id === project.id
                             })
                         }
                     }) : undefined

@@ -90,10 +90,9 @@
                     class="suite"
                     :model="suite"
                     :key="suite.file"
-                    :has-children="suite.testsLoaded !== false && suite.tests.length > 0"
-                    :children="suite.tests"
                     :running="running"
                     :selectable="true"
+                    @toggle="onChildToggle"
                     @context-menu="onSuiteContextMenu"
                 >
                     <Filename :key="suite.file" />
@@ -114,6 +113,7 @@
 <script>
 // @TODO: redo filtering
 // import _debounce from 'lodash/debounce'
+import { mapGetters } from 'vuex'
 import { ipcRenderer } from 'electron'
 import { Menu } from '@main/menu'
 import { sortDisplayName } from '@lib/frameworks/sort'
@@ -135,10 +135,6 @@ export default {
         HasStatus
     ],
     props: {
-        repositoryId: {
-            type: String,
-            required: true
-        },
         model: {
             type: Object,
             required: true
@@ -153,12 +149,6 @@ export default {
     computed: {
         framework () {
             return this.model
-        },
-        frameworkContext () {
-            return {
-                repository: this.repositoryId,
-                framework: this.model.id
-            }
         },
         count () {
             return this.suites.length
@@ -215,27 +205,29 @@ export default {
         },
         displaySort () {
             return sortDisplayName(this.sort)
-        }
+        },
+        ...mapGetters({
+            frameworkContext: 'context/frameworkContext'
+        })
     },
     created () {
+        ipcRenderer
+            .on(`${this.model.id}:refreshed`, this.onSuitesEvent)
+            .on('menu-event', this.onAppMenuEvent)
         this.getSuites()
-        ipcRenderer.on('menu-event', this.onAppMenuEvent)
     },
     beforeDestroy () {
-        ipcRenderer.removeListener('menu-event', this.onAppMenuEvent)
+        ipcRenderer
+            .removeListener('menu-event', this.onAppMenuEvent)
+            .removeListener(`${this.model.id}:refreshed`, this.onSuitesEvent)
     },
     methods: {
-        async getSuites () {
-            console.log('getting suites')
-            return new Promise((resolve, reject) => {
-                ipcRenderer
-                    .once('framework-suites', (event, suites) => {
-                        this.suites = JSON.parse(suites)
-                        this.$emit('mounted')
-                        resolve()
-                    })
-                    .send('framework-get-suites', this.frameworkContext)
-            })
+        getSuites () {
+            ipcRenderer.send('framework-get-suites', this.frameworkContext)
+        },
+        onSuitesEvent (event, suites) {
+            this.suites = JSON.parse(suites)
+            this.$emit('mounted')
         },
         refresh () {
             ipcRenderer.send('framework-refresh', this.frameworkContext)
@@ -245,6 +237,9 @@ export default {
         },
         stop () {
             ipcRenderer.send('framework-stop', this.frameworkContext)
+        },
+        onChildToggle (context, toggle) {
+            ipcRenderer.send('framework-toggle-child', this.frameworkContext, context, toggle)
         },
         onChildSelect (selected, context) {
             console.log('selecting on framework', this.frameworkContext, selected, context)

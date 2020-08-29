@@ -58,9 +58,10 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param result The result object that will be persisted.
      * @param status Which status to recursively set. False will persist current status.
+     * @param shallow Whether to skip over deeply nested resources.
      */
-    protected defaults (result: ITestResult, status: Status | false = 'idle'): ITestResult {
-        return (pickBy({
+    protected defaults (result: ITestResult, status: Status | false = 'idle', shallow: boolean = false): ITestResult {
+        const defaults: ITestResult = {
             id: result.id,
             name: result.name,
             displayName: result.displayName !== result.name ? result.displayName : null,
@@ -69,8 +70,15 @@ export abstract class Nugget extends ProjectEventEmitter {
             console: result.console,
             params: result.params,
             stats: result.stats,
-            tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
-        }, property => {
+        }
+
+        if (shallow) {
+            defaults.hasChildren = this.hasChildren()
+        } else {
+            defaults.tests = (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
+        }
+
+        return (pickBy(defaults, property => {
             return isArray(property) ? property.length : !!property
         }) as any)
     }
@@ -80,7 +88,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param id The identifier of the test to try to find.
      */
-    protected findTest (id: string): ITest | undefined {
+    public findTest (id: string): ITest | undefined {
         return find(this.tests, test => test.getId() === id)
     }
 
@@ -329,6 +337,29 @@ export abstract class Nugget extends ProjectEventEmitter {
         if (this.canToggleTests() && cascade !== false) {
             this.tests.forEach(test => {
                 test.toggleSelected(this.selected)
+            })
+        }
+        return Promise.resolve()
+    }
+
+    /**
+     * Toggle this nugget's expanded state.
+     *
+     * @param toggle Whether it should be expanded or collapsed. Leave blank for inverting toggle.
+     * @param cascade Whether toggling should apply to nugget's children.
+     */
+    public async toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void> {
+        this.expanded = typeof toggle === 'undefined' ? !this.expanded : toggle
+
+        if (this.expanded) {
+            await this.bloom()
+        } else {
+            await this.wither()
+        }
+
+        if (cascade !== false) {
+            this.tests.forEach(test => {
+                test.toggleExpanded(this.expanded)
             })
         }
         return Promise.resolve()

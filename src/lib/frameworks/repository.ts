@@ -19,6 +19,7 @@ export type RepositoryOptions = {
     path: string
     expanded?: boolean
     frameworks?: Array<FrameworkOptions>
+    status?: FrameworkStatus
 }
 
 /**
@@ -48,7 +49,8 @@ export interface IRepository extends ProjectEventEmitter {
     isRefreshing (): boolean
     isBusy (): boolean
     isExpanded (): boolean
-    persist (): RepositoryOptions
+    persist (shallow?: boolean): RepositoryOptions
+    render (): RepositoryOptions
     addFramework (options: FrameworkOptions): Promise<IFramework>
     removeFramework (id: string): void
     getFrameworkById (id: string): IFramework | undefined
@@ -151,15 +153,31 @@ export class Repository extends ProjectEventEmitter implements IRepository {
 
     /**
      * Prepares the repository for persistence.
+     *
+     * @param shallow Whether to skip over deeply nested resources.
      */
-    public persist (): RepositoryOptions {
-        return {
+    public persist (shallow: boolean = false): RepositoryOptions {
+        const persist: RepositoryOptions = {
             id: this.id,
             name: this.name,
             path: this.path,
-            expanded: this.expanded,
-            frameworks: this.frameworks.map(framework => framework.persist())
+            expanded: this.expanded
         }
+
+        if (!shallow) {
+            persist.frameworks = this.frameworks.map(framework => shallow ? framework.render() : framework.persist())
+        } else {
+            persist.status = this.status
+        }
+
+        return persist
+    }
+
+    /**
+     * Prepares the repository for sending out to renderer process.
+     */
+    render (): RepositoryOptions {
+        return this.persist(true)
     }
 
     /**

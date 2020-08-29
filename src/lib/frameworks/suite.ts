@@ -23,13 +23,15 @@ export interface ISuite extends Nugget {
     rebuildTests (result: ISuiteResult): void
     canToggleTests (): boolean
     toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
+    toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
     idle (selective: boolean): void
     queue (selective: boolean): void
     error (selective: boolean): void
     idleQueued (selective: boolean): void
     errorQueued (selective: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
-    persist (status?: Status | false): ISuiteResult
+    persist (status?: Status | false, shallow?: boolean): ISuiteResult
+    render (status?: Status | false): ISuiteResult
     setFresh (fresh: boolean): void
     isFresh (): boolean
     countChildren (): number
@@ -48,6 +50,7 @@ export interface ISuiteResult {
     meta?: object | null
     console?: Array<any>
     testsLoaded?: boolean
+    hasChildren?: boolean
 }
 
 export class Suite extends Nugget implements ISuite {
@@ -58,11 +61,6 @@ export class Suite extends Nugget implements ISuite {
     constructor (framework: IFramework, result: ISuiteResult) {
         super()
         this.framework = framework
-        // this.path = options.path
-        // this.root = options.root
-        // this.runsInRemote = options.runsInRemote || false
-        // options.remotePath = options.remotePath || ''
-        // this.remotePath = options.remotePath.startsWith('/') ? options.remotePath : '/' + options.remotePath
         this.build(result)
     }
 
@@ -70,16 +68,33 @@ export class Suite extends Nugget implements ISuite {
      * Prepares the suite for persistence.
      *
      * @param status Which status to recursively set on tests. False will persist current status.
+     * @param shallow Whether to skip over deeply nested resources.
      */
-    public persist (status: Status | false = 'idle'): ISuiteResult {
-        return {
+    public persist (status: Status | false = 'idle', shallow: boolean = false): ISuiteResult {
+        const persist: ISuiteResult = {
             file: this.file,
-            meta: this.getMeta(),
-            testsLoaded: this.testsLoaded(),
-            tests: this.bloomed
-                ? this.tests.map((test: ITest) => test.persist(status))
-                : this.getTestResults().map((test: ITestResult) => this.defaults(test, status)),
+            meta: this.getMeta()
         }
+
+        if (shallow) {
+            persist.hasChildren = this.testsLoaded() && this.hasChildren()
+        } else {
+            persist.testsLoaded = this.testsLoaded()
+            persist.tests = this.bloomed
+                ? this.tests.map((test: ITest) => test.persist(status))
+                : this.getTestResults().map((test: ITestResult) => this.defaults(test, status))
+        }
+
+        return persist
+    }
+
+    /**
+     * Prepares the suite for sending out to renderer process.
+     *
+     * @param status Which status to recursively set on tests. False will persist current status.
+     */
+    render (status: Status | false = 'idle'): ISuiteResult {
+        return this.persist(status, true)
     }
 
     /**

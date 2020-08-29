@@ -51,6 +51,7 @@ export default {
         }
     },
     computed: {
+        // @TODO: do away with needing state
         hasProjects () {
             return state.hasProjects()
         }

@@ -4,7 +4,7 @@
         :class="[
             `status--${status}`,
             `is-${show ? 'expanded' : 'collapsed'}`,
-            hasChildren ? 'has-children' : '',
+            model.hasChildren ? 'has-children' : '',
             isChildActive ? 'is-child-active' : ''
         ]"
         tabindex="0"
@@ -35,20 +35,19 @@
                     <div class="test-name" :title="displayName">{{ displayName }}</div>
                 </slot>
             </div>
-            <div v-if="hasChildren" class="toggle">
+            <div v-if="model.hasChildren" class="toggle">
                 <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
             </div>
         </div>
-        <div v-if="hasChildren && show" class="nugget-items">
+        <div v-if="model.hasChildren && show" class="nugget-items">
             <Nugget
-                v-for="child in children"
+                v-for="test in tests"
                 class="test"
-                :key="child.id"
-                :model="child"
+                :key="test.id"
+                :model="test"
                 :running="running"
                 :selectable="canToggleTests"
-                :has-children="child.testsLoaded !== false && (child.tests || []).length > 0"
-                :children="child.tests"
+                @toggle="onChildToggle"
                 @activate="onChildActivation"
                 @context-menu="onTestContextMenu"
             />
@@ -75,16 +74,6 @@ export default {
             type: Object,
             required: true
         },
-        hasChildren: {
-            type: Boolean,
-            default: true
-        },
-        children: {
-            type: Array,
-            default () {
-                return []
-            }
-        },
         handler: {
             type: Function,
             default: null
@@ -96,7 +85,7 @@ export default {
     },
     data () {
         return {
-            nugget: this.model
+            tests: []
         }
     },
     computed: {
@@ -123,32 +112,17 @@ export default {
             return false
         },
         ...mapGetters({
+            frameworkContext: 'context/frameworkContext',
             activeTest: 'context/test',
             inContext: 'context/inContext'
         })
     },
     created () {
-        if (this.hasChildren) {
-            this.nugget.tests.forEach(test => {
-                ipcRenderer.on(`${test.id}:status`, this.childStatusListener)
-            })
-        }
-    },
-    destroyed () {
-        if (this.hasChildren) {
-            this.nugget.tests.forEach(test => {
-                ipcRenderer.removeListener(`${test.id}:status`, this.childStatusListener)
-            })
+        if (this.show) {
+            this.expand()
         }
     },
     methods: {
-        childStatusListener (event, to, from, id) {
-            this.nugget.tests.map(test => {
-                if (test.id === id) {
-                    test.status = to
-                }
-            })
-        },
         handleActivate (event) {
             if (this.handler) {
                 if (this.handler.call() === false) {
@@ -163,18 +137,18 @@ export default {
             this.toggleChildren(event)
         },
         onActivate () {
-            if (!this.hasChildren && !this.isActive) {
+            if (!this.model.hasChildren && !this.isActive) {
                 this.activate()
                 return false
             }
         },
         activate () {
             this.$el.focus()
-            this.$store.commit('context/TEST', this.identifier)
+            this.$store.commit('context/ADD', this.identifier)
             // @TODO: redo set active
             // this.test.setActive(true)
             setTimeout(() => {
-                this.$emit('activate', [this.model])
+                this.$emit('activate', [this.identifier])
             })
         },
         deactivate () {
@@ -192,26 +166,54 @@ export default {
             }
         },
         handleExpand (event) {
-            if (!this.hasChildren || this.show) {
+            if (!this.model.hasChildren || this.show) {
                 return
             }
             this.handleActivate(event)
         },
         handleCollapse (event) {
-            if (!this.hasChildren || !this.show) {
+            if (!this.model.hasChildren || !this.show) {
                 return
             }
             this.handleActivate(event)
         },
         toggleChildren (event) {
-            if (!this.hasChildren) {
+            if (!this.model.hasChildren) {
                 return
             }
-            this.toggleExpanded()
+            if (this.show) {
+                this.$store.dispatch('expand/collapse', this.identifier)
+                this.collapse()
+                return
+            }
+            this.$store.dispatch('expand/expand', this.identifier)
+            this.expand()
         },
-        toggleExpanded () {
-            // this.$input.hasAltKey(event)
-            this.$store.dispatch('expand/toggle', this.identifier)
+        expand () {
+            ipcRenderer
+                .once(`${this.identifier}:framework-tests`, (event, tests) => {
+                    tests = JSON.parse(tests)
+                    this.tests = tests
+                })
+            this.$emit('toggle', [this.identifier], true)
+        },
+        collapse () {
+            // Before hiding a nugget, make sure to reset its children's expand state.
+            (this.tests || []).forEach(test => {
+                this.$store.dispatch('expand/collapse', test.id)
+            })
+            this.$emit('toggle', [this.identifier], false)
+        },
+        onChildToggle (context, toggle) {
+            context.unshift(this.identifier)
+            this.$emit('toggle', context, toggle)
+        },
+        onChildActivation (context) {
+            context.unshift(this.identifier)
+            this.$store.commit('context/ADD', this.identifier)
+            this.$nextTick(() => {
+                this.$emit('activate', context)
+            })
         },
         onContextMenu () {
             this.$emit('context-menu', this.model)
@@ -255,13 +257,6 @@ export default {
             // @TODO: redo opening parent
             // return this.$parent.canOpen()
             return false
-        },
-        onChildActivation (context) {
-            context.unshift(this.model)
-            this.$store.commit('context/ADD', this.identifier)
-            this.$nextTick(() => {
-                this.$emit('activate', context)
-            })
         }
     }
 }

@@ -60,6 +60,7 @@ export type FrameworkOptions = {
     sort?: FrameworkSort
     sortReverse?: boolean
     canToggleTests?: boolean
+    status?: FrameworkStatus
 }
 
 /**
@@ -106,13 +107,15 @@ export interface IFramework extends ProjectEventEmitter {
     isBusy (): boolean
     empty (): boolean
     count (): number
-    persist (): FrameworkOptions
+    persist (shallow?: boolean): FrameworkOptions
+    render (): FrameworkOptions
     save (): void
     updateOptions (options: FrameworkOptions): void
     setActive (active: boolean): void
     isActive (): boolean
     isSelective (): boolean
     getSuites (): Array<ISuite>
+    getSuiteById (id: string): ISuite | undefined
     getSelected (): SuiteList
     setFilter (filter: FrameworkFilter, value: Array<string> | string | null): void
     getFilter (filter: FrameworkFilter): Array<string> | string | null
@@ -352,9 +355,11 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
 
     /**
      * Prepares the framework for persistence.
+     *
+     * @param shallow Whether to skip over deeply nested resources.
      */
-    public persist (): FrameworkOptions {
-        return {
+    public persist (shallow: boolean = false): FrameworkOptions {
+        const persist: FrameworkOptions = {
             id: this.id,
             name: this.name,
             type: this.type,
@@ -370,9 +375,23 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             proprietary: this.proprietary,
             sort: this.sort,
             sortReverse: this.sortReverse,
-            canToggleTests: this.canToggleTests,
-            suites: this.suites.map((suite: ISuite) => suite.persist())
+            canToggleTests: this.canToggleTests
         }
+
+        if (!shallow) {
+            persist.suites = this.suites.map((suite: ISuite) => shallow ? suite.render() : suite.persist())
+        } else {
+            persist.status = this.status
+        }
+
+        return persist
+    }
+
+    /**
+     * Prepares the framework for sending out to renderer process.
+     */
+    render (): FrameworkOptions {
+        return this.persist(true)
     }
 
     /**
@@ -586,6 +605,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             process.nextTick(() => {
                 this.reload()
                     .then((outcome: string) => {
+                        this.afterRefresh()
+
                         // Killed processes resolve the promise, so if user
                         // interrupted the run while reloading, make sure the
                         // run does not go ahead.
@@ -595,7 +616,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                             return
                         }
 
-                        this.cleanStaleSuites()
                         this.suites.forEach(suite => {
                             // suite.queue(false)
                         })
@@ -675,7 +695,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         return this.reload()
             .then(outcome => {
                 if (outcome !== 'killed') {
-                    this.cleanStaleSuites()
+                    this.afterRefresh()
                     this.updateStatus()
                     this.emit('change', this)
                 }
@@ -724,6 +744,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                     reject(error)
                 })
         })
+    }
+
+    /**
+     * A function that runs after a framework has been refreshed.
+     */
+    protected afterRefresh () {
+        this.cleanStaleSuites()
+        this.emit('refreshed', JSON.stringify(this.suites.map((suite: ISuite) => suite.render())))
     }
 
     /**
@@ -1254,6 +1282,19 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
 
             return true
         }))
+    }
+
+    /**
+     * Get a suite from this framework by it's id (i.e. filename)
+     *
+     * @param id The unique id of the suite to get.
+     */
+    public getSuiteById (id: string): ISuite | undefined {
+        const index = findIndex(this.suites, suite => suite.getId() === id)
+        if (index > -1) {
+            return this.suites[index]
+        }
+        return undefined
     }
 
     /**

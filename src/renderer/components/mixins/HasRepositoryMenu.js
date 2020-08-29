@@ -1,3 +1,4 @@
+import { ipcRenderer } from 'electron'
 import { Menu } from '@main/menu'
 
 export default {
@@ -7,36 +8,32 @@ export default {
             menuActive: false
         }
     },
-    computed: {
-        repositoryPath () {
-            return this.repository.getPath()
-        }
-    },
     methods: {
-        openMenu (event) {
+        async openMenu (event) {
             const menu = new Menu()
-            if (this.repository.exists()) {
+            const exists = await this.$root.fileExists(this.model.path)
+            if (exists) {
                 menu
                     .add({
-                        label: this.repository.name,
+                        label: this.model.name,
                         enabled: false
                     })
                     .add({
                         label: __DARWIN__ ? 'Refresh' : 'Refresh',
                         click: () => {
-                            this.refresh()
+                            ipcRenderer.send('repository-refresh', this.model.id)
                         }
                     })
                     .add({
                         label: __DARWIN__ ? 'Run' : 'Run',
                         click: () => {
-                            this.start()
+                            ipcRenderer.send('repository-start', this.model.id)
                         }
                     })
                     .add({
                         label: __DARWIN__ ? 'Stop' : 'Stop',
                         click: () => {
-                            this.stop()
+                            ipcRenderer.send('repository-stop', this.model.id)
                         }
                     })
                     .separator()
@@ -59,7 +56,7 @@ export default {
                             ? 'Copy Repository Path'
                             : 'Copy repository path',
                         click: () => {
-                            this.$root.copyToClipboard(this.repositoryPath)
+                            this.$root.copyToClipboard(this.model.path)
                         }
                     })
                     .add({
@@ -70,7 +67,7 @@ export default {
                                 ? 'Show in Explorer'
                                 : 'Show in your File Manager',
                         click: () => {
-                            this.$root.revealFile(this.repositoryPath)
+                            this.$root.revealFile(this.model.path)
                         }
                     })
             } else {
@@ -84,7 +81,7 @@ export default {
                         id: 'locate',
                         label: __DARWIN__ ? 'Locate Repository' : 'Locate repository',
                         click: () => {
-                            this.$emit('locate', this.repository)
+                            this.$emit('locate', this.model)
                         }
                     })
             }
@@ -110,18 +107,18 @@ export default {
                 .open()
         },
         scan () {
-            this.$emit('scan', this.repository)
+            this.$emit('scan', this.model)
         },
         manage () {
             this.$modal.open('ManageFrameworks', {
-                repository: this.repository,
+                repository: this.model,
                 scan: false
             })
         },
         remove () {
-            this.$modal.confirm('RemoveRepository', { repository: this.repository })
+            this.$modal.confirm('RemoveRepository', { repository: this.model })
                 .then(() => {
-                    this.$emit('remove', this.repository)
+                    this.$emit('remove', this.model)
                 })
                 .catch(() => {})
         }

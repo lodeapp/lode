@@ -14,10 +14,10 @@
             <div class="title">
                 <Indicator :status="status" />
                 <h4 class="heading">
-                    <span class="name" :title="framework.name">
+                    <span class="name" :title="model.name">
                         <!-- @TODO: redo display name; also line above -->
-                        <!-- {{ framework.getDisplayName() }} -->
-                        {{ framework.name }}
+                        <!-- {{ model.getDisplayName() }} -->
+                        {{ model.name }}
                     </span>
                 </h4>
             </div>
@@ -46,16 +46,13 @@ export default {
         }
     },
     computed: {
-        framework () {
-            return this.model
-        },
         isActive () {
-            return this.$store.getters['context/framework'] === this.framework.id
+            return this.$store.getters['context/framework'] === this.model.id
         }
     },
     methods: {
         activate () {
-            this.$emit('activate', this.framework.id)
+            this.$emit('activate', this.model)
         }
     }
 }

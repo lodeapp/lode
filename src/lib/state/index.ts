@@ -19,7 +19,7 @@ export class State extends EventEmitter {
         confirm: {
             switchProject: true
         },
-        currentProject: null,
+        currentProject: '1e811b2c-ac11-4919-a61d-ea6672fc2c6d',
         paneSizes: [16, 44, 40],
         projects: []
     }
@@ -130,18 +130,18 @@ export class State extends EventEmitter {
         return this.store.get('projects', []).length > 0
     }
 
-    public getCurrentProject (): string | null {
+    public getCurrentProject (): ProjectIdentifier | null {
         const currentProject = this.store.get('currentProject', null)
         // If current project is not set or it doesn't exist in the full list of projects, return null.
         if (!currentProject || !find(this.store.get('projects'), { id: currentProject })) {
             return null
         }
-        return currentProject
+        return ({ id: currentProject, name: '' } as ProjectIdentifier)
     }
 
     public getAvailableProjects (): Array<ProjectIdentifier> {
         return sortBy(this.store.get('projects'), [(project: ProjectIdentifier) => {
-            return latinize(project.name).toLowerCase()
+            return latinize(project.name!).toLowerCase()
         }])
     }
 
@@ -172,15 +172,19 @@ export class State extends EventEmitter {
         }
     }
 
-    public project (id: string): Project {
-        const project = new Project(id)
-        // If project already has a name, add it to the available projects list.
-        if (project.get('options.name')) {
-            this.store.set('projects', uniqBy(this.store.get('projects', []).concat([{
-                id,
-                name: project.get('options.name')
-            }]), 'id'))
+    public project (identifier: ProjectIdentifier): Project {
+        const project = new Project(identifier.id!)
+        // If project is new, set its name.
+        if (!project.get('options.name')) {
+            console.log('SETTING PROJECT NAME', identifier.name)
+            project.set('options.name', identifier.name)
         }
+
+        this.store.set('projects', uniqBy(this.store.get('projects', []).concat([{
+            id: identifier.id,
+            name: project.get('options.name')
+        }]), 'id'))
+
         return project
     }
 }
