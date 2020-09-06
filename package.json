@@ -66,7 +66,7 @@
     "split.js": "^1.5.10",
     "strip-ansi": "^5.0.0",
     "terminal.js": "^1.0.10",
-    "tree-kill": "^1.2.1",
+    "tree-kill": "^1.2.2",
     "universal-analytics": "^0.4.20",
     "uuid": "^3.3.2",
     "vue": "^2.5.16",
