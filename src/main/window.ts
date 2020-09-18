@@ -8,66 +8,14 @@ let windowStateKeeper: any | null = null
 
 export class BrowserWindow extends BaseBrowserWindow {
 
-    protected ready: boolean = false
-    protected project: Project | null = null
+    protected parent: Window | null = null
 
-    public setProject(identifier: ProjectIdentifier): void {
-        console.log('SETTING PROJECT ON WINDOW')
-        // Instantiate new project from identifier. If it does not yet exist
-        // in the store, it'll be created.
-        this.project = new Project(identifier)
-        this.project.on('ready', async () => {
-            await this.project!.reset()
-            console.log('PROJECT READY, NOTIFYING RENDERER', this.webContents)
-            if (!this.ready) {
-                console.log('WINDOW IS NOT YET LOADED, DEFERING')
-                ipcMain.once(`${this.id}:ready`, () => {
-                    this.projectReady()
-                })
-                return
-            }
-            console.log('WINDOW IS LOADED')
-            this.projectReady()
-        })
-
-        // @TODO: when setting another project, make sure previous one's
-        // listeners are no longer active.
-        this.project.on('project-event', this.projectEventListener.bind(this))
+    public setParent (window: Window): void {
+        this.parent = window
     }
 
-    public setReady (): void {
-        this.ready = true
-        ipcMain.emit(`${this.id}:ready`)
-    }
-
-    public getProject(): Project | null {
-        return this.project
-    }
-
-    public getProjectOptions (): ProjectOptions {
-        return this.project ? this.project.render() : {}
-    }
-
-    public projectReady (): void {
-        send(this.webContents, 'project-ready', [this.getProjectOptions()])
-        this.refreshSettings()
-    }
-
-    public isBusy (): boolean {
-        return !!this.project && this.project.isBusy()
-    }
-
-    public clear (): void {
-        this.project = null
-        this.refreshSettings()
-    }
-
-    public refreshSettings (): void {
-        send(this.webContents, 'settings-updated', [state.get()])
-    }
-
-    protected projectEventListener ({ id, event, args }: { id: string, event: string, args: Array<any> }): void {
-        send(this.webContents, `${id}:${event}`, args)
+    public getParent (): Window | null {
+        return this.parent
     }
 }
 
@@ -77,6 +25,9 @@ export class Window {
 
     protected minWidth = 960
     protected minHeight = 660
+
+    protected ready: boolean = false
+    protected project: Project | null = null
 
     public constructor (identifier: ProjectIdentifier | null) {
 
@@ -125,6 +76,7 @@ export class Window {
         }
 
         this.window = new BrowserWindow(windowOptions)
+        this.window.setParent(this)
 
         // Remember "parent" window when using devtools.
         this.window.webContents.on('devtools-focused', () => {
@@ -157,7 +109,17 @@ export class Window {
         return window
     }
 
-    public load() {
+    public static getFromWebContents(webContents: Electron.WebContents): Window {
+        return (BrowserWindow.fromWebContents(webContents) as BrowserWindow)
+            .getParent()!
+    }
+
+    public static getProjectFromWebContents(webContents: Electron.WebContents): Project | null {
+        return this.getFromWebContents(webContents)
+            .getProject()
+    }
+
+    public load () {
         this.window.webContents.once('did-finish-load', () => {
             if (process.env.NODE_ENV === 'development') {
                 this.window.webContents.openDevTools()
@@ -165,12 +127,11 @@ export class Window {
         })
 
         this.window.webContents.on('did-finish-load', () => {
-            this.window.setReady()
+            this.onReady()
             console.log('DID FINISH LOAD')
             send(this.window.webContents, 'did-finish-load', [{
                 focus: this.window.isFocused()
             }])
-            this.window.refreshSettings()
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
         })
 
@@ -187,32 +148,80 @@ export class Window {
         )
     }
 
-    public onClosed(fn: (event: any) => void) {
+    public reload () {
+        this.window.reload()
+    }
+
+    public onClosed (fn: (event: any) => void) {
         this.window.on('closed', fn)
     }
 
-    public async setProject (identifier: ProjectIdentifier): Promise<void> {
-        this.window.setProject(identifier)
+    public setProject (identifier: ProjectIdentifier): void {
+        console.log('SETTING PROJECT ON WINDOW')
+        // Instantiate new project from identifier. If it does not yet exist
+        // in the store, it'll be created.
+        this.project = new Project(identifier)
+        this.project.on('ready', async () => {
+            await this.project!.reset()
+            console.log('PROJECT READY, NOTIFYING RENDERER')
+            if (!this.ready) {
+                console.log('WINDOW IS NOT LOADED, ABORT')
+                return
+            }
+            console.log('WINDOW IS LOADED')
+            this.projectReady()
+        })
+
+        // @TODO: when setting another project, make sure previous one's
+        // listeners are no longer active.
+        this.project.on('project-event', this.projectEventListener.bind(this))
+    }
+
+    public onReady (): void {
+        this.ready = true
+        this.refreshSettings()
+        console.log('WINDOW IS READY')
+        // If project and window are ready, send to renderer, otherwise wait for
+        // `this.setProject` ready listener to trigger it. This means we can have
+        // have the project ready in the main process and reload the renderer.
+        if (this.project && this.project.isReady()) {
+            console.log('PROJECT READY, NOTYING VIA WINDOW READY')
+            this.projectReady()
+        }
     }
 
     public getProject (): Project | null {
-        return this.window.getProject()
+        return this.project
     }
 
     public getProjectOptions (): ProjectOptions {
-        return this.window.getProjectOptions()
+        return this.project ? this.project.render() : {}
+    }
+
+    public projectReady (): void {
+        send(this.window.webContents, 'project-ready', [this.getProjectOptions()])
+        this.refreshSettings()
     }
 
     public isBusy (): boolean {
-        return this.window.isBusy()
+        return !!this.project && this.project.isBusy()
     }
 
     public clear (): void {
-        return this.window.clear()
+        this.project = null
+        this.refreshSettings()
     }
 
     public sendMenuEvent (args: any) {
         this.window.show()
         this.window.webContents.send('menu-event', args)
+    }
+
+    protected refreshSettings (): void {
+        send(this.window.webContents, 'settings-updated', [state.get()])
+    }
+
+    protected projectEventListener ({ id, event, args }: { id: string, event: string, args: Array<any> }): void {
+        send(this.window.webContents, `${id}:${event}`, args)
     }
 }

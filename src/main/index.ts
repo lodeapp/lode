@@ -6,7 +6,7 @@ import Fs from 'fs'
 import { stringify } from 'flatted'
 import { app, ipcMain, shell } from 'electron'
 import { applicationMenu } from './menu'
-import { BrowserWindow, Window } from './window'
+import { Window } from './window'
 import { Updater } from './updater'
 import { send } from './ipc'
 import { openDirectorySafe } from './shell'
@@ -51,7 +51,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 function getProject (event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent): IProject {
-    return (BrowserWindow.fromWebContents(event.sender) as BrowserWindow).getProject()!
+    return Window.getProjectFromWebContents(event.sender)!
 }
 
 function getRepository (event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, repositoryId: string): Promise<IRepository> {
@@ -152,28 +152,25 @@ ipcMain
         }
     })
     .on('project-refresh', (event: Electron.IpcMainEvent) => {
-        const window = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow)
-        const project: IProject | null = window.getProject()
+        const project: IProject | null = Window.getProjectFromWebContents(event.sender)
         if (project) {
             project.refresh()
         }
     })
     .on('project-start', (event: Electron.IpcMainEvent) => {
-        const window = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow)
-        const project: IProject | null = window.getProject()
+        const project: IProject | null = Window.getProjectFromWebContents(event.sender)
         if (project) {
             project.start()
         }
     })
     .on('project-stop', (event: Electron.IpcMainEvent) => {
-        const window = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow)
-        const project: IProject | null = window.getProject()
+        const project: IProject | null = Window.getProjectFromWebContents(event.sender)
         if (project) {
             project.stop()
         }
     })
     .on('project-switch', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier | null) => {
-        const window = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow)
+        const window: Window = Window.getFromWebContents(event.sender)
         const project: IProject | null = window.getProject()
         console.log('SWITCHING', identifier)
         if (identifier) {
@@ -187,8 +184,7 @@ ipcMain
         }
     })
     .on('project-repositories', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier) => {
-        const window = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow)
-        const project: IProject | null = window.getProject()
+        const project: IProject | null = Window.getProjectFromWebContents(event.sender)
         if (project) {
             send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
         }
@@ -300,7 +296,7 @@ ipcMain
     })
     .on('settings-reset', (event: Electron.IpcMainEvent) => {
         state.reset()
-        const window = (BrowserWindow.fromWebContents(event.sender) as BrowserWindow)
+        const window: Window = Window.getFromWebContents(event.sender)
         window.clear()
         window.reload()
     })

@@ -54,6 +54,7 @@ export interface IProject extends ProjectEventEmitter {
     refresh (): void
     stop (): Promise<any>
     reset (): Promise<any>
+    isReady (): boolean
     isRunning (): boolean
     isRefreshing (): boolean
     isBusy (): boolean
@@ -105,6 +106,7 @@ export class Project extends ProjectEventEmitter implements IProject {
 
         // If this project doesn't yet exist, create it.
         if (!identifier.id) {
+            console.log('NO ID, SAVING')
             this.save()
         }
     }
@@ -151,6 +153,13 @@ export class Project extends ProjectEventEmitter implements IProject {
         return Promise.all(this.repositories.map((repository: IRepository) => {
             return repository.reset()
         }))
+    }
+
+    /**
+     * Whether this project is ready.
+     */
+    public isReady (): boolean {
+        return this.ready
     }
 
     /**
@@ -215,6 +224,7 @@ export class Project extends ProjectEventEmitter implements IProject {
      * Save this project in the persistent store.
      */
     public save (): void {
+        console.log('SAVING PROJECT', this.persist())
         this.state.save(this.persist())
     }
 
@@ -256,6 +266,7 @@ export class Project extends ProjectEventEmitter implements IProject {
      * A function to run when a child repository changes.
      */
     protected changeListener (): void {
+        console.log('CHANGE IN PROJECT, SAVING')
         this.save()
     }
 
@@ -294,6 +305,8 @@ export class Project extends ProjectEventEmitter implements IProject {
         if (this.initialRepositoryReady >= this.initialRepositoryCount) {
             this.onReady()
         }
+        console.log('REPOSITORY READY, SAVING')
+        this.save()
     }
 
     /**
@@ -347,7 +360,6 @@ export class Project extends ProjectEventEmitter implements IProject {
             this.updateStatus()
             this.emit('repositoryAdded', repository)
             resolve(repository)
-            this.save()
         })
     }
 
@@ -368,6 +380,7 @@ export class Project extends ProjectEventEmitter implements IProject {
         if (!this.repositories.length) {
             this.hasRepositories = false
         }
+        console.log('REPOSITORY REMOVED, SAVING')
         this.save()
     }
 

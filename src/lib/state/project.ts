@@ -38,8 +38,10 @@ export class Project {
     }
 
     public save (options: ProjectOptions): void {
-        options = { ...this.store.get('options'), ...options }
-        this.store.set('options', options)
+        this.store.set('options', {
+            ...this.store.get('options'),
+            ...options
+        })
     }
 
     public toJSON (): ProjectOptions {
