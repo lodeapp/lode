@@ -12,8 +12,6 @@
                     <Indicator :status="status" />
                     <h3 class="heading">
                         <span class="name">
-                            <!-- @TODO: redo display name -->
-                            <!-- {{ framework.getDisplayName() }} -->
                             {{ framework.name }}
                         </span>
                     </h3>
@@ -223,11 +221,13 @@ export default {
     },
     methods: {
         getSuites () {
-            ipcRenderer.send('framework-get-suites', this.frameworkContext)
+            ipcRenderer.send('framework-suites', this.frameworkContext)
         },
-        onSuitesEvent (event, suites) {
-            this.suites = JSON.parse(suites)
-            this.$emit('mounted')
+        onSuitesEvent (event, payload) {
+            this.$payload(payload, suites => {
+                this.suites = suites
+                this.$emit('mounted')
+            })
         },
         refresh () {
             ipcRenderer.send('framework-refresh', this.frameworkContext)

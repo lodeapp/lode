@@ -426,7 +426,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param selective Whether we're currently in selective mode or not.
      */
-    public idle (selective: boolean): void {
+    public async idle (selective: boolean): Promise<void> {
         this.setFresh(false)
         this.updateStatus('idle')
         this.tests

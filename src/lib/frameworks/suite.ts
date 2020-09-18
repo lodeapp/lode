@@ -24,7 +24,7 @@ export interface ISuite extends Nugget {
     canToggleTests (): boolean
     toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
     toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
-    idle (selective: boolean): void
+    idle (selective: boolean): Promise<void>
     queue (selective: boolean): void
     error (selective: boolean): void
     idleQueued (selective: boolean): void
@@ -46,6 +46,7 @@ export interface ISuite extends Nugget {
 
 export interface ISuiteResult {
     file: string
+    status?: Status
     tests?: Array<ITestResult>
     meta?: object | null
     console?: Array<any>
@@ -73,6 +74,7 @@ export class Suite extends Nugget implements ISuite {
     public persist (status: Status | false = 'idle', shallow: boolean = false): ISuiteResult {
         const persist: ISuiteResult = {
             file: this.file,
+            status: status ? status : this.status,
             meta: this.getMeta()
         }
 

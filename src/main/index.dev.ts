@@ -1,11 +1,11 @@
-require('electron').app.on('ready', () => {
-    require('devtron').install()
-    let installExtension = require('electron-devtools-installer')
-    installExtension.default(installExtension.VUEJS_DEVTOOLS)
-        .then(() => {})
-        .catch((err: Error) => {
-            console.log('Unable to install `vue-devtools`: \n', err)
-    })
+require('electron').app.whenReady().then(() => {
+    // @TODO: install Vue Devtools when they are compatible again with Electron 10
+    // const installExtension = require('electron-devtools-installer')
+    // installExtension(installExtension.VUEJS_DEVTOOLS)
+    //     .then(() => {})
+    //     .catch((err: Error) => {
+    //         console.log('Unable to install `vue-devtools`: \n', err)
+    // })
 })
 
 // Require `main` process to boot app

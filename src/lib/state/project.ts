@@ -1,5 +1,4 @@
 import ElectronStore from 'electron-store'
-import { ipcRenderer } from 'electron'
 import { ProjectOptions } from '@lib/frameworks/project'
 
 export class Project {
@@ -41,9 +40,6 @@ export class Project {
     public save (options: ProjectOptions): void {
         options = { ...this.store.get('options'), ...options }
         this.store.set('options', options)
-        if (ipcRenderer) {
-            ipcRenderer.emit('project-saved', JSON.stringify(options))
-        }
     }
 
     public toJSON (): ProjectOptions {

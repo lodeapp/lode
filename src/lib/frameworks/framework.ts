@@ -102,6 +102,7 @@ export interface IFramework extends ProjectEventEmitter {
     start (): void
     refresh (): void
     stop (): Promise<void>
+    reset (): Promise<any>
     isRunning (): boolean
     isRefreshing (): boolean
     isBusy (): boolean
@@ -554,6 +555,15 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     }
 
     /**
+     * Reset this framework's state.
+     */
+    public async reset (): Promise<any> {
+        return Promise.all(this.suites.map((suite: ISuite) => {
+            return suite.idle(false)
+        }))
+    }
+
+    /**
      * Whether this framework is running.
      */
     public isRunning (): boolean {
@@ -751,7 +761,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     protected afterRefresh () {
         this.cleanStaleSuites()
-        this.emit('refreshed', JSON.stringify(this.suites.map((suite: ISuite) => suite.render())))
+        this.emit('refreshed', this.suites.map((suite: ISuite) => suite.render()))
     }
 
     /**

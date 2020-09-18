@@ -1,10 +1,11 @@
 import { ensureDir } from 'fs-extra'
-import { app, Menu, ipcMain, shell } from 'electron'
+import { app, ipcMain, Menu, shell } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import { MenuEvent } from './menu-event'
 import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
+import { Window } from '../window'
 import { ProjectIdentifier } from '@lib/frameworks/project'
-import { autoUpdater } from 'electron-updater'
 
 // We seem to be unable to simple declare menu items as "radio" without TS
 // raising an alert, so we need to forcibly cast types when defining them.
@@ -12,7 +13,7 @@ type MenuItemType = ('normal' | 'separator' | 'submenu' | 'checkbox' | 'radio')
 
 type ClickHandler = (
     menuItem: Electron.MenuItem,
-    browserWindow: Electron.BrowserWindow,
+    browserWindow: Electron.BrowserWindow | undefined,
     event: Electron.Event
 ) => void
 
@@ -27,6 +28,7 @@ class ApplicationMenu {
     protected template: Array<Electron.MenuItemConstructorOptions> = []
 
     protected options: { [index: string]: any } = {
+        hasProject: false,
         hasFramework: false,
         isCheckingForUpdate: false,
         isDownloadingUpdate: false,
@@ -40,6 +42,7 @@ class ApplicationMenu {
         const currentProject: ProjectIdentifier | null = state.getCurrentProject()
         const projects: Array<ProjectIdentifier> = state.getAvailableProjects()
 
+        const hasProject = this.options.hasProject
         const hasFramework = this.options.hasFramework
         const isCheckingForUpdate = this.options.isCheckingForUpdate
         const isDownloadingUpdate = this.options.isDownloadingUpdate
@@ -175,18 +178,18 @@ class ApplicationMenu {
                 },
                 separator,
                 {
-                        label: __DARWIN__
-                            ? 'Toggle Developer Tools'
-                            : 'Toggle developer tools',
-                        accelerator: (() => {
-                            return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
-                        })(),
-                        click(item: any, focusedWindow: Electron.BrowserWindow) {
-                            if (focusedWindow) {
-                                focusedWindow.webContents.toggleDevTools()
-                            }
-                        },
-                    }
+                    label: __DARWIN__
+                        ? 'Toggle Developer Tools'
+                        : 'Toggle developer tools',
+                    accelerator: (() => {
+                        return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
+                    })(),
+                    click (item: any, focusedWindow: Electron.BrowserWindow | undefined) {
+                        if (focusedWindow) {
+                            focusedWindow.webContents.toggleDevTools()
+                        }
+                    },
+                }
             ]
         })
 
@@ -195,35 +198,41 @@ class ApplicationMenu {
             submenu: [
                 {
                     label: __DARWIN__ ? 'Refresh All' : 'Refresh all',
+                    click: emit('refresh-all'),
                     accelerator: 'CmdOrCtrl+Alt+Shift+R',
-                    click: emit('refresh-all')
+                    enabled: hasProject
                 },
                 {
                     label: __DARWIN__ ? 'Run All' : 'Run all',
+                    click: emit('run-all'),
                     accelerator: 'CmdOrCtrl+Alt+R',
-                    click: emit('run-all')
+                    enabled: hasProject
                 },
                 {
                     label: __DARWIN__ ? 'Stop All' : 'Stop all',
+                    click: emit('stop-all'),
                     accelerator: 'Alt+Esc',
-                    click: emit('stop-all')
+                    enabled: hasProject
                 },
                 separator,
                 {
                     label: __DARWIN__ ? 'Rename Project' : 'Rename project',
+                    click: emit('rename-project'),
                     accelerator: 'CmdOrCtrl+Alt+E',
-                    click: emit('rename-project')
+                    enabled: hasProject
                 },
                 {
                     label: __DARWIN__ ? 'Remove Project' : 'Remove project',
+                    click: emit('remove-project'),
                     accelerator: 'CmdOrCtrl+Alt+Backspace',
-                    click: emit('remove-project')
+                    enabled: hasProject
                 },
                 separator,
                 {
                     label: __DARWIN__ ? 'Add Repositories… ' : 'Add repositories…',
+                    click: emit('add-repositories'),
                     accelerator: 'CmdOrCtrl+Alt+O',
-                    click: emit('add-repositories')
+                    enabled: hasProject
                 }
             ]
         })
@@ -283,7 +292,7 @@ class ApplicationMenu {
                     {
                         label: '&Reload',
                         accelerator: 'CmdOrCtrl+Shift+0',
-                        click(item: any, focusedWindow: Electron.BrowserWindow) {
+                        click(item: any, focusedWindow: Electron.BrowserWindow | undefined) {
                             if (focusedWindow) {
                                 focusedWindow.reload()
                             }
@@ -310,7 +319,7 @@ class ApplicationMenu {
                             const path = app.getPath('userData')
                             ensureDir(path)
                                 .then(() => {
-                                    shell.openItem(path)
+                                    shell.openPath(path)
                                 })
                                 .catch(error => {
                                     log.error('Failed to opened logs directory from menu.', error)
@@ -380,7 +389,7 @@ class ApplicationMenu {
                             const path = getLogDirectoryPath()
                             ensureDir(path)
                                 .then(() => {
-                                    shell.openItem(path)
+                                    shell.openPath(path)
                                 })
                                 .catch(error => {
                                     log.error('Failed to opened logs directory from menu.', error)
@@ -389,7 +398,7 @@ class ApplicationMenu {
                     },
                     {
                         label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
-                        click: emit('reset-settings')
+                        click: emit('settings-reset')
                     }
                 ]
             }
@@ -421,10 +430,10 @@ class ApplicationMenu {
         this.template = template
     }
 
-    public build (): Promise<Array<Electron.MenuItemConstructorOptions>> {
-        return new Promise((resolve, reject) => {
-            this.render()
-            resolve(this.template)
+    public build (window: Window | null): Promise<Array<Electron.MenuItemConstructorOptions>> {
+        return this.setOptions({
+            ...this.options,
+            hasProject: window && !!window.getProject()
         })
     }
 
@@ -449,7 +458,7 @@ class ApplicationMenu {
  * Utility function returning a Click event handler which, when invoked, emits
  * the provided menu event over IPC.
  */
-function emit(name: MenuEvent, properties?: any, callback?: Function): ClickHandler {
+function emit (name: MenuEvent, properties?: any, callback?: Function): ClickHandler {
     return (menuItem, window, event) => {
         if (window) {
             window.webContents.send('menu-event', { name, properties })
@@ -471,7 +480,7 @@ const ZoomOutFactors = ZoomInFactors.slice().reverse()
  * Returns the element in the array that's closest to the value parameter. Note
  * that this function will throw if passed an empty array.
  */
-function findClosestValue(arr: Array<number>, value: number) {
+function findClosestValue (arr: Array<number>, value: number) {
     return arr.reduce((previous, current) => {
         return Math.abs(current - value) < Math.abs(previous - value)
             ? current

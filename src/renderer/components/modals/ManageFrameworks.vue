@@ -46,9 +46,9 @@
 import { ipcRenderer } from 'electron'
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
-import { FrameworkValidator } from '@lib/frameworks/validator'
 import Modal from '@/components/modals/Modal'
 import FrameworkSettings from '@/components/FrameworkSettings'
+import Validator from '@/helpers/validator'
 
 export default {
     name: 'ManageFrameworks',
@@ -111,6 +111,7 @@ export default {
     methods: {
         parseFrameworks (scanned = false, pending = []) {
             const types = pending.map(p => p.type)
+            console.log(this.repository.frameworks)
             const frameworks = (this.repository.frameworks || []).map(framework => {
                 // If an existing framework has been removed, but user has
                 // triggered scan again, continue. This means the existing
@@ -143,17 +144,18 @@ export default {
             this.frameworks.forEach(framework => {
                 this.$set(framework, 'key', framework.id || this.$string.random())
                 // @TODO: redo validation without Node integration
-                this.$set(framework, 'validator', new FrameworkValidator({
-                    repositoryPath: this.repository.path
-                }))
+                this.$set(framework, 'validator', new Validator())
             })
+            console.log('HEY', this.frameworks)
         },
         async handleScan () {
             this.scanning = true
             ipcRenderer
-                .once(`${this.repository.id}.repository-scanned`, (event, pending) => {
-                    this.parseFrameworks(true, JSON.parse(pending))
-                    this.scanning = false
+                .once(`${this.repository.id}:repository-scanned`, (event, payload) => {
+                    this.$payload(payload, pending => {
+                        this.parseFrameworks(true, pending)
+                        this.scanning = false
+                    })
                 })
                 .send('repository-scan', this.repository.id)
         },
@@ -173,10 +175,13 @@ export default {
                 }
             }
         },
-        save () {
-            this.frameworks.forEach(framework => {
-                framework.validator.validate(framework)
-            })
+        async save () {
+            // Validate each slot before checking for errors in the form.
+            for (let i = this.frameworks.length - 1; i >= 0; i--) {
+                this.frameworks[i].validator.refresh(JSON.parse(
+                    await ipcRenderer.invoke('framework-validate', this.repository.id, this.frameworks[i])
+                ))
+            }
 
             if (!this.hasErrors) {
                 this.frameworks

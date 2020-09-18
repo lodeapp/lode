@@ -16,7 +16,7 @@ export interface ITest extends Nugget {
     persist (status?: Status | false, shallow?: boolean): ITestResult
     render (status?: Status | false): ITestResult
     resetResult (): void
-    idle (selective: boolean): void
+    idle (selective: boolean): Promise<void>
     queue (selective: boolean): void
     error (selective: boolean): void
     idleQueued (selective: boolean): void

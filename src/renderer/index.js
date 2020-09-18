@@ -5,9 +5,8 @@ import Vue from 'vue'
 import store from './store'
 import * as Path from 'path'
 import { isArray, isEmpty } from 'lodash'
+import { parse } from 'flatted'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
-import { state } from '@lib/state'
-import { Titlebar, Color } from 'custom-electron-titlebar'
 
 // Styles
 import '../styles/app.scss'
@@ -52,6 +51,15 @@ Vue.directive('focusable', Focusable)
 Vue.component('Icon', Icon)
 Vue.component('Nugget', Nugget)
 
+Vue.mixin({
+    methods: {
+        $payload (payload, callback) {
+            payload = parse(payload)
+            return callback(...payload.args, payload.id)
+        }
+    }
+})
+
 if (process.env.NODE_ENV !== 'development') {
     window.__static = Path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
@@ -79,15 +87,14 @@ export default new Vue({
         }
     },
     created () {
-        this.titlebar()
-
         ipcRenderer
-            .on('did-finish-load', (event, properties) => {
-                document.body.classList.add(`platform-${process.platform}`)
-                if (properties.focus) {
-                    document.body.classList.add('is-focused')
-                }
-                this.loadProject(properties.projectOptions)
+            .on('did-finish-load', (event, payload) => {
+                this.$payload(payload, properties => {
+                    document.body.classList.add(`platform-${process.platform}`)
+                    if (properties.focus) {
+                        document.body.classList.add('is-focused')
+                    }
+                })
             })
             .on('blur', () => {
                 document.body.classList.remove('is-focused')
@@ -95,13 +102,18 @@ export default new Vue({
             .on('focus', () => {
                 document.body.classList.add('is-focused')
             })
-            .on('project-switched', (event, projectOptions) => {
-                this.loadProject(projectOptions)
+            .on('project-ready', (event, payload) => {
+                console.log('PROJECT READY')
+                this.$payload(payload, project => {
+                    this.loadProject(project)
+                })
             })
-            .on('status', (event, id, status) => {
-                this.$store.dispatch('status/set', { id, status })
+            .on('settings-updated', (event, payload) => {
+                this.$payload(payload, settings => {
+                    this.updateSettings(settings)
+                })
             })
-            .on('menu-event', (event, { name, properties }) => {
+            .on('menu-event', async (event, { name, properties }) => {
                 switch (name) {
                     case 'show-about':
                         this.$modal.open('About')
@@ -119,13 +131,13 @@ export default new Vue({
                         this.selectAll()
                         break
                     case 'refresh-all':
-                        this.project.refresh()
+                        ipcRenderer.send('project-refresh')
                         break
                     case 'run-all':
-                        this.project.start()
+                        ipcRenderer.send('project-start')
                         break
                     case 'stop-all':
-                        this.project.stop()
+                        ipcRenderer.send('project-stop')
                         break
                     case 'rename-project':
                         this.editProject()
@@ -136,23 +148,20 @@ export default new Vue({
                     case 'add-repositories':
                         this.addRepositories()
                         break
+                    case 'settings-reset':
+                        this.$modal.confirm('ResetSettings')
+                            .then(() => {
+                                ipcRenderer.send('settings-reset')
+                            })
+                            .catch(() => {})
+                        break
                     case 'log-project':
-                        const projectState = state.project(this.project.getId())
-                        log.info({
-                            project: {
-                                object: this.project,
-                                string: JSON.stringify(this.project)
-                            },
-                            state: {
-                                json: projectState.get(),
-                                string: JSON.stringify(projectState.get())
-                            }
-                        })
+                        log.info(parse(await ipcRenderer.invoke('log-project')))
                         break
                     case 'log-settings':
                         log.info({
-                            object: state.get(),
-                            json: JSON.stringify(state.get())
+                            ...parse(await ipcRenderer.invoke('log-settings')),
+                            vuex: store.getters['settings/value']()
                         })
                         break
                     case 'crash':
@@ -160,13 +169,6 @@ export default new Vue({
                         break
                     case 'feedback':
                         window.location.href = 'mailto:support@lode.run'
-                        break
-                    case 'reset-settings':
-                        this.$modal.confirm('ResetSettings')
-                            .then(() => {
-                                ipcRenderer.send('reset-settings')
-                            })
-                            .catch(() => {})
                         break
                 }
             })
@@ -195,22 +197,6 @@ export default new Vue({
         }
     },
     methods: {
-        titlebar () {
-            if (__WIN32__) {
-                const titlebar = new Titlebar({
-                    backgroundColor: Color.fromHex('#ffffff'),
-                    icon: 'static/icons/gem.svg',
-                    overflow: 'hidden'
-                })
-                document.title = ''
-                titlebar.updateTitle()
-
-                ipcRenderer
-                    .on('menu-updated', () => {
-                        titlebar.updateMenu(remote.Menu.getApplicationMenu())
-                    })
-            }
-        },
         mapStatuses (project) {
             const mapTests = (nugget, statuses) => {
                 (nugget.tests || []).forEach(test => {
@@ -235,7 +221,7 @@ export default new Vue({
             return statuses
         },
         loadProject (project) {
-            project = JSON.parse(project)
+            console.log('LOADING PROJECT', { project })
             this.project = isEmpty(project) ? null : project
             this.refreshApplicationMenu()
         },
@@ -262,26 +248,18 @@ export default new Vue({
                 })
                 .catch(() => {})
         },
-        removeProject () {
+        async removeProject () {
             this.$modal.confirm('RemoveProject')
-                .then(() => {
-                    this.project.stop().then(() => {
-                        store.commit('context/CLEAR')
-                        const switchTo = state.removeProject(this.project.getId())
-                        // Switch information should be available only
-                        // if there are still projects to switch to.
-                        if (switchTo) {
-                            this.handleSwitchProject(switchTo)
-                        } else {
-                            this.loadProject(null)
-                        }
-                    })
+                .then(async () => {
+                    const switchTo = await ipcRenderer.invoke('project-remove', this.project.id)
+                    console.log({ switchTo })
+                    this.handleSwitchProject(switchTo)
                 })
                 .catch(() => {})
         },
         switchProject (projectId) {
             // Clicking on current project shouldn't have any effect.
-            if (projectId === this.project.getId()) {
+            if (projectId === this.project.id) {
                 // Windows will uncheck the project regardless of it being
                 // selected already, so refresh the menu to undo it.
                 if (__WIN32__) {
@@ -291,16 +269,17 @@ export default new Vue({
             }
 
             this.$modal.confirmIf(() => {
-                return this.project.status === 'idle' ? false : state.get('confirm.switchProject')
+                console.log(this.project.status)
+                // @TODO: don't rely on `state` for application settings
+                return ['idle', 'empty'].includes(this.project.status)
+                    ? false
+                    : this.setting('confirm.switchProject')
             }, 'ConfirmSwitchProject')
                 .then(disableConfirm => {
                     if (disableConfirm) {
-                        state.set('confirm.switchProject', false)
+                        this.updateSetting('confirm.switchProject', false)
                     }
-                    this.project.stop().then(() => {
-                        store.commit('context/CLEAR')
-                        this.handleSwitchProject(projectId)
-                    })
+                    this.handleSwitchProject(projectId)
                 })
                 .catch(() => {
                     // Windows will check the project regardless of
@@ -311,7 +290,8 @@ export default new Vue({
                 })
         },
         handleSwitchProject (projectId) {
-            ipcRenderer.send('project-switch', projectId)
+            store.commit('context/CLEAR')
+            ipcRenderer.send('project-switch', projectId ? { id: projectId } : null)
         },
         addRepositories (directories) {
             if (!isArray(directories)) {
@@ -319,7 +299,6 @@ export default new Vue({
             }
             this.$modal.confirm('AddRepositories', { directories })
                 .then(({ repositories, autoScan }) => {
-                    repositories = JSON.parse(repositories)
                     this.project.repositories = repositories
                     if (autoScan) {
                         this.scanRepositories(repositories, 0)
@@ -328,6 +307,7 @@ export default new Vue({
                 .catch(() => {})
         },
         scanRepositories (repositories, n) {
+            console.log({ repositories, n })
             // Scan repository and queue the following one the modal callback.
             this.scanRepository(repositories[n], () => {
                 if ((n + 1) >= repositories.length) {
@@ -358,11 +338,23 @@ export default new Vue({
                 framework: frameworkId
             })
         },
+        setting (key) {
+            return store.getters['settings/value'](key)
+        },
+        updateSetting (key, value) {
+            ipcRenderer.send('settings-update', key, value)
+        },
+        updateSettings (settings = {}) {
+            store.replaceState({
+                ...store.state,
+                settings
+            })
+        },
         refreshApplicationMenu () {
-            ipcRenderer.send('refresh-menu')
+            ipcRenderer.send('menu-refresh')
         },
         setApplicationMenuOption (options = {}) {
-            ipcRenderer.send('set-menu-options', options)
+            ipcRenderer.send('menu-set-options', options)
         },
         openExternal (link) {
             shell.openExternal(link)
@@ -381,8 +373,10 @@ export default new Vue({
         async fileExists (path) {
             return new Promise((resolve, reject) => {
                 ipcRenderer
-                    .once(`${path}:exists`, (event, exists) => {
-                        resolve(exists)
+                    .once(`${path}:exists`, (event, payload) => {
+                        this.$payload(payload, exists => {
+                            resolve(exists)
+                        })
                     })
                     .send('check-if-file-exists', path)
             })

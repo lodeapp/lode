@@ -35,7 +35,6 @@
 </template>
 
 <script>
-import { state } from '@lib/state'
 import Modal from '@/components/modals/Modal'
 
 export default {
@@ -46,18 +45,18 @@ export default {
     computed: {
         concurrency: {
             get () {
-                return state.get('concurrency')
+                return this.$root.setting('concurrency')
             },
             set (value) {
-                return state.set('concurrency', value)
+                this.$root.updateSetting('concurrency', value)
             }
         },
         confirmSwitchProject: {
             get () {
-                return state.get('confirm.switchProject')
+                return this.$root.setting('confirm.switchProject')
             },
             set (value) {
-                return state.set('confirm.switchProject', value)
+                this.$root.updateSetting('confirm.switchProject', value)
             }
         }
     },

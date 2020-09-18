@@ -29,7 +29,6 @@
 </template>
 
 <script>
-import { state } from '@lib/state'
 import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
 
@@ -51,9 +50,8 @@ export default {
         }
     },
     computed: {
-        // @TODO: do away with needing state
         hasProjects () {
-            return state.hasProjects()
+            return (this.$root.setting('projects') || []).length
         }
     },
     methods: {

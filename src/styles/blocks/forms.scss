@@ -5,6 +5,12 @@ input {
         color: var(--input-placeholder-text-color);
     }
 
+    &[type=checkbox],
+    &[type=radio] {
+        position: relative;
+        top: 2px;
+    }
+
     &[type=search]::-webkit-search-cancel-button {
         -webkit-appearance: searchfield-cancel-button;
         position: relative;

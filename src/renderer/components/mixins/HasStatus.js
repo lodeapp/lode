@@ -20,8 +20,11 @@ export default {
         ipcRenderer.removeListener(`${this.identifier}:status`, this.statusListener)
     },
     methods: {
-        statusListener (event, to, from) {
-            this.status = to
+        statusListener (event, payload) {
+            this.$payload(payload, (to, from) => {
+                console.log('SWITCHING STATUS TO', to, from, this.model)
+                this.status = to
+            })
         }
     }
 }

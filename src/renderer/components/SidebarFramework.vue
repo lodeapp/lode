@@ -15,8 +15,6 @@
                 <Indicator :status="status" />
                 <h4 class="heading">
                     <span class="name" :title="model.name">
-                        <!-- @TODO: redo display name; also line above -->
-                        <!-- {{ model.getDisplayName() }} -->
                         {{ model.name }}
                     </span>
                 </h4>

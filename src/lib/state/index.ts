@@ -157,7 +157,7 @@ export class State extends EventEmitter {
             this.store.set('currentProject', switchTo)
             return switchTo
         }
-        return projectId
+        return null
     }
 
     public updateProject (options: ProjectIdentifier): void {

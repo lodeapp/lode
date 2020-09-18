@@ -164,50 +164,41 @@ export default {
     },
     created () {
         ipcRenderer
-            .on(`${this.model.id}:repositories`, this.onRepositoriesEvent)
+            .on('repositories', this.onRepositoriesEvent)
 
         this.getRepositories()
-
-        // @TODO: redo listeners
-        // this.model.on('ready', () => {
-        //     // Register initial listeners once the project is fully built.
-        //     // Subsequent listeners will be registered when the appropriate
-        //     // events are emitted. All listeners are purged from the parent
-        //     // model when a child is removed.
-        //     this.model.on('repositoryAdded', this.onRepositoryAdded)
-        //     this.repositories.forEach(repository => {
-        //         repository.on('frameworkAdded', this.onFrameworkAdded)
-        //         repository.frameworks.forEach(framework => {
-        //             this.registerFrameworkListeners(framework)
-        //         })
-        //     })
-        //     // Trigger project change to mount default model.
-        //     this.onProjectChange()
-        //     this.loading = false
-        // })
+    },
+    beforeDestroy () {
+        ipcRenderer
+            .removeListener('repositories', this.onRepositoriesEvent)
     },
     methods: {
         getRepositories () {
-            ipcRenderer.send('project-get-repositories', {
+            ipcRenderer.send('project-repositories', {
                 id: this.model.id,
                 name: this.model.name
             })
         },
-        async onRepositoriesEvent (event, repositories) {
-            this.repositories = JSON.parse(repositories)
-            await Promise.all(this.repositories.map((repository, index) => {
-                return new Promise((resolve, reject) => {
-                    ipcRenderer
-                        .once(`${repository.id}:frameworks`, (event, frameworks) => {
-                            this.repositories[index].frameworks = JSON.parse(frameworks)
-                            resolve()
-                        })
-                        .send('repository-get-frameworks', repository.id)
-                })
-            }))
+        async onRepositoriesEvent (event, payload) {
+            this.$payload(payload, async repositories => {
+                console.log({ repositories })
+                this.repositories = repositories
+                await Promise.all(this.repositories.map((repository, index) => {
+                    return new Promise((resolve, reject) => {
+                        ipcRenderer
+                            .once(`${repository.id}:frameworks`, (event, payload) => {
+                                this.$payload(payload, frameworks => {
+                                    this.repositories[index].frameworks = frameworks
+                                    resolve()
+                                })
+                            })
+                            .send('repository-frameworks', repository.id)
+                    })
+                }))
 
-            this.onProjectChange()
-            this.loading = false
+                this.onProjectChange()
+                this.loading = false
+            })
         },
         scanEmptyRepositories () {
             this.$root.scanRepositories(
@@ -245,16 +236,7 @@ export default {
                 repository.updatePath(filePaths[0])
             })
         },
-        manageFramework (framework) {
-            this.$modal.open('ManageFrameworks', {
-                repository: this.repository,
-                scan: false,
-                framework
-            })
-        },
-        removeFramework (frameworkId) {
-            this.$root.removeFramework(this.repository.id, frameworkId)
-        },
+        // @TODO: redo error handling
         registerFrameworkListeners (framework) {
             framework
                 .on('error', (error, process) => {
@@ -264,9 +246,6 @@ export default {
                         type: 'error',
                         error
                     })
-                })
-                .on('suiteRemoved', suiteId => {
-                    this.$root.onModelRemove(suiteId)
                 })
         },
         onProjectChange () {
@@ -294,36 +273,25 @@ export default {
 
                 if (setRepository) {
                     this.repository = setRepository
-                }
-                if (setFramework) {
-                    this.framework = setFramework
-                    // @TODO: redo is active
-                    // if (!this.framework.isActive()) {
-                    //     this.framework.setActive(true)
-                    // }
+                    if (setFramework) {
+                        this.onFrameworkActivation(setFramework, setRepository)
+                        // @TODO: redo is active
+                        // if (!this.framework.isActive()) {
+                        //     this.framework.setActive(true)
+                        // }
+                    }
                 }
             }
-
-            this.onRepositoryChanged()
-            this.onFrameworkChanged()
 
             this.$root.setApplicationMenuOption({
                 hasFramework: !!this.framework
             })
         },
-        onRepositoryAdded (repository) {
-            repository.on('frameworkAdded', this.onFrameworkAdded)
-            this.onProjectChange()
-        },
         onRepositoryChanged () {
             this.$store.commit('context/REPOSITORY', this.repository ? this.repository.id : '')
         },
-        onFrameworkAdded (framework) {
-            this.registerFrameworkListeners(framework)
-            framework.setActive(true)
-            this.onProjectChange()
-        },
         onFrameworkChanged () {
+            console.log('framework changed')
             this.$store.commit('context/FRAMEWORK', this.framework ? this.framework.id : '')
             this.frameworkLoading = true
         },
@@ -333,7 +301,7 @@ export default {
         onFrameworkActivation (framework, repository) {
             console.log('activating framework', framework, repository)
             // Do nothing when clicking on currently active framework.
-            if (this.framework && this.framework.id === framework.id) {
+            if (this.framework && framework && this.framework.id === framework.id) {
                 return
             }
             // @TODO: new means of checking if repository exist...
@@ -359,6 +327,17 @@ export default {
 
             this.onRepositoryChanged()
             this.onFrameworkChanged()
+        },
+        manageFramework (framework) {
+            this.$modal.open('ManageFrameworks', {
+                repository: this.repository,
+                scan: false,
+                framework
+            })
+        },
+        removeFramework (frameworkId) {
+            console.log('removing framework')
+            this.$root.removeFramework(this.repository.id, frameworkId)
         },
         onTestActivation (context) {
             this.context = context

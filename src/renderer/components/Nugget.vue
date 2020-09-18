@@ -191,9 +191,10 @@ export default {
         },
         expand () {
             ipcRenderer
-                .once(`${this.identifier}:framework-tests`, (event, tests) => {
-                    tests = JSON.parse(tests)
-                    this.tests = tests
+                .once(`${this.identifier}:framework-tests`, (event, payload) => {
+                    this.$payload(payload, tests => {
+                        this.tests = tests
+                    })
                 })
             this.$emit('toggle', [this.identifier], true)
         },

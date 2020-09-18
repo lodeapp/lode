@@ -41,10 +41,12 @@ export interface IRepository extends ProjectEventEmitter {
     getDisplayName (): string
     start (): void
     refresh (): void
-    stop (): Promise<void>
+    stop (): Promise<any>
+    reset (): Promise<any>
     save (): void
     scan (): Promise<Array<FrameworkOptions>>
-    toggle (): void
+    expand (): void
+    collapse (): void
     isRunning (): boolean
     isRefreshing (): boolean
     isBusy (): boolean
@@ -113,14 +115,19 @@ export class Repository extends ProjectEventEmitter implements IRepository {
     /**
      * Stop any test framework in this repository that might be running.
      */
-    public stop (): Promise<void> {
-        return new Promise((resolve, reject) => {
-            Promise.all(this.frameworks.map((framework: IFramework) => {
-                return framework.stop()
-            })).then(() => {
-                resolve()
-            })
-        })
+    public stop (): Promise<any> {
+        return Promise.all(this.frameworks.map((framework: IFramework) => {
+            return framework.stop()
+        }))
+    }
+
+    /**
+     * Reset this repository's state.
+     */
+    public async reset (): Promise<any> {
+        return Promise.all(this.frameworks.map((framework: IFramework) => {
+            return framework.reset()
+        }))
     }
 
     /**
@@ -176,7 +183,7 @@ export class Repository extends ProjectEventEmitter implements IRepository {
     /**
      * Prepares the repository for sending out to renderer process.
      */
-    render (): RepositoryOptions {
+    public render (): RepositoryOptions {
         return this.persist(true)
     }
 
@@ -228,10 +235,18 @@ export class Repository extends ProjectEventEmitter implements IRepository {
     }
 
     /**
-     * Toggle this repository's visibility.
+     * Expand this repository.
      */
-    public toggle (): void {
-        this.expanded = !this.expanded
+    public expand (): void {
+        this.expanded = true
+        this.emit('change', this)
+    }
+
+    /**
+     * Collapse this repository.
+     */
+    public collapse (): void {
+        this.expanded = false
         this.emit('change', this)
     }
 

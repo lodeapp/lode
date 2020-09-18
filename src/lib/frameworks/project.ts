@@ -37,7 +37,7 @@ export type ProjectEntities = {
  */
 export type ProjectOptions = {
     id?: string
-    name: string
+    name?: string
     active?: ProjectActiveModels
     repositories?: Array<RepositoryOptions>
     status?: FrameworkStatus
@@ -52,7 +52,8 @@ export interface IProject extends ProjectEventEmitter {
     getId (): string
     start (): void
     refresh (): void
-    stop (): Promise<void>
+    stop (): Promise<any>
+    reset (): Promise<any>
     isRunning (): boolean
     isRefreshing (): boolean
     isBusy (): boolean
@@ -87,6 +88,7 @@ export class Project extends ProjectEventEmitter implements IProject {
     constructor (identifier: ProjectIdentifier) {
         super()
         this.id = identifier.id || uuid()
+        console.log('INSTANTIATING PROJECT', this.id)
         this.state = state.project({ ...identifier, id: this.id })
         this.name = this.state.get('options.name')
 
@@ -105,6 +107,13 @@ export class Project extends ProjectEventEmitter implements IProject {
         if (!identifier.id) {
             this.save()
         }
+    }
+
+    /**
+     * Get this project's id.
+     */
+    public getId (): string {
+        return this.id
     }
 
     /**
@@ -128,15 +137,20 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Stop any repository in this project that might be running.
      */
-    public async stop (): Promise<void> {
+    public async stop (): Promise<any> {
         console.log('GOT STOP INSTRUCTION')
-        return new Promise((resolve, reject) => {
-            Promise.all(this.repositories.map((repository: IRepository) => {
-                return repository.stop()
-            })).then(() => {
-                resolve()
-            })
-        })
+        return Promise.all(this.repositories.map((repository: IRepository) => {
+            return repository.stop()
+        }))
+    }
+
+    /**
+     * Reset this project's state.
+     */
+    public async reset (): Promise<any> {
+        return Promise.all(this.repositories.map((repository: IRepository) => {
+            return repository.reset()
+        }))
     }
 
     /**
@@ -205,20 +219,13 @@ export class Project extends ProjectEventEmitter implements IProject {
     }
 
     /**
-     * Get this project's id.
-     */
-    public getId (): string {
-        return this.id
-    }
-
-    /**
      * Update this project's options.
      *
      * @param options The new set of options.
      */
     public updateOptions (options: ProjectOptions): void {
         // Currently only the name is editable
-        this.name = options.name
+        this.name = options.name || ''
         state.updateProject({ id: this.id, name: this.name })
     }
 
