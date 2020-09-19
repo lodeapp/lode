@@ -269,9 +269,7 @@ export default new Vue({
             }
 
             this.$modal.confirmIf(() => {
-                console.log(this.project.status)
-                // @TODO: don't rely on `state` for application settings
-                return ['idle', 'empty'].includes(this.project.status)
+                return ['idle', 'empty', 'loading'].includes(this.project.status)
                     ? false
                     : this.setting('confirm.switchProject')
             }, 'ConfirmSwitchProject')

@@ -2,7 +2,7 @@ import * as Path from 'path'
 import { Glob } from 'glob'
 import { pathExistsSync } from 'fs-extra'
 import { v4 as uuid } from 'uuid'
-import { findIndex } from 'lodash'
+import { findIndex, omit } from 'lodash'
 import { Frameworks } from '@lib/frameworks'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
@@ -50,9 +50,11 @@ export interface IRepository extends ProjectEventEmitter {
     isRunning (): boolean
     isRefreshing (): boolean
     isBusy (): boolean
+    empty (): boolean
+    count (): number
     isExpanded (): boolean
-    persist (shallow?: boolean): RepositoryOptions
     render (): RepositoryOptions
+    persist (): RepositoryOptions
     addFramework (options: FrameworkOptions): Promise<IFramework>
     removeFramework (id: string): void
     getFrameworkById (id: string): IFramework | undefined
@@ -152,6 +154,20 @@ export class Repository extends ProjectEventEmitter implements IRepository {
     }
 
     /**
+     * How many frameworks the repository currently has.
+     */
+    public count (): number {
+        return this.frameworks.length
+    }
+
+    /**
+     * Whether this repository has any frameworks.
+     */
+    public empty (): boolean {
+        return this.count() === 0
+    }
+
+    /**
      * Whether this repository is expanded.
      */
     public isExpanded (): boolean {
@@ -159,32 +175,25 @@ export class Repository extends ProjectEventEmitter implements IRepository {
     }
 
     /**
-     * Prepares the repository for persistence.
-     *
-     * @param shallow Whether to skip over deeply nested resources.
+     * Prepares the repository for sending out to renderer process.
      */
-    public persist (shallow: boolean = false): RepositoryOptions {
-        const persist: RepositoryOptions = {
+    public render (): RepositoryOptions {
+        return {
             id: this.id,
             name: this.name,
             path: this.path,
             expanded: this.expanded
         }
-
-        if (!shallow) {
-            persist.frameworks = this.frameworks.map(framework => shallow ? framework.render() : framework.persist())
-        } else {
-            persist.status = this.status
-        }
-
-        return persist
     }
 
     /**
-     * Prepares the repository for sending out to renderer process.
+     * Prepares the repository for persistence.
      */
-    public render (): RepositoryOptions {
-        return this.persist(true)
+    public persist (): RepositoryOptions {
+        return omit({
+            ...this.render(),
+            frameworks: this.frameworks.map(framework => framework.persist())
+        }, 'status')
     }
 
     /**

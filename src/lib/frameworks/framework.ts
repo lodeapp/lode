@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { chunk, find, findIndex, get, orderBy, trim, trimStart } from 'lodash'
+import { chunk, find, findIndex, get, omit, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import * as fuzzy from 'fuzzysearch'
 import { ProcessId, IProcess } from '@lib/process/process'
@@ -108,8 +108,8 @@ export interface IFramework extends ProjectEventEmitter {
     isBusy (): boolean
     empty (): boolean
     count (): number
-    persist (shallow?: boolean): FrameworkOptions
     render (): FrameworkOptions
+    persist (): FrameworkOptions
     save (): void
     updateOptions (options: FrameworkOptions): void
     setActive (active: boolean): void
@@ -355,12 +355,10 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     }
 
     /**
-     * Prepares the framework for persistence.
-     *
-     * @param shallow Whether to skip over deeply nested resources.
+     * Prepares the framework for sending out to renderer process.
      */
-    public persist (shallow: boolean = false): FrameworkOptions {
-        const persist: FrameworkOptions = {
+    public render (): FrameworkOptions {
+        return {
             id: this.id,
             name: this.name,
             type: this.type,
@@ -378,21 +376,16 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             sortReverse: this.sortReverse,
             canToggleTests: this.canToggleTests
         }
-
-        if (!shallow) {
-            persist.suites = this.suites.map((suite: ISuite) => shallow ? suite.render() : suite.persist())
-        } else {
-            persist.status = this.status
-        }
-
-        return persist
     }
 
     /**
-     * Prepares the framework for sending out to renderer process.
+     * Prepares the framework for persistence.
      */
-    render (): FrameworkOptions {
-        return this.persist(true)
+    public persist (): FrameworkOptions {
+        return omit({
+            ...this.render(),
+            suites: this.suites.map((suite: ISuite) => suite.persist())
+        }, 'status')
     }
 
     /**
@@ -593,8 +586,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
 
     /**
      * Whether this framework has any suites.
-     * This is used for layout purposes. Renderer can't rely on the value
-     * returned by `getSuites` because it might be modified by filters.
      */
     public empty (): boolean {
         return this.count() === 0
@@ -605,7 +596,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     protected async run (): Promise<void> {
         this.suites.forEach(suite => {
-            // suite.queue(false)
+            suite.queue(false)
         })
 
         return new Promise((resolve, reject) => {
@@ -738,7 +729,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                         }
                         this.running.push(this.debriefSuite(report))
                     } catch (error) {
-                        this.emit('error', error)
+                        this.emit('error', error.toString())
                         log.error('Failed to debrief suite results.', error)
                     }
                 })
@@ -828,12 +819,12 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Handle errors in processing of framework.
      *
-     * @param message The error message
+     * @param error The error to be handled
      */
-    protected onError (message: string): void {
+    protected onError (error: Error): void {
         // this.idleQueued()
         this.updateStatus('error')
-        this.emit('error', message)
+        this.emit('error', error.toString())
         this.emit('change', this)
         this.disassemble()
     }

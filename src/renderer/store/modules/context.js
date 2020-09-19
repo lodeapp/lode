@@ -1,19 +1,20 @@
+import _clone from 'lodash/clone'
 import _last from 'lodash/last'
 
 export default {
     namespaced: true,
     state: {
-        repository: '',
-        framework: '',
+        repository: null,
+        framework: null,
         nuggets: []
     },
     mutations: {
         REPOSITORY (state, payload) {
-            state.repository = payload
-            state.framework = ''
+            state.repository = _clone(payload)
+            state.framework = null
         },
         FRAMEWORK (state, payload) {
-            state.framework = payload
+            state.framework = _clone(payload)
         },
         NUGGET (state, payload) {
             if (state.nuggets.indexOf(payload) === -1) {
@@ -21,6 +22,8 @@ export default {
             }
         },
         CLEAR (state) {
+            state.repository = null
+            state.framework = null
             state.nuggets = []
         }
     },
@@ -46,8 +49,8 @@ export default {
         },
         frameworkContext: (state) => {
             return {
-                repository: state.repository,
-                framework: state.framework
+                repository: state.repository.id,
+                framework: state.framework.id
             }
         },
         nuggets: (state) => {

@@ -58,10 +58,9 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param result The result object that will be persisted.
      * @param status Which status to recursively set. False will persist current status.
-     * @param shallow Whether to skip over deeply nested resources.
      */
-    protected defaults (result: ITestResult, status: Status | false = 'idle', shallow: boolean = false): ITestResult {
-        const defaults: ITestResult = {
+    protected defaults (result: ITestResult, status: Status | false = 'idle'): ITestResult {
+        return (pickBy({
             id: result.id,
             name: result.name,
             displayName: result.displayName !== result.name ? result.displayName : null,
@@ -70,15 +69,8 @@ export abstract class Nugget extends ProjectEventEmitter {
             console: result.console,
             params: result.params,
             stats: result.stats,
-        }
-
-        if (shallow) {
-            defaults.hasChildren = this.hasChildren()
-        } else {
-            defaults.tests = (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
-        }
-
-        return (pickBy(defaults, property => {
+            tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
+        }, property => {
             return isArray(property) ? property.length : !!property
         }) as any)
     }

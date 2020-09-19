@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid'
-import { findIndex } from 'lodash'
+import { findIndex, omit } from 'lodash'
 import { state } from '@lib/state'
 import { Project as ProjectState } from '@lib/state/project'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
@@ -20,8 +20,17 @@ export type ProjectIdentifier = {
 /**
  * The models currently active in a project
  */
-export type ProjectActiveModels = {
+export type ProjectActiveIdentifiers = {
     framework: string | null
+    repository: string | null
+}
+
+/**
+ * The models currently active in a project
+ */
+export type ProjectActiveModels = {
+    framework: IFramework | null
+    repository: IRepository | null
 }
 
 export type ProjectEntities = {
@@ -38,7 +47,7 @@ export type ProjectEntities = {
 export type ProjectOptions = {
     id?: string
     name?: string
-    active?: ProjectActiveModels
+    active?: ProjectActiveIdentifiers
     repositories?: Array<RepositoryOptions>
     status?: FrameworkStatus
 }
@@ -59,15 +68,17 @@ export interface IProject extends ProjectEventEmitter {
     isRefreshing (): boolean
     isBusy (): boolean
     empty (): boolean
-    persist (shallow?: boolean): ProjectOptions
     render (): ProjectOptions
+    persist (): ProjectOptions
     save (): void
     updateOptions (options: ProjectOptions): void
     addRepository (options: RepositoryOptions): Promise<IRepository>
     removeRepository (id: string): void
     getActive (): ProjectActiveModels
+    setActiveFramework (frameworkId: string): void
     getRepositoryById (id: string): IRepository | undefined
     getFrameworkByContext (context: FrameworkContext): IFramework | undefined
+    getEmptyRepositories (): Array<IRepository>
     getProgressLedger (): ProgressLedger
 }
 
@@ -79,7 +90,7 @@ export class Project extends ProjectEventEmitter implements IProject {
 
     protected readonly id: string
     protected state: ProjectState
-    protected active: ProjectActiveModels
+    protected active: ProjectActiveIdentifiers
     protected parsed: boolean = false
     protected ready: boolean = false
     protected hasRepositories: boolean = false
@@ -193,31 +204,25 @@ export class Project extends ProjectEventEmitter implements IProject {
     }
 
     /**
-     * Prepares the project for persistence.
-     *
-     * @param shallow Whether to skip over deeply nested resources.
-     */
-    public persist (shallow: boolean = false): ProjectOptions {
-        const persist: ProjectOptions = {
-            id: this.id,
-            name: this.name,
-            active: this.active
-        }
-
-        if (!shallow) {
-            persist.repositories = this.repositories.map(repository => shallow ? repository.render() : repository.persist())
-        } else {
-            persist.status = this.status
-        }
-
-        return persist
-    }
-
-    /**
      * Prepares the project for sending out to renderer process.
      */
     public render (): ProjectOptions {
-        return this.persist(true)
+        return {
+            id: this.id,
+            name: this.name,
+            active: this.active,
+            status: this.status
+        }
+    }
+
+    /**
+     * Prepares the project for persistence.
+     */
+    public persist (): ProjectOptions {
+        return omit({
+            ...this.render(),
+            repositories: this.repositories.map(repository => repository.persist())
+        }, 'status')
     }
 
     /**
@@ -388,7 +393,42 @@ export class Project extends ProjectEventEmitter implements IProject {
      * Get the project's active models.
      */
     public getActive (): ProjectActiveModels {
-        return this.active
+        // If an active framework is set, attempt to return it, if it still exists.
+        if (this.active.framework) {
+            let framework
+            for (var i = this.repositories.length - 1; i >= 0; i--) {
+                framework = this.repositories[i].getFrameworkById(this.active.framework)
+                if (framework) {
+                    return {
+                        framework,
+                        repository: this.repositories[i]
+                    }
+                }
+            }
+        }
+
+        // Otherwise, iterate through the repositories and return the first
+        // available framework.
+        for (var i = this.repositories.length - 1; i >= 0; i--) {
+            if (this.repositories[i].frameworks.length) {
+                return {
+                    framework: this.repositories[i].frameworks[0],
+                    repository: this.repositories[i]
+                }
+            }
+        }
+
+        return {
+            framework: null,
+            repository: null
+        }
+    }
+
+    /**
+     * Set the project's active framework.
+     */
+    public setActiveFramework (frameworkId: string): void {
+        this.active.framework = frameworkId
     }
 
     /**
@@ -416,6 +456,13 @@ export class Project extends ProjectEventEmitter implements IProject {
             return repository.getFrameworkById(context.framework)
         }
         return undefined
+    }
+
+    /**
+     * Get an array of repositories without frameworks.
+     */
+    public getEmptyRepositories (): Array<IRepository> {
+        return this.repositories.filter((repository: IRepository) => repository.empty())
     }
 
     /**

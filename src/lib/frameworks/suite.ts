@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import { get } from 'lodash'
+import { get, omit } from 'lodash'
 import { Status, parseStatus } from '@lib/frameworks/status'
 import { IFramework } from '@lib/frameworks/framework'
 import { ITest, ITestResult, Test } from '@lib/frameworks/test'
@@ -30,8 +30,8 @@ export interface ISuite extends Nugget {
     idleQueued (selective: boolean): void
     errorQueued (selective: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
-    persist (status?: Status | false, shallow?: boolean): ISuiteResult
     render (status?: Status | false): ISuiteResult
+    persist (status?: Status | false): ISuiteResult
     setFresh (fresh: boolean): void
     isFresh (): boolean
     countChildren (): number
@@ -66,37 +66,32 @@ export class Suite extends Nugget implements ISuite {
     }
 
     /**
-     * Prepares the suite for persistence.
-     *
-     * @param status Which status to recursively set on tests. False will persist current status.
-     * @param shallow Whether to skip over deeply nested resources.
-     */
-    public persist (status: Status | false = 'idle', shallow: boolean = false): ISuiteResult {
-        const persist: ISuiteResult = {
-            file: this.file,
-            status: status ? status : this.status,
-            meta: this.getMeta()
-        }
-
-        if (shallow) {
-            persist.hasChildren = this.testsLoaded() && this.hasChildren()
-        } else {
-            persist.testsLoaded = this.testsLoaded()
-            persist.tests = this.bloomed
-                ? this.tests.map((test: ITest) => test.persist(status))
-                : this.getTestResults().map((test: ITestResult) => this.defaults(test, status))
-        }
-
-        return persist
-    }
-
-    /**
      * Prepares the suite for sending out to renderer process.
      *
      * @param status Which status to recursively set on tests. False will persist current status.
      */
-    render (status: Status | false = 'idle'): ISuiteResult {
-        return this.persist(status, true)
+    public render (status: Status | false = 'idle'): ISuiteResult {
+        return {
+            file: this.file,
+            status: status ? status : this.status,
+            meta: this.getMeta(),
+            hasChildren: this.testsLoaded() && this.hasChildren()
+        }
+    }
+
+    /**
+     * Prepares the suite for persistence.
+     *
+     * @param status Which status to recursively set on tests. False will persist current status.
+     */
+    public persist (status: Status | false = 'idle'): ISuiteResult {
+        return omit({
+            ...this.render(),
+            testsLoaded: this.testsLoaded(),
+            tests: this.bloomed
+                ? this.tests.map((test: ITest) => test.persist(status))
+                : this.getTestResults().map((test: ITestResult) => this.defaults(test, status))
+        }, 'hasChildren')
     }
 
     /**
@@ -282,7 +277,7 @@ export class Suite extends Nugget implements ISuite {
      * Whether this suite's tests are loaded.
      */
     public testsLoaded (): boolean {
-        return this.result.testsLoaded!
+        return this.result.testsLoaded !== false
     }
 
     /**

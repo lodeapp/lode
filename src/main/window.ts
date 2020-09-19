@@ -89,6 +89,8 @@ export class Window {
         if (identifier) {
             this.setProject(identifier)
         }
+
+        this.load()
     }
 
     public static init (identifier: ProjectIdentifier | null): Window {
@@ -104,8 +106,6 @@ export class Window {
             app.quit()
         })
 
-        window.load()
-
         return window
     }
 
@@ -119,7 +119,7 @@ export class Window {
             .getProject()
     }
 
-    public load () {
+    protected load () {
         this.window.webContents.once('did-finish-load', () => {
             if (process.env.NODE_ENV === 'development') {
                 this.window.webContents.openDevTools()
@@ -146,6 +146,18 @@ export class Window {
                 ? `http://localhost:9080`
                 : `file://${__dirname}/index.html`
         )
+    }
+
+    protected send (event: string, args: Array<any>) {
+        send(this.window.webContents, event, args)
+    }
+
+    protected refreshSettings (): void {
+        this.send('settings-updated', [state.get()])
+    }
+
+    protected projectEventListener ({ id, event, args }: { id: string, event: string, args: Array<any> }): void {
+        this.send(`${id}:${event}`, args)
     }
 
     public reload () {
@@ -200,6 +212,13 @@ export class Window {
 
     public projectReady (): void {
         send(this.window.webContents, 'project-ready', [this.getProjectOptions()])
+        if (this.project) {
+            const { framework, repository } = this.project.getActive()
+            if (framework && repository) {
+                console.log('ACTIVE FRAMEWORK', framework, repository)
+                this.send('framework-active', [framework.render(), repository.render()])
+            }
+        }
         this.refreshSettings()
     }
 
@@ -215,13 +234,5 @@ export class Window {
     public sendMenuEvent (args: any) {
         this.window.show()
         this.window.webContents.send('menu-event', args)
-    }
-
-    protected refreshSettings (): void {
-        send(this.window.webContents, 'settings-updated', [state.get()])
-    }
-
-    protected projectEventListener ({ id, event, args }: { id: string, event: string, args: Array<any> }): void {
-        send(this.window.webContents, `${id}:${event}`, args)
     }
 }

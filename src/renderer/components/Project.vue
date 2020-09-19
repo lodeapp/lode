@@ -30,7 +30,7 @@
                                 </div>
                             </div>
                         </div>
-                        <h5 v-if="repository" class="sidebar-header">
+                        <h5 v-if="repositories.length" class="sidebar-header">
                             <span>Repositories</span>
                             <button type="button" class="sidebar-action" @click="this.$root.addRepositories">
                                 <Icon symbol="plus" />
@@ -55,7 +55,7 @@
                 </Pane>
                 <Pane id="list">
                     <div class="draggable"></div>
-                    <template v-if="!repository">
+                    <template v-if="!repositories.length">
                         <div class="cta">
                             <h2>{{ 'Add repositories to :0' | set(model.name) }}</h2>
                             <p>Lode can have multiple repositories and frameworks inside a project.</p>
@@ -92,7 +92,7 @@
                             @manage="manageFramework"
                             @remove="removeFramework"
                             @activate="onTestActivation"
-                            @mounted="onFrameworkMounted"
+                            @mounted="frameworkLoading = false"
                         />
                     </template>
                 </Pane>
@@ -112,6 +112,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { ipcRenderer, remote } from 'electron'
 import _findIndex from 'lodash/findIndex'
 import Pane from '@/components/Pane'
@@ -147,10 +148,8 @@ export default {
         return {
             context: [],
             loading: true,
-            frameworkLoading: false,
+            frameworkLoading: true,
             repositories: [],
-            repository: null,
-            framework: null,
             persistContext: {}
         }
     },
@@ -160,17 +159,23 @@ export default {
         },
         repositoryMissing () {
             return this.repository && this.repository.status === 'missing'
-        }
+        },
+        ...mapGetters({
+            repository: 'context/repository',
+            framework: 'context/framework'
+        })
     },
     created () {
         ipcRenderer
             .on('repositories', this.onRepositoriesEvent)
+            .on('framework-active', this.onFrameworkActive)
 
         this.getRepositories()
     },
     beforeDestroy () {
         ipcRenderer
             .removeListener('repositories', this.onRepositoriesEvent)
+            .removeListener('framework-active', this.onFrameworkActive)
     },
     methods: {
         getRepositories () {
@@ -183,27 +188,21 @@ export default {
             this.$payload(payload, async repositories => {
                 console.log({ repositories })
                 this.repositories = repositories
-                await Promise.all(this.repositories.map((repository, index) => {
-                    return new Promise((resolve, reject) => {
-                        ipcRenderer
-                            .once(`${repository.id}:frameworks`, (event, payload) => {
-                                this.$payload(payload, frameworks => {
-                                    this.repositories[index].frameworks = frameworks
-                                    resolve()
-                                })
-                            })
-                            .send('repository-frameworks', repository.id)
-                    })
-                }))
-
-                this.onProjectChange()
                 this.loading = false
+                this.$root.setApplicationMenuOption({
+                    hasFramework: !!this.framework
+                })
             })
         },
-        scanEmptyRepositories () {
+        onFrameworkActive (event, payload) {
+            this.$payload(payload, (framework, repository) => {
+                this.$store.commit('context/REPOSITORY', repository)
+                this.$store.commit('context/FRAMEWORK', framework)
+            })
+        },
+        async scanEmptyRepositories () {
             this.$root.scanRepositories(
-                // Scan repositories which are currently empty.
-                this.repositories.filter(repository => !repository.frameworks.length),
+                JSON.parse(await ipcRenderer.invoke('project-empty-repositories')),
                 0
             )
         },
@@ -214,8 +213,6 @@ export default {
             if (repository.id === this.repository.id) {
                 this.resetContext()
                 this.$store.commit('context/CLEAR')
-                this.repository = null
-                this.framework = null
             }
 
             this.$root.onModelRemove(repository.id)
@@ -248,62 +245,12 @@ export default {
                     })
                 })
         },
-        onProjectChange () {
-            let setRepository = this.repository
-            let setFramework = this.framework
-
-            if (!this.repositories.length) {
-                this.repository = null
-                this.framework = null
-            } else {
-                this.repositories.forEach(repository => {
-                    if (!setRepository) {
-                        setRepository = repository
-                    }
-
-                    repository.frameworks.forEach(framework => {
-                        // @TODO: redo is active
-                        // if (!setFramework || framework.isActive()) {
-                        if (!setFramework || false) {
-                            setFramework = framework
-                            setRepository = repository
-                        }
-                    })
-                })
-
-                if (setRepository) {
-                    this.repository = setRepository
-                    if (setFramework) {
-                        this.onFrameworkActivation(setFramework, setRepository)
-                        // @TODO: redo is active
-                        // if (!this.framework.isActive()) {
-                        //     this.framework.setActive(true)
-                        // }
-                    }
-                }
-            }
-
-            this.$root.setApplicationMenuOption({
-                hasFramework: !!this.framework
-            })
-        },
-        onRepositoryChanged () {
-            this.$store.commit('context/REPOSITORY', this.repository ? this.repository.id : '')
-        },
-        onFrameworkChanged () {
-            console.log('framework changed')
-            this.$store.commit('context/FRAMEWORK', this.framework ? this.framework.id : '')
-            this.frameworkLoading = true
-        },
-        onFrameworkMounted () {
-            this.frameworkLoading = false
-        },
         onFrameworkActivation (framework, repository) {
-            console.log('activating framework', framework, repository)
-            // Do nothing when clicking on currently active framework.
-            if (this.framework && framework && this.framework.id === framework.id) {
-                return
-            }
+            this.frameworkLoading = true
+            this.$store.commit('context/REPOSITORY', repository)
+            this.$store.commit('context/FRAMEWORK', framework)
+            ipcRenderer.send('project-active-framework', framework.id)
+
             // @TODO: new means of checking if repository exist...
             // Check if repository still exists before proceeding, but continue
             // even if it does not so we can better handle changes or relocation.
@@ -314,19 +261,18 @@ export default {
             // if (this.context.length) {
             //     this.persistContext[this.framework.id] = this.context.map(context => context.id || context.file)
             // }
-            this.resetContext()
-            this.$store.commit('context/CLEAR')
+            // this.resetContext()
+            // this.$store.commit('context/CLEAR')
 
             // @TODO: persist context, if necessary
             // Activate the test previously active for this framework.
             // if (this.persistContext[frameworkId]) {
             //     this.$store.commit('context/SET', this.persistContext[frameworkId])
             // }
-            this.repository = repository
-            this.framework = framework
+            // this.repository = repository
+            // this.framework = framework
 
-            this.onRepositoryChanged()
-            this.onFrameworkChanged()
+            // this.onRepositoryChanged()
         },
         manageFramework (framework) {
             this.$modal.open('ManageFrameworks', {

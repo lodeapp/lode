@@ -118,6 +118,14 @@ export default {
         })
     },
     created () {
+        ipcRenderer
+            .on(`${this.identifier}:framework-tests`, (event, payload) => {
+                this.$payload(payload, tests => {
+                    console.log('GET TESTS', { tests })
+                    this.tests = tests
+                })
+            })
+
         if (this.show) {
             this.expand()
         }
@@ -190,12 +198,6 @@ export default {
             this.expand()
         },
         expand () {
-            ipcRenderer
-                .once(`${this.identifier}:framework-tests`, (event, payload) => {
-                    this.$payload(payload, tests => {
-                        this.tests = tests
-                    })
-                })
             this.$emit('toggle', [this.identifier], true)
         },
         collapse () {

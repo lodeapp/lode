@@ -70,11 +70,17 @@ export default {
     },
     created () {
         ipcRenderer.on(`${this.model.id}:frameworks`, this.updateFrameworks)
+        if (this.model.expanded) {
+            this.getFrameworks()
+        }
     },
-    destroyed () {
+    beforeDestroy () {
         ipcRenderer.removeListener(`${this.model.id}:frameworks`, this.updateFrameworks)
     },
     methods: {
+        getFrameworks () {
+            ipcRenderer.send('repository-frameworks', this.model.id)
+        },
         updateFrameworks (event, payload) {
             this.$payload(payload, frameworks => {
                 console.log(
@@ -83,17 +89,6 @@ export default {
                     this.activeFramework,
                     this.frameworks
                 )
-                if (!this.activeFramework && !this.frameworks.length && frameworks.length > 0) {
-                    // If there is no active framework currently, and frameworks have
-                    // been added, activate the first one automatically.
-                    this.onFrameworkActivation(frameworks[0])
-                } else if (this.activeFramework && !frameworks.map(framework => framework.id).includes(this.activeFramework)) {
-                    // Alternatively, if the current active framework no longer exists
-                    // in this repository, also select the first one automatically,
-                    // or remove active framework altogether.
-                    console.log('activeFramework removed, activating', frameworks.length ? frameworks[0] : null)
-                    this.onFrameworkActivation(frameworks.length ? frameworks[0] : null)
-                }
                 this.frameworks = frameworks
                 this.$emit('frameworks', frameworks)
             })
@@ -110,6 +105,11 @@ export default {
         toggle () {
             this.model.expanded = !this.model.expanded
             ipcRenderer.send('repository-toggle', this.model.id, this.model.expanded)
+            if (this.model.expanded) {
+                this.getFrameworks()
+                return
+            }
+            this.frameworks = []
         },
         onFrameworkActivation (framework) {
             this.$emit('framework-activate', framework, this.model)

@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Indicator from '@/components/Indicator'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 import HasStatus from '@/components/mixins/HasStatus'
@@ -45,12 +46,17 @@ export default {
     },
     computed: {
         isActive () {
-            return this.$store.getters['context/framework'] === this.model.id
-        }
+            return this.framework && this.framework.id === this.model.id
+        },
+        ...mapGetters({
+            framework: 'context/framework'
+        })
     },
     methods: {
         activate () {
-            this.$emit('activate', this.model)
+            if (!this.isActive) {
+                this.$emit('activate', this.model)
+            }
         }
     }
 }

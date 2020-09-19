@@ -152,22 +152,13 @@ ipcMain
         }
     })
     .on('project-refresh', (event: Electron.IpcMainEvent) => {
-        const project: IProject | null = Window.getProjectFromWebContents(event.sender)
-        if (project) {
-            project.refresh()
-        }
+        getProject(event).refresh()
     })
     .on('project-start', (event: Electron.IpcMainEvent) => {
-        const project: IProject | null = Window.getProjectFromWebContents(event.sender)
-        if (project) {
-            project.start()
-        }
+        getProject(event).start()
     })
     .on('project-stop', (event: Electron.IpcMainEvent) => {
-        const project: IProject | null = Window.getProjectFromWebContents(event.sender)
-        if (project) {
-            project.stop()
-        }
+        getProject(event).stop()
     })
     .on('project-switch', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier | null) => {
         const window: Window = Window.getFromWebContents(event.sender)
@@ -184,10 +175,12 @@ ipcMain
         }
     })
     .on('project-repositories', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier) => {
-        const project: IProject | null = Window.getProjectFromWebContents(event.sender)
-        if (project) {
-            send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
-        }
+        send(event.sender, 'repositories', [
+            getProject(event).repositories.map((repository: IRepository) => repository.render())
+        ])
+    })
+    .on('project-active-framework', (event: Electron.IpcMainEvent, frameworkId: string) => {
+        getProject(event).setActiveFramework(frameworkId)
     })
     .on('repository-add', (event: Electron.IpcMainEvent, paths: Array<string>) => {
         const project: IProject = getProject(event)
@@ -323,6 +316,11 @@ ipcMain
         const project: IProject = getProject(event)
         await project.stop()
         return state.removeProject(project.getId())
+    })
+
+ipcMain
+    .handle('project-empty-repositories', async (event: Electron.IpcMainInvokeEvent) => {
+        return JSON.stringify(getProject(event).getEmptyRepositories())
     })
 
 ipcMain

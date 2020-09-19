@@ -210,12 +210,15 @@ export default {
     },
     created () {
         ipcRenderer
+            .on(`${this.model.id}:error`, this.onErrorEvent)
             .on(`${this.model.id}:refreshed`, this.onSuitesEvent)
             .on('menu-event', this.onAppMenuEvent)
+
         this.getSuites()
     },
     beforeDestroy () {
         ipcRenderer
+            .removeListener(`${this.model.id}:error`, this.onErrorEvent)
             .removeListener('menu-event', this.onAppMenuEvent)
             .removeListener(`${this.model.id}:refreshed`, this.onSuitesEvent)
     },
@@ -223,8 +226,21 @@ export default {
         getSuites () {
             ipcRenderer.send('framework-suites', this.frameworkContext)
         },
+        onErrorEvent (event, payload) {
+            this.$payload(payload, error => {
+                console.log({ error })
+                this.$alert.show({
+                    message: this.$string.set('The process for **:0** terminated unexpectedly.', this.model.name),
+                    // @TODO: receive troubleshooting message from framework itself in the main process.
+                    // help: framework.troubleshoot(error),
+                    type: 'error',
+                    error
+                })
+            })
+        },
         onSuitesEvent (event, payload) {
             this.$payload(payload, suites => {
+                console.log('GOT SUITES', { suites })
                 this.suites = suites
                 this.$emit('mounted')
             })
@@ -256,13 +272,13 @@ export default {
 
             switch (name) {
                 case 'run-framework':
-                    this.framework.start()
+                    ipcRenderer.send('framework-start', this.frameworkContext)
                     break
                 case 'refresh-framework':
-                    this.framework.refresh()
+                    ipcRenderer.send('framework-refresh', this.frameworkContext)
                     break
                 case 'stop-framework':
-                    this.framework.stop()
+                    ipcRenderer.send('framework-stop', this.frameworkContext)
                     break
                 case 'filter':
                     this.$el.querySelector('[type="search"]').focus()
