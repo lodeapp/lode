@@ -536,7 +536,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         })
         .then(() => {
             this.killed = false
-            // this.idleQueued()
+            this.idleQueued()
             this.updateStatus()
             this.emit('change', this)
             log.info(`Stopping ${this.name}`)
@@ -822,7 +822,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param error The error to be handled
      */
     protected onError (error: Error): void {
-        // this.idleQueued()
+        this.idleQueued()
         this.updateStatus('error')
         this.emit('error', error.toString())
         this.emit('change', this)
@@ -835,13 +835,13 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     protected idleQueued (): void {
         if (this.selective) {
             this.selected.suites.forEach(suite => {
-                // suite.idleQueued(true)
+                suite.idleQueued(true)
             })
             return
         }
 
         this.suites.forEach(suite => {
-            // suite.idleQueued(false)
+            suite.idleQueued(false)
         })
     }
 

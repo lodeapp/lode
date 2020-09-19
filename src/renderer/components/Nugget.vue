@@ -43,7 +43,7 @@
             <Nugget
                 v-for="test in tests"
                 class="test"
-                :key="test.id"
+                :key="$string.from(test)"
                 :model="test"
                 :running="running"
                 :selectable="canToggleTests"
@@ -121,7 +121,7 @@ export default {
         ipcRenderer
             .on(`${this.identifier}:framework-tests`, (event, payload) => {
                 this.$payload(payload, tests => {
-                    console.log('GET TESTS', { tests })
+                    console.log('GOT TESTS', { tests })
                     this.tests = tests
                 })
             })

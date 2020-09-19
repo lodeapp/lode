@@ -271,6 +271,7 @@ ipcMain
         entities(event, context, identifiers).then(({ nugget }) => {
             if (toggle) {
                 // If we're expanding it, send the tests to the renderer.
+                console.log('SENDING TESTS', [nugget!.tests.map((test: ITest) => test.render(false).status)])
                 send(
                     event.sender,
                     `${nugget!.getId()}:framework-tests`,
