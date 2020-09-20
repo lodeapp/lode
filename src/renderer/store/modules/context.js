@@ -38,25 +38,25 @@ export default {
         }
     },
     getters: {
-        test: (state) => {
+        test: state => {
             return _last(state.nuggets)
         },
-        repository: (state) => {
+        repository: state => {
             return state.repository
         },
-        framework: (state) => {
+        framework: state => {
             return state.framework
         },
-        frameworkContext: (state) => {
+        frameworkContext: state => {
             return {
                 repository: state.repository.id,
                 framework: state.framework.id
             }
         },
-        nuggets: (state) => {
+        nuggets: state => {
             return state.nuggets
         },
-        inContext: (state) => id => {
+        inContext: state => id => {
             return state.nuggets.indexOf(id) > -1
         }
     }

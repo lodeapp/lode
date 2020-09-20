@@ -60,7 +60,8 @@ export type FrameworkOptions = {
     sort?: FrameworkSort
     sortReverse?: boolean
     canToggleTests?: boolean
-    status?: FrameworkStatus
+    status?: FrameworkStatus,
+    supportedSorts?: Array<FrameworkSort>
 }
 
 /**
@@ -374,7 +375,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             proprietary: this.proprietary,
             sort: this.sort,
             sortReverse: this.sortReverse,
-            canToggleTests: this.canToggleTests
+            canToggleTests: this.canToggleTests,
+            supportedSorts: this.getSupportedSorts()
         }
     }
 
@@ -385,7 +387,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         return omit({
             ...this.render(),
             suites: this.suites.map((suite: ISuite) => suite.persist())
-        }, 'status')
+        }, 'status', 'supportedSorts')
     }
 
     /**
@@ -551,6 +553,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Reset this framework's state.
      */
     public async reset (): Promise<any> {
+        this.resetFilters()
         return Promise.all(this.suites.map((suite: ISuite) => {
             return suite.idle(false)
         }))

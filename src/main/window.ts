@@ -170,7 +170,6 @@ export class Window {
         // in the store, it'll be created.
         this.project = new Project(identifier)
         this.project.on('ready', async () => {
-            await this.project!.reset()
             console.log('PROJECT READY, NOTIFYING RENDERER')
             if (!this.ready) {
                 console.log('WINDOW IS NOT LOADED, ABORT')
@@ -206,7 +205,8 @@ export class Window {
         return this.project ? this.project.render() : {}
     }
 
-    public projectReady (): void {
+    public async projectReady (): Promise<void> {
+        await this.project!.reset()
         send(this.window.webContents, 'project-ready', [this.getProjectOptions()])
         this.refreshActiveFramework()
         this.refreshSettings()

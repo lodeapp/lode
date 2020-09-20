@@ -12,7 +12,7 @@
                     <Indicator :status="status" />
                     <h3 class="heading">
                         <span class="name">
-                            {{ framework.name }}
+                            {{ model.name }}
                         </span>
                     </h3>
                     <div class="actions">
@@ -32,7 +32,7 @@
                                 Run selected
                                 <span class="Counter">{{ selected }}</span>
                             </template>
-                            <template v-else-if="filtering && !noResults">
+                            <template v-else-if="isFiltering && !noResults">
                                 {{ 'Run match|Run matches' | plural(suites.length) }}
                                 <span class="Counter">{{ suites.length }}</span>
                             </template>
@@ -49,7 +49,7 @@
                 </div>
                 <div class="filters">
                     <template v-if="count > 0">
-                        <Ledger :framework="framework" />
+                        <Ledger :framework="model" />
                     </template>
                     <template v-else-if="queued">
                         Queued...
@@ -67,6 +67,10 @@
                         type="search"
                         class="form-control input-block input-sm"
                         placeholder="Filter items"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false"
                         v-model="keyword"
                     >
                 </div>
@@ -109,8 +113,7 @@
 </template>
 
 <script>
-// @TODO: redo filtering
-// import _debounce from 'lodash/debounce'
+import _isEmpty from 'lodash/isEmpty'
 import { mapGetters } from 'vuex'
 import { ipcRenderer } from 'electron'
 import { Menu } from '@main/menu'
@@ -145,10 +148,8 @@ export default {
         }
     },
     computed: {
-        framework () {
-            return this.model
-        },
         count () {
+            // @TODO: we need to know the total, regardless of filtering
             return this.suites.length
         },
         running () {
@@ -160,10 +161,8 @@ export default {
         queued () {
             return this.status === 'queued'
         },
-        filtering () {
-            // @TODO: redo filtering
-            // return this.framework.hasFilters()
-            return false
+        isFiltering () {
+            return !_isEmpty(this.filters(this.model.id))
         },
         visible () {
             return this.suites.length
@@ -175,36 +174,35 @@ export default {
             return this.hidden === this.count
         },
         canToggleTests () {
-            return this.framework.canToggleTests
+            return this.model.canToggleTests
         },
-        // @TODO: redo filtering
-        // keyword: {
-        //     get () {
-        //         return this.framework.getFilter('keyword')
-        //     },
-        //     set: _debounce(function (value) {
-        //         this.framework.setFilter('keyword', value)
-        //     }, 150)
-        // },
-        keyword () {
-            return ''
+        keyword: {
+            get () {
+                return this.filter('keyword')
+            },
+            set (keyword) {
+                ipcRenderer.send('framework-filter', this.frameworkContext, 'keyword', keyword)
+                this.$store.commit('filters/SET', {
+                    id: this.model.id,
+                    filters: {
+                        keyword
+                    }
+                })
+            }
         },
-        // @TODO: redo sorting
-        // sort: {
-        //     get () {
-        //         return this.framework.getSort()
-        //     },
-        //     set (value) {
-        //         this.framework.setSort(value)
-        //     }
-        // },
-        sort () {
-            return 'name'
+        sort: {
+            get () {
+                return this.model.sort
+            },
+            set (sort) {
+                ipcRenderer.send('framework-sort', this.frameworkContext, sort)
+            }
         },
         displaySort () {
             return sortDisplayName(this.sort)
         },
         ...mapGetters({
+            filters: 'filters/all',
             repository: 'context/repository',
             frameworkContext: 'context/frameworkContext'
         })
@@ -216,6 +214,7 @@ export default {
             .on('menu-event', this.onAppMenuEvent)
 
         this.getSuites()
+        this.sort = this.model.sort
     },
     beforeDestroy () {
         ipcRenderer
@@ -226,6 +225,9 @@ export default {
     methods: {
         getSuites () {
             ipcRenderer.send('framework-suites', this.frameworkContext)
+        },
+        filter (key) {
+            return this.filters(this.model.id)[key]
         },
         onErrorEvent (event, payload) {
             this.$payload(payload, error => {
@@ -267,7 +269,7 @@ export default {
             this.$emit('activate', context)
         },
         onAppMenuEvent (event, { name, properties }) {
-            if (!this.framework) {
+            if (!this.model) {
                 return
             }
 
@@ -299,8 +301,9 @@ export default {
             this.keyword = `"${suite.relative}"`
         },
         onSortClick () {
+            console.log(this.model)
             const menu = new Menu()
-            this.framework.getSupportedSorts().forEach(sort => {
+            this.model.supportedSorts.forEach(sort => {
                 menu.add({
                     label: sortDisplayName(sort),
                     type: 'checkbox',
@@ -315,9 +318,9 @@ export default {
                 .add({
                     label: 'Reverse',
                     type: 'checkbox',
-                    checked: this.framework.isSortReverse(),
+                    checked: this.model.sortReverse,
                     click: () => {
-                        this.framework.setSortReverse()
+                        ipcRenderer.send('framework-sort-reverse', this.frameworkContext)
                     }
                 })
                 .attachTo(this.$el.querySelector('.sort button'))

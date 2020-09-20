@@ -16,7 +16,12 @@ import { state } from '@lib/state'
 import { log as writeLog } from '@lib/logger'
 import { ProjectIdentifier, ProjectEntities, IProject } from '@lib/frameworks/project'
 import { IRepository } from '@lib/frameworks/repository'
-import { FrameworkContext, IFramework, FrameworkOptions } from '@lib/frameworks/framework'
+import {
+    FrameworkContext,
+    IFramework,
+    FrameworkOptions,
+    FrameworkFilter
+} from '@lib/frameworks/framework'
 import { Nugget } from '@lib/frameworks/nugget'
 import { ISuite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
@@ -26,6 +31,7 @@ import {
     FrameworkValidator,
     PotentialFrameworkOptions
 } from '@lib/frameworks/validator'
+import { FrameworkSort } from '@lib/frameworks/sort'
 
 let currentWindow: Window | null = null
 
@@ -261,6 +267,38 @@ ipcMain
     })
     .on('framework-suites', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
         entities(event, context).then(({ framework }) => {
+            send(
+                event.sender,
+                `${framework.getId()}:refreshed`,
+                [framework.getSuites().map((suite: ISuite) => suite.render(false))]
+            )
+        })
+    })
+    .on('framework-filter', (event: Electron.IpcMainEvent, context: FrameworkContext, key: FrameworkFilter, value: any) => {
+        entities(event, context).then(({ framework }) => {
+            framework.setFilter(key, value)
+            send(
+                event.sender,
+                `${framework.getId()}:refreshed`,
+                [framework.getSuites().map((suite: ISuite) => suite.render(false))]
+            )
+        })
+    })
+    .on('framework-sort', (event: Electron.IpcMainEvent, context: FrameworkContext, sort: FrameworkSort) => {
+        entities(event, context).then(({ framework }) => {
+            framework.setSort(sort)
+            send(event.sender, 'framework-updated', [framework.render()])
+            send(
+                event.sender,
+                `${framework.getId()}:refreshed`,
+                [framework.getSuites().map((suite: ISuite) => suite.render(false))]
+            )
+        })
+    })
+    .on('framework-sort-reverse', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
+        entities(event, context).then(({ framework }) => {
+            framework.setSortReverse()
+            send(event.sender, 'framework-updated', [framework.render()])
             send(
                 event.sender,
                 `${framework.getId()}:refreshed`,

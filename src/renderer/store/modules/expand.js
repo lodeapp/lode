@@ -30,7 +30,7 @@ export default {
         }
     },
     getters: {
-        expanded: (state) => id => {
+        expanded: state => id => {
             return !!state[id]
         }
     }

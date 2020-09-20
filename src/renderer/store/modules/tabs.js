@@ -20,7 +20,7 @@ export default {
         }
     },
     getters: {
-        lastActive: (state) => {
+        lastActive: state => {
             return state.lastActive
         }
     }

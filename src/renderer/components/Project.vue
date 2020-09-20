@@ -87,7 +87,7 @@
                         <Framework
                             v-if="framework"
                             v-show="!frameworkLoading"
-                            :key="$string.from(framework)"
+                            :key="$string.from([frameworkKey, framework.id])"
                             :model="framework"
                             @manage="manageFramework"
                             @remove="removeFramework"
@@ -114,7 +114,6 @@
 <script>
 import { mapGetters } from 'vuex'
 import { ipcRenderer, remote } from 'electron'
-// import _findIndex from 'lodash/findIndex'
 import Pane from '@/components/Pane'
 import SidebarRepository from '@/components/SidebarRepository'
 import Indicator from '@/components/Indicator'
@@ -149,6 +148,7 @@ export default {
             context: [],
             loading: true,
             frameworkLoading: true,
+            frameworkKey: this.$string.random(),
             repositories: [],
             persistContext: {}
         }
@@ -169,6 +169,7 @@ export default {
         ipcRenderer
             .on('repositories', this.onRepositoriesEvent)
             .on('framework-active', this.onFrameworkActive)
+            .on('framework-updated', this.onFrameworkUpdated)
             .on('framework-options-updated', this.onFrameworkOptionsUpdated)
 
         this.getRepositories()
@@ -177,6 +178,8 @@ export default {
         ipcRenderer
             .removeListener('repositories', this.onRepositoriesEvent)
             .removeListener('framework-active', this.onFrameworkActive)
+            .removeListener('framework-updated', this.onFrameworkUpdated)
+            .removeListener('framework-options-updated', this.onFrameworkOptionsUpdated)
     },
     methods: {
         getRepositories () {
@@ -201,13 +204,17 @@ export default {
                 this.$store.commit('context/FRAMEWORK', framework)
             })
         },
-        async onFrameworkOptionsUpdated (event, payload) {
+        async onFrameworkUpdated (event, payload) {
             this.$payload(payload, framework => {
                 if (this.framework.id === framework.id) {
-                    this.frameworkLoading = true
                     this.$store.commit('context/FRAMEWORK', framework)
                 }
             })
+        },
+        async onFrameworkOptionsUpdated (event, payload) {
+            this.frameworkLoading = true
+            await this.onFrameworkUpdated(event, payload)
+            this.frameworkKey = this.$string.random()
         },
         async scanEmptyRepositories () {
             this.$root.scanRepositories(

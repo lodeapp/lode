@@ -225,6 +225,7 @@ export default new Vue({
         },
         loadProject (project) {
             console.log('LOADING PROJECT', { project })
+            this.$store.commit('filters/RESET')
             this.project = isEmpty(project) ? null : project
             this.refreshApplicationMenu()
         },

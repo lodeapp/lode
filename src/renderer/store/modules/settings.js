@@ -5,7 +5,7 @@ export default {
     state: {
     },
     getters: {
-        value: (state) => key => {
+        value: state => key => {
             if (!key) {
                 return state
             }
