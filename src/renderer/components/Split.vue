@@ -16,7 +16,7 @@ export default {
             minSize: [200, 350, 350],
             snapOffset: 0,
             gutterSize: 11,
-            onDragEnd (sizes) {
+            onDragEnd: (sizes) => {
                 this.$root.updateSetting('paneSizes', sizes)
             }
         })

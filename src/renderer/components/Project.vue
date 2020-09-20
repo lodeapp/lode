@@ -87,7 +87,7 @@
                         <Framework
                             v-if="framework"
                             v-show="!frameworkLoading"
-                            :key="framework.id"
+                            :key="$string.from(framework)"
                             :model="framework"
                             @manage="manageFramework"
                             @remove="removeFramework"
@@ -169,6 +169,7 @@ export default {
         ipcRenderer
             .on('repositories', this.onRepositoriesEvent)
             .on('framework-active', this.onFrameworkActive)
+            .on('framework-options-updated', this.onFrameworkOptionsUpdated)
 
         this.getRepositories()
     },
@@ -194,10 +195,18 @@ export default {
                 })
             })
         },
-        onFrameworkActive (event, payload) {
+        async onFrameworkActive (event, payload) {
             this.$payload(payload, (framework, repository) => {
                 this.$store.commit('context/REPOSITORY', repository)
                 this.$store.commit('context/FRAMEWORK', framework)
+            })
+        },
+        async onFrameworkOptionsUpdated (event, payload) {
+            this.$payload(payload, framework => {
+                if (this.framework.id === framework.id) {
+                    this.frameworkLoading = true
+                    this.$store.commit('context/FRAMEWORK', framework)
+                }
             })
         },
         async scanEmptyRepositories () {
@@ -228,18 +237,6 @@ export default {
 
                 repository.updatePath(filePaths[0])
             })
-        },
-        // @TODO: redo error handling
-        registerFrameworkListeners (framework) {
-            framework
-                .on('error', (error, process) => {
-                    this.$alert.show({
-                        message: this.$string.set('The process for **:0** terminated unexpectedly.', framework.getDisplayName()),
-                        help: framework.troubleshoot(error),
-                        type: 'error',
-                        error
-                    })
-                })
         },
         onFrameworkActivation (framework, repository) {
             this.frameworkLoading = true

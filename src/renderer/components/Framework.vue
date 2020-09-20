@@ -87,13 +87,13 @@
                     v-for="suite in suites"
                     class="suite"
                     :model="suite"
-                    :key="suite.file"
+                    :key="suite.relative"
                     :running="running"
                     :selectable="true"
                     @toggle="onChildToggle"
                     @context-menu="onSuiteContextMenu"
                 >
-                    <Filename :key="suite.file" />
+                    <Filename :key="suite.relative" />
                 </Nugget>
                 <footer v-if="hidden" class="cutoff">
                     <div>
@@ -205,6 +205,7 @@ export default {
             return sortDisplayName(this.sort)
         },
         ...mapGetters({
+            repository: 'context/repository',
             frameworkContext: 'context/frameworkContext'
         })
     },
@@ -295,7 +296,7 @@ export default {
             this.framework.resetFilters()
         },
         filterSuite (suite) {
-            this.keyword = `"${suite.getRelativePath()}"`
+            this.keyword = `"${suite.relative}"`
         },
         onSortClick () {
             const menu = new Menu()

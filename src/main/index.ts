@@ -241,6 +241,7 @@ ipcMain
                 repositoryPath: repository.getPath()
             })
             send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
+            send(event.sender, 'framework-options-updated', [framework.render()])
         })
     })
     .on('framework-refresh', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
