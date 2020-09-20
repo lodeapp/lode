@@ -26,7 +26,6 @@ select {
     }
 
     &.form-select {
-        background: none;
         box-shadow: 0 1px 1px $gray-100;
     }
 }
@@ -90,7 +89,7 @@ select {
             }
 
             & > label {
-                line-height: 26px;
+                line-height: 27px;
                 margin-right: var(--spacing);
 
                 & > input[type=radio] {

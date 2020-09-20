@@ -109,31 +109,31 @@ export default {
         }
     },
     methods: {
-        parseFrameworks (scanned = false, pending = []) {
+        async parseFrameworks (scanned = false, pending = []) {
             const types = pending.map(p => p.type)
-            console.log(this.repository.frameworks)
-            const frameworks = (this.repository.frameworks || []).map(framework => {
-                // If an existing framework has been removed, but user has
-                // triggered scan again, continue. This means the existing
-                // framework object will be removed, while a new, pristine
-                // object will be added.
-                if (this.removed.includes(framework.id)) {
-                    return false
-                }
+            const frameworks = (JSON.parse(await ipcRenderer.invoke('repository-frameworks', this.repository.id)))
+                .map(framework => {
+                    // If an existing framework has been removed, but user has
+                    // triggered scan again, continue. This means the existing
+                    // framework object will be removed, while a new, pristine
+                    // object will be added.
+                    if (this.removed.includes(framework.id)) {
+                        return false
+                    }
 
-                if (!scanned || framework.type === 'custom') {
+                    if (!scanned || framework.type === 'custom') {
+                        return framework
+                    }
+                    if (!types.includes(framework.type)) {
+                        // If type is not custom and is not found in the scanned array, mark as removed.
+                        framework.scanStatus = 'removed'
+                    } else {
+                        // But if type exists in the scan, remove from scanned array.
+                        pending = pending.filter(p => p.type !== framework.type)
+                    }
+
                     return framework
-                }
-                if (!types.includes(framework.type)) {
-                    // If type is not custom and is not found in the scanned array, mark as removed.
-                    framework.scanStatus = 'removed'
-                } else {
-                    // But if type exists in the scan, remove from scanned array.
-                    pending = pending.filter(p => p.type !== framework.type)
-                }
-
-                return framework
-            })
+                })
 
             // Parsed frameworks are joined by pending ones (if any) when we're
             // processing scanned frameworks. Also, filter out falsy values from
@@ -146,7 +146,7 @@ export default {
                 // @TODO: redo validation without Node integration
                 this.$set(framework, 'validator', new Validator())
             })
-            console.log('HEY', this.frameworks)
+            console.log('PARSED FRAMEWORKS', this.frameworks)
         },
         async handleScan () {
             this.scanning = true
@@ -189,12 +189,8 @@ export default {
                     .forEach(framework => {
                         // If the framework has an id (i.e. exists), update it, otherwise add.
                         if (framework.id) {
-                            ipcRenderer
-                                .once(`${framework.id}.framework-updated`, (event, tests) => {
-                                    // @TODO: update framework options in renderer
-                                })
-                                .send('framework-update', { repository: this.repository.id, framework: framework.id }, framework)
-                            return true
+                            ipcRenderer.send('framework-update', { repository: this.repository.id, framework: framework.id }, framework)
+                            return
                         }
                         ipcRenderer.send('framework-add', this.repository.id, framework)
                     })

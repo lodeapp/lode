@@ -5,6 +5,7 @@ export type MenuEvent =
   | 'filter'
   | 'framework-settings'
   | 'log-project'
+  | 'log-renderer-state'
   | 'log-settings'
   | 'new-project'
   | 'open-external-editor'

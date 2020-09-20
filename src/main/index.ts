@@ -195,6 +195,7 @@ ipcMain
         const project: IProject = getProject(event)
         project.removeRepository(repositoryId)
         send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
+        Window.getFromWebContents(event.sender).refreshActiveFramework()
     })
     .on('repository-scan', async (event: Electron.IpcMainEvent, repositoryId: string) => {
         const repository: IRepository = await getRepository(event, repositoryId)
@@ -218,30 +219,29 @@ ipcMain
         }
         repository.collapse()
     })
-    .on('repository-frameworks', async (event: Electron.IpcMainEvent, repositoryId: string) => {
-        const repository: IRepository = await getRepository(event, repositoryId)
-        send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
-    })
     .on('framework-add', async (event: Electron.IpcMainEvent, repositoryId: string, options: FrameworkOptions) => {
         const repository: IRepository = await getRepository(event, repositoryId)
         repository.addFramework(options).then(framework => {
             framework.refresh()
         })
         send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
+        Window.getFromWebContents(event.sender).refreshActiveFramework()
     })
     .on('framework-remove', async (event: Electron.IpcMainEvent, context: FrameworkContext) => {
         entities(event, context).then(({ repository, framework }) => {
             repository.removeFramework(framework.getId())
             send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
+            Window.getFromWebContents(event.sender).refreshActiveFramework()
         })
     })
-    .on('framework-update', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        // const index = _findIndex(this.repository.frameworks, existing => existing.id === framework.id)
-        // this.repository.frameworks[index].updateOptions({
-        //     ...framework,
-        //     ...{ repositoryPath: this.repository.getPath() }
-        // })
-        // return true
+    .on('framework-update', (event: Electron.IpcMainEvent, context: FrameworkContext, options: FrameworkOptions) => {
+        entities(event, context).then(({ repository, framework }) => {
+            framework.updateOptions({
+                ...options,
+                repositoryPath: repository.getPath()
+            })
+            send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
+        })
     })
     .on('framework-refresh', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
         entities(event, context).then(({ framework }) => {
@@ -329,6 +329,11 @@ ipcMain
         const project: IProject = getProject(event)
         const validator = new RepositoryValidator(project.repositories.map((repository: IRepository) => repository.getPath()))
         return JSON.stringify(validator.validate(options).getErrors())
+    })
+
+ipcMain
+    .handle('repository-frameworks', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
+        return JSON.stringify((await getRepository(event, repositoryId)).frameworks.map(framework => framework.render()))
     })
 
 ipcMain

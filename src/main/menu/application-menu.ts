@@ -308,6 +308,10 @@ class ApplicationMenu {
                         label: __DARWIN__ ? 'Log Settings' : 'Log settings',
                         click: emit('log-settings')
                     },
+                    {
+                        label: __DARWIN__ ? 'Log Renderer State' : 'Log renderer state',
+                        click: emit('log-renderer-state')
+                    },
                     separator,
                     {
                         label: __DARWIN__

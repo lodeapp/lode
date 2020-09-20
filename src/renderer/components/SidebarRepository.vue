@@ -57,7 +57,7 @@ export default {
     },
     data () {
         return {
-            frameworks: this.model.frameworks || []
+            frameworks: []
         }
     },
     computed: {
@@ -78,8 +78,8 @@ export default {
         ipcRenderer.removeListener(`${this.model.id}:frameworks`, this.updateFrameworks)
     },
     methods: {
-        getFrameworks () {
-            ipcRenderer.send('repository-frameworks', this.model.id)
+        async getFrameworks () {
+            this.frameworks = JSON.parse(await ipcRenderer.invoke('repository-frameworks', this.model.id))
         },
         updateFrameworks (event, payload) {
             this.$payload(payload, frameworks => {
@@ -90,7 +90,6 @@ export default {
                     this.frameworks
                 )
                 this.frameworks = frameworks
-                this.$emit('frameworks', frameworks)
             })
         },
         refresh () {

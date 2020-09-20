@@ -164,6 +164,9 @@ export default new Vue({
                             vuex: store.getters['settings/value']()
                         })
                         break
+                    case 'log-renderer-state':
+                        log.info(store.state)
+                        break
                     case 'crash':
                         this.crash()
                         break

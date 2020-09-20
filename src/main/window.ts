@@ -152,10 +152,6 @@ export class Window {
         send(this.window.webContents, event, args)
     }
 
-    protected refreshSettings (): void {
-        this.send('settings-updated', [state.get()])
-    }
-
     protected projectEventListener ({ id, event, args }: { id: string, event: string, args: Array<any> }): void {
         this.send(`${id}:${event}`, args)
     }
@@ -212,14 +208,23 @@ export class Window {
 
     public projectReady (): void {
         send(this.window.webContents, 'project-ready', [this.getProjectOptions()])
+        this.refreshActiveFramework()
+        this.refreshSettings()
+    }
+
+    public refreshActiveFramework (): void {
         if (this.project) {
             const { framework, repository } = this.project.getActive()
-            if (framework && repository) {
-                console.log('ACTIVE FRAMEWORK', framework, repository)
-                this.send('framework-active', [framework.render(), repository.render()])
-            }
+            console.log('ACTIVE FRAMEWORK')
+            this.send('framework-active', [
+                framework ? framework.render() : null,
+                repository ? repository.render() : null
+            ])
         }
-        this.refreshSettings()
+    }
+
+    protected refreshSettings (): void {
+        this.send('settings-updated', [state.get()])
     }
 
     public isBusy (): boolean {

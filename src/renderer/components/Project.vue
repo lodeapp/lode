@@ -114,7 +114,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { ipcRenderer, remote } from 'electron'
-import _findIndex from 'lodash/findIndex'
+// import _findIndex from 'lodash/findIndex'
 import Pane from '@/components/Pane'
 import SidebarRepository from '@/components/SidebarRepository'
 import Indicator from '@/components/Indicator'
@@ -217,10 +217,6 @@ export default {
 
             this.$root.onModelRemove(repository.id)
             ipcRenderer.send('repository-remove', repository.id)
-            const index = _findIndex(this.repositories, r => r.id === repository.id)
-            if (index > -1) {
-                this.repositories.splice(index, 1)
-            }
         },
         async locateRepository (repository) {
             remote.dialog.showOpenDialog({

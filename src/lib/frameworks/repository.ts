@@ -182,6 +182,7 @@ export class Repository extends ProjectEventEmitter implements IRepository {
             id: this.id,
             name: this.name,
             path: this.path,
+            status: this.status,
             expanded: this.expanded
         }
     }
@@ -390,7 +391,6 @@ export class Repository extends ProjectEventEmitter implements IRepository {
                 .on('progress', this.progressListener.bind(this))
             this.frameworks.push(framework)
             this.updateStatus()
-            this.emit('frameworkAdded', framework)
             resolve(framework)
         })
     }
@@ -403,11 +403,10 @@ export class Repository extends ProjectEventEmitter implements IRepository {
     public removeFramework (id: string): void {
         const index = findIndex(this.frameworks, framework => framework.getId() === id)
         if (index > -1) {
-            const frameworkId = this.frameworks[index].getId()
             this.frameworks[index].removeAllListeners()
             this.frameworks.splice(index, 1)
             this.updateStatus()
-            this.emit('frameworkRemoved', frameworkId)
+            this.save()
         }
     }
 

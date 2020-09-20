@@ -363,7 +363,6 @@ export class Project extends ProjectEventEmitter implements IProject {
             this.repositories.push(repository)
             this.hasRepositories = true
             this.updateStatus()
-            this.emit('repositoryAdded', repository)
             resolve(repository)
         })
     }
@@ -376,16 +375,13 @@ export class Project extends ProjectEventEmitter implements IProject {
     public removeRepository (id: string): void {
         const index = findIndex(this.repositories, repository => repository.getId() === id)
         if (index > -1) {
-            const repositoryId = this.repositories[index].getId()
             this.repositories[index].removeAllListeners()
             this.repositories.splice(index, 1)
             this.updateStatus()
-            this.emit('repositoryRemoved', repositoryId)
         }
         if (!this.repositories.length) {
             this.hasRepositories = false
         }
-        console.log('REPOSITORY REMOVED, SAVING')
         this.save()
     }
 
