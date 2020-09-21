@@ -28,7 +28,7 @@ beforeAll(() => {
         warn () {},
         error () {}
     }
-    global.console = { log () {} }
+    global.console = { debug () {} }
 })
 
 describe('main/lib/process/DefaultProcess', () => {
