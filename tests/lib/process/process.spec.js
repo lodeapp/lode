@@ -31,7 +31,7 @@ beforeAll(() => {
     global.console = { debug () {} }
 })
 
-describe('main/lib/process/DefaultProcess', () => {
+describe('lib/process/DefaultProcess', () => {
     it('spawns processes', () => {
         const spawned = new DefaultProcess({
             path: 'pantry',

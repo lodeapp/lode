@@ -116,7 +116,7 @@ export function parseStatus (components: Array<Status>): Status {
     // final status as running, assuming this is transient because the status
     // will update again until queued components are run or process is stopped,
     // in which case we'll manually change from running to something else.
-    if (components.includes(STATUS.QUEUED)) {
+    if (components.includes(STATUS.QUEUED) || components.includes(STATUS.RUNNING)) {
         return STATUS.RUNNING
     }
 
@@ -132,7 +132,7 @@ export function parseStatus (components: Array<Status>): Status {
         return STATUS.WARNING
     }
 
-    if (components.includes(STATUS.INCOMPLETE)) {
+    if (components.includes(STATUS.INCOMPLETE) && !components.includes(STATUS.IDLE)) {
         return STATUS.INCOMPLETE
     }
 
@@ -143,7 +143,7 @@ export function parseStatus (components: Array<Status>): Status {
     // activated by the user itself rather than activated and skipped by the
     // framework itself. Not 100% sure this is the right way to go, so we can
     // revisit this in the future with more experience and feedback.
-    if (components.includes(STATUS.SKIPPED)) {
+    if (components.includes(STATUS.SKIPPED) && !components.includes(STATUS.IDLE)) {
         return STATUS.INCOMPLETE
     }
 
@@ -169,10 +169,6 @@ export function parseFrameworkStatus (components: Array<FrameworkStatus>): Frame
 
     if (components.includes(STATUS.LOADING)) {
         return STATUS.LOADING
-    }
-
-    if (components.includes(STATUS.RUNNING)) {
-        return STATUS.RUNNING
     }
 
     if (components.includes(STATUS.REFRESHING)) {
