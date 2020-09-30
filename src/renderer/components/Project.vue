@@ -200,12 +200,12 @@ export default {
         },
         async onFrameworkActive (event, payload) {
             this.$payload(payload, (framework, repository) => {
-                this.$store.commit('context/REPOSITORY', repository)
-                this.$store.commit('context/FRAMEWORK', framework)
+                this.$store.dispatch('context/activate', { framework, repository })
             })
         },
         async onFrameworkUpdated (event, payload) {
             this.$payload(payload, framework => {
+                console.log('FRAMEWORK UPDATED', framework)
                 if (this.framework.id === framework.id) {
                     this.$store.commit('context/FRAMEWORK', framework)
                 }
@@ -245,11 +245,10 @@ export default {
                 repository.updatePath(filePaths[0])
             })
         },
-        onFrameworkActivation (framework, repository) {
+        async onFrameworkActivation (frameworkId, repository) {
+            console.log('FRAMEWORK ACTIVATED', frameworkId)
             this.frameworkLoading = true
-            this.$store.commit('context/REPOSITORY', repository)
-            this.$store.commit('context/FRAMEWORK', framework)
-            ipcRenderer.send('project-active-framework', framework.id)
+            this.$store.dispatch('context/activateWithId', { frameworkId, repository })
 
             // @TODO: new means of checking if repository exist...
             // Check if repository still exists before proceeding, but continue

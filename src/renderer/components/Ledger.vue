@@ -27,17 +27,20 @@
 
 <script>
 import _cloneDeep from 'lodash/cloneDeep'
+import { mapGetters } from 'vuex'
+import { ipcRenderer } from 'electron'
 
 export default {
     name: 'Ledger',
     props: {
-        framework: {
+        model: {
             type: Object,
             required: true
         }
     },
     data () {
         return {
+            base: {},
             statusString: {
                 queued: 'queued|queued',
                 passed: 'passed|passed',
@@ -55,27 +58,39 @@ export default {
     computed: {
         selected () {
             // @TODO: redo selected
-            // return this.framework.getSelected().suites
+            // return this.model.getSelected().suites
             return []
         },
         ledger () {
             // Modify ledger to consolidate running and queued states.
-            // @TODO: redo ledger
-            // const ledger = _cloneDeep(this.framework.getLedger())
-            const ledger = {}
+            const ledger = _cloneDeep(this.base)
             ledger['queued'] += ledger['running']
             delete ledger['running']
             return ledger
         },
-        filters () {
-            // @TODO: redo filtering
-            // return this.framework.getFilter('status') || []
-            return []
-        }
+        statusFilters () {
+            return this.filters(this.model.id)['status'] || []
+        },
+        ...mapGetters({
+            filters: 'filters/all',
+            frameworkContext: 'context/frameworkContext'
+        })
+    },
+    created () {
+        ipcRenderer.on(`${this.model.id}:ledger`, this.onLedgerEvent)
+    },
+    beforeDestroy () {
+        ipcRenderer.removeListener(`${this.model.id}:ledger`, this.onLedgerEvent)
     },
     methods: {
+        async onLedgerEvent (event, payload) {
+            this.$payload(payload, ledger => {
+                this.base = ledger
+                this.$emit('total', Object.values(ledger).reduce((a, b) => a + b, 0))
+            })
+        },
         isActive (status) {
-            return this.filters.indexOf(status) > -1
+            return this.statusFilters.indexOf(status) > -1
         },
         toggle (status) {
             if (this.isActive(status)) {
@@ -85,16 +100,24 @@ export default {
             this.activate(status)
         },
         activate (status) {
-            const statuses = _cloneDeep(this.filters)
-            this.framework.setFilter('status', statuses.concat([status]))
+            this.setFilter(_cloneDeep(this.statusFilters).concat([status]))
         },
         deactivate (status) {
-            const statuses = _cloneDeep(this.filters)
+            const statuses = _cloneDeep(this.statusFilters)
             const index = statuses.indexOf(status)
             if (index > -1) {
                 statuses.splice(index, 1)
-                this.framework.setFilter('status', statuses)
+                this.setFilter(statuses)
             }
+        },
+        setFilter (filter) {
+            ipcRenderer.send('framework-filter', this.frameworkContext, 'status', filter)
+            this.$store.commit('filters/SET', {
+                id: this.model.id,
+                filters: {
+                    status: filter
+                }
+            })
         }
     }
 }

@@ -46,16 +46,16 @@ export default {
     },
     computed: {
         isActive () {
-            return this.framework && this.framework.id === this.model.id
+            return this.active === this.model.id
         },
         ...mapGetters({
-            framework: 'context/framework'
+            active: 'context/active'
         })
     },
     methods: {
         activate () {
             if (!this.isActive) {
-                this.$emit('activate', this.model)
+                this.$emit('activate', this.model.id)
             }
         }
     }

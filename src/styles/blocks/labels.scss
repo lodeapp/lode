@@ -1,5 +1,9 @@
 .Label {
+    border-radius: 2px;
+    font-size: 12px;
     font-variant-numeric: tabular-nums;
+    font-weight: var(--font-weight-normal);
+    line-height: 1em;
     position: relative;
 
     // Italics inside labels should be numbers and
@@ -41,7 +45,7 @@
         color: theme-color('selected');
 
         &.is-active {
-            background-color: theme-color('selected');
+            background-color: theme-color('selected') !important;
             border-color: theme-color('selected', 'step', 100);
             color: $white;
         }
@@ -52,7 +56,7 @@
         color: theme-color('passed', 'step', 100);
 
         &.is-active {
-            background-color: theme-color('passed', 'step', 100);
+            background-color: theme-color('passed', 'step', 100) !important;
             border-color: theme-color('passed', 'step', 200);
             color: $white;
         }
@@ -65,7 +69,7 @@
         color: theme-color('incomplete', 800);
 
         &.is-active {
-            background-color: theme-color('incomplete', 'step');
+            background-color: theme-color('incomplete', 'step') !important;
             border-color: theme-color('incomplete', 'step', 200);
             color: theme-color('incomplete', 900);
         }
@@ -76,7 +80,7 @@
         color: theme-color('warning');
 
         &.is-active {
-            background-color: theme-color('warning');
+            background-color: theme-color('warning') !important;
             border-color: theme-color('warning', 'step', 100);
             color: $white;
         }
@@ -88,7 +92,7 @@
         color: theme-color('failed');
 
         &.is-active {
-            background-color: theme-color('failed');
+            background-color: theme-color('failed') !important;
             border-color: theme-color('failed', 'step', 200);
             color: $white;
         }
@@ -100,7 +104,7 @@
         color: theme-color('queued', 'step', 200);
 
         &.is-active {
-            background-color: theme-color('queued', 'step', 200);
+            background-color: theme-color('queued', 'step', 200) !important;
             border-color: theme-color('queued', 'step', 300);
             color: $white;
         }
@@ -111,7 +115,7 @@
         color: theme-color('idle', 'step', 200);
 
         &.is-active {
-            background-color: theme-color('idle', 'step', 200);
+            background-color: theme-color('idle', 'step', 200) !important;
             border-color: theme-color('idle', 'step', 300);
             color: $white;
         }
@@ -123,7 +127,7 @@
         color: theme-color('idle', 'step', 200);
 
         &.is-active {
-            background-color: theme-color('idle');
+            background-color: theme-color('idle') !important;
             border-color: theme-color('idle', 'step', 100);
             box-shadow: inset 0 0 0 1px theme-color('idle'), inset 0 0 0 2px $white;
             color: theme-color('idle', 700);
@@ -136,7 +140,7 @@
         color: theme-color('partial', 'step', 100);
 
         &.is-active {
-            background-color: theme-color('partial');
+            background-color: theme-color('partial') !important;
             border-color: theme-color('partial', 'step', 100);
             box-shadow: inset 0 0 0 1px theme-color('partial'), inset 0 0 0 2px theme-color('partial', 'step', 100);
             color: $white;
@@ -149,7 +153,7 @@
         color: theme-color('failed');
 
         &.is-active {
-            background-color: theme-color('failed', 400);
+            background-color: theme-color('failed', 400) !important;
             border-color: theme-color('failed', 'step', 200);
             box-shadow: inset 0 0 0 1px theme-color('failed'), inset 0 0 0 2px $white;
             color: $white;

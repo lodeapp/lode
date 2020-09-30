@@ -62,6 +62,7 @@ export type FrameworkOptions = {
     canToggleTests?: boolean
     status?: FrameworkStatus,
     supportedSorts?: Array<FrameworkSort>
+    total?: number
 }
 
 /**
@@ -372,11 +373,13 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             sshPort: this.sshPort,
             sshIdentity: this.sshIdentity,
             active: this.active,
+            status: this.status,
             proprietary: this.proprietary,
-            sort: this.sort,
+            sort: this.getSort(),
             sortReverse: this.sortReverse,
             canToggleTests: this.canToggleTests,
-            supportedSorts: this.getSupportedSorts()
+            supportedSorts: this.getSupportedSorts(),
+            total: this.suites.length
         }
     }
 
@@ -387,7 +390,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         return omit({
             ...this.render(),
             suites: this.suites.map((suite: ISuite) => suite.persist())
-        }, 'status', 'supportedSorts')
+        }, 'status', 'supportedSorts', 'total')
     }
 
     /**
@@ -621,7 +624,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                         }
 
                         this.suites.forEach(suite => {
-                            // suite.queue(false)
+                            suite.queue(false)
                         })
                         this.report(this.runArgs())
                             .then((outcome: string) => {
@@ -1055,6 +1058,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         if (from) {
             this.ledger[from]!--
         }
+        this.emit('ledger', this.ledger)
     }
 
     /**
@@ -1064,6 +1068,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         for (let key of Object.keys(this.ledger)) {
             this.ledger[<Status>key] = 0
         }
+        this.emit('ledger', this.ledger)
     }
 
     /**

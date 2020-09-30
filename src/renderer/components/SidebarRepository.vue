@@ -110,8 +110,8 @@ export default {
             }
             this.frameworks = []
         },
-        onFrameworkActivation (framework) {
-            this.$emit('framework-activate', framework, this.model)
+        onFrameworkActivation (frameworkId) {
+            this.$emit('framework-activate', frameworkId, this.model)
         },
         onFrameworkManage (framework) {
             this.$emit('framework-manage', framework)

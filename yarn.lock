@@ -1232,12 +1232,19 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@primer/css@^14.3.0":
-  version "14.3.0"
-  resolved "https://registry.yarnpkg.com/@primer/css/-/css-14.3.0.tgz#66d3e25a6c750e65d06234d1cf4e16a32567c611"
-  integrity sha512-n5/skNhsbCc+wStmH2nSFHWS8I1XFVtdSabG7IuCYbGELuxduw3x5kl9uYQwG558E5/4wQZ/WbAeACuTTjcWFA==
+"@primer/css@^15.2.0":
+  version "15.2.0"
+  resolved "https://registry.yarnpkg.com/@primer/css/-/css-15.2.0.tgz#ddf9651a9db2b9be03e7dfccfa612284ba1325ae"
+  integrity sha512-/vNDchWrxlXqd6E+SWQcChPHJVzGia9aCaTYoz8O9sJTnUSiTKOgSNCQuOXyUInPruTRSqj+z3MZxayKcTsWhA==
   dependencies:
     "@primer/octicons" "^9.1.1"
+
+"@primer/octicons@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@primer/octicons/-/octicons-11.0.0.tgz#a37c93f08fb669004f89455e5507efd12d93bf2e"
+  integrity sha512-aMM2n7dl4ToEqQH9ZWQ8M8alGCoGsRk2k5hT5h3KXd54YFKte1twhJDvyQjIjjxqggNh5NUfyuqTOv6MPCVSKQ==
+  dependencies:
+    object-assign "^4.1.1"
 
 "@primer/octicons@^9.1.1":
   version "9.6.0"

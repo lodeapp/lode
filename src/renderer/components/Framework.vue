@@ -17,7 +17,7 @@
                     </h3>
                     <div class="actions">
                         <button type="button" class="btn-link more-actions" tabindex="-1" @click.prevent="openMenu">
-                            <Icon symbol="kebab-vertical" />
+                            <Icon symbol="three-bars" />
                         </button>
                         <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing" tabindex="-1">
                             <Icon symbol="sync" />
@@ -48,8 +48,11 @@
                     </div>
                 </div>
                 <div class="filters">
-                    <template v-if="count > 0">
-                        <Ledger :framework="model" />
+                    <template v-if="total > 0">
+                        <Ledger
+                            :model="model"
+                            @total="updateTotal"
+                        />
                     </template>
                     <template v-else-if="queued">
                         Queued...
@@ -61,7 +64,7 @@
                         No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
                     </template>
                 </div>
-                <div v-if="count" class="filters search" :class="{ 'is-searching': keyword }">
+                <div v-if="total" class="filters search" :class="{ 'is-searching': keyword }">
                     <Icon symbol="search" />
                     <input
                         type="search"
@@ -74,7 +77,7 @@
                         v-model="keyword"
                     >
                 </div>
-                <div v-if="count" class="filters sort">
+                <div v-if="total" class="filters sort">
                     <button type="button" @click.prevent="onSortClick">
                         <template v-if="visible > 1">
                             {{ ':n item sorted by :0|:n items sorted by :0' | plural(visible) | set(displaySort) }}
@@ -144,14 +147,11 @@ export default {
     data () {
         return {
             suites: [],
+            total: 0,
             selected: 0
         }
     },
     computed: {
-        count () {
-            // @TODO: we need to know the total, regardless of filtering
-            return this.suites.length
-        },
         running () {
             return this.status === 'running'
         },
@@ -168,17 +168,17 @@ export default {
             return this.suites.length
         },
         hidden () {
-            return this.count - this.visible
+            return this.total - this.visible
         },
         noResults () {
-            return this.hidden === this.count
+            return this.hidden === this.total
         },
         canToggleTests () {
             return this.model.canToggleTests
         },
         keyword: {
             get () {
-                return this.filter('keyword')
+                return this.filters(this.model.id)['keyword']
             },
             set (keyword) {
                 ipcRenderer.send('framework-filter', this.frameworkContext, 'keyword', keyword)
@@ -214,7 +214,7 @@ export default {
             .on('menu-event', this.onAppMenuEvent)
 
         this.getSuites()
-        this.sort = this.model.sort
+        this.total = this.model.total
     },
     beforeDestroy () {
         ipcRenderer
@@ -225,9 +225,6 @@ export default {
     methods: {
         getSuites () {
             ipcRenderer.send('framework-suites', this.frameworkContext)
-        },
-        filter (key) {
-            return this.filters(this.model.id)[key]
         },
         onErrorEvent (event, payload) {
             this.$payload(payload, error => {
@@ -256,6 +253,9 @@ export default {
         },
         stop () {
             ipcRenderer.send('framework-stop', this.frameworkContext)
+        },
+        updateTotal (total) {
+            this.total = total
         },
         onChildToggle (context, toggle) {
             ipcRenderer.send('framework-toggle-child', this.frameworkContext, context, toggle)

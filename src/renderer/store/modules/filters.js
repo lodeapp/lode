@@ -1,15 +1,21 @@
 import Vue from 'vue'
 import _get from 'lodash/get'
+import _identity from 'lodash/identity'
+import _isArray from 'lodash/isArray'
+import _isEmpty from 'lodash/isEmpty'
+import _pickBy from 'lodash/pickBy'
 
 export default {
     namespaced: true,
     state: {},
     mutations: {
         SET (state, { id, filters }) {
-            Vue.set(state, id, {
+            // Set by merging current state and removing falsy or empty values
+            Vue.set(state, id, _pickBy({
                 ..._get(state, id, {}),
                 ...filters
-            })
+            }, value => _isArray(value) ? !_isEmpty(value) : _identity(value)
+            ))
         },
         RESET (state) {
             Object.keys(state).forEach(id => {

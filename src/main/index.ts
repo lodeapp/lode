@@ -73,7 +73,11 @@ function getRepository (event: Electron.IpcMainEvent | Electron.IpcMainInvokeEve
     })
 }
 
-function entities (event: Electron.IpcMainEvent, context: FrameworkContext, identifiers: Array<string> = []): Promise<ProjectEntities> {
+function entities (
+    event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent,
+    context: FrameworkContext,
+    identifiers: Array<string> = []
+): Promise<ProjectEntities> {
     return new Promise(async (resolve, reject) => {
         try {
             const project: IProject = getProject(event)
@@ -285,9 +289,11 @@ ipcMain
         })
     })
     .on('framework-sort', (event: Electron.IpcMainEvent, context: FrameworkContext, sort: FrameworkSort) => {
-        entities(event, context).then(({ framework }) => {
+        entities(event, context).then(({ repository, framework }) => {
+            console.log('SETTING SORT', sort)
             framework.setSort(sort)
             send(event.sender, 'framework-updated', [framework.render()])
+            send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
             send(
                 event.sender,
                 `${framework.getId()}:refreshed`,
@@ -296,9 +302,10 @@ ipcMain
         })
     })
     .on('framework-sort-reverse', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        entities(event, context).then(({ framework }) => {
+        entities(event, context).then(({ repository, framework }) => {
             framework.setSortReverse()
             send(event.sender, 'framework-updated', [framework.render()])
+            send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
             send(
                 event.sender,
                 `${framework.getId()}:refreshed`,
@@ -373,6 +380,12 @@ ipcMain
 ipcMain
     .handle('repository-frameworks', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
         return JSON.stringify((await getRepository(event, repositoryId)).frameworks.map(framework => framework.render()))
+    })
+
+ipcMain
+    .handle('framework-get', async (event: Electron.IpcMainInvokeEvent, context: FrameworkContext) => {
+        const { framework } = await entities(event, context)
+        return JSON.stringify(framework.render())
     })
 
 ipcMain
