@@ -90,7 +90,7 @@ function entities (
                         resolve(entities)
                         return
                     }
-                    let nugget: any
+                    let nugget: Nugget | undefined
                     const nuggets: Array<Nugget> = []
                     do {
                         // First nugget is always a suite, all others are tests.
@@ -327,6 +327,11 @@ ipcMain
             }
             // If collapsing, just wither the nugget, no response is needed.
             nugget!.toggleExpanded(false, true)
+        })
+    })
+    .on('framework-select', async (event: Electron.IpcMainEvent, context: FrameworkContext, identifiers: Array<string>, toggle: boolean) => {
+        entities(event, context, identifiers).then(({ nugget }) => {
+            nugget!.toggleSelected(toggle, true)
         })
     })
     .on('settings-update', (event: Electron.IpcMainEvent, setting: string, value: any) => {

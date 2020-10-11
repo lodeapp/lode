@@ -51,6 +51,7 @@
                     <template v-if="total > 0">
                         <Ledger
                             :model="model"
+                            :selected="selected"
                             @total="updateTotal"
                         />
                     </template>
@@ -98,6 +99,7 @@
                     :running="running"
                     :selectable="true"
                     @toggle="onChildToggle"
+                    @select="onChildSelect"
                     @context-menu="onSuiteContextMenu"
                 >
                     <Filename :key="suite.relative" />
@@ -211,16 +213,19 @@ export default {
         ipcRenderer
             .on(`${this.model.id}:error`, this.onErrorEvent)
             .on(`${this.model.id}:refreshed`, this.onSuitesEvent)
+            .on(`${this.model.id}:selective`, this.onSelectiveEvent)
             .on('menu-event', this.onAppMenuEvent)
 
         this.getSuites()
-        this.total = this.model.total
+        this.total = Object.values(this.model.ledger).reduce((a, b) => a + b, 0)
+        this.selected = this.model.selected
     },
     beforeDestroy () {
         ipcRenderer
             .removeListener(`${this.model.id}:error`, this.onErrorEvent)
-            .removeListener('menu-event', this.onAppMenuEvent)
             .removeListener(`${this.model.id}:refreshed`, this.onSuitesEvent)
+            .removeListener(`${this.model.id}:selective`, this.onSelectiveEvent)
+            .removeListener('menu-event', this.onAppMenuEvent)
     },
     methods: {
         getSuites () {
@@ -245,6 +250,12 @@ export default {
                 this.$emit('mounted')
             })
         },
+        onSelectiveEvent (event, payload) {
+            this.$payload(payload, selected => {
+                console.log('FRAMEWORK SELECTIVE', selected)
+                this.selected = selected
+            })
+        },
         refresh () {
             ipcRenderer.send('framework-refresh', this.frameworkContext)
         },
@@ -260,10 +271,8 @@ export default {
         onChildToggle (context, toggle) {
             ipcRenderer.send('framework-toggle-child', this.frameworkContext, context, toggle)
         },
-        onChildSelect (selected, context) {
-            console.log('selecting on framework', this.frameworkContext, selected, context)
-            this.selected += (selected ? 1 : -1)
-            ipcRenderer.send('framework-select', this.frameworkContext, selected, context)
+        onChildSelect (context, selected) {
+            ipcRenderer.send('framework-select', this.frameworkContext, context, selected)
         },
         onChildActivation (context) {
             this.$emit('activate', context)

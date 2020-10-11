@@ -11,7 +11,6 @@ export class Project {
             encryptionKey: process.env.NODE_ENV === 'production' ? 'v1' : undefined,
             name: 'project',
             defaults: {
-                busy: false,
                 options: {
                     id
                 }
@@ -46,10 +45,6 @@ export class Project {
 
     public toJSON (): ProjectOptions {
         return this.store.get('options')
-    }
-
-    public isBusy (): boolean {
-        return this.store.get('busy', false)
     }
 }
 

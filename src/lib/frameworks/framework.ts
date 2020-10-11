@@ -59,19 +59,20 @@ export type FrameworkOptions = {
     proprietary: any
     sort?: FrameworkSort
     sortReverse?: boolean
+    selected?: number
     canToggleTests?: boolean
-    status?: FrameworkStatus,
+    status?: FrameworkStatus
     supportedSorts?: Array<FrameworkSort>
-    total?: number
+    ledger?: StatusLedger
 }
 
 /**
  * An object to declare default framework options.
  */
 export type FrameworkDefaults = {
-    all: FrameworkOptions,
-    darwin?: object,
-    win32?: object,
+    all: FrameworkOptions
+    darwin?: object
+    win32?: object
     linux?: object
 }
 
@@ -117,6 +118,7 @@ export interface IFramework extends ProjectEventEmitter {
     setActive (active: boolean): void
     isActive (): boolean
     isSelective (): boolean
+    getAllSuites (): Array<ISuite>
     getSuites (): Array<ISuite>
     getSuiteById (id: string): ISuite | undefined
     getSelected (): SuiteList
@@ -377,9 +379,10 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             proprietary: this.proprietary,
             sort: this.getSort(),
             sortReverse: this.sortReverse,
+            selected: this.getSelected().suites.length,
             canToggleTests: this.canToggleTests,
             supportedSorts: this.getSupportedSorts(),
-            total: this.suites.length
+            ledger: this.ledger
         }
     }
 
@@ -390,7 +393,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         return omit({
             ...this.render(),
             suites: this.suites.map((suite: ISuite) => suite.persist())
-        }, 'status', 'supportedSorts', 'total')
+        }, 'status', 'selective', 'supportedSorts', 'ledger')
     }
 
     /**
@@ -659,7 +662,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         }
 
         suites.forEach(suite => {
-            // suite.queue(this.selective)
+            suite.queue(this.selective)
         })
 
         return new Promise((resolve, reject) => {
@@ -758,7 +761,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     protected afterRefresh () {
         this.cleanStaleSuites()
-        this.emit('refreshed', this.suites.map((suite: ISuite) => suite.render()))
+        this.emit('refreshed', this.getAllSuites().map((suite: ISuite) => suite.render()))
     }
 
     /**
@@ -1043,6 +1046,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         }
 
         this.selective = this.selected.suites.length > 0
+        this.emit('selective', this.selected.suites.length)
     }
 
     /**
@@ -1246,13 +1250,21 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     }
 
     /**
-     * Get the framework's suites.
+     * Get the framework's suites in active sort order.
+     */
+    public getAllSuites (): Array<ISuite> {
+        return this.sortSuites(this.suites.map(suite => {
+            return suite
+        }))
+    }
+
+    /**
+     * Get the framework's suites, considering active filters
+     * and sort order.
      */
     public getSuites (): Array<ISuite> {
         if (!this.hasFilters()) {
-            return this.sortSuites(this.suites.map(suite => {
-                return suite
-            }))
+            return this.getAllSuites()
         }
 
         const exact = this.filters.keyword && (this.filters.keyword as string).match(/^[\'\"].+[\'\"]$/g)

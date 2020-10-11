@@ -52,6 +52,8 @@ export interface ISuiteResult {
     console?: Array<any>
     testsLoaded?: boolean
     hasChildren?: boolean
+    selected?: boolean
+    partial?: boolean
     relative?: string
 }
 
@@ -77,6 +79,8 @@ export class Suite extends Nugget implements ISuite {
             status: status ? status : this.status,
             meta: this.getMeta(),
             hasChildren: this.testsLoaded() && this.hasChildren(),
+            selected: this.selected,
+            partial: this.partial,
             relative: this.getRelativePath()
         }
     }
@@ -93,7 +97,7 @@ export class Suite extends Nugget implements ISuite {
             tests: this.bloomed
                 ? this.tests.map((test: ITest) => test.persist(status))
                 : this.getTestResults().map((test: ITestResult) => this.defaults(test, status))
-        }, ['hasChildren', 'relative'])
+        }, ['hasChildren', 'selected', 'partial', 'relative'])
     }
 
     /**

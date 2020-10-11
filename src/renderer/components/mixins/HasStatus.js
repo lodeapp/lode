@@ -22,7 +22,6 @@ export default {
     methods: {
         statusListener (event, payload) {
             this.$payload(payload, (to, from) => {
-                console.log('SWITCHING STATUS TO', to, from, this.model.id)
                 this.status = to
             })
         }

@@ -23,7 +23,7 @@
                     <input
                         type="checkbox"
                         tabindex="-1"
-                        :checked="selected || selective > 0"
+                        :checked="selected"
                         :indeterminate.prop="partial"
                         :disabled="running"
                         @click.prevent
@@ -48,6 +48,7 @@
                 :running="running"
                 :selectable="canToggleTests"
                 @toggle="onChildToggle"
+                @select="onChildSelect"
                 @activate="onChildActivation"
                 @context-menu="onTestContextMenu"
             />
@@ -61,13 +62,11 @@ import { mapGetters } from 'vuex'
 import { Menu } from '@main/menu'
 import { labels } from '@lib/frameworks/status'
 import HasStatus from '@/components/mixins/HasStatus'
-import HasToggle from '@/components/mixins/HasToggle'
 
 export default {
     name: 'Nugget',
     mixins: [
-        HasStatus,
-        HasToggle
+        HasStatus
     ],
     props: {
         model: {
@@ -81,11 +80,17 @@ export default {
         running: {
             type: Boolean,
             default: false
+        },
+        selectable: {
+            type: Boolean,
+            default: false
         }
     },
     data () {
         return {
-            tests: []
+            tests: [],
+            partial: this.model.partial,
+            selected: this.model.selected || false
         }
     },
     computed: {
@@ -119,18 +124,31 @@ export default {
     },
     created () {
         ipcRenderer
-            .on(`${this.identifier}:framework-tests`, (event, payload) => {
-                this.$payload(payload, tests => {
-                    console.log('GOT TESTS', { tests })
-                    this.tests = tests
-                })
-            })
+            .on(`${this.identifier}:framework-tests`, this.onTestsEvent)
+            .on(`${this.identifier}:selective`, this.onSelectiveEvent)
 
         if (this.show) {
             this.expand()
         }
     },
+    beforeDestroy () {
+        ipcRenderer
+            .removeListener(`${this.identifier}:framework-tests`, this.onTestsEvent)
+            .removeListener(`${this.identifier}:selective`, this.onSelectiveEvent)
+    },
     methods: {
+        onTestsEvent (event, payload) {
+            this.$payload(payload, tests => {
+                console.log('GOT TESTS', { tests })
+                this.tests = tests
+            })
+        },
+        onSelectiveEvent (event, payload) {
+            this.$payload(payload, nugget => {
+                this.selected = nugget.selected
+                this.partial = nugget.selected && nugget.partial
+            })
+        },
         handleActivate (event) {
             if (this.handler) {
                 if (this.handler.call() === false) {
@@ -217,6 +235,18 @@ export default {
             this.$nextTick(() => {
                 this.$emit('activate', context)
             })
+        },
+        onSelect (event) {
+            if (this.running) {
+                return
+            }
+            this.selected = !this.selected
+            this.$emit('select', [this.identifier], this.selected)
+            console.log('SELECTING NUGGET', [this.identifier], this.selected)
+        },
+        onChildSelect (context, selected) {
+            context.unshift(this.identifier)
+            this.$emit('select', context, selected)
         },
         onContextMenu () {
             this.$emit('context-menu', this.model)

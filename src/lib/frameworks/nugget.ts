@@ -110,15 +110,19 @@ export abstract class Nugget extends ProjectEventEmitter {
     /**
      * Trigger an update of this nugget's selected count.
      */
-    protected updateSelectedCounts (): void {
+    protected async updateSelectedCounts (): Promise<void> {
         const total = this.tests.length
-        const filtered = this.tests.filter(test => test.selected).length
-        if (filtered && !this.selected) {
-            this.toggleSelected(true, false)
-        } else if (!filtered && this.selected) {
-            this.toggleSelected(false, false)
+        const selectedChildren = this.tests.filter(test => test.selected).length
+
+        // Update partial status
+        this.partial = selectedChildren > 0 && total > 0 && total > selectedChildren
+
+        // Update whether this nugget should be selected or not, based on children
+        if (selectedChildren && !this.selected) {
+            await this.toggleSelected(true, false)
+        } else if (!selectedChildren && this.selected) {
+            await this.toggleSelected(false, false)
         }
-        this.partial = filtered > 0 && total > 0 && total > filtered
     }
 
     /**
@@ -325,12 +329,11 @@ export abstract class Nugget extends ProjectEventEmitter {
             await this.wither()
         }
 
-        this.emit('selective', this)
         if (this.canToggleTests() && cascade !== false) {
-            this.tests.forEach(test => {
-                test.toggleSelected(this.selected)
-            })
+            await Promise.all(this.tests.map(test => test.toggleSelected(this.selected)))
         }
+
+        this.emit('selective', this)
         return Promise.resolve()
     }
 

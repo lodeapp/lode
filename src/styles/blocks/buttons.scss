@@ -35,13 +35,19 @@ button,
         }
     }
 
-    i {
-        line-height: 1.5em;
+    i,
+    .octicon {
+        line-height: 1.4em;
         vertical-align: middle;
+        color: currentColor;
     }
 
     & > .Counter {
         font-variant-numeric: tabular-nums;
+        line-height: 16px;
+        padding: 0 5px;
+        position: relative;
+        top: 1px;
     }
 
     // Our primary button is blue, not green
@@ -74,6 +80,7 @@ button,
         }
 
         & > .Counter {
+            background-color: $text-white;
             color: $blue-400;
         }
     }

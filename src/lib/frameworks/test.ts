@@ -62,7 +62,9 @@ export class Test extends Nugget implements ITest {
     public render (status: Status | false = 'idle'): ITestResult {
         return omit({
             ...this.defaults(this.result, status),
-            hasChildren: this.hasChildren()
+            hasChildren: this.hasChildren(),
+            selected: this.selected,
+            partial: this.partial
         }, 'tests')
     }
 

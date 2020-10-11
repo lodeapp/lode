@@ -1,14 +1,13 @@
 <template>
     <div class="progress-breakdown">
         <span
+            v-if="selected > 0"
             class="Label Label--outline Label--selected"
             :class="[isActive('selected') ? 'is-active' : '']"
             @click="toggle('selected')"
         >
-            <!-- @TODO: redo selective -->
-            <!-- v-if="framework.isSelective() || isActive('selected')" -->
-            <span>{{ selected.length }}</span>
-            {{ 'selected|selected' | plural(selected.length) }}
+            <span>{{ selected }}</span>
+            {{ 'selected|selected' | plural(selected) }}
         </span>
         <template v-for="(count, status) in ledger">
             <span
@@ -36,11 +35,15 @@ export default {
         model: {
             type: Object,
             required: true
+        },
+        selected: {
+            type: Number,
+            default: 0
         }
     },
     data () {
         return {
-            base: {},
+            base: this.model.ledger || {},
             statusString: {
                 queued: 'queued|queued',
                 passed: 'passed|passed',
@@ -56,11 +59,6 @@ export default {
         }
     },
     computed: {
-        selected () {
-            // @TODO: redo selected
-            // return this.model.getSelected().suites
-            return []
-        },
         ledger () {
             // Modify ledger to consolidate running and queued states.
             const ledger = _cloneDeep(this.base)

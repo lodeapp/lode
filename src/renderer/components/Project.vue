@@ -212,6 +212,7 @@ export default {
             })
         },
         async onFrameworkOptionsUpdated (event, payload) {
+            console.log('FRAMEWORK OPTIONS UPDATED')
             this.frameworkLoading = true
             await this.onFrameworkUpdated(event, payload)
             this.frameworkKey = this.$string.random()
