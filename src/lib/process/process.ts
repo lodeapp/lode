@@ -124,7 +124,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 ...process.env,
                 ...{
                     // Ensure ANSI color is supported
-                    FORCE_COLOR: 1
+                    FORCE_COLOR: 3
                 }
             })
         })

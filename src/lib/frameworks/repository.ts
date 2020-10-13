@@ -459,6 +459,7 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      */
     protected progress(): void {
         this.progressLedger.run++
+        this.emit('progress')
     }
 
     /**

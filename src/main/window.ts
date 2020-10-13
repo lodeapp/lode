@@ -1,4 +1,5 @@
 import * as Path from 'path'
+import { get } from 'lodash'
 import { app, ipcMain, BrowserWindow as BaseBrowserWindow } from 'electron'
 import { state } from '@lib/state'
 import { ProjectIdentifier, ProjectOptions, Project } from '@lib/frameworks/project'
@@ -130,6 +131,7 @@ export class Window {
             this.onReady()
             console.log('DID FINISH LOAD')
             send(this.window.webContents, 'did-finish-load', [{
+                projectName: get(this.getProject(), 'name', null),
                 focus: this.window.isFocused()
             }])
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
@@ -169,19 +171,20 @@ export class Window {
         // Instantiate new project from identifier. If it does not yet exist
         // in the store, it'll be created.
         this.project = new Project(identifier)
-        this.project.on('ready', async () => {
-            console.log('PROJECT READY, NOTIFYING RENDERER')
-            if (!this.ready) {
-                console.log('WINDOW IS NOT LOADED, ABORT')
-                return
-            }
-            console.log('WINDOW IS LOADED')
-            this.projectReady()
-        })
-
-        // @TODO: when setting another project, make sure previous one's
-        // listeners are no longer active.
-        this.project.on('project-event', this.projectEventListener.bind(this))
+        this.project
+            .on('ready', async () => {
+                console.log('PROJECT READY, NOTIFYING RENDERER')
+                if (!this.ready) {
+                    console.log('WINDOW IS NOT LOADED, ABORT')
+                    return
+                }
+                console.log('WINDOW IS LOADED')
+                this.projectReady()
+            })
+            // @TODO: when setting another project, make sure previous one's
+            // listeners are no longer active.
+            .on('project-event', this.projectEventListener.bind(this))
+            .on('progress', this.updateProgress.bind(this))
     }
 
     public onReady (): void {
@@ -225,6 +228,12 @@ export class Window {
 
     protected refreshSettings (): void {
         this.send('settings-updated', [state.get()])
+    }
+
+    protected updateProgress (progress: number): void {
+        console.log('PROJECT PROGRESSED', progress)
+        // If project progress has reached 100%, disable the progress bar.
+        this.window.setProgressBar(progress === 1 ? -1 : progress)
     }
 
     public isBusy (): boolean {

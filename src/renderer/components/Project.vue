@@ -1,12 +1,10 @@
 <template>
     <main class="project">
         <template>
-            <div v-if="loading" class="loading">
-                <div class="loading-group">
-                    <div class="spinner"></div>
-                    <h2>{{ 'Loading :0…' | set(model.name) }}</h2>
-                </div>
-            </div>
+            <ProjectLoader
+                v-if="loading"
+                :name="model.name"
+            />
             <Split v-else :class="{ 'empty': !repository || !framework || frameworkLoading || repositoryMissing }">
                 <Pane class="sidebar">
                     <div class="draggable"></div>
@@ -115,6 +113,7 @@
 import { mapGetters } from 'vuex'
 import { ipcRenderer, remote } from 'electron'
 import Pane from '@/components/Pane'
+import ProjectLoader from '@/components/ProjectLoader'
 import SidebarRepository from '@/components/SidebarRepository'
 import Indicator from '@/components/Indicator'
 import Framework from '@/components/Framework'
@@ -127,6 +126,7 @@ export default {
     name: 'Project',
     components: {
         Pane,
+        ProjectLoader,
         SidebarRepository,
         Indicator,
         Framework,

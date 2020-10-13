@@ -75,7 +75,7 @@ export interface IProject extends ProjectEventEmitter {
     addRepository (options: RepositoryOptions): Promise<IRepository>
     removeRepository (id: string): void
     getActive (): ProjectActiveModels
-    setActiveFramework (frameworkId: string): void
+    setActiveFramework (framework: ProjectActiveIdentifiers['framework']): void
     getRepositoryById (id: string): IRepository | undefined
     getFrameworkByContext (context: FrameworkContext): IFramework | undefined
     getEmptyRepositories (): Array<IRepository>
@@ -265,6 +265,12 @@ export class Project extends ProjectEventEmitter implements IProject {
                 repository.resetProgressLedger()
             })
         }
+
+        // Emit progress event, even if progress is currently zero.
+        // This will allow the window to start progress count and feed back to
+        // the user that the window is currently running the project, or reset
+        // the progress if project is no longer running.
+        this.emit('progress', this.getProgress())
     }
 
     /**
@@ -273,6 +279,13 @@ export class Project extends ProjectEventEmitter implements IProject {
     protected changeListener (): void {
         console.log('CHANGE IN PROJECT, SAVING')
         this.save()
+    }
+
+    /**
+     * A function to run when a child repository progresses.
+     */
+    protected progressListener (): void {
+        this.emit('progress', this.getProgress())
     }
 
     /**
@@ -360,6 +373,7 @@ export class Project extends ProjectEventEmitter implements IProject {
                 .on('status', this.statusListener.bind(this))
                 .on('state', this.stateListener.bind(this))
                 .on('change', this.changeListener.bind(this))
+                .on('progress', this.progressListener.bind(this))
             this.repositories.push(repository)
             this.hasRepositories = true
             this.updateStatus()
@@ -423,8 +437,8 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Set the project's active framework.
      */
-    public setActiveFramework (frameworkId: string): void {
-        this.active.framework = frameworkId
+    public setActiveFramework (framework: ProjectActiveIdentifiers['framework']): void {
+        this.active.framework = framework
     }
 
     /**

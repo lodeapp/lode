@@ -44,10 +44,10 @@ export default {
             ipcRenderer.send('project-active-framework', frameworkId)
         },
         async activate ({ state, commit }, { framework, repository }) {
-            commit('ACTIVE', framework.id)
+            commit('ACTIVE', framework ? framework.id : null)
             commit('REPOSITORY', repository)
             commit('FRAMEWORK', framework)
-            ipcRenderer.send('project-active-framework', framework.id)
+            ipcRenderer.send('project-active-framework', framework ? framework.id : null)
         },
         onRemove ({ state, commit, dispatch }, modelId) {
             if (state.nuggets.indexOf(modelId) > -1) {

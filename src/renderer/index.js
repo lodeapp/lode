@@ -71,29 +71,21 @@ export default new Vue({
     data () {
         return {
             modals: [],
+            ready: false,
+            projectName: null,
             project: null
-        }
-    },
-    computed: {
-        progress () {
-            // @TODO: redo progress calculation
-            // return this.project ? this.project.getProgress() : -1
-            return -1
-        }
-    },
-    watch: {
-        progress (value) {
-            remote.getCurrentWindow().setProgressBar(this.project.getProgress())
         }
     },
     created () {
         ipcRenderer
             .on('did-finish-load', (event, payload) => {
                 this.$payload(payload, properties => {
+                    this.projectName = properties.projectName
                     document.body.classList.add(`platform-${process.platform}`)
                     if (properties.focus) {
                         document.body.classList.add('is-focused')
                     }
+                    this.ready = true
                 })
             })
             .on('blur', () => {
@@ -226,7 +218,8 @@ export default new Vue({
         loadProject (project) {
             console.log('LOADING PROJECT', { project })
             this.$store.commit('filters/RESET')
-            this.project = isEmpty(project) ? null : project
+            this.project = !isEmpty(project) ? project : null
+            this.projectName = this.project ? this.project.name : null
             this.refreshApplicationMenu()
         },
         addProject () {

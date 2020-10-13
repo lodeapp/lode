@@ -14,7 +14,7 @@ import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
 import { log as writeLog } from '@lib/logger'
-import { ProjectIdentifier, ProjectEntities, IProject } from '@lib/frameworks/project'
+import { ProjectIdentifier, ProjectActiveIdentifiers, ProjectEntities, IProject } from '@lib/frameworks/project'
 import { IRepository } from '@lib/frameworks/repository'
 import {
     FrameworkContext,
@@ -189,8 +189,8 @@ ipcMain
             getProject(event).repositories.map((repository: IRepository) => repository.render())
         ])
     })
-    .on('project-active-framework', (event: Electron.IpcMainEvent, frameworkId: string) => {
-        getProject(event).setActiveFramework(frameworkId)
+    .on('project-active-framework', (event: Electron.IpcMainEvent, framework: ProjectActiveIdentifiers['framework']) => {
+        getProject(event).setActiveFramework(framework)
     })
     .on('repository-add', (event: Electron.IpcMainEvent, paths: Array<string>) => {
         const project: IProject = getProject(event)
