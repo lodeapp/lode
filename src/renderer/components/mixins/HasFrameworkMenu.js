@@ -6,8 +6,6 @@ export default {
             menuActive: false,
             menu: new Menu()
                 .add({
-                    // @TODO: redo display name
-                    // label: this.model.getDisplayName(),
                     label: this.model.name,
                     enabled: false
                 })

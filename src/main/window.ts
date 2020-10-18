@@ -131,7 +131,7 @@ export class Window {
             this.onReady()
             console.log('DID FINISH LOAD')
             send(this.window.webContents, 'did-finish-load', [{
-                projectName: get(this.getProject(), 'name', null),
+                projectId: get(this.getProject(), 'id', null),
                 focus: this.window.isFocused()
             }])
             this.window.webContents.setVisualZoomLevelLimits(1, 1)

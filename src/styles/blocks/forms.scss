@@ -17,6 +17,24 @@ input {
         right: -2px;
         visibility: visible !important;
     }
+
+    // Override native checkbox partial state
+    &[type=checkbox]:indeterminate {
+        appearance: none;
+        background: rgb(42, 119, 246);
+        border-radius: 2px;
+        height: 13px;
+        width: 13px;
+
+        &:after {
+            color: $text-white;
+            content: '\02043';
+            left: -0.1px;
+            position: relative;
+            top: -7.5px;
+            zoom: 2.7;
+        }
+    }
 }
 
 select {

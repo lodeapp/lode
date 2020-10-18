@@ -14,7 +14,13 @@ import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
 import { log as writeLog } from '@lib/logger'
-import { ProjectIdentifier, ProjectActiveIdentifiers, ProjectEntities, IProject } from '@lib/frameworks/project'
+import {
+    ProjectIdentifier,
+    ProjectActiveIdentifiers,
+    ProjectEntities,
+    ProjectOptions,
+    IProject
+} from '@lib/frameworks/project'
 import { IRepository } from '@lib/frameworks/repository'
 import {
     FrameworkContext,
@@ -288,6 +294,16 @@ ipcMain
             )
         })
     })
+    .on('framework-reset-filters', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
+        entities(event, context).then(({ framework }) => {
+            framework.resetFilters()
+            send(
+                event.sender,
+                `${framework.getId()}:refreshed`,
+                [framework.getSuites().map((suite: ISuite) => suite.render(false))]
+            )
+        })
+    })
     .on('framework-sort', (event: Electron.IpcMainEvent, context: FrameworkContext, sort: FrameworkSort) => {
         entities(event, context).then(({ repository, framework }) => {
             console.log('SETTING SORT', sort)
@@ -368,6 +384,17 @@ ipcMain
         const project: IProject = getProject(event)
         await project.stop()
         return state.removeProject(project.getId())
+    })
+
+ipcMain
+    .handle('project-update', async (event: Electron.IpcMainInvokeEvent, options: ProjectOptions) => {
+        const window: Window = Window.getFromWebContents(event.sender)
+        const project: IProject | null = window.getProject()
+        if (project) {
+            project.updateOptions(options)
+            return JSON.stringify(project.render())
+        }
+        return null
     })
 
 ipcMain

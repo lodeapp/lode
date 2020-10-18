@@ -143,7 +143,6 @@ export default {
             // Add a reactive validator instance to the mapped frameworks
             this.frameworks.forEach(framework => {
                 this.$set(framework, 'key', framework.id || this.$string.random())
-                // @TODO: redo validation without Node integration
                 this.$set(framework, 'validator', new Validator())
             })
             console.log('PARSED FRAMEWORKS', this.frameworks)

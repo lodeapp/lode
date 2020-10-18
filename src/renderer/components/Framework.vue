@@ -48,21 +48,22 @@
                     </div>
                 </div>
                 <div class="filters">
-                    <template v-if="total > 0">
-                        <Ledger
-                            :model="model"
-                            :selected="selected"
-                            @total="updateTotal"
-                        />
-                    </template>
-                    <template v-else-if="queued">
-                        Queued...
-                    </template>
-                    <template v-else-if="refreshing">
-                        Refreshing...
-                    </template>
+                    <Ledger
+                        v-if="total"
+                        :model="model"
+                        :selected="selected"
+                        @total="updateTotal"
+                    />
                     <template v-else>
-                        No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
+                        <template v-if="queued">
+                            Queued...
+                        </template>
+                        <template v-if="refreshing">
+                            Refreshing...
+                        </template>
+                        <template v-if="!queued && !refreshing">
+                            No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
+                        </template>
                     </template>
                 </div>
                 <div v-if="total" class="filters search" :class="{ 'is-searching': keyword }">
@@ -148,7 +149,7 @@ export default {
     },
     data () {
         return {
-            suites: [],
+            allSuites: [],
             total: 0,
             selected: 0
         }
@@ -165,6 +166,10 @@ export default {
         },
         isFiltering () {
             return !_isEmpty(this.filters(this.model.id))
+        },
+        suites () {
+            // @TODO: don't show suites with status !== filter
+            return this.allSuites
         },
         visible () {
             return this.suites.length
@@ -232,27 +237,23 @@ export default {
             ipcRenderer.send('framework-suites', this.frameworkContext)
         },
         onErrorEvent (event, payload) {
-            this.$payload(payload, error => {
-                console.log({ error })
+            this.$payload(payload, (error, help) => {
                 this.$alert.show({
                     message: this.$string.set('The process for **:0** terminated unexpectedly.', this.model.name),
-                    // @TODO: receive troubleshooting message from framework itself in the main process.
-                    // help: framework.troubleshoot(error),
                     type: 'error',
+                    help,
                     error
                 })
             })
         },
         onSuitesEvent (event, payload) {
             this.$payload(payload, suites => {
-                console.log('GOT SUITES', { suites })
-                this.suites = suites
+                this.allSuites = suites
                 this.$emit('mounted')
             })
         },
         onSelectiveEvent (event, payload) {
             this.$payload(payload, selected => {
-                console.log('FRAMEWORK SELECTIVE', selected)
                 this.selected = selected
             })
         },
@@ -304,13 +305,13 @@ export default {
             }
         },
         resetFilters () {
-            this.framework.resetFilters()
+            ipcRenderer.send('framework-reset-filters', this.frameworkContext)
+            this.$store.commit('filters/RESET')
         },
         filterSuite (suite) {
             this.keyword = `"${suite.relative}"`
         },
         onSortClick () {
-            console.log(this.model)
             const menu = new Menu()
             this.model.supportedSorts.forEach(sort => {
                 menu.add({

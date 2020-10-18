@@ -72,7 +72,7 @@ export default new Vue({
         return {
             modals: [],
             ready: false,
-            projectName: null,
+            loading: true,
             project: null
         }
     },
@@ -80,10 +80,12 @@ export default new Vue({
         ipcRenderer
             .on('did-finish-load', (event, payload) => {
                 this.$payload(payload, properties => {
-                    this.projectName = properties.projectName
                     document.body.classList.add(`platform-${process.platform}`)
                     if (properties.focus) {
                         document.body.classList.add('is-focused')
+                    }
+                    if (!properties.projectId) {
+                        this.loading = false
                     }
                     this.ready = true
                 })
@@ -219,8 +221,19 @@ export default new Vue({
             console.log('LOADING PROJECT', { project })
             this.$store.commit('filters/RESET')
             this.project = !isEmpty(project) ? project : null
-            this.projectName = this.project ? this.project.name : null
             this.refreshApplicationMenu()
+            this.loading = false
+
+            // Register project listeners
+            if (this.project) {
+                ipcRenderer.on(`${this.project.id}:status`, this.projectStatusListener)
+            }
+        },
+        projectStatusListener (event, payload) {
+            this.$payload(payload, (to, from) => {
+                console.log('UPDATING PROJECT STATUS', to)
+                this.project.status = to
+            })
         },
         addProject () {
             this.$modal.confirm('EditProject', { add: true })
@@ -234,9 +247,9 @@ export default new Vue({
         },
         editProject () {
             this.$modal.confirm('EditProject')
-                .then(options => {
-                    this.project.updateOptions(options)
-                    this.project.save()
+                .then(async options => {
+                    options = await ipcRenderer.invoke('project-update', options)
+                    this.project = options ? JSON.parse(options) : null
 
                     // Since current project hasn't changed, just been updated,
                     // we need to forcibly emit the change to the main process,
@@ -285,6 +298,13 @@ export default new Vue({
                 })
         },
         handleSwitchProject (projectId) {
+            // Before switching, remove project listeners
+            if (this.project) {
+                ipcRenderer.removeListener(`${this.project.id}:status`, this.projectStatusListener)
+            }
+            this.loading = true
+            this.project = null
+            console.log('CLEARING CONTEXT')
             store.commit('context/CLEAR')
             ipcRenderer.send('project-switch', projectId ? { id: projectId } : null)
         },

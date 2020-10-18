@@ -125,7 +125,8 @@ export default {
     created () {
         ipcRenderer
             .on(`${this.identifier}:framework-tests`, this.onTestsEvent)
-            .on(`${this.identifier}:selective`, this.onSelectiveEvent)
+            .on(`${this.identifier}:selective`, this.onSelectedEvent)
+            .on(`${this.identifier}:selected`, this.onSelectedEvent)
 
         if (this.show) {
             this.expand()
@@ -134,7 +135,8 @@ export default {
     beforeDestroy () {
         ipcRenderer
             .removeListener(`${this.identifier}:framework-tests`, this.onTestsEvent)
-            .removeListener(`${this.identifier}:selective`, this.onSelectiveEvent)
+            .removeListener(`${this.identifier}:selective`, this.onSelectedEvent)
+            .removeListener(`${this.identifier}:selected`, this.onSelectedEvent)
     },
     methods: {
         onTestsEvent (event, payload) {
@@ -143,7 +145,7 @@ export default {
                 this.tests = tests
             })
         },
-        onSelectiveEvent (event, payload) {
+        onSelectedEvent (event, payload) {
             this.$payload(payload, nugget => {
                 this.selected = nugget.selected
                 this.partial = nugget.selected && nugget.partial
@@ -242,7 +244,6 @@ export default {
             }
             this.selected = !this.selected
             this.$emit('select', [this.identifier], this.selected)
-            console.log('SELECTING NUGGET', [this.identifier], this.selected)
         },
         onChildSelect (context, selected) {
             context.unshift(this.identifier)

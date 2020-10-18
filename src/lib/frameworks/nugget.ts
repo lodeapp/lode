@@ -1,4 +1,4 @@
-import { debounce, find, get, isArray, max, maxBy, pickBy, sum } from 'lodash'
+import { find, get, isArray, max, maxBy, pickBy, sum } from 'lodash'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
@@ -13,17 +13,11 @@ export abstract class Nugget extends ProjectEventEmitter {
     public selected: boolean = false
     public expanded: boolean = false
     public partial: boolean = false
-    public updateCountsListener: any
     public result?: any
 
     protected fresh: boolean = false
     protected bloomed: boolean = false
     protected active: boolean = false
-
-    constructor () {
-        super()
-        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 100)
-    }
 
     /**
      * Instantiate a new test.
@@ -99,7 +93,7 @@ export abstract class Nugget extends ProjectEventEmitter {
             test = this.newTest(result)
             test
                 .on('project-event', this.projectEventListener.bind(this))
-                .on('selective', this.updateCountsListener)
+                .on('selected', this.updateSelectedCounts.bind(this))
             // If nugget is selected, newly created test should be, too.
             test.selected = this.selected
             this.tests.push(test)
@@ -113,9 +107,13 @@ export abstract class Nugget extends ProjectEventEmitter {
     protected async updateSelectedCounts (): Promise<void> {
         const total = this.tests.length
         const selectedChildren = this.tests.filter(test => test.selected).length
+        const partial = selectedChildren > 0 && total > 0 && total > selectedChildren
 
         // Update partial status
-        this.partial = selectedChildren > 0 && total > 0 && total > selectedChildren
+        if (this.partial !== partial) {
+            this.partial = partial
+            this.emit('selective', this)
+        }
 
         // Update whether this nugget should be selected or not, based on children
         if (selectedChildren && !this.selected) {
@@ -333,7 +331,7 @@ export abstract class Nugget extends ProjectEventEmitter {
             await Promise.all(this.tests.map(test => test.toggleSelected(this.selected)))
         }
 
-        this.emit('selective', this)
+        this.emit('selected', this)
         return Promise.resolve()
     }
 

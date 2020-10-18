@@ -610,41 +610,37 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
 
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
-            // Only start the actual running process on next tick. This allows
-            // the renderer to redraw the app state, thus appearing snappier.
-            process.nextTick(() => {
-                this.reload()
-                    .then((outcome: string) => {
-                        this.afterRefresh()
+            this.reload()
+                .then((outcome: string) => {
+                    this.afterRefresh()
 
-                        // Killed processes resolve the promise, so if user
-                        // interrupted the run while reloading, make sure the
-                        // run does not go ahead.
-                        if (outcome === 'killed' || this.killed) {
-                            log.debug(`Process was killed while reloading before run.`)
+                    // Killed processes resolve the promise, so if user
+                    // interrupted the run while reloading, make sure the
+                    // run does not go ahead.
+                    if (outcome === 'killed' || this.killed) {
+                        log.debug(`Process was killed while reloading before run.`)
+                        resolve()
+                        return
+                    }
+
+                    this.suites.forEach(suite => {
+                        suite.queue(false)
+                    })
+                    this.report(this.runArgs())
+                        .then((outcome: string) => {
+                            if (outcome !== 'killed') {
+                                this.afterRun()
+                            }
                             resolve()
-                            return
-                        }
-
-                        this.suites.forEach(suite => {
-                            suite.queue(false)
+                        }).catch(error => {
+                            reject(error)
                         })
-                        this.report(this.runArgs())
-                            .then((outcome: string) => {
-                                if (outcome !== 'killed') {
-                                    this.afterRun()
-                                }
-                                resolve()
-                            }).catch(error => {
-                                reject(error)
-                            })
-                    })
-                    .catch(error => {
-                        // Rejecting the Promise is enough to bubble the error
-                        // up the chain, as we're already catching it on @handleRun
-                        reject(error)
-                    })
-            })
+                })
+                .catch(error => {
+                    // Rejecting the Promise is enough to bubble the error
+                    // up the chain, as we're already catching it on @handleRun
+                    reject(error)
+                })
         })
     }
 
@@ -667,29 +663,26 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
 
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
-            // See @run for reasoning behind `nextTick`
-            process.nextTick(() => {
-                // Chunk the selected suites so we can ensure we're never filtering
-                // too many at a time (some frameworks will break if filtering
-                // arguments are too long, like PHPUnit's, which passes them
-                // straight into a `preg_match` call).
-                chunk(this.sortSuites(suites), this.maxSelective).reduce((step, chunk) => {
-                    return step.then((outcome: string) => {
-                        if (outcome === 'success') {
-                            return this.report(this.runSelectiveArgs(chunk, this.selective))
-                        }
-                        return ''
-                    })
-                }, Promise.resolve('success'))
-                    .then((outcome: string) => {
-                        if (outcome !== 'killed') {
-                            this.afterRun()
-                        }
-                        resolve()
-                    }).catch(error => {
-                        reject(error)
-                    })
-            })
+            // Chunk the selected suites so we can ensure we're never filtering
+            // too many at a time (some frameworks will break if filtering
+            // arguments are too long, like PHPUnit's, which passes them
+            // straight into a `preg_match` call).
+            chunk(this.sortSuites(suites), this.maxSelective).reduce((step, chunk) => {
+                return step.then((outcome: string) => {
+                    if (outcome === 'success') {
+                        return this.report(this.runSelectiveArgs(chunk, this.selective))
+                    }
+                    return ''
+                })
+            }, Promise.resolve('success'))
+                .then((outcome: string) => {
+                    if (outcome !== 'killed') {
+                        this.afterRun()
+                    }
+                    resolve()
+                }).catch(error => {
+                    reject(error)
+                })
         })
     }
 
@@ -738,7 +731,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                         }
                         this.running.push(this.debriefSuite(report))
                     } catch (error) {
-                        this.emit('error', error.toString())
+                        this.emit('error', error.toString(), this.troubleshoot(error))
                         log.error('Failed to debrief suite results.', error)
                     }
                 })
@@ -833,7 +826,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     protected onError (error: Error): void {
         this.idleQueued()
         this.updateStatus('error')
-        this.emit('error', error.toString())
+        this.emit('error', error.toString(), this.troubleshoot(error))
         this.emit('change', this)
         this.disassemble()
     }
@@ -938,7 +931,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 suite = this.newSuite(result)
                 suite
                     .on('project-event', this.projectEventListener.bind(this))
-                    .on('selective', this.updateSelected.bind(this))
+                    .on('selected', this.updateSelected.bind(this))
                     .on('status', this.updateLedger.bind(this))
                 this.updateLedger(suite.getStatus())
                 this.suites.push(suite)
