@@ -304,31 +304,6 @@ ipcMain
             )
         })
     })
-    .on('framework-sort', (event: Electron.IpcMainEvent, context: FrameworkContext, sort: FrameworkSort) => {
-        entities(event, context).then(({ repository, framework }) => {
-            console.log('SETTING SORT', sort)
-            framework.setSort(sort)
-            send(event.sender, 'framework-updated', [framework.render()])
-            send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
-            send(
-                event.sender,
-                `${framework.getId()}:refreshed`,
-                [framework.getSuites().map((suite: ISuite) => suite.render(false))]
-            )
-        })
-    })
-    .on('framework-sort-reverse', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        entities(event, context).then(({ repository, framework }) => {
-            framework.setSortReverse()
-            send(event.sender, 'framework-updated', [framework.render()])
-            send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
-            send(
-                event.sender,
-                `${framework.getId()}:refreshed`,
-                [framework.getSuites().map((suite: ISuite) => suite.render(false))]
-            )
-        })
-    })
     .on('framework-toggle-child', async (event: Electron.IpcMainEvent, context: FrameworkContext, identifiers: Array<string>, toggle: boolean) => {
         entities(event, context, identifiers).then(({ nugget }) => {
             if (toggle) {

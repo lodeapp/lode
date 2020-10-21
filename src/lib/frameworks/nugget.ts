@@ -223,14 +223,16 @@ export abstract class Nugget extends ProjectEventEmitter {
             to = parseStatus(statuses)
         }
         const from = this.getStatus()
-        this.status = to
+        if (to !== from) {
+            this.status = to
 
-        // Update the status on the result object, too, if applicable.
-        if (this.result && this.result.status) {
-            this.result.status = to
+            // Update the status on the result object, too, if applicable.
+            if (this.result && this.result.status) {
+                this.result.status = to
+            }
+
+            this.emit('status', to, from)
         }
-
-        this.emit('status', to, from)
     }
 
     /**

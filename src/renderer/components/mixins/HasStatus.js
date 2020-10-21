@@ -23,6 +23,7 @@ export default {
         statusListener (event, payload) {
             this.$payload(payload, (to, from) => {
                 this.status = to
+                this.$emit('status', to, from, this.model)
             })
         }
     }

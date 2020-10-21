@@ -103,7 +103,8 @@
         &.sort {
             font-variant-numeric: tabular-nums;
 
-            & > button {
+            & > button,
+            & > span {
                 -webkit-appearance: none;
                 background: transparent;
                 border: 0;

@@ -80,15 +80,14 @@
                     >
                 </div>
                 <div v-if="total" class="filters sort">
-                    <button type="button" @click.prevent="onSortClick">
+                    <span>
                         <template v-if="visible > 1">
                             {{ ':n item sorted by :0|:n items sorted by :0' | plural(visible) | set(displaySort) }}
-                            <Icon symbol="chevron-down" />
                         </template>
                         <template v-else>
                             {{ ':n item|:n items' | plural(visible) }}
                         </template>
-                    </button>
+                    </span>
                 </div>
             </div>
             <div class="children">
@@ -101,6 +100,7 @@
                     :selectable="true"
                     @toggle="onChildToggle"
                     @select="onChildSelect"
+                    @status="onChildStatus"
                     @context-menu="onSuiteContextMenu"
                 >
                     <Filename :key="suite.relative" />
@@ -119,6 +119,7 @@
 </template>
 
 <script>
+import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
 import { mapGetters } from 'vuex'
 import { ipcRenderer } from 'electron'
@@ -149,7 +150,7 @@ export default {
     },
     data () {
         return {
-            allSuites: [],
+            suites: [],
             total: 0,
             selected: 0
         }
@@ -166,10 +167,6 @@ export default {
         },
         isFiltering () {
             return !_isEmpty(this.filters(this.model.id))
-        },
-        suites () {
-            // @TODO: don't show suites with status !== filter
-            return this.allSuites
         },
         visible () {
             return this.suites.length
@@ -197,13 +194,11 @@ export default {
                 })
             }
         },
-        sort: {
-            get () {
-                return this.model.sort
-            },
-            set (sort) {
-                ipcRenderer.send('framework-sort', this.frameworkContext, sort)
-            }
+        statusFilters () {
+            return this.filters(this.model.id)['status'] || []
+        },
+        sort () {
+            return this.model.sort
         },
         displaySort () {
             return sortDisplayName(this.sort)
@@ -248,7 +243,7 @@ export default {
         },
         onSuitesEvent (event, payload) {
             this.$payload(payload, suites => {
-                this.allSuites = suites
+                this.suites = suites
                 this.$emit('mounted')
             })
         },
@@ -277,6 +272,19 @@ export default {
         },
         onChildActivation (context) {
             this.$emit('activate', context)
+        },
+        onChildStatus (to, from, suite) {
+            const index = _findIndex(this.suites, ['file', suite.file])
+            if (index > -1 && this.statusFilters.length) {
+                console.log(this.statusFilters, to, suite)
+                if (
+                    this.statusFilters.indexOf(to) === -1 &&
+                    ['queued', 'running'].indexOf(to) === -1 &&
+                    (this.statusFilters.indexOf('selected') === -1 || !suite.selected)
+                ) {
+                    this.suites.splice(index, 1)
+                }
+            }
         },
         onAppMenuEvent (event, { name, properties }) {
             if (!this.model) {
@@ -310,31 +318,6 @@ export default {
         },
         filterSuite (suite) {
             this.keyword = `"${suite.relative}"`
-        },
-        onSortClick () {
-            const menu = new Menu()
-            this.model.supportedSorts.forEach(sort => {
-                menu.add({
-                    label: sortDisplayName(sort),
-                    type: 'checkbox',
-                    checked: sort === this.sort,
-                    click: () => {
-                        this.sort = sort
-                    }
-                })
-            })
-            menu
-                .separator()
-                .add({
-                    label: 'Reverse',
-                    type: 'checkbox',
-                    checked: this.model.sortReverse,
-                    click: () => {
-                        ipcRenderer.send('framework-sort-reverse', this.frameworkContext)
-                    }
-                })
-                .attachTo(this.$el.querySelector('.sort button'))
-                .open()
         },
         onSuiteContextMenu (suite) {
             // @TODO: redo path
