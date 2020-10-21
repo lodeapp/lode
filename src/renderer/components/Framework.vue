@@ -19,12 +19,12 @@
                         <button type="button" class="btn-link more-actions" tabindex="-1" @click.prevent="openMenu">
                             <Icon symbol="three-bars" />
                         </button>
-                        <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing" tabindex="-1">
+                        <button class="btn btn-sm" @click="refresh" :disabled="queued || running || refreshing" tabindex="-1">
                             <Icon symbol="sync" />
                         </button>
                         <button
                             class="btn btn-sm btn-primary"
-                            :disabled="running || refreshing || noResults"
+                            :disabled="queued || running || refreshing || noResults"
                             tabindex="-1"
                             @click="start"
                         >
@@ -119,6 +119,7 @@
 </template>
 
 <script>
+import _debounce from 'lodash/debounce'
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
 import { mapGetters } from 'vuex'
@@ -152,7 +153,8 @@ export default {
         return {
             suites: [],
             total: 0,
-            selected: 0
+            selected: 0,
+            keyword: this.$store.getters['filters/all'](this.model.id)['keyword'] || ''
         }
     },
     computed: {
@@ -180,20 +182,6 @@ export default {
         canToggleTests () {
             return this.model.canToggleTests
         },
-        keyword: {
-            get () {
-                return this.filters(this.model.id)['keyword']
-            },
-            set (keyword) {
-                ipcRenderer.send('framework-filter', this.frameworkContext, 'keyword', keyword)
-                this.$store.commit('filters/SET', {
-                    id: this.model.id,
-                    filters: {
-                        keyword
-                    }
-                })
-            }
-        },
         statusFilters () {
             return this.filters(this.model.id)['status'] || []
         },
@@ -208,6 +196,11 @@ export default {
             repository: 'context/repository',
             frameworkContext: 'context/frameworkContext'
         })
+    },
+    watch: {
+        keyword: _debounce(function (keyword) {
+            this.setKeywordFilter(keyword)
+        }, 150)
     },
     created () {
         ipcRenderer
@@ -253,9 +246,13 @@ export default {
             })
         },
         refresh () {
+            // Optimistically set status to "queued".
+            this.status = 'queued'
             ipcRenderer.send('framework-refresh', this.frameworkContext)
         },
         start () {
+            // Optimistically set status to "queued".
+            this.status = 'queued'
             ipcRenderer.send('framework-start', this.frameworkContext)
         },
         stop () {
@@ -268,6 +265,11 @@ export default {
             ipcRenderer.send('framework-toggle-child', this.frameworkContext, context, toggle)
         },
         onChildSelect (context, selected) {
+            if (selected && !this.selected) {
+                // Optimistically mark the framework as running selectively.
+                // This allows us to show checkboxes on suites
+                this.selected++
+            }
             ipcRenderer.send('framework-select', this.frameworkContext, context, selected)
         },
         onChildActivation (context) {
@@ -276,7 +278,6 @@ export default {
         onChildStatus (to, from, suite) {
             const index = _findIndex(this.suites, ['file', suite.file])
             if (index > -1 && this.statusFilters.length) {
-                console.log(this.statusFilters, to, suite)
                 if (
                     this.statusFilters.indexOf(to) === -1 &&
                     ['queued', 'running'].indexOf(to) === -1 &&
@@ -293,13 +294,13 @@ export default {
 
             switch (name) {
                 case 'run-framework':
-                    ipcRenderer.send('framework-start', this.frameworkContext)
+                    this.start()
                     break
                 case 'refresh-framework':
-                    ipcRenderer.send('framework-refresh', this.frameworkContext)
+                    this.refresh()
                     break
                 case 'stop-framework':
-                    ipcRenderer.send('framework-stop', this.frameworkContext)
+                    this.stop()
                     break
                 case 'filter':
                     this.$el.querySelector('[type="search"]').focus()
@@ -311,6 +312,15 @@ export default {
                     this.remove()
                     break
             }
+        },
+        setKeywordFilter (keyword) {
+            ipcRenderer.send('framework-filter', this.frameworkContext, 'keyword', keyword)
+            this.$store.commit('filters/SET', {
+                id: this.model.id,
+                filters: {
+                    keyword
+                }
+            })
         },
         resetFilters () {
             ipcRenderer.send('framework-reset-filters', this.frameworkContext)

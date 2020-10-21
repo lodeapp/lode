@@ -37,7 +37,6 @@ import {
     FrameworkValidator,
     PotentialFrameworkOptions
 } from '@lib/frameworks/validator'
-import { FrameworkSort } from '@lib/frameworks/sort'
 
 let currentWindow: Window | null = null
 
@@ -326,7 +325,6 @@ ipcMain
         })
     })
     .on('settings-update', (event: Electron.IpcMainEvent, setting: string, value: any) => {
-        console.log('handling settings update')
         state.set(setting, value)
         send(event.sender, 'settings-updated', [state.get()])
     })

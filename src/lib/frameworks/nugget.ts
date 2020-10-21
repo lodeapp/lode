@@ -1,4 +1,4 @@
-import { find, get, isArray, max, maxBy, pickBy, sum } from 'lodash'
+import { debounce, find, get, isArray, max, maxBy, pickBy, sum } from 'lodash'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
@@ -18,6 +18,13 @@ export abstract class Nugget extends ProjectEventEmitter {
     protected fresh: boolean = false
     protected bloomed: boolean = false
     protected active: boolean = false
+
+    protected updateCountsListener: (nugget: Nugget, toggle: boolean) => Promise<void>
+
+    constructor () {
+        super()
+        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 100)
+    }
 
     /**
      * Instantiate a new test.
@@ -93,7 +100,7 @@ export abstract class Nugget extends ProjectEventEmitter {
             test = this.newTest(result)
             test
                 .on('project-event', this.projectEventListener.bind(this))
-                .on('selected', this.updateSelectedCounts.bind(this))
+                .on('selected', this.updateCountsListener)
             // If nugget is selected, newly created test should be, too.
             test.selected = this.selected
             this.tests.push(test)
@@ -104,7 +111,7 @@ export abstract class Nugget extends ProjectEventEmitter {
     /**
      * Trigger an update of this nugget's selected count.
      */
-    protected async updateSelectedCounts (): Promise<void> {
+    protected async updateSelectedCounts (nugget: Nugget, toggle: boolean): Promise<void> {
         const total = this.tests.length
         const selectedChildren = this.tests.filter(test => test.selected).length
         const partial = selectedChildren > 0 && total > 0 && total > selectedChildren
@@ -117,9 +124,9 @@ export abstract class Nugget extends ProjectEventEmitter {
 
         // Update whether this nugget should be selected or not, based on children
         if (selectedChildren && !this.selected) {
-            await this.toggleSelected(true, false)
+            this.toggleSelected(true, false)
         } else if (!selectedChildren && this.selected) {
-            await this.toggleSelected(false, false)
+            this.toggleSelected(false, false)
         }
     }
 
@@ -330,10 +337,12 @@ export abstract class Nugget extends ProjectEventEmitter {
         }
 
         if (this.canToggleTests() && cascade !== false) {
-            await Promise.all(this.tests.map(test => test.toggleSelected(this.selected)))
+            this.tests.forEach(test => {
+                test.toggleSelected(this.selected, true)
+            })
         }
 
-        this.emit('selected', this)
+        this.emit('selected', this, toggle)
         return Promise.resolve()
     }
 

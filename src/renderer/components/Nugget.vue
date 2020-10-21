@@ -141,7 +141,6 @@ export default {
     methods: {
         onTestsEvent (event, payload) {
             this.$payload(payload, tests => {
-                console.log('GOT TESTS', { tests })
                 this.tests = tests
             })
         },

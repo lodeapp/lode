@@ -167,6 +167,13 @@
                             box-shadow: 0 0 0 4px theme-color('partial', 400), 0 0 0 5px theme-color('partial', 200);
                         }
                     }
+
+                    &.status--queued {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 5px theme-color('idle', 100);
+                        }
+                    }
                 }
             }
         }
