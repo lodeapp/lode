@@ -2,14 +2,19 @@ import '@lib/crash/reporter'
 import '@lib/logger/main'
 import '@lib/tracker/main'
 
-import Fs from 'fs'
 import { stringify } from 'flatted'
-import { app, ipcMain, shell } from 'electron'
-import { applicationMenu } from './menu'
+import { app, ipcMain } from 'electron'
+import {
+    applicationMenu,
+    ProjectMenu,
+    RepositoryMenu,
+    FrameworkMenu,
+    SuiteMenu,
+    TestMenu
+} from './menu'
 import { Window } from './window'
 import { Updater } from './updater'
 import { send } from './ipc'
-import { openDirectorySafe } from './shell'
 import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
@@ -23,8 +28,6 @@ import {
 } from '@lib/frameworks/project'
 import { IRepository } from '@lib/frameworks/repository'
 import {
-    FrameworkContext,
-    IFramework,
     FrameworkOptions,
     FrameworkFilter
 } from '@lib/frameworks/framework'
@@ -80,40 +83,40 @@ function getRepository (event: Electron.IpcMainEvent | Electron.IpcMainInvokeEve
 
 function entities (
     event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent,
-    context: FrameworkContext,
+    frameworkId: string,
     identifiers: Array<string> = []
 ): Promise<ProjectEntities> {
     return new Promise(async (resolve, reject) => {
         try {
             const project: IProject = getProject(event)
-            const repository: IRepository | undefined = project.getRepositoryById(context.repository)
-            if (repository) {
-                const framework: IFramework | undefined = repository.getFrameworkById(context.framework)
-                if (framework) {
-                    const entities = { project, repository, framework }
-                    if (!identifiers.length) {
-                        resolve(entities)
-                        return
-                    }
-                    let nugget: Nugget | undefined
-                    const nuggets: Array<Nugget> = []
-                    do {
-                        // First nugget is always a suite, all others are tests.
-                        nugget = nugget ? nugget.findTest(identifiers.shift()!) : framework.getSuiteById(identifiers.shift()!)
-                        if (!nugget) {
-                            throw Error
-                        }
-                        nuggets.push(nugget)
-                        if (!nugget.expanded) {
-                            await nugget.toggleExpanded(true, false)
-                        }
-                    } while (identifiers.length > 0)
-                    resolve({ ...entities, nuggets, nugget })
+            const context = project.getContextByFrameworkId(frameworkId)
+            if (context) {
+                const { repository, framework } = context
+                const entities = { project, repository, framework }
+
+                if (!identifiers.length) {
+                    resolve(entities)
                     return
                 }
+                let nugget: Nugget | undefined
+                const nuggets: Array<Nugget> = []
+                do {
+                    // First nugget is always a suite, all others are tests.
+                    nugget = nugget ? nugget.findTest(identifiers.shift()!) : framework.getSuiteById(identifiers.shift()!)
+                    if (!nugget) {
+                        throw Error
+                    }
+                    nuggets.push(nugget)
+                    if (!nugget.expanded) {
+                        await nugget.toggleExpanded(true, false)
+                    }
+                } while (identifiers.length > 0)
+
+                resolve({ ...entities, nuggets, nugget })
+                return
             }
         } catch (_) {}
-        log.error(`Unable to find requested entities '${JSON.stringify({ context, identifiers })}'`)
+        log.error(`Unable to find requested entities '${JSON.stringify({ frameworkId, identifiers })}'`)
         reject()
     })
 }
@@ -161,7 +164,6 @@ ipcMain
     })
     .on('menu-event', (event: Electron.IpcMainEvent, args: any[]) => {
         const { name, properties } = event as any
-        console.log('MENU EVENT', { currentWindow, name, properties })
         if (currentWindow) {
             currentWindow.sendMenuEvent({ name, properties })
         }
@@ -176,9 +178,8 @@ ipcMain
         getProject(event).stop()
     })
     .on('project-switch', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier | null) => {
-        const window: Window = Window.getFromWebContents(event.sender)
+        const window: Window = Window.getFromWebContents(event.sender)!
         const project: IProject | null = window.getProject()
-        console.log('SWITCHING', identifier)
         if (identifier) {
             window.setProject(identifier)
             state.set('currentProject', window.getProject()!.getId())
@@ -210,21 +211,12 @@ ipcMain
         const project: IProject = getProject(event)
         project.removeRepository(repositoryId)
         send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
-        Window.getFromWebContents(event.sender).refreshActiveFramework()
+        Window.getFromWebContents(event.sender)!.refreshActiveFramework()
     })
     .on('repository-scan', async (event: Electron.IpcMainEvent, repositoryId: string) => {
         const repository: IRepository = await getRepository(event, repositoryId)
         const pending: Array<FrameworkOptions> = await repository.scan()
         send(event.sender, `${repositoryId}:repository-scanned`, [pending])
-    })
-    .on('repository-refresh', async (event: Electron.IpcMainEvent, repositoryId: string) => {
-        (await getRepository(event, repositoryId)).refresh()
-    })
-    .on('repository-start', async (event: Electron.IpcMainEvent, repositoryId: string) => {
-        (await getRepository(event, repositoryId)).start()
-    })
-    .on('repository-stop', async (event: Electron.IpcMainEvent, repositoryId: string) => {
-        (await getRepository(event, repositoryId)).stop()
     })
     .on('repository-toggle', async (event: Electron.IpcMainEvent, repositoryId: string, toggle: boolean) => {
         const repository = await getRepository(event, repositoryId)
@@ -240,17 +232,17 @@ ipcMain
             framework.refresh()
         })
         send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
-        Window.getFromWebContents(event.sender).refreshActiveFramework()
+        Window.getFromWebContents(event.sender)!.refreshActiveFramework()
     })
-    .on('framework-remove', async (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        entities(event, context).then(({ repository, framework }) => {
+    .on('framework-remove', async (event: Electron.IpcMainEvent, frameworkId: string) => {
+        entities(event, frameworkId).then(({ repository, framework }) => {
             repository.removeFramework(framework.getId())
             send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
-            Window.getFromWebContents(event.sender).refreshActiveFramework()
+            Window.getFromWebContents(event.sender)!.refreshActiveFramework()
         })
     })
-    .on('framework-update', (event: Electron.IpcMainEvent, context: FrameworkContext, options: FrameworkOptions) => {
-        entities(event, context).then(({ repository, framework }) => {
+    .on('framework-update', (event: Electron.IpcMainEvent, frameworkId: string, options: FrameworkOptions) => {
+        entities(event, frameworkId).then(({ repository, framework }) => {
             framework.updateOptions({
                 ...options,
                 repositoryPath: repository.getPath()
@@ -259,23 +251,23 @@ ipcMain
             send(event.sender, 'framework-options-updated', [framework.render()])
         })
     })
-    .on('framework-refresh', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        entities(event, context).then(({ framework }) => {
+    .on('framework-refresh', (event: Electron.IpcMainEvent, frameworkId: string) => {
+        entities(event, frameworkId).then(({ framework }) => {
             framework.refresh()
         })
     })
-    .on('framework-start', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        entities(event, context).then(({ framework }) => {
+    .on('framework-start', (event: Electron.IpcMainEvent, frameworkId: string) => {
+        entities(event, frameworkId).then(({ framework }) => {
             framework.start()
         })
     })
-    .on('framework-stop', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        entities(event, context).then(({ framework }) => {
+    .on('framework-stop', (event: Electron.IpcMainEvent, frameworkId: string) => {
+        entities(event, frameworkId).then(({ framework }) => {
             framework.stop()
         })
     })
-    .on('framework-suites', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        entities(event, context).then(({ framework }) => {
+    .on('framework-suites', (event: Electron.IpcMainEvent, frameworkId: string) => {
+        entities(event, frameworkId).then(({ framework }) => {
             send(
                 event.sender,
                 `${framework.getId()}:refreshed`,
@@ -283,8 +275,8 @@ ipcMain
             )
         })
     })
-    .on('framework-filter', (event: Electron.IpcMainEvent, context: FrameworkContext, key: FrameworkFilter, value: any) => {
-        entities(event, context).then(({ framework }) => {
+    .on('framework-filter', (event: Electron.IpcMainEvent, frameworkId: string, key: FrameworkFilter, value: any) => {
+        entities(event, frameworkId).then(({ framework }) => {
             framework.setFilter(key, value)
             send(
                 event.sender,
@@ -293,8 +285,8 @@ ipcMain
             )
         })
     })
-    .on('framework-reset-filters', (event: Electron.IpcMainEvent, context: FrameworkContext) => {
-        entities(event, context).then(({ framework }) => {
+    .on('framework-reset-filters', (event: Electron.IpcMainEvent, frameworkId: string) => {
+        entities(event, frameworkId).then(({ framework }) => {
             framework.resetFilters()
             send(
                 event.sender,
@@ -303,11 +295,10 @@ ipcMain
             )
         })
     })
-    .on('framework-toggle-child', async (event: Electron.IpcMainEvent, context: FrameworkContext, identifiers: Array<string>, toggle: boolean) => {
-        entities(event, context, identifiers).then(({ nugget }) => {
+    .on('framework-toggle-child', async (event: Electron.IpcMainEvent, frameworkId: string, identifiers: Array<string>, toggle: boolean) => {
+        entities(event, frameworkId, identifiers).then(({ nugget }) => {
             if (toggle) {
                 // If we're expanding it, send the tests to the renderer.
-                console.log('SENDING TESTS', [nugget!.tests.map((test: ITest) => test.render(false).status)])
                 send(
                     event.sender,
                     `${nugget!.getId()}:framework-tests`,
@@ -319,9 +310,23 @@ ipcMain
             nugget!.toggleExpanded(false, true)
         })
     })
-    .on('framework-select', async (event: Electron.IpcMainEvent, context: FrameworkContext, identifiers: Array<string>, toggle: boolean) => {
-        entities(event, context, identifiers).then(({ nugget }) => {
+    .on('framework-select', async (event: Electron.IpcMainEvent, frameworkId: string, identifiers: Array<string>, toggle: boolean) => {
+        entities(event, frameworkId, identifiers).then(({ nugget }) => {
             nugget!.toggleSelected(toggle, true)
+        })
+    })
+    .on('nugget-context-menu', async (event: Electron.IpcMainEvent, frameworkId: string, identifiers: Array<string>) => {
+        entities(event, frameworkId, identifiers).then(({ nuggets }) => {
+            if (nuggets) {
+                if (nuggets.length === 1) {
+                    new SuiteMenu((nuggets.pop() as ISuite), event.sender)
+                        .open()
+                } else {
+                    new TestMenu((nuggets.shift() as ISuite), (nuggets.pop() as ITest), event.sender)
+                        .open()
+
+                }
+            }
         })
     })
     .on('settings-update', (event: Electron.IpcMainEvent, setting: string, value: any) => {
@@ -330,26 +335,11 @@ ipcMain
     })
     .on('settings-reset', (event: Electron.IpcMainEvent) => {
         state.reset()
-        const window: Window = Window.getFromWebContents(event.sender)
-        window.clear()
-        window.reload()
-    })
-    .on('check-if-file-exists', (event: Electron.IpcMainEvent, path: string) => {
-        send(event.sender, `${path}:exists`, [Fs.existsSync(path)])
-    })
-    .on('show-item-in-folder', (event: Electron.IpcMainEvent, path: string) => {
-        Fs.stat(path, (err, stats) => {
-            if (err) {
-                log.error(`Unable to find file at '${path}'`, err)
-                return
-            }
-
-            if (!__DARWIN__ && stats.isDirectory()) {
-                openDirectorySafe(path)
-            } else {
-                shell.showItemInFolder(path)
-            }
-        })
+        const window: Window | null = Window.getFromWebContents(event.sender)
+        if (window) {
+            window.clear()
+            window.reload()
+        }
     })
 
 ipcMain
@@ -361,8 +351,7 @@ ipcMain
 
 ipcMain
     .handle('project-update', async (event: Electron.IpcMainInvokeEvent, options: ProjectOptions) => {
-        const window: Window = Window.getFromWebContents(event.sender)
-        const project: IProject | null = window.getProject()
+        const project: IProject | null = Window.getProjectFromWebContents(event.sender)
         if (project) {
             project.updateOptions(options)
             return JSON.stringify(project.render())
@@ -373,6 +362,17 @@ ipcMain
 ipcMain
     .handle('project-empty-repositories', async (event: Electron.IpcMainInvokeEvent) => {
         return JSON.stringify(getProject(event).getEmptyRepositories())
+    })
+
+ipcMain
+    .handle('project-context-menu', async (event: Electron.IpcMainInvokeEvent) => {
+        return new Promise(resolve => {
+            new ProjectMenu(getProject(event), event.sender)
+                .after(() => {
+                    resolve()
+                })
+                .open()
+        })
     })
 
 ipcMain
@@ -388,8 +388,30 @@ ipcMain
     })
 
 ipcMain
-    .handle('framework-get', async (event: Electron.IpcMainInvokeEvent, context: FrameworkContext) => {
-        const { framework } = await entities(event, context)
+    .handle('repository-exists', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
+        return (await getRepository(event, repositoryId)).exists()
+    })
+
+ipcMain
+    .handle('repository-locate', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
+        return (await getRepository(event, repositoryId)).locate(currentWindow!.getChild())
+    })
+
+ipcMain
+    .handle('repository-context-menu', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
+        const repository: IRepository = await getRepository(event, repositoryId)
+        return new Promise(resolve => {
+            new RepositoryMenu(repository, event.sender)
+                .after(() => {
+                    resolve()
+                })
+                .open()
+        })
+    })
+
+ipcMain
+    .handle('framework-get', async (event: Electron.IpcMainInvokeEvent, frameworkId: string) => {
+        const { framework } = await entities(event, frameworkId)
         return JSON.stringify(framework.render())
     })
 
@@ -398,6 +420,19 @@ ipcMain
         const repository: IRepository = await getRepository(event, repositoryId)
         const validator = new FrameworkValidator(repository.getPath())
         return JSON.stringify(validator.validate(options).getErrors())
+    })
+
+ipcMain
+    .handle('framework-context-menu', async (event: Electron.IpcMainInvokeEvent, frameworkId: string, rect?: DOMRect) => {
+        const { repository, framework } = await entities(event, frameworkId)
+        return new Promise(resolve => {
+            new FrameworkMenu(repository, framework, event.sender)
+                .attachTo(rect)
+                .after(() => {
+                    resolve()
+                })
+                .open()
+        })
     })
 
 ipcMain

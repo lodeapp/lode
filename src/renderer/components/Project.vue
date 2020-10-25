@@ -16,9 +16,10 @@
                                 `status--${status}`,
                                 menuActive ? 'is-menu-active' : '',
                             ]"
+                            @contextmenu="onContextMenu"
                         >
                             <div class="header">
-                                <div class="title" @contextmenu="openMenu">
+                                <div class="title">
                                     <Indicator :status="status" />
                                     <h4 class="heading">
                                         <span class="name" :title="model.name">
@@ -42,12 +43,8 @@
                             v-for="repository in repositories"
                             :model="repository"
                             :key="repository.id"
-                            @scan="$root.scanRepository"
-                            @locate="locateRepository"
-                            @remove="removeRepository"
+                            @status="onRepositoryStatus"
                             @framework-activate="onFrameworkActivation"
-                            @framework-manage="manageFramework"
-                            @framework-remove="removeFramework"
                         />
                     </section>
                 </Pane>
@@ -64,16 +61,16 @@
                         <div class="cta">
                             <h2>Scan for frameworks inside your repositories</h2>
                             <p>Lode can scan the project's repositories for testing frameworks. If none are found, your frameworks may not be supported, yet.</p>
-                            <button class="btn btn-primary" @click="scanEmptyRepositories">Scan for frameworks</button>
+                            <button class="btn btn-primary" @click="$root.scanEmptyRepositories">Scan for frameworks</button>
                         </div>
                     </template>
                     <template v-else-if="repositoryMissing && repository">
                         <div class="cta">
-                            <h2>Lode can't find "{{ repository.getDisplayName() }}"</h2>
-                            <p v-markdown>It was last seen at `{{ repository.getPath() }}`.</p>
-                            <button class="btn btn-primary" @click="locateRepository(repository)">Locate</button>
-                            <button class="btn" @click="removeRepository(repository)">Remove</button>
-                            <button class="btn" @click="repository.exists()">Check again</button>
+                            <h2>Lode can't find "{{ repository.name }}"</h2>
+                            <p v-markdown>It was last seen at `{{ repository.path }}`.</p>
+                            <button class="btn btn-primary" @click="$root.repositoryLocate(repository)">Locate</button>
+                            <button class="btn" @click="$root.repositoryRemove(repository)">Remove</button>
+                            <button class="btn" @click="$root.repositoryExists(repository)">Check again</button>
                         </div>
                     </template>
                     <template v-else>
@@ -87,8 +84,6 @@
                             v-show="!frameworkLoading"
                             :key="$string.from([frameworkKey, framework.id])"
                             :model="framework"
-                            @manage="manageFramework"
-                            @remove="removeFramework"
                             @activate="onTestActivation"
                             @mounted="frameworkLoading = false"
                         />
@@ -101,7 +96,6 @@
                         v-show="!repositoryMissing && !frameworkLoading"
                         :key="framework.id"
                         :context="fullContext"
-                        @reset="resetContext"
                     />
                 </Pane>
             </Split>
@@ -110,8 +104,9 @@
 </template>
 
 <script>
+import _findIndex from 'lodash/findIndex'
 import { mapGetters } from 'vuex'
-import { ipcRenderer, remote } from 'electron'
+import { ipcRenderer } from 'electron'
 import Pane from '@/components/Pane'
 import ProjectLoader from '@/components/ProjectLoader'
 import SidebarRepository from '@/components/SidebarRepository'
@@ -119,7 +114,6 @@ import Indicator from '@/components/Indicator'
 import Framework from '@/components/Framework'
 import Results from '@/components/Results'
 import Split from '@/components/Split'
-import HasProjectMenu from '@/components/mixins/HasProjectMenu'
 import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
@@ -134,7 +128,6 @@ export default {
         Split
     },
     mixins: [
-        HasProjectMenu,
         HasStatus
     ],
     props: {
@@ -149,6 +142,7 @@ export default {
             loading: true,
             frameworkLoading: true,
             frameworkKey: this.$string.random(),
+            menuActive: false,
             repositories: [],
             persistContext: {}
         }
@@ -190,13 +184,21 @@ export default {
         },
         async onRepositoriesEvent (event, payload) {
             this.$payload(payload, async repositories => {
-                console.log({ repositories })
                 this.repositories = repositories
                 this.loading = false
                 this.$root.setApplicationMenuOption({
                     hasFramework: !!this.framework
                 })
             })
+        },
+        onRepositoryStatus (to, from, repository) {
+            const index = _findIndex(this.repositories, ['id', repository.id])
+            if (index) {
+                this.repositories[index].status = to
+                if (this.repository && this.repository.id === repository.id) {
+                    this.$store.commit('context/REPOSITORY', this.repositories[index])
+                }
+            }
         },
         async onFrameworkActive (event, payload) {
             this.$payload(payload, (framework, repository) => {
@@ -205,50 +207,19 @@ export default {
         },
         async onFrameworkUpdated (event, payload) {
             this.$payload(payload, framework => {
-                console.log('FRAMEWORK UPDATED', framework)
                 if (this.framework.id === framework.id) {
                     this.$store.commit('context/FRAMEWORK', framework)
                 }
             })
         },
         async onFrameworkOptionsUpdated (event, payload) {
-            console.log('FRAMEWORK OPTIONS UPDATED')
             this.frameworkLoading = true
             await this.onFrameworkUpdated(event, payload)
             this.frameworkKey = this.$string.random()
         },
-        async scanEmptyRepositories () {
-            this.$root.scanRepositories(
-                JSON.parse(await ipcRenderer.invoke('project-empty-repositories')),
-                0
-            )
-        },
-        removeRepository (repository) {
-            console.log('removing repository', repository)
-            // If the repository we're removing is the currently active one,
-            // make sure to clear the Vuex context, too
-            if (repository.id === this.repository.id) {
-                this.resetContext()
-                this.$store.commit('context/CLEAR')
-            }
-
-            this.$root.onModelRemove(repository.id)
-            ipcRenderer.send('repository-remove', repository.id)
-        },
-        async locateRepository (repository) {
-            remote.dialog.showOpenDialog({
-                properties: ['openDirectory', 'multiSelections']
-            }).then(({ filePaths }) => {
-                if (!filePaths || !filePaths.length) {
-                    return
-                }
-
-                repository.updatePath(filePaths[0])
-            })
-        },
         async onFrameworkActivation (frameworkId, repository) {
-            console.log('FRAMEWORK ACTIVATED', frameworkId)
             this.frameworkLoading = true
+            this.$root.repositoryExists(repository)
             this.$store.dispatch('context/activateWithId', { frameworkId, repository })
 
             // @TODO: new means of checking if repository exist...
@@ -274,22 +245,14 @@ export default {
 
             // this.onRepositoryChanged()
         },
-        manageFramework (framework) {
-            this.$modal.open('ManageFrameworks', {
-                repository: this.repository,
-                scan: false,
-                framework
-            })
-        },
-        removeFramework (frameworkId) {
-            console.log('removing framework')
-            this.$root.removeFramework(this.repository.id, frameworkId)
-        },
+        // @TODO: redo test activation
         onTestActivation (context) {
-            this.context = context
         },
-        resetContext () {
-            this.context = []
+        onContextMenu () {
+            this.menuActive = true
+            ipcRenderer.invoke('project-context-menu').finally(() => {
+                this.menuActive = false
+            })
         }
     }
 }

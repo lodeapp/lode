@@ -1,5 +1,6 @@
 import * as Path from 'path'
 import { get, omit } from 'lodash'
+import { File } from '@main/file'
 import { Status, parseStatus } from '@lib/frameworks/status'
 import { IFramework } from '@lib/frameworks/framework'
 import { ITest, ITestResult, Test } from '@lib/frameworks/test'
@@ -19,8 +20,10 @@ export interface ISuite extends Nugget {
     getMeta (): any
     resetMeta (): void
     getConsole (): Array<any>
+    getFramework (): IFramework
     testsLoaded (): boolean
     rebuildTests (result: ISuiteResult): void
+    canBeOpened (): boolean
     canToggleTests (): boolean
     toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
     toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
@@ -138,6 +141,13 @@ export class Suite extends Nugget implements ISuite {
             // or old tests have been removed.
             this.updateStatus()
         })
+    }
+
+    /**
+     * Whether the suite's file can be opened
+     */
+    public canBeOpened (): boolean {
+        return File.isSafe(this.getFilePath()) && File.exists(this.getFilePath())
     }
 
     /**
@@ -266,10 +276,17 @@ export class Suite extends Nugget implements ISuite {
     }
 
     /**
-     * Get this nugget's console output.
+     * Get this suite's console output.
      */
     public getConsole (): Array<any> {
         return this.result.console!
+    }
+
+    /**
+     * Get this suites's parent framework.
+     */
+    public getFramework (): IFramework {
+        return this.framework
     }
 
     /**

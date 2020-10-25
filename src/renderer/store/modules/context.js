@@ -5,8 +5,7 @@ import { ipcRenderer } from 'electron'
 export default {
     namespaced: true,
     state: {
-        // Active framework id, so switching can feel more responsive
-        active: null,
+        active: null, // Active framework id, so switching can feel more responsive
         repository: null,
         framework: null,
         nuggets: []
@@ -17,7 +16,6 @@ export default {
         },
         REPOSITORY (state, payload) {
             state.repository = _clone(payload)
-            state.framework = null
         },
         FRAMEWORK (state, payload) {
             state.framework = _clone(payload)
@@ -37,7 +35,7 @@ export default {
     actions: {
         async activateWithId ({ state, commit }, { frameworkId, repository }) {
             commit('ACTIVE', frameworkId)
-            ipcRenderer.invoke('framework-get', { repository: repository.id, framework: frameworkId }).then(framework => {
+            ipcRenderer.invoke('framework-get', frameworkId).then(framework => {
                 commit('REPOSITORY', repository)
                 commit('FRAMEWORK', JSON.parse(framework))
             })
@@ -67,12 +65,6 @@ export default {
         },
         framework: state => {
             return state.framework
-        },
-        frameworkContext: state => {
-            return {
-                repository: state.repository.id,
-                framework: state.framework.id
-            }
         },
         nuggets: state => {
             return state.nuggets

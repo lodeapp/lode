@@ -9,7 +9,7 @@
         <div
             class="header"
             @mousedown="activate"
-            @contextmenu="openMenu"
+            @contextmenu="onContextMenu"
         >
             <div class="title">
                 <Indicator :status="status" />

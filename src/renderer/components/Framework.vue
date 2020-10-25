@@ -16,7 +16,7 @@
                         </span>
                     </h3>
                     <div class="actions">
-                        <button type="button" class="btn-link more-actions" tabindex="-1" @click.prevent="openMenu">
+                        <button type="button" class="btn-link more-actions" tabindex="-1" @click.prevent="onContextMenu">
                             <Icon symbol="three-bars" />
                         </button>
                         <button class="btn btn-sm" @click="refresh" :disabled="queued || running || refreshing" tabindex="-1">
@@ -101,7 +101,7 @@
                     @toggle="onChildToggle"
                     @select="onChildSelect"
                     @status="onChildStatus"
-                    @context-menu="onSuiteContextMenu"
+                    @context-menu="onChildContextMenu"
                 >
                     <Filename :key="suite.relative" />
                 </Nugget>
@@ -124,7 +124,6 @@ import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
 import { mapGetters } from 'vuex'
 import { ipcRenderer } from 'electron'
-import { Menu } from '@main/menu'
 import { sortDisplayName } from '@lib/frameworks/sort'
 import Filename from '@/components/Filename'
 import Indicator from '@/components/Indicator'
@@ -192,9 +191,7 @@ export default {
             return sortDisplayName(this.sort)
         },
         ...mapGetters({
-            filters: 'filters/all',
-            repository: 'context/repository',
-            frameworkContext: 'context/frameworkContext'
+            filters: 'filters/all'
         })
     },
     watch: {
@@ -210,7 +207,6 @@ export default {
             .on('menu-event', this.onAppMenuEvent)
 
         this.getSuites()
-        this.total = Object.values(this.model.ledger).reduce((a, b) => a + b, 0)
         this.selected = this.model.selected
     },
     beforeDestroy () {
@@ -222,21 +218,23 @@ export default {
     },
     methods: {
         getSuites () {
-            ipcRenderer.send('framework-suites', this.frameworkContext)
+            ipcRenderer.send('framework-suites', this.model.id)
         },
         onErrorEvent (event, payload) {
-            this.$payload(payload, (error, help) => {
+            this.$payload(payload, (message, help) => {
                 this.$alert.show({
-                    message: this.$string.set('The process for **:0** terminated unexpectedly.', this.model.name),
                     type: 'error',
-                    help,
-                    error
+                    message: this.$string.set('The process for **:0** terminated unexpectedly.', this.model.name),
+                    help
                 })
             })
         },
         onSuitesEvent (event, payload) {
             this.$payload(payload, suites => {
                 this.suites = suites
+                if (!this.isFiltering) {
+                    this.total = this.suites.length
+                }
                 this.$emit('mounted')
             })
         },
@@ -248,21 +246,21 @@ export default {
         refresh () {
             // Optimistically set status to "queued".
             this.status = 'queued'
-            ipcRenderer.send('framework-refresh', this.frameworkContext)
+            ipcRenderer.send('framework-refresh', this.model.id)
         },
         start () {
             // Optimistically set status to "queued".
             this.status = 'queued'
-            ipcRenderer.send('framework-start', this.frameworkContext)
+            ipcRenderer.send('framework-start', this.model.id)
         },
         stop () {
-            ipcRenderer.send('framework-stop', this.frameworkContext)
+            ipcRenderer.send('framework-stop', this.model.id)
         },
         updateTotal (total) {
             this.total = total
         },
         onChildToggle (context, toggle) {
-            ipcRenderer.send('framework-toggle-child', this.frameworkContext, context, toggle)
+            ipcRenderer.send('framework-toggle-child', this.model.id, context, toggle)
         },
         onChildSelect (context, selected) {
             if (selected && !this.selected) {
@@ -270,7 +268,7 @@ export default {
                 // This allows us to show checkboxes on suites
                 this.selected++
             }
-            ipcRenderer.send('framework-select', this.frameworkContext, context, selected)
+            ipcRenderer.send('framework-select', this.model.id, context, selected)
         },
         onChildActivation (context) {
             this.$emit('activate', context)
@@ -286,6 +284,9 @@ export default {
                     this.suites.splice(index, 1)
                 }
             }
+        },
+        onChildContextMenu (context) {
+            ipcRenderer.send('nugget-context-menu', this.model.id, context)
         },
         onAppMenuEvent (event, { name, properties }) {
             if (!this.model) {
@@ -304,17 +305,17 @@ export default {
                     break
                 case 'filter':
                     this.$el.querySelector('[type="search"]').focus()
+                    if (properties) {
+                        this.keyword = properties
+                    }
                     break
                 case 'framework-settings':
                     this.manage()
                     break
-                case 'remove-framework':
-                    this.remove()
-                    break
             }
         },
         setKeywordFilter (keyword) {
-            ipcRenderer.send('framework-filter', this.frameworkContext, 'keyword', keyword)
+            ipcRenderer.send('framework-filter', this.model.id, 'keyword', keyword)
             this.$store.commit('filters/SET', {
                 id: this.model.id,
                 filters: {
@@ -323,96 +324,8 @@ export default {
             })
         },
         resetFilters () {
-            ipcRenderer.send('framework-reset-filters', this.frameworkContext)
+            ipcRenderer.send('framework-reset-filters', this.model.id)
             this.$store.commit('filters/RESET')
-        },
-        filterSuite (suite) {
-            this.keyword = `"${suite.relative}"`
-        },
-        onSuiteContextMenu (suite) {
-            // @TODO: redo path
-            // return this.suite.getFilePath()
-            const filePath = suite.file
-            const remoteFilePath = suite.file !== filePath ? suite.file : false
-            new Menu()
-                .add({
-                    id: 'filter',
-                    label: __DARWIN__ ? 'Filter this Item' : 'Filter this item',
-                    click: () => {
-                        this.filterSuite(suite)
-                    }
-                })
-                .separator()
-                .add({
-                    id: 'copy-local',
-                    label: __DARWIN__
-                        ? remoteFilePath ? 'Copy Local File Path' : 'Copy File Path'
-                        : remoteFilePath ? 'Copy local file path' : 'Copy file path',
-                    click: () => {
-                        this.$root.copyToClipboard(filePath)
-                    },
-                    enabled: this.fileExists(filePath)
-                })
-                .addIf(remoteFilePath, {
-                    id: 'copy-remote',
-                    label: __DARWIN__
-                        ? 'Copy Remote File Path'
-                        : 'Copy Remote file path',
-                    click: () => {
-                        this.$root.copyToClipboard(remoteFilePath)
-                    }
-                })
-                .add({
-                    id: 'reveal',
-                    label: __DARWIN__
-                        ? 'Reveal in Finder'
-                        : __WIN32__
-                            ? 'Show in Explorer'
-                            : 'Show in your File Manager',
-                    click: () => {
-                        this.$root.revealFile(filePath)
-                    }
-                })
-                .add({
-                    id: 'open',
-                    label: __DARWIN__
-                        ? 'Open with Default Program'
-                        : 'Open with default program',
-                    click: () => {
-                        this.openFile(filePath)
-                    },
-                    enabled: this.canOpen(filePath)
-                })
-                // @TODO: redo injecting context menu items
-                // .addMultiple(this.suite.contextMenu())
-                .separator()
-                // @TODO: redo refreshing of metadata
-                .add({
-                    label: __DARWIN__
-                        ? 'Refresh Metadata'
-                        : 'Refresh metadata',
-                    click: () => {
-                        this.suite.resetMeta()
-                        this.refresh()
-                    },
-                    // enabled: !!this.suite.getMeta()
-                    enabled: false
-                })
-                .open()
-        },
-        fileExists (path) {
-            return this.$fileystem.exists(path)
-        },
-        fileIsSafe (path) {
-            return this.$fileystem.isSafe(path)
-        },
-        // This is used by the suite's children to see if they
-        // can add an "open" item to their context menu.
-        canOpen (path) {
-            return this.fileIsSafe(path) && this.fileExists(path)
-        },
-        openFile (path) {
-            this.$root.openFile(path)
         }
     }
 }

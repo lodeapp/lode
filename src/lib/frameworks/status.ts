@@ -175,5 +175,9 @@ export function parseFrameworkStatus (components: Array<FrameworkStatus>): Frame
         return STATUS.REFRESHING
     }
 
+    if (components.includes(STATUS.MISSING)) {
+        return STATUS.ERROR
+    }
+
     return parseStatus(components as Array<Status>)
 }

@@ -1,24 +1,13 @@
 import * as Path from 'path'
 import { get } from 'lodash'
-import { app, ipcMain, BrowserWindow as BaseBrowserWindow } from 'electron'
+import { app, ipcMain, BrowserWindow } from 'electron'
 import { state } from '@lib/state'
 import { ProjectIdentifier, ProjectOptions, Project } from '@lib/frameworks/project'
 import { send } from './ipc'
 
 let windowStateKeeper: any | null = null
 
-export class BrowserWindow extends BaseBrowserWindow {
-
-    protected parent: Window | null = null
-
-    public setParent (window: Window): void {
-        this.parent = window
-    }
-
-    public getParent (): Window | null {
-        return this.parent
-    }
-}
+const windows: any = {}
 
 export class Window {
 
@@ -77,7 +66,6 @@ export class Window {
         }
 
         this.window = new BrowserWindow(windowOptions)
-        this.window.setParent(this)
 
         // Remember "parent" window when using devtools.
         this.window.webContents.on('devtools-focused', () => {
@@ -97,6 +85,9 @@ export class Window {
     public static init (identifier: ProjectIdentifier | null): Window {
         const window = new this(identifier)
 
+        // Store parent in window manager
+        windows[window.getChild().id] = window
+
         window.onClosed(async () => {
             if (window.isBusy()) {
                 log.info('Window is busy. Attempting teardown of pending processes.')
@@ -110,14 +101,14 @@ export class Window {
         return window
     }
 
-    public static getFromWebContents(webContents: Electron.WebContents): Window {
-        return (BrowserWindow.fromWebContents(webContents) as BrowserWindow)
-            .getParent()!
+    public static getFromWebContents(webContents: Electron.WebContents): Window | null {
+        const child = BrowserWindow.fromWebContents(webContents)
+        return child ? windows[child.id] : null
     }
 
     public static getProjectFromWebContents(webContents: Electron.WebContents): Project | null {
-        return this.getFromWebContents(webContents)
-            .getProject()
+        const window = this.getFromWebContents(webContents)
+        return window ? window.getProject() : null
     }
 
     protected load () {
@@ -129,7 +120,6 @@ export class Window {
 
         this.window.webContents.on('did-finish-load', () => {
             this.onReady()
-            console.log('DID FINISH LOAD')
             send(this.window.webContents, 'did-finish-load', [{
                 projectId: get(this.getProject(), 'id', null),
                 focus: this.window.isFocused()
@@ -150,12 +140,12 @@ export class Window {
         )
     }
 
-    protected send (event: string, args: Array<any>) {
-        send(this.window.webContents, event, args)
-    }
-
     protected projectEventListener ({ id, event, args }: { id: string, event: string, args: Array<any> }): void {
         this.send(`${id}:${event}`, args)
+    }
+
+    public send (event: string, args: Array<any>) {
+        send(this.window.webContents, event, args)
     }
 
     public reload () {
@@ -167,18 +157,14 @@ export class Window {
     }
 
     public setProject (identifier: ProjectIdentifier): void {
-        console.log('SETTING PROJECT ON WINDOW')
         // Instantiate new project from identifier. If it does not yet exist
         // in the store, it'll be created.
         this.project = new Project(identifier)
         this.project
             .on('ready', async () => {
-                console.log('PROJECT READY, NOTIFYING RENDERER')
                 if (!this.ready) {
-                    console.log('WINDOW IS NOT LOADED, ABORT')
                     return
                 }
-                console.log('WINDOW IS LOADED')
                 this.projectReady()
             })
             // @TODO: when setting another project, make sure previous one's
@@ -190,14 +176,16 @@ export class Window {
     public onReady (): void {
         this.ready = true
         this.refreshSettings()
-        console.log('WINDOW IS READY')
         // If project and window are ready, send to renderer, otherwise wait for
         // `this.setProject` ready listener to trigger it. This means we can have
         // have the project ready in the main process and reload the renderer.
         if (this.project && this.project.isReady()) {
-            console.log('PROJECT READY, NOTYING VIA WINDOW READY')
             this.projectReady()
         }
+    }
+
+    public getChild (): BrowserWindow {
+        return this.window
     }
 
     public getProject (): Project | null {
@@ -218,7 +206,6 @@ export class Window {
     public refreshActiveFramework (): void {
         if (this.project) {
             const { framework, repository } = this.project.getActive()
-            console.log('ACTIVE FRAMEWORK')
             this.send('framework-active', [
                 framework ? framework.render() : null,
                 repository ? repository.render() : null
@@ -231,7 +218,6 @@ export class Window {
     }
 
     protected updateProgress (progress: number): void {
-        console.log('PROJECT PROGRESSED', progress)
         // If project progress has reached 100%, disable the progress bar.
         this.window.setProgressBar(progress === 1 ? -1 : progress)
     }

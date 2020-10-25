@@ -70,8 +70,7 @@ export default {
             return this.filters(this.model.id)['status'] || []
         },
         ...mapGetters({
-            filters: 'filters/all',
-            frameworkContext: 'context/frameworkContext'
+            filters: 'filters/all'
         })
     },
     created () {
@@ -109,7 +108,7 @@ export default {
             }
         },
         setFilter (filter) {
-            ipcRenderer.send('framework-filter', this.frameworkContext, 'status', filter)
+            ipcRenderer.send('framework-filter', this.model.id, 'status', filter)
             this.$store.commit('filters/SET', {
                 id: this.model.id,
                 filters: {

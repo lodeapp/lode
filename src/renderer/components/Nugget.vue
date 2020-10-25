@@ -50,7 +50,7 @@
                 @toggle="onChildToggle"
                 @select="onChildSelect"
                 @activate="onChildActivation"
-                @context-menu="onTestContextMenu"
+                @context-menu="onChildContextMenu"
             />
         </div>
     </div>
@@ -59,7 +59,6 @@
 <script>
 import { ipcRenderer } from 'electron'
 import { mapGetters } from 'vuex'
-import { Menu } from '@main/menu'
 import { labels } from '@lib/frameworks/status'
 import HasStatus from '@/components/mixins/HasStatus'
 
@@ -117,7 +116,6 @@ export default {
             return false
         },
         ...mapGetters({
-            frameworkContext: 'context/frameworkContext',
             activeTest: 'context/test',
             inContext: 'context/inContext'
         })
@@ -249,47 +247,11 @@ export default {
             this.$emit('select', context, selected)
         },
         onContextMenu () {
-            this.$emit('context-menu', this.model)
+            this.$emit('context-menu', [this.identifier])
         },
-        onTestContextMenu (test) {
-            const originalName = test.name !== this.displayName ? test.name : false
-            new Menu()
-                .add({
-                    label: __DARWIN__
-                        ? 'Copy Test Name'
-                        : 'Copy test name',
-                    click: () => {
-                        this.$root.copyToClipboard(test.displayName || test.name)
-                    }
-                })
-                .addIf(originalName, {
-                    label: __DARWIN__
-                        ? 'Copy Original Test Name'
-                        : 'Copy original test name',
-                    click: () => {
-                        this.$root.copyToClipboard(originalName)
-                    }
-                })
-                .separator()
-                .add({
-                    label: __DARWIN__
-                        ? 'Open Suite with Default Program'
-                        : 'Open suite with default program',
-                    click: () => {
-                        this.$emit('open')
-                    },
-                    enabled: this.canOpen()
-                })
-                .open()
-        },
-
-        /**
-         * Bubble up the `canOpen` verification between Test and Suite.
-         */
-        canOpen () {
-            // @TODO: redo opening parent
-            // return this.$parent.canOpen()
-            return false
+        onChildContextMenu (context, test) {
+            context.unshift(this.identifier)
+            this.$emit('context-menu', context, test)
         }
     }
 }

@@ -1,12 +1,12 @@
 import { v4 as uuid } from 'uuid'
-import { findIndex, omit } from 'lodash'
+import { findIndex, fromPairs, omit } from 'lodash'
 import { state } from '@lib/state'
 import { Project as ProjectState } from '@lib/state/project'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
 import { ProgressLedger } from '@lib/frameworks/progress'
 import { RepositoryOptions, IRepository, Repository } from '@lib/frameworks/repository'
-import { FrameworkContext, IFramework } from '@lib/frameworks/framework'
+import { FrameworkWithContext, IFramework } from '@lib/frameworks/framework'
 import { Nugget } from '@lib/frameworks/nugget'
 
 /**
@@ -77,7 +77,7 @@ export interface IProject extends ProjectEventEmitter {
     getActive (): ProjectActiveModels
     setActiveFramework (framework: ProjectActiveIdentifiers['framework']): void
     getRepositoryById (id: string): IRepository | undefined
-    getFrameworkByContext (context: FrameworkContext): IFramework | undefined
+    getContextByFrameworkId (id: string): FrameworkWithContext | undefined
     getEmptyRepositories (): Array<IRepository>
     getProgressLedger (): ProgressLedger
 }
@@ -100,7 +100,6 @@ export class Project extends ProjectEventEmitter implements IProject {
     constructor (identifier: ProjectIdentifier) {
         super()
         this.id = identifier.id || uuid()
-        console.log('INSTANTIATING PROJECT', this.id)
         this.state = state.project({ ...identifier, id: this.id })
         this.name = this.state.get('options.name')
 
@@ -117,7 +116,6 @@ export class Project extends ProjectEventEmitter implements IProject {
 
         // If this project doesn't yet exist, create it.
         if (!identifier.id) {
-            console.log('NO ID, SAVING')
             this.save()
         }
     }
@@ -151,7 +149,6 @@ export class Project extends ProjectEventEmitter implements IProject {
      * Stop any repository in this project that might be running.
      */
     public async stop (): Promise<any> {
-        console.log('GOT STOP INSTRUCTION')
         return Promise.all(this.repositories.map((repository: IRepository) => {
             return repository.stop()
         }))
@@ -229,7 +226,6 @@ export class Project extends ProjectEventEmitter implements IProject {
      * Save this project in the persistent store.
      */
     public save (): void {
-        console.log('SAVING PROJECT', this.persist())
         this.state.save(this.persist())
     }
 
@@ -277,7 +273,6 @@ export class Project extends ProjectEventEmitter implements IProject {
      * A function to run when a child repository changes.
      */
     protected changeListener (): void {
-        console.log('CHANGE IN PROJECT, SAVING')
         this.save()
     }
 
@@ -323,7 +318,6 @@ export class Project extends ProjectEventEmitter implements IProject {
         if (this.initialRepositoryReady >= this.initialRepositoryCount) {
             this.onReady()
         }
-        console.log('REPOSITORY READY, SAVING')
         this.save()
     }
 
@@ -455,17 +449,30 @@ export class Project extends ProjectEventEmitter implements IProject {
     }
 
     /**
-     * Retrieve a framework from this project by its context (i.e. repository
-     * and framework identifiers).
+     * Retrieve a framework and its repository from this project
+     * using only the framework id.
      *
-     * @param context The context with which to search the framework.
+     * @param id The id of the framework to retrieve.
      */
-    public getFrameworkByContext (context: FrameworkContext): IFramework | undefined {
-        const repository = this.getRepositoryById(context.repository)
-        if (repository) {
-            return repository.getFrameworkById(context.framework)
+    public getContextByFrameworkId (id: string): FrameworkWithContext | undefined {
+        const map: { [key: string]: [number, number] } = fromPairs(
+            this.repositories
+                .map(
+                    (repository, i) => repository.frameworks.map(
+                        (framework, j) => [framework.getId(), [i, j]]
+                    )
+                )
+                .flat()
+        )
+
+        if (map[id]) {
+            return {
+                repository: this.repositories[map[id][0]],
+                framework: this.repositories[map[id][0]].frameworks[map[id][1]]
+            }
         }
-        return undefined
+
+        return
     }
 
     /**

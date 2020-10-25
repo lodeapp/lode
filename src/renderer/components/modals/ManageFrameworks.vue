@@ -145,7 +145,6 @@ export default {
                 this.$set(framework, 'key', framework.id || this.$string.random())
                 this.$set(framework, 'validator', new Validator())
             })
-            console.log('PARSED FRAMEWORKS', this.frameworks)
         },
         async handleScan () {
             this.scanning = true
@@ -188,7 +187,7 @@ export default {
                     .forEach(framework => {
                         // If the framework has an id (i.e. exists), update it, otherwise add.
                         if (framework.id) {
-                            ipcRenderer.send('framework-update', { repository: this.repository.id, framework: framework.id }, framework)
+                            ipcRenderer.send('framework-update', framework.id, framework)
                             return
                         }
                         ipcRenderer.send('framework-add', this.repository.id, framework)
@@ -205,7 +204,7 @@ export default {
             // Iterate through frameworks marked for removal and trigger
             // the removal action on their parent repository.
             this.removed.forEach(framework => {
-                this.$root.removeFramework(this.repository.id, framework.id)
+                this.$root.handleFrameworkRemove(framework)
             })
         }
     }

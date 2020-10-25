@@ -7,7 +7,7 @@
             frameworks.length ? '' : 'is-empty'
         ]"
     >
-        <div class="header" @contextmenu="openMenu" @click="toggle">
+        <div class="header" @contextmenu="onContextMenu" @click="toggle">
             <div class="title">
                 <Indicator :status="status" />
                 <h4 class="heading">
@@ -36,7 +36,6 @@ import { ipcRenderer } from 'electron'
 import { mapGetters } from 'vuex'
 import Indicator from '@/components/Indicator'
 import SidebarFramework from '@/components/SidebarFramework'
-import HasRepositoryMenu from '@/components/mixins/HasRepositoryMenu'
 import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
@@ -46,7 +45,6 @@ export default {
         SidebarFramework
     },
     mixins: [
-        HasRepositoryMenu,
         HasStatus
     ],
     props: {
@@ -57,7 +55,8 @@ export default {
     },
     data () {
         return {
-            frameworks: []
+            frameworks: [],
+            menuActive: false
         }
     },
     computed: {
@@ -92,15 +91,6 @@ export default {
                 this.frameworks = frameworks
             })
         },
-        refresh () {
-            ipcRenderer.send('repository-refresh', this.model.id)
-        },
-        start () {
-            ipcRenderer.send('repository-start', this.model.id)
-        },
-        stop () {
-            ipcRenderer.send('repository-stop', this.model.id)
-        },
         toggle () {
             this.model.expanded = !this.model.expanded
             ipcRenderer.send('repository-toggle', this.model.id, this.model.expanded)
@@ -109,6 +99,12 @@ export default {
                 return
             }
             this.frameworks = []
+        },
+        onContextMenu () {
+            this.menuActive = true
+            ipcRenderer.invoke('repository-context-menu', this.model.id).finally(() => {
+                this.menuActive = false
+            })
         },
         onFrameworkActivation (frameworkId) {
             this.$emit('framework-activate', frameworkId, this.model)

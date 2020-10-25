@@ -1,5 +1,6 @@
 import * as Path from 'path'
 import { Glob } from 'glob'
+import { dialog } from 'electron'
 import { pathExistsSync } from 'fs-extra'
 import { v4 as uuid } from 'uuid'
 import { findIndex, omit } from 'lodash'
@@ -61,6 +62,7 @@ export interface IRepository extends ProjectEventEmitter {
     getPath (): string
     updatePath (path: string): void
     exists (): boolean
+    locate (window: Electron.BrowserWindow): void
     getProgressLedger (): ProgressLedger
     resetProgressLedger (): void
 }
@@ -91,6 +93,7 @@ export class Repository extends ProjectEventEmitter implements IRepository {
         this.name = options.name || Path.basename(this.path) || 'untitled'
         this.expanded = typeof options.expanded === 'undefined' ? true : options.expanded
         this.initialFrameworkCount = (options.frameworks || []).length
+        this.exists()
 
         // If options include frameworks already (i.e. persisted state), add them.
         this.loadFrameworks(options.frameworks || [])
@@ -346,6 +349,12 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      * @param to The status we're updating to.
      */
     protected updateStatus (to?: FrameworkStatus): void {
+        // If repository if marked as missing, don't update status until
+        // the `exists` method is called and filesystem is checked.
+        if (this.status === 'missing') {
+            return
+        }
+
         if (typeof to === 'undefined') {
             to = parseFrameworkStatus(this.frameworks.map(framework => framework.status))
         }
@@ -441,7 +450,7 @@ export class Repository extends ProjectEventEmitter implements IRepository {
                 ...{ repositoryPath: path }
             })
         })
-        this.updateStatus()
+        this.exists()
         this.save()
     }
 
@@ -450,8 +459,24 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      */
     public exists (): boolean {
         const exists = pathExistsSync(this.path)
+        this.status = 'loading'
         this.updateStatus(exists ? undefined : 'missing')
         return exists
+    }
+
+    /**
+     * Locate this repository, if missing.
+     */
+    public locate (window: Electron.BrowserWindow): void {
+        dialog.showOpenDialog(window, {
+            properties: ['openDirectory', 'multiSelections']
+        }).then(({ filePaths }) => {
+            if (!filePaths || !filePaths.length) {
+                return
+            }
+
+            this.updatePath(filePaths[0])
+        })
     }
 
     /**

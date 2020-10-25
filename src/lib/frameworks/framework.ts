@@ -7,7 +7,7 @@ import { ProcessId, IProcess } from '@lib/process/process'
 import { ProcessFactory } from '@lib/process/factory'
 import { queue } from '@lib/process/queue'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
-import { ParsedRepository } from '@lib/frameworks/repository'
+import { IRepository, ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, StatusLedger, parseStatus } from '@lib/frameworks/status'
 import { ProgressLedger } from '@lib/frameworks/progress'
@@ -17,11 +17,11 @@ import { SSHOptions } from '@lib/process/ssh'
 import pool from '@lib/process/pool'
 
 /**
- * Context to identify a framework with.
+ * Framework object with repository context
  */
-export type FrameworkContext = {
-    repository: string
-    framework: string
+export type FrameworkWithContext = {
+    repository: IRepository
+    framework: IFramework
 }
 
 /**
@@ -612,8 +612,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             this.updateStatus('running')
             this.reload()
                 .then((outcome: string) => {
-                    this.afterRefresh()
-
                     // Killed processes resolve the promise, so if user
                     // interrupted the run while reloading, make sure the
                     // run does not go ahead.
@@ -622,6 +620,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                         resolve()
                         return
                     }
+
+                    this.afterRefresh()
 
                     this.suites.forEach(suite => {
                         suite.queue(false)
@@ -1326,6 +1326,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         value: Array<string> | string | null
     ): void {
         this.filters[filter] = Array.isArray(value) ? (value.length ? value : null) : value
+        this.emit('filter', this.filters)
     }
 
     /**

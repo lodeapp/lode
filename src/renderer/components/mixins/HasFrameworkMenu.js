@@ -1,54 +1,26 @@
-import { Menu } from '@main/menu'
+import { ipcRenderer } from 'electron'
 
 export default {
     data () {
         return {
-            menuActive: false,
-            menu: new Menu()
-                .add({
-                    label: this.model.name,
-                    enabled: false
-                })
-                .add({
-                    label: __DARWIN__ ? 'Framework Settings…' : 'Framework settings…',
-                    click: () => {
-                        this.manage()
-                    }
-                })
-                .separator()
-                .add({
-                    label: 'Remove',
-                    click: () => {
-                        this.remove()
-                    }
-                })
-                .before(() => {
-                    this.menuActive = true
-                })
-                .after(() => {
+            menuActive: false
+        }
+    },
+    methods: {
+        onContextMenu () {
+            let rect
+            if (this.$el.querySelector('.more-actions')) {
+                rect = JSON.parse(JSON.stringify(this.$el.querySelector('.more-actions').getBoundingClientRect()))
+            }
+            this.menuActive = true
+            ipcRenderer.invoke('framework-context-menu', this.model.id, rect)
+                .finally(() => {
                     this.menuActive = false
                     const button = this.$el.querySelector('.more-actions')
                     if (button) {
                         button.blur()
                     }
                 })
-        }
-    },
-    methods: {
-        openMenu (event) {
-            this.menu
-                .attachTo(this.$el.querySelector('.more-actions'))
-                .open()
-        },
-        manage () {
-            this.$emit('manage', this.model)
-        },
-        remove () {
-            this.$modal.confirm('RemoveFramework', { framework: this.model })
-                .then(() => {
-                    this.$emit('remove', this.model.id)
-                })
-                .catch(() => {})
         }
     }
 }

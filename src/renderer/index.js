@@ -4,7 +4,7 @@ import '@lib/tracker/renderer'
 import Vue from 'vue'
 import store from './store'
 import * as Path from 'path'
-import { isArray, isEmpty } from 'lodash'
+import { get, isArray, isEmpty } from 'lodash'
 import { parse } from 'flatted'
 import { clipboard, remote, ipcRenderer, shell } from 'electron'
 
@@ -14,7 +14,6 @@ import 'overlayscrollbars/css/OverlayScrollbars.css'
 
 // Plugins
 import Alerts from './plugins/alerts'
-import Filesystem from './plugins/filesystem'
 import Filters from './plugins/filters'
 import Code from './plugins/code'
 import Input from './plugins/input'
@@ -35,7 +34,6 @@ Vue.config.productionTip = false
 
 // Register plugins
 Vue.use(new Alerts(store))
-Vue.use(new Filesystem())
 Vue.use(new Filters())
 Vue.use(new Code())
 Vue.use(new Input())
@@ -107,6 +105,15 @@ export default new Vue({
                     this.updateSettings(settings)
                 })
             })
+            .on('error', (event, payload) => {
+                this.$payload(payload, (message, help) => {
+                    this.$alert.show({
+                        type: 'error',
+                        message,
+                        help
+                    })
+                })
+            })
             .on('menu-event', async (event, { name, properties }) => {
                 switch (name) {
                     case 'show-about':
@@ -141,6 +148,18 @@ export default new Vue({
                         break
                     case 'add-repositories':
                         this.addRepositories()
+                        break
+                    case 'repository-manage':
+                        this.repositoryManage(properties)
+                        break
+                    case 'repository-scan':
+                        this.scanRepository(properties)
+                        break
+                    case 'repository-remove':
+                        this.repositoryRemove(properties)
+                        break
+                    case 'remove-framework':
+                        this.frameworkRemove(properties)
                         break
                     case 'settings-reset':
                         this.$modal.confirm('ResetSettings')
@@ -218,7 +237,6 @@ export default new Vue({
             return statuses
         },
         loadProject (project) {
-            console.log('LOADING PROJECT', { project })
             this.$store.commit('filters/RESET')
             this.project = !isEmpty(project) ? project : null
             this.refreshApplicationMenu()
@@ -231,7 +249,6 @@ export default new Vue({
         },
         projectStatusListener (event, payload) {
             this.$payload(payload, (to, from) => {
-                console.log('UPDATING PROJECT STATUS', to)
                 this.project.status = to
             })
         },
@@ -262,7 +279,6 @@ export default new Vue({
             this.$modal.confirm('RemoveProject')
                 .then(async () => {
                     const switchTo = await ipcRenderer.invoke('project-remove', this.project.id)
-                    console.log({ switchTo })
                     this.handleSwitchProject(switchTo)
                 })
                 .catch(() => {})
@@ -304,7 +320,6 @@ export default new Vue({
             }
             this.loading = true
             this.project = null
-            console.log('CLEARING CONTEXT')
             store.commit('context/CLEAR')
             ipcRenderer.send('project-switch', projectId ? { id: projectId } : null)
         },
@@ -321,8 +336,13 @@ export default new Vue({
                 })
                 .catch(() => {})
         },
-        scanRepositories (repositories, n) {
-            console.log({ repositories, n })
+        async scanEmptyRepositories () {
+            this.scanRepositories(
+                JSON.parse(await ipcRenderer.invoke('project-empty-repositories')),
+                0
+            )
+        },
+        async scanRepositories (repositories, n) {
             // Scan repository and queue the following one the modal callback.
             this.scanRepository(repositories[n], () => {
                 if ((n + 1) >= repositories.length) {
@@ -332,9 +352,8 @@ export default new Vue({
             })
         },
         async scanRepository (repository, callback = null) {
-            const exists = await this.fileExists(repository.path)
+            const exists = await this.repositoryExists(repository)
             if (!exists) {
-                // @TODO: update the repository to mark it doesn't exist
                 if (callback) {
                     callback()
                 }
@@ -346,12 +365,43 @@ export default new Vue({
                 scan: true
             }, callback)
         },
-        async removeFramework (repositoryId, frameworkId) {
-            this.onModelRemove(frameworkId)
-            ipcRenderer.send('framework-remove', {
-                repository: repositoryId,
-                framework: frameworkId
+        repositoryManage ({ repository, framework }) {
+            this.$modal.open('ManageFrameworks', {
+                repository,
+                scan: false,
+                framework
             })
+        },
+        repositoryRemove (repository) {
+            this.$modal.confirm('RemoveRepository', { repository })
+                .then(() => {
+                    // If the repository we're removing is the currently active one,
+                    // make sure to clear the Vuex context, too
+                    if (repository.id === get(this.$store.getters['context/repository'], 'id')) {
+                        this.$store.commit('context/CLEAR')
+                    }
+
+                    this.onModelRemove(repository.id)
+                    ipcRenderer.send('repository-remove', repository.id)
+                })
+                .catch(() => {})
+        },
+        async repositoryLocate (repository) {
+            return await ipcRenderer.invoke('repository-locate', repository.id)
+        },
+        async repositoryExists (repository) {
+            return await ipcRenderer.invoke('repository-exists', repository.id)
+        },
+        async frameworkRemove (framework) {
+            this.$modal.confirm('RemoveFramework', { framework })
+                .then(() => {
+                    this.handleFrameworkRemove(framework)
+                })
+                .catch(() => {})
+        },
+        handleFrameworkRemove (framework) {
+            this.onModelRemove(framework.id)
+            ipcRenderer.send('framework-remove', framework.id)
         },
         setting (key) {
             return store.getters['settings/value'](key)
@@ -371,33 +421,9 @@ export default new Vue({
         setApplicationMenuOption (options = {}) {
             ipcRenderer.send('menu-set-options', options)
         },
+        // @TODO: safe?
         openExternal (link) {
             shell.openExternal(link)
-        },
-        async openFile (path) {
-            try {
-                await shell.openExternal(`file://${path}`)
-            } catch (_) {
-                this.$alert.show({
-                    message: 'Unable to open file in an external program. Please check you have a program associated with this file extension.',
-                    help: 'The following path was attempted: `' + path + '`',
-                    type: 'error'
-                })
-            }
-        },
-        async fileExists (path) {
-            return new Promise((resolve, reject) => {
-                ipcRenderer
-                    .once(`${path}:exists`, (event, payload) => {
-                        this.$payload(payload, exists => {
-                            resolve(exists)
-                        })
-                    })
-                    .send('check-if-file-exists', path)
-            })
-        },
-        revealFile (path) {
-            ipcRenderer.send('show-item-in-folder', path)
         },
         copyToClipboard (string) {
             clipboard.writeText(string)

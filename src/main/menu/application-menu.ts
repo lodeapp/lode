@@ -1,7 +1,6 @@
 import { ensureDir } from 'fs-extra'
 import { app, ipcMain, Menu, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import { MenuEvent } from './menu-event'
 import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
 import { Window } from '../window'
