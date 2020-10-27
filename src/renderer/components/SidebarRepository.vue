@@ -82,12 +82,6 @@ export default {
         },
         updateFrameworks (event, payload) {
             this.$payload(payload, frameworks => {
-                console.log(
-                    'updating frameworks on repository',
-                    frameworks,
-                    this.activeFramework,
-                    this.frameworks
-                )
                 this.frameworks = frameworks
             })
         },

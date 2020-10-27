@@ -165,7 +165,7 @@ ipcMain
             currentWindow.sendMenuEvent({ name, properties })
         }
     })
-    .on('project-switch', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier | null) => {
+    .on('project-switch', (event: Electron.IpcMainEvent, identifier?: ProjectIdentifier | null) => {
         const window: ApplicationWindow = ApplicationWindow.getFromWebContents(event.sender)!
         const project: IProject | null = window.getProject()
         if (identifier) {
@@ -188,27 +188,11 @@ ipcMain
         project.setActiveFramework(frameworkId)
         applicationMenu.setOptions(project.getActive())
     })
-    // @TODO: make an invoke event instead
-    .on('repository-add', (event: Electron.IpcMainEvent, paths: Array<string>) => {
-        const project: IProject = getProject(event)
-        Promise.all(paths.map(path => {
-            return project.addRepository({ path })
-        })).then(repositories => {
-            send(event.sender, 'repository-added', [repositories.map(repository => repository.render())])
-            send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
-        })
-    })
     .on('repository-remove', (event: Electron.IpcMainEvent, repositoryId: string) => {
         const project: IProject = getProject(event)
         project.removeRepository(repositoryId)
         send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
         ApplicationWindow.getFromWebContents(event.sender)!.refreshActiveFramework()
-    })
-    // @TODO: make an invoke event instead
-    .on('repository-scan', async (event: Electron.IpcMainEvent, repositoryId: string) => {
-        const repository: IRepository = await getRepository(event, repositoryId)
-        const pending: Array<FrameworkOptions> = await repository.scan()
-        send(event.sender, `${repositoryId}:repository-scanned`, [pending])
     })
     .on('repository-toggle', async (event: Electron.IpcMainEvent, repositoryId: string, toggle: boolean) => {
         const repository = await getRepository(event, repositoryId)
@@ -365,6 +349,23 @@ ipcMain
                 })
                 .open()
         })
+    })
+
+ipcMain
+    .handle('repository-add', async (event: Electron.IpcMainInvokeEvent, paths: Array<string>) => {
+        const project: IProject = getProject(event)
+        const repositories = await Promise.all(paths.map(path => {
+            return project.addRepository({ path })
+        }))
+        send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
+        return JSON.stringify(repositories.map(repository => repository.render()))
+    })
+
+ipcMain
+    .handle('repository-scan', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
+        const repository: IRepository = await getRepository(event, repositoryId)
+        const pending: Array<FrameworkOptions> = await repository.scan()
+        return JSON.stringify(pending)
     })
 
 ipcMain

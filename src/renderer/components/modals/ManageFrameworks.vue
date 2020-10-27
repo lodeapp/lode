@@ -148,14 +148,10 @@ export default {
         },
         async handleScan () {
             this.scanning = true
-            ipcRenderer
-                .once(`${this.repository.id}:repository-scanned`, (event, payload) => {
-                    this.$payload(payload, pending => {
-                        this.parseFrameworks(true, pending)
-                        this.scanning = false
-                    })
-                })
-                .send('repository-scan', this.repository.id)
+            this.parseFrameworks(true, JSON.parse(
+                await ipcRenderer.invoke('repository-scan', this.repository.id))
+            )
+            this.scanning = false
         },
         handleChange (framework, values) {
             const index = _findIndex(this.frameworks, { key: framework.key })

@@ -160,16 +160,13 @@ export default {
 
             if (!this.hasErrors) {
                 this.loading = true
-                ipcRenderer
-                    .once('repository-added', (event, payload) => {
-                        this.$payload(payload, repositories => {
-                            this.confirm({
-                                repositories,
-                                autoScan: this.autoScan
-                            })
-                        })
-                    })
-                    .send('repository-add', _uniqBy(this.slots, 'path').map(slot => slot.path))
+                const repositories = JSON.parse(
+                    await ipcRenderer.invoke('repository-add', _uniqBy(this.slots, 'path').map(slot => slot.path))
+                )
+                this.confirm({
+                    repositories,
+                    autoScan: this.autoScan
+                })
             }
         }
     }

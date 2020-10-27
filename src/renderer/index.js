@@ -154,6 +154,7 @@ export default new Vue({
                     case 'settings-reset':
                         this.$modal.confirm('ResetSettings')
                             .then(() => {
+                                this.handleProjectSwitch()
                                 ipcRenderer.send('settings-reset')
                             })
                             .catch(() => {})
@@ -245,10 +246,10 @@ export default new Vue({
         async projectAdd () {
             this.$modal.confirm('EditProject', { add: true })
                 .then(identifier => {
-                    ipcRenderer.once('project-switched', () => {
+                    ipcRenderer.once('project-ready', () => {
                         this.repositoryAdd()
                     })
-                    ipcRenderer.send('project-switch', identifier)
+                    this.handleProjectSwitch(identifier)
                 })
                 .catch(() => {})
         },
@@ -269,7 +270,7 @@ export default new Vue({
             this.$modal.confirm('RemoveProject')
                 .then(async () => {
                     const switchTo = await ipcRenderer.invoke('project-remove', this.project.id)
-                    this.handleSwitchProject(switchTo)
+                    this.handleProjectSwitch({ id: switchTo })
                 })
                 .catch(() => {})
         },
@@ -293,7 +294,7 @@ export default new Vue({
                     if (disableConfirm) {
                         this.updateSetting('confirm.switchProject', false)
                     }
-                    this.handleSwitchProject(projectId)
+                    this.handleProjectSwitch({ id: projectId })
                 })
                 .catch(() => {
                     // Windows will check the project regardless of
@@ -303,7 +304,7 @@ export default new Vue({
                     }
                 })
         },
-        handleSwitchProject (projectId) {
+        handleProjectSwitch (identifier) {
             // Before switching, remove project listeners
             if (this.project) {
                 ipcRenderer.removeListener(`${this.project.id}:status`, this.projectStatusListener)
@@ -311,7 +312,7 @@ export default new Vue({
             this.loading = true
             this.project = null
             store.commit('context/CLEAR')
-            ipcRenderer.send('project-switch', projectId ? { id: projectId } : null)
+            ipcRenderer.send('project-switch', identifier)
         },
         repositoryAdd (directories) {
             if (!isArray(directories)) {
