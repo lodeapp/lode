@@ -1,6 +1,6 @@
 import { app, dialog } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import { applicationMenu } from './menu'
+import { applicationMenu } from '@main/menu'
 
 export class Updater {
 

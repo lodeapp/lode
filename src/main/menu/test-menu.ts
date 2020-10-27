@@ -1,8 +1,8 @@
-import { Menu } from './menu'
+import { Menu } from '@main/menu'
+import { File } from '@main/file'
+import { clipboard } from 'electron'
 import { ISuite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
-import { File } from '../file'
-import { clipboard } from 'electron'
 
 export class TestMenu extends Menu {
 

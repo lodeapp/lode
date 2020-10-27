@@ -186,9 +186,6 @@ export default {
             this.$payload(payload, async repositories => {
                 this.repositories = repositories
                 this.loading = false
-                this.$root.setApplicationMenuOption({
-                    hasFramework: !!this.framework
-                })
             })
         },
         onRepositoryStatus (to, from, repository) {

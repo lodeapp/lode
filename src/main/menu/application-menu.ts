@@ -3,8 +3,11 @@ import { app, ipcMain, Menu, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
-import { Window } from '../window'
-import { ProjectIdentifier } from '@lib/frameworks/project'
+import { ProjectMenu, FrameworkMenu } from '@main/menu'
+import { ApplicationWindow } from '@main/application-window'
+import { ProjectIdentifier, IProject } from '@lib/frameworks/project'
+import { IRepository } from '@lib/frameworks/repository'
+import { IFramework } from '@lib/frameworks/framework'
 
 // We seem to be unable to simple declare menu items as "radio" without TS
 // raising an alert, so we need to forcibly cast types when defining them.
@@ -26,9 +29,19 @@ class ApplicationMenu {
 
     protected template: Array<Electron.MenuItemConstructorOptions> = []
 
-    protected options: { [index: string]: any } = {
-        hasProject: false,
-        hasFramework: false,
+    protected window: ApplicationWindow | null = null
+
+    protected options: {
+        project: IProject | null,
+        repository: IRepository | null
+        framework: IFramework | null,
+        isCheckingForUpdate: boolean,
+        isDownloadingUpdate: boolean,
+        hasDownloadedUpdate: boolean
+    } = {
+        project: null,
+        repository: null,
+        framework: null,
         isCheckingForUpdate: false,
         isDownloadingUpdate: false,
         hasDownloadedUpdate: false
@@ -41,8 +54,6 @@ class ApplicationMenu {
         const currentProject: ProjectIdentifier | null = state.getCurrentProject()
         const projects: Array<ProjectIdentifier> = state.getAvailableProjects()
 
-        const hasProject = this.options.hasProject
-        const hasFramework = this.options.hasFramework
         const isCheckingForUpdate = this.options.isCheckingForUpdate
         const isDownloadingUpdate = this.options.isDownloadingUpdate
         const hasDownloadedUpdate = this.options.hasDownloadedUpdate
@@ -194,94 +205,19 @@ class ApplicationMenu {
 
         template.push({
             label: __DARWIN__ ? 'Project' : '&Project',
-            submenu: [
-                {
-                    label: __DARWIN__ ? 'Refresh All' : 'Refresh all',
-                    click: emit('refresh-all'),
-                    accelerator: 'CmdOrCtrl+Alt+Shift+R',
-                    enabled: hasProject
-                },
-                {
-                    label: __DARWIN__ ? 'Run All' : 'Run all',
-                    click: emit('run-all'),
-                    accelerator: 'CmdOrCtrl+Alt+R',
-                    enabled: hasProject
-                },
-                {
-                    label: __DARWIN__ ? 'Stop All' : 'Stop all',
-                    click: emit('stop-all'),
-                    accelerator: 'Alt+Esc',
-                    enabled: hasProject
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Rename Project' : 'Rename project',
-                    click: emit('rename-project'),
-                    accelerator: 'CmdOrCtrl+Alt+E',
-                    enabled: hasProject
-                },
-                {
-                    label: __DARWIN__ ? 'Remove Project' : 'Remove project',
-                    click: emit('remove-project'),
-                    accelerator: 'CmdOrCtrl+Alt+Backspace',
-                    enabled: hasProject
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Add Repositories… ' : 'Add repositories…',
-                    click: emit('add-repositories'),
-                    accelerator: 'CmdOrCtrl+Alt+O',
-                    enabled: hasProject
-                }
-            ]
+            submenu: new ProjectMenu(
+                this.options.project,
+                this.window!.getWebContents()
+            ).getTemplate()
         })
 
         template.push({
             label: __DARWIN__ ? 'Framework' : 'F&ramework',
-            submenu: [
-                {
-                    label: __DARWIN__ ? 'Refresh Framework' : 'Refresh framework',
-                    click: emit('refresh-framework'),
-                    accelerator: 'CmdOrCtrl+Shift+R',
-                    enabled: hasFramework
-                },
-                {
-                    label: __DARWIN__ ? 'Run Framework' : 'Run framework',
-                    click: emit('run-framework'),
-                    accelerator: 'CmdOrCtrl+R',
-                    enabled: hasFramework
-                },
-                {
-                    label: __DARWIN__ ? 'Stop Framework' : 'Stop framework',
-                    click: emit('stop-framework'),
-                    accelerator: (() => {
-                        return __DARWIN__ ? 'Command+Esc' : 'Ctrl+Esc'
-                    })(),
-                    enabled: hasFramework
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Filter Items' : 'Filter items',
-                    click: emit('filter'),
-                    accelerator: (() => {
-                        return __DARWIN__ ? 'Command+F' : 'Ctrl+F'
-                    })(),
-                    enabled: hasFramework
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Framework Settings…' : 'Framework settings…',
-                    click: emit('framework-settings'),
-                    enabled: hasFramework
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Remove Framework' : 'Remove framework',
-                    click: emit('remove-framework'),
-                    accelerator: 'CmdOrCtrl+Backspace',
-                    enabled: hasFramework
-                }
-            ]
+            submenu: new FrameworkMenu(
+                this.options.repository,
+                this.options.framework,
+                this.window!.getWebContents()
+            ).getTemplate()
         })
 
         if (__DEV__) {
@@ -433,11 +369,16 @@ class ApplicationMenu {
         this.template = template
     }
 
-    public build (window: Window | null): Promise<Array<Electron.MenuItemConstructorOptions>> {
+    public build (window: ApplicationWindow | null): Promise<Array<Electron.MenuItemConstructorOptions>> {
+        this.setWindow(window)
         return this.setOptions({
             ...this.options,
-            hasProject: window && !!window.getProject()
+            project: window ? window.getProject() : null
         })
+    }
+
+    public setWindow (window: ApplicationWindow | null): void {
+        this.window = window
     }
 
     public setOptions (options: any): Promise<Array<Electron.MenuItemConstructorOptions>> {
@@ -495,7 +436,7 @@ function findClosestValue (arr: Array<number>, value: number) {
  * Figure out the next zoom level for the given direction and alert the renderer
  * about a change in zoom factor if necessary.
  */
-function zoom(direction: ZoomDirection): ClickHandler {
+function zoom (direction: ZoomDirection): ClickHandler {
     return (menuItem, window) => {
         if (!window) {
             return

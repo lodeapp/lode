@@ -1,7 +1,7 @@
-import { Menu } from './menu'
+import { Menu } from '@main/menu'
 import { File } from '@main/file'
-import { IRepository } from '@lib/frameworks/repository'
 import { clipboard } from 'electron'
+import { IRepository } from '@lib/frameworks/repository'
 
 export class RepositoryMenu extends Menu {
 

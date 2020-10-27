@@ -3,13 +3,13 @@ import { get } from 'lodash'
 import { app, ipcMain, BrowserWindow } from 'electron'
 import { state } from '@lib/state'
 import { ProjectIdentifier, ProjectOptions, Project } from '@lib/frameworks/project'
-import { send } from './ipc'
+import { send } from '@main/ipc'
 
 let windowStateKeeper: any | null = null
 
 const windows: any = {}
 
-export class Window {
+export class ApplicationWindow {
 
     protected window: BrowserWindow
 
@@ -82,7 +82,7 @@ export class Window {
         this.load()
     }
 
-    public static init (identifier: ProjectIdentifier | null): Window {
+    public static init (identifier: ProjectIdentifier | null): ApplicationWindow {
         const window = new this(identifier)
 
         // Store parent in window manager
@@ -101,7 +101,7 @@ export class Window {
         return window
     }
 
-    public static getFromWebContents(webContents: Electron.WebContents): Window | null {
+    public static getFromWebContents(webContents: Electron.WebContents): ApplicationWindow | null {
         const child = BrowserWindow.fromWebContents(webContents)
         return child ? windows[child.id] : null
     }
@@ -186,6 +186,10 @@ export class Window {
 
     public getChild (): BrowserWindow {
         return this.window
+    }
+
+    public getWebContents (): Electron.WebContents {
+        return this.window.webContents
     }
 
     public getProject (): Project | null {

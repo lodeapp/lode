@@ -1,10 +1,10 @@
-import { Window } from '../window'
-import { File } from '../file'
+import { ApplicationWindow } from '@main/application-window'
+import { File } from '@main/file'
 import { Menu as Base } from 'electron'
 
 export class Menu {
 
-    protected window: Window
+    protected window: ApplicationWindow
     protected built: boolean = false
     protected menu: Electron.Menu | null = null
     protected options: object = {}
@@ -13,7 +13,7 @@ export class Menu {
     protected afterCallbacks: Array<Function> = []
 
     constructor (webContents: Electron.WebContents) {
-        this.window = Window.getFromWebContents(webContents)!
+        this.window = ApplicationWindow.getFromWebContents(webContents)!
     }
 
     add (item: Electron.MenuItemConstructorOptions): this {
@@ -102,6 +102,10 @@ export class Menu {
             ...(options || {})
         })
         return this
+    }
+
+    public getTemplate (): Array<Electron.MenuItemConstructorOptions> {
+        return this.template
     }
 
     public emit (name: MenuEvent, properties?: any) {

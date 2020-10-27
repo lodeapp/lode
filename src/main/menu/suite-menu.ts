@@ -1,7 +1,7 @@
-import { Menu } from './menu'
-import { ISuite } from '@lib/frameworks/suite'
-import { File } from '../file'
+import { Menu } from '@main/menu'
+import { File } from '@main/file'
 import { clipboard } from 'electron'
+import { ISuite } from '@lib/frameworks/suite'
 
 export class SuiteMenu extends Menu {
 

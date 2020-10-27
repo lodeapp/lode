@@ -1,9 +1,9 @@
-import { Menu } from './menu'
+import { Menu } from '@main/menu'
 import { IProject } from '@lib/frameworks/project'
 
 export class ProjectMenu extends Menu {
 
-    constructor (project: IProject, webContents: Electron.WebContents) {
+    constructor (project: IProject | null, webContents: Electron.WebContents) {
         super(webContents)
 
         this
@@ -11,22 +11,25 @@ export class ProjectMenu extends Menu {
                 label: __DARWIN__ ? 'Refresh All' : 'Refresh all',
                 accelerator: 'CmdOrCtrl+Alt+Shift+R',
                 click: () => {
-                    project.refresh()
-                }
+                    project!.refresh()
+                },
+                enabled: !!project
             })
             .add({
                 label: __DARWIN__ ? 'Run All' : 'Run all',
                 accelerator: 'CmdOrCtrl+Alt+R',
                 click: () => {
-                    project.start()
-                }
+                    project!.start()
+                },
+                enabled: !!project
             })
             .add({
                 label: __DARWIN__ ? 'Stop All' : 'Stop all',
                 accelerator: 'Alt+Esc',
                 click: () => {
-                    project.stop()
-                }
+                    project!.stop()
+                },
+                enabled: !!project
             })
             .separator()
             .add({
@@ -34,14 +37,16 @@ export class ProjectMenu extends Menu {
                 accelerator: 'CmdOrCtrl+Alt+E',
                 click: () => {
                     this.emit('rename-project')
-                }
+                },
+                enabled: !!project
             })
             .add({
                 label: __DARWIN__ ? 'Remove Project' : 'Remove project',
                 accelerator: 'CmdOrCtrl+Alt+Backspace',
                 click: () => {
                     this.emit('remove-project')
-                }
+                },
+                enabled: !!project
             })
             .separator()
             .add({
@@ -49,7 +54,8 @@ export class ProjectMenu extends Menu {
                 accelerator: 'CmdOrCtrl+Alt+O',
                 click: () => {
                     this.emit('add-repositories')
-                }
+                },
+                enabled: !!project
             })
     }
 }

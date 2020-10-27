@@ -11,10 +11,10 @@ import {
     FrameworkMenu,
     SuiteMenu,
     TestMenu
-} from './menu'
-import { Window } from './window'
-import { Updater } from './updater'
-import { send } from './ipc'
+} from '@main/menu'
+import { ApplicationWindow } from '@main/application-window'
+import { Updater } from '@main/updater'
+import { send } from '@main/ipc'
 import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
@@ -41,7 +41,7 @@ import {
     PotentialFrameworkOptions
 } from '@lib/frameworks/validator'
 
-let currentWindow: Window | null = null
+let currentWindow: ApplicationWindow | null = null
 
 // Merge environment variables from shell, if needed.
 mergeEnvFromShell()
@@ -65,7 +65,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 function getProject (event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent): IProject {
-    return Window.getProjectFromWebContents(event.sender)!
+    return ApplicationWindow.getProjectFromWebContents(event.sender)!
 }
 
 function getRepository (event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, repositoryId: string): Promise<IRepository> {
@@ -137,7 +137,7 @@ app
         // })
 
         track.screenview('Application started')
-        currentWindow = Window.init(state.getCurrentProject())
+        currentWindow = ApplicationWindow.init(state.getCurrentProject())
         applicationMenu.build(currentWindow)
 
         if (!__DEV__) {
@@ -159,9 +159,6 @@ ipcMain
     .on('menu-refresh', (event: Electron.IpcMainEvent) => {
         applicationMenu.build(currentWindow)
     })
-    .on('menu-set-options', (event: Electron.IpcMainEvent, options: any) => {
-        applicationMenu.setOptions(options)
-    })
     .on('menu-event', (event: Electron.IpcMainEvent, args: any[]) => {
         const { name, properties } = event as any
         if (currentWindow) {
@@ -178,7 +175,7 @@ ipcMain
         getProject(event).stop()
     })
     .on('project-switch', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier | null) => {
-        const window: Window = Window.getFromWebContents(event.sender)!
+        const window: ApplicationWindow = ApplicationWindow.getFromWebContents(event.sender)!
         const project: IProject | null = window.getProject()
         if (identifier) {
             window.setProject(identifier)
@@ -195,8 +192,10 @@ ipcMain
             getProject(event).repositories.map((repository: IRepository) => repository.render())
         ])
     })
-    .on('project-active-framework', (event: Electron.IpcMainEvent, framework: ProjectActiveIdentifiers['framework']) => {
-        getProject(event).setActiveFramework(framework)
+    .on('project-active-framework', (event: Electron.IpcMainEvent, frameworkId: ProjectActiveIdentifiers['framework']) => {
+        const project = getProject(event)
+        project.setActiveFramework(frameworkId)
+        applicationMenu.setOptions(project.getActive())
     })
     .on('repository-add', (event: Electron.IpcMainEvent, paths: Array<string>) => {
         const project: IProject = getProject(event)
@@ -211,7 +210,7 @@ ipcMain
         const project: IProject = getProject(event)
         project.removeRepository(repositoryId)
         send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
-        Window.getFromWebContents(event.sender)!.refreshActiveFramework()
+        ApplicationWindow.getFromWebContents(event.sender)!.refreshActiveFramework()
     })
     .on('repository-scan', async (event: Electron.IpcMainEvent, repositoryId: string) => {
         const repository: IRepository = await getRepository(event, repositoryId)
@@ -232,13 +231,13 @@ ipcMain
             framework.refresh()
         })
         send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
-        Window.getFromWebContents(event.sender)!.refreshActiveFramework()
+        ApplicationWindow.getFromWebContents(event.sender)!.refreshActiveFramework()
     })
     .on('framework-remove', async (event: Electron.IpcMainEvent, frameworkId: string) => {
         entities(event, frameworkId).then(({ repository, framework }) => {
             repository.removeFramework(framework.getId())
             send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
-            Window.getFromWebContents(event.sender)!.refreshActiveFramework()
+            ApplicationWindow.getFromWebContents(event.sender)!.refreshActiveFramework()
         })
     })
     .on('framework-update', (event: Electron.IpcMainEvent, frameworkId: string, options: FrameworkOptions) => {
@@ -335,7 +334,7 @@ ipcMain
     })
     .on('settings-reset', (event: Electron.IpcMainEvent) => {
         state.reset()
-        const window: Window | null = Window.getFromWebContents(event.sender)
+        const window: ApplicationWindow | null = ApplicationWindow.getFromWebContents(event.sender)
         if (window) {
             window.clear()
             window.reload()
@@ -351,7 +350,7 @@ ipcMain
 
 ipcMain
     .handle('project-update', async (event: Electron.IpcMainInvokeEvent, options: ProjectOptions) => {
-        const project: IProject | null = Window.getProjectFromWebContents(event.sender)
+        const project: IProject | null = ApplicationWindow.getProjectFromWebContents(event.sender)
         if (project) {
             project.updateOptions(options)
             return JSON.stringify(project.render())

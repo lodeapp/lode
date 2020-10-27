@@ -1,37 +1,44 @@
-import { Menu } from './menu'
+import { Menu } from '@main/menu'
 import { IRepository } from '@lib/frameworks/repository'
 import { IFramework } from '@lib/frameworks/framework'
 
 export class FrameworkMenu extends Menu {
 
-    constructor (repository: IRepository, framework: IFramework, webContents: Electron.WebContents) {
+    constructor (
+        repository: IRepository | null,
+        framework: IFramework | null,
+        webContents: Electron.WebContents
+    ) {
         super(webContents)
 
         this
-            .add({
-                label: framework.getDisplayName(),
+            .addIf(!!framework, {
+                label: framework!.getDisplayName(),
                 enabled: false
             })
             .add({
                 label: __DARWIN__ ? 'Refresh Framework' : 'Refresh framework',
                 click: () => {
-                    framework.refresh()
+                    framework!.refresh()
                 },
-                accelerator: 'CmdOrCtrl+Shift+R'
+                accelerator: 'CmdOrCtrl+Shift+R',
+                enabled: !!framework
             })
             .add({
                 label: __DARWIN__ ? 'Run Framework' : 'Run framework',
                 click: () => {
-                    framework.start()
+                    framework!.start()
                 },
-                accelerator: 'CmdOrCtrl+R'
+                accelerator: 'CmdOrCtrl+R',
+                enabled: !!framework
             })
             .add({
                 label: __DARWIN__ ? 'Stop Framework' : 'Stop framework',
                 click: () => {
-                    framework.stop()
+                    framework!.stop()
                 },
-                accelerator: 'CmdOrCtrl+Esc'
+                accelerator: 'CmdOrCtrl+Esc',
+                enabled: !!framework
             })
             .separator()
             .add({
@@ -39,25 +46,28 @@ export class FrameworkMenu extends Menu {
                 click: () => {
                     this.emit('filter')
                 },
-                accelerator: 'CmdOrCtrl+F'
+                accelerator: 'CmdOrCtrl+F',
+                enabled: !!framework
             })
             .separator()
             .add({
                 label: __DARWIN__ ? 'Framework Settings…' : 'Framework settings…',
                 click: () => {
                     this.emit('repository-manage', {
-                        repository: repository.render(),
-                        framework: framework.render()
+                        repository: repository!.render(),
+                        framework: framework!.render()
                     })
-                }
+                },
+                enabled: !!repository && !!framework
             })
             .separator()
             .add({
                 label: 'Remove',
                 click: () => {
-                    this.emit('remove-framework', framework.render())
+                    this.emit('remove-framework', framework!.render())
                 },
-                accelerator: 'CmdOrCtrl+Backspace'
+                accelerator: 'CmdOrCtrl+Backspace',
+                enabled: !!framework
             })
     }
 }

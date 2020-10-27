@@ -418,9 +418,6 @@ export default new Vue({
         refreshApplicationMenu () {
             ipcRenderer.send('menu-refresh')
         },
-        setApplicationMenuOption (options = {}) {
-            ipcRenderer.send('menu-set-options', options)
-        },
         // @TODO: safe?
         openExternal (link) {
             shell.openExternal(link)
