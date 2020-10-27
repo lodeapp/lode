@@ -4,7 +4,7 @@
             <template v-if="$root.ready">
                 <div v-if="!$root.loading && !$root.project" class="no-projects">
                     <h1>Welcome to Lode.</h1>
-                    <button class="btn btn-primary" @click="$root.addProject">Add your first project</button>
+                    <button class="btn btn-primary" @click="$root.projectAdd">Add your first project</button>
                 </div>
                 <ProjectLoader
                     v-else-if="!$root.project"

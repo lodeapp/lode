@@ -165,15 +165,6 @@ ipcMain
             currentWindow.sendMenuEvent({ name, properties })
         }
     })
-    .on('project-refresh', (event: Electron.IpcMainEvent) => {
-        getProject(event).refresh()
-    })
-    .on('project-start', (event: Electron.IpcMainEvent) => {
-        getProject(event).start()
-    })
-    .on('project-stop', (event: Electron.IpcMainEvent) => {
-        getProject(event).stop()
-    })
     .on('project-switch', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier | null) => {
         const window: ApplicationWindow = ApplicationWindow.getFromWebContents(event.sender)!
         const project: IProject | null = window.getProject()
@@ -197,6 +188,7 @@ ipcMain
         project.setActiveFramework(frameworkId)
         applicationMenu.setOptions(project.getActive())
     })
+    // @TODO: make an invoke event instead
     .on('repository-add', (event: Electron.IpcMainEvent, paths: Array<string>) => {
         const project: IProject = getProject(event)
         Promise.all(paths.map(path => {
@@ -212,6 +204,7 @@ ipcMain
         send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
         ApplicationWindow.getFromWebContents(event.sender)!.refreshActiveFramework()
     })
+    // @TODO: make an invoke event instead
     .on('repository-scan', async (event: Electron.IpcMainEvent, repositoryId: string) => {
         const repository: IRepository = await getRepository(event, repositoryId)
         const pending: Array<FrameworkOptions> = await repository.scan()

@@ -294,23 +294,11 @@ export default {
             }
 
             switch (name) {
-                case 'run-framework':
-                    this.start()
-                    break
-                case 'refresh-framework':
-                    this.refresh()
-                    break
-                case 'stop-framework':
-                    this.stop()
-                    break
                 case 'filter':
                     this.$el.querySelector('[type="search"]').focus()
                     if (properties) {
                         this.keyword = properties
                     }
-                    break
-                case 'framework-settings':
-                    this.manage()
                     break
             }
         },

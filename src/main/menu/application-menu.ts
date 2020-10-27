@@ -107,7 +107,7 @@ class ApplicationMenu {
                 {
                     label: __DARWIN__ ? 'New Project' : 'New project',
                     accelerator: 'CmdOrCtrl+N',
-                    click: emit('new-project')
+                    click: emit('project-add')
                 },
                 {
                     label: __DARWIN__ ? 'Switch Project' : 'Switch project',

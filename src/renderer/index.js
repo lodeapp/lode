@@ -95,7 +95,6 @@ export default new Vue({
                 document.body.classList.add('is-focused')
             })
             .on('project-ready', (event, payload) => {
-                console.log('PROJECT READY')
                 this.$payload(payload, project => {
                     this.loadProject(project)
                 })
@@ -122,44 +121,35 @@ export default new Vue({
                     case 'show-preferences':
                         this.$modal.open('Preferences')
                         break
-                    case 'new-project':
-                        this.addProject()
+                    case 'project-add':
+                        this.projectAdd()
                         break
                     case 'project-switch':
-                        this.switchProject(properties)
+                        this.projectSwitch(properties)
                         break
-                    case 'select-all':
-                        this.selectAll()
+                    case 'project-edit':
+                        this.projectEdit()
                         break
-                    case 'refresh-all':
-                        ipcRenderer.send('project-refresh')
+                    case 'project-remove':
+                        this.projectRemove()
                         break
-                    case 'run-all':
-                        ipcRenderer.send('project-start')
-                        break
-                    case 'stop-all':
-                        ipcRenderer.send('project-stop')
-                        break
-                    case 'rename-project':
-                        this.editProject()
-                        break
-                    case 'remove-project':
-                        this.removeProject()
-                        break
-                    case 'add-repositories':
-                        this.addRepositories()
+                    case 'repository-add':
+                        this.repositoryAdd()
                         break
                     case 'repository-manage':
                         this.repositoryManage(properties)
                         break
                     case 'repository-scan':
-                        this.scanRepository(properties)
+                        this.repositoryScan(properties)
                         break
                     case 'repository-remove':
                         this.repositoryRemove(properties)
                         break
-                    case 'remove-framework':
+                    case 'framework-remove':
                         this.frameworkRemove(properties)
+                        break
+                    case 'select-all':
+                        this.selectAll()
                         break
                     case 'settings-reset':
                         this.$modal.confirm('ResetSettings')
@@ -207,7 +197,7 @@ export default new Vue({
             }
             if (e.dataTransfer != null) {
                 const files = e.dataTransfer.files
-                this.addRepositories(Array.from(files).map(({ path }) => path))
+                this.repositoryAdd(Array.from(files).map(({ path }) => path))
             }
             e.preventDefault()
         }
@@ -252,17 +242,17 @@ export default new Vue({
                 this.project.status = to
             })
         },
-        addProject () {
+        async projectAdd () {
             this.$modal.confirm('EditProject', { add: true })
                 .then(identifier => {
                     ipcRenderer.once('project-switched', () => {
-                        this.addRepositories()
+                        this.repositoryAdd()
                     })
                     ipcRenderer.send('project-switch', identifier)
                 })
                 .catch(() => {})
         },
-        editProject () {
+        async projectEdit () {
             this.$modal.confirm('EditProject')
                 .then(async options => {
                     options = await ipcRenderer.invoke('project-update', options)
@@ -275,7 +265,7 @@ export default new Vue({
                 })
                 .catch(() => {})
         },
-        async removeProject () {
+        async projectRemove () {
             this.$modal.confirm('RemoveProject')
                 .then(async () => {
                     const switchTo = await ipcRenderer.invoke('project-remove', this.project.id)
@@ -283,7 +273,7 @@ export default new Vue({
                 })
                 .catch(() => {})
         },
-        switchProject (projectId) {
+        projectSwitch (projectId) {
             // Clicking on current project shouldn't have any effect.
             if (projectId === this.project.id) {
                 // Windows will uncheck the project regardless of it being
@@ -323,7 +313,7 @@ export default new Vue({
             store.commit('context/CLEAR')
             ipcRenderer.send('project-switch', projectId ? { id: projectId } : null)
         },
-        addRepositories (directories) {
+        repositoryAdd (directories) {
             if (!isArray(directories)) {
                 directories = null
             }
@@ -344,14 +334,14 @@ export default new Vue({
         },
         async scanRepositories (repositories, n) {
             // Scan repository and queue the following one the modal callback.
-            this.scanRepository(repositories[n], () => {
+            this.repositoryScan(repositories[n], () => {
                 if ((n + 1) >= repositories.length) {
                     return
                 }
                 this.scanRepositories(repositories, (n + 1))
             })
         },
-        async scanRepository (repository, callback = null) {
+        async repositoryScan (repository, callback = null) {
             const exists = await this.repositoryExists(repository)
             if (!exists) {
                 if (callback) {

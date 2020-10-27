@@ -176,7 +176,6 @@ export class State extends EventEmitter {
         const project = new Project(identifier.id!)
         // If project is new, set its name.
         if (!project.get('options.name')) {
-            console.log('SETTING PROJECT NAME', identifier.name)
             project.set('options.name', identifier.name)
         }
 

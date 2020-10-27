@@ -36,7 +36,7 @@ export class ProjectMenu extends Menu {
                 label: __DARWIN__ ? 'Rename Project' : 'Rename project',
                 accelerator: 'CmdOrCtrl+Alt+E',
                 click: () => {
-                    this.emit('rename-project')
+                    this.emit('project-edit')
                 },
                 enabled: !!project
             })
@@ -44,7 +44,7 @@ export class ProjectMenu extends Menu {
                 label: __DARWIN__ ? 'Remove Project' : 'Remove project',
                 accelerator: 'CmdOrCtrl+Alt+Backspace',
                 click: () => {
-                    this.emit('remove-project')
+                    this.emit('project-remove')
                 },
                 enabled: !!project
             })
@@ -53,7 +53,7 @@ export class ProjectMenu extends Menu {
                 label: __DARWIN__ ? 'Add Repositories… ' : 'Add repositories…',
                 accelerator: 'CmdOrCtrl+Alt+O',
                 click: () => {
-                    this.emit('add-repositories')
+                    this.emit('repository-add')
                 },
                 enabled: !!project
             })

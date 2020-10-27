@@ -31,7 +31,7 @@
                         </div>
                         <h5 v-if="repositories.length" class="sidebar-header">
                             <span>Repositories</span>
-                            <button type="button" class="sidebar-action" @click="this.$root.addRepositories">
+                            <button type="button" class="sidebar-action" @click="this.$root.repositoryAdd">
                                 <Icon symbol="plus" />
                             </button>
                         </h5>
@@ -54,7 +54,7 @@
                         <div class="cta">
                             <h2>{{ 'Add repositories to :0' | set(model.name) }}</h2>
                             <p>Lode can have multiple repositories and frameworks inside a project.</p>
-                            <button class="btn btn-primary" @click="this.$root.addRepositories">Add repositories</button>
+                            <button class="btn btn-primary" @click="this.$root.repositoryAdd">Add repositories</button>
                         </div>
                     </template>
                     <template v-else-if="!framework">

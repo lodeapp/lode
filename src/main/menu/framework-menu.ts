@@ -13,7 +13,7 @@ export class FrameworkMenu extends Menu {
 
         this
             .addIf(!!framework, {
-                label: framework!.getDisplayName(),
+                label: framework ? framework!.getDisplayName() : '',
                 enabled: false
             })
             .add({
@@ -64,7 +64,7 @@ export class FrameworkMenu extends Menu {
             .add({
                 label: 'Remove',
                 click: () => {
-                    this.emit('remove-framework', framework!.render())
+                    this.emit('framework-remove', framework!.render())
                 },
                 accelerator: 'CmdOrCtrl+Backspace',
                 enabled: !!framework
