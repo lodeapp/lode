@@ -88,7 +88,7 @@
     "@types/latinize": "^0.2.15",
     "@types/lodash": "^4.14.116",
     "@types/markdown-it": "^0.0.8",
-    "@types/node": "^10.9.4",
+    "@types/node": "^12.12.70",
     "@types/shell-escape": "^0.2.0",
     "@types/uuid": "^3.4.4",
     "@vue/test-utils": "^1.0.0-beta.29",

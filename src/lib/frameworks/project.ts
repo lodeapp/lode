@@ -1,3 +1,4 @@
+import * as Fs from 'fs'
 import { v4 as uuid } from 'uuid'
 import { findIndex, fromPairs, omit } from 'lodash'
 import { state } from '@lib/state'
@@ -72,6 +73,7 @@ export interface IProject extends ProjectEventEmitter {
     persist (): ProjectOptions
     save (): void
     updateOptions (options: ProjectOptions): void
+    delete (): Promise<void>
     addRepository (options: RepositoryOptions): Promise<IRepository>
     removeRepository (id: string): void
     getActive (): ProjectActiveModels
@@ -238,6 +240,22 @@ export class Project extends ProjectEventEmitter implements IProject {
         // Currently only the name is editable
         this.name = options.name || ''
         state.updateProject({ id: this.id, name: this.name })
+    }
+
+    /**
+     * Delete this project.
+     */
+    public async delete (): Promise<void> {
+        await this.stop()
+        return new Promise((resolve, reject) => {
+            Fs.rmdir(this.state.getPath(), { recursive: true }, error => {
+                if (error) {
+                    reject(error)
+                    return
+                }
+                resolve()
+            })
+        })
     }
 
     /**

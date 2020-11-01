@@ -6,7 +6,7 @@ import store from './store'
 import * as Path from 'path'
 import { get, isArray, isEmpty } from 'lodash'
 import { parse } from 'flatted'
-import { clipboard, remote, ipcRenderer, shell } from 'electron'
+import { clipboard, ipcRenderer, shell } from 'electron'
 
 // Styles
 import '../styles/app.scss'
@@ -68,6 +68,7 @@ export default new Vue({
     },
     data () {
         return {
+            version: null,
             modals: [],
             ready: false,
             loading: true,
@@ -85,6 +86,7 @@ export default new Vue({
                     if (!properties.projectId) {
                         this.loading = false
                     }
+                    this.version = properties.version
                     this.ready = true
                 })
             })
@@ -103,6 +105,9 @@ export default new Vue({
                 this.$payload(payload, settings => {
                     this.updateSettings(settings)
                 })
+            })
+            .on('clear', () => {
+                this.loadProject()
             })
             .on('error', (event, payload) => {
                 this.$payload(payload, (message, help) => {
@@ -386,13 +391,13 @@ export default new Vue({
         async frameworkRemove (framework) {
             this.$modal.confirm('RemoveFramework', { framework })
                 .then(() => {
-                    this.handleFrameworkRemove(framework)
+                    this.handleFrameworkRemove(framework.id)
                 })
                 .catch(() => {})
         },
-        handleFrameworkRemove (framework) {
-            this.onModelRemove(framework.id)
-            ipcRenderer.send('framework-remove', framework.id)
+        handleFrameworkRemove (frameworkId) {
+            this.onModelRemove(frameworkId)
+            ipcRenderer.send('framework-remove', frameworkId)
         },
         setting (key) {
             return store.getters['settings/value'](key)
@@ -423,7 +428,7 @@ export default new Vue({
             })
 
             if (document.activeElement.dispatchEvent(event)) {
-                remote.getCurrentWebContents().selectAll()
+                ipcRenderer.send('select-all')
             }
         },
         crash () {

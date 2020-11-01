@@ -3,7 +3,8 @@ import '@lib/logger/main'
 import '@lib/tracker/main'
 
 import { stringify } from 'flatted'
-import { app, ipcMain } from 'electron'
+import { isEmpty, pickBy, identity } from 'lodash'
+import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import {
     applicationMenu,
     ProjectMenu,
@@ -168,7 +169,7 @@ ipcMain
     .on('project-switch', (event: Electron.IpcMainEvent, identifier?: ProjectIdentifier | null) => {
         const window: ApplicationWindow = ApplicationWindow.getFromWebContents(event.sender)!
         const project: IProject | null = window.getProject()
-        if (identifier) {
+        if (identifier && !isEmpty(pickBy(identifier, identity))) {
             window.setProject(identifier)
             state.set('currentProject', window.getProject()!.getId())
         } else {
@@ -305,6 +306,9 @@ ipcMain
             }
         })
     })
+    .on('select-all', (event: Electron.IpcMainEvent) => {
+        event.sender.selectAll()
+    })
     .on('settings-update', (event: Electron.IpcMainEvent, setting: string, value: any) => {
         state.set(setting, value)
         send(event.sender, 'settings-updated', [state.get()])
@@ -321,7 +325,7 @@ ipcMain
 ipcMain
     .handle('project-remove', async (event: Electron.IpcMainInvokeEvent) => {
         const project: IProject = getProject(event)
-        await project.stop()
+        await project.delete()
         return state.removeProject(project.getId())
     })
 
@@ -338,6 +342,13 @@ ipcMain
 ipcMain
     .handle('project-empty-repositories', async (event: Electron.IpcMainInvokeEvent) => {
         return JSON.stringify(getProject(event).getEmptyRepositories())
+    })
+
+ipcMain
+    .handle('project-add-repositories-menu', async (event: Electron.IpcMainInvokeEvent) => {
+        return (await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+            properties: ['openDirectory', 'multiSelections']
+        })).filePaths
     })
 
 ipcMain
@@ -413,6 +424,30 @@ ipcMain
         const repository: IRepository = await getRepository(event, repositoryId)
         const validator = new FrameworkValidator(repository.getPath())
         return JSON.stringify(validator.validate(options).getErrors())
+    })
+
+ipcMain
+    .handle('framework-autoload-path-menu', async (event: Electron.IpcMainInvokeEvent, defaultPath: string) => {
+        return (await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+            properties: ['openFile'],
+            defaultPath
+        })).filePaths
+    })
+
+ipcMain
+    .handle('framework-tests-path-menu', async (event: Electron.IpcMainInvokeEvent, defaultPath: string) => {
+        return (await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+            properties: ['createDirectory', 'openDirectory'],
+            defaultPath
+        })).filePaths
+    })
+
+ipcMain
+    .handle('framework-identity-menu', async (event: Electron.IpcMainInvokeEvent) => {
+        return (await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+            properties: ['openFile', 'showHiddenFiles'],
+            message: 'Choose a custom SSH key file to use with this connection.\nNote that ~/.ssh/id_rsa and identities defined in your SSH configuration are included by default.'
+        })).filePaths
     })
 
 ipcMain

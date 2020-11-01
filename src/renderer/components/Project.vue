@@ -163,7 +163,6 @@ export default {
         ipcRenderer
             .on('repositories', this.onRepositoriesEvent)
             .on('framework-active', this.onFrameworkActive)
-            .on('framework-updated', this.onFrameworkUpdated)
             .on('framework-options-updated', this.onFrameworkOptionsUpdated)
 
         this.getRepositories()
@@ -172,7 +171,6 @@ export default {
         ipcRenderer
             .removeListener('repositories', this.onRepositoriesEvent)
             .removeListener('framework-active', this.onFrameworkActive)
-            .removeListener('framework-updated', this.onFrameworkUpdated)
             .removeListener('framework-options-updated', this.onFrameworkOptionsUpdated)
     },
     methods: {
@@ -197,32 +195,28 @@ export default {
                 }
             }
         },
-        async onFrameworkActive (event, payload) {
-            this.$payload(payload, (framework, repository) => {
-                this.$store.dispatch('context/activate', { framework, repository })
-            })
-        },
-        async onFrameworkUpdated (event, payload) {
+        async onFrameworkOptionsUpdated (event, payload) {
+            this.frameworkLoading = true
             this.$payload(payload, framework => {
                 if (this.framework.id === framework.id) {
                     this.$store.commit('context/FRAMEWORK', framework)
+                    this.frameworkKey = this.$string.random()
                 }
             })
         },
-        async onFrameworkOptionsUpdated (event, payload) {
-            this.frameworkLoading = true
-            await this.onFrameworkUpdated(event, payload)
-            this.frameworkKey = this.$string.random()
+        async onFrameworkActive (event, payload) {
+            this.$payload(payload, (frameworkId, repository) => {
+                if (!frameworkId) {
+                    this.$store.commit('context/CLEAR')
+                } else if (!this.framework || this.framework.id !== frameworkId) {
+                    this.onFrameworkActivation(frameworkId, repository)
+                }
+            })
         },
         async onFrameworkActivation (frameworkId, repository) {
             this.frameworkLoading = true
             this.$root.repositoryExists(repository)
             this.$store.dispatch('context/activateWithId', { frameworkId, repository })
-
-            // @TODO: new means of checking if repository exist...
-            // Check if repository still exists before proceeding, but continue
-            // even if it does not so we can better handle changes or relocation.
-            // repository.exists()
 
             // @TODO: persist context, if necessary
             // If there's currently an active test, remember it.

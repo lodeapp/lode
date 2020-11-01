@@ -160,8 +160,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     protected addListeners (process: ChildProcess) {
         process.on('close', (...args) => this.onClose(...args))
         process.on('error', (err) => this.onError(err as ErrorWithCode))
-        process.stdout.on('data', (...args) => this.onData(...args))
-        process.stderr.on('data', (...args) => this.onData(...args))
+        process.stdout!.on('data', (...args) => this.onData(...args))
+        process.stderr!.on('data', (...args) => this.onData(...args))
     }
 
     /**

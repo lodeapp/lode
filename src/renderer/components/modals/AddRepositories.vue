@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { ipcRenderer, remote } from 'electron'
+import { ipcRenderer } from 'electron'
 import _find from 'lodash/find'
 import _uniqBy from 'lodash/uniqBy'
 import Modal from '@/components/modals/Modal'
@@ -89,15 +89,12 @@ export default {
     },
     methods: {
         async choose (index) {
-            remote.dialog.showOpenDialog({
-                properties: ['openDirectory', 'multiSelections']
-            }).then(({ filePaths }) => {
-                if (!filePaths || !filePaths.length) {
-                    return
-                }
+            const filePaths = await ipcRenderer.invoke('project-add-repositories-menu')
+            if (!filePaths || !filePaths.length) {
+                return
+            }
 
-                this.populate(filePaths, index)
-            })
+            this.populate(filePaths, index)
         },
         populate (filePaths, offset) {
             filePaths.forEach((path, index) => {

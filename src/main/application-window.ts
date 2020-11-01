@@ -122,7 +122,8 @@ export class ApplicationWindow {
             this.onReady()
             send(this.window.webContents, 'did-finish-load', [{
                 projectId: get(this.getProject(), 'id', null),
-                focus: this.window.isFocused()
+                focus: this.window.isFocused(),
+                version: app.getVersion()
             }])
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
         })
@@ -144,7 +145,7 @@ export class ApplicationWindow {
         this.send(`${id}:${event}`, args)
     }
 
-    public send (event: string, args: Array<any>) {
+    public send (event: string, args: Array<any> = []) {
         send(this.window.webContents, event, args)
     }
 
@@ -211,7 +212,7 @@ export class ApplicationWindow {
         if (this.project) {
             const { framework, repository } = this.project.getActive()
             this.send('framework-active', [
-                framework ? framework.render() : null,
+                framework ? framework.getId() : null,
                 repository ? repository.render() : null
             ])
         }
@@ -233,6 +234,7 @@ export class ApplicationWindow {
     public clear (): void {
         this.project = null
         this.refreshSettings()
+        this.send('clear')
     }
 
     public sendMenuEvent (args: any) {

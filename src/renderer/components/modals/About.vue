@@ -17,7 +17,6 @@
 </template>
 
 <script>
-import { remote } from 'electron'
 import Modal from '@/components/modals/Modal'
 
 export default {
@@ -32,7 +31,7 @@ export default {
     },
     computed: {
         version () {
-            return remote.app.getVersion()
+            return this.$root.version
         }
     },
     methods: {
