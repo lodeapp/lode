@@ -19,16 +19,19 @@
                     </span>
                     <button type="button" class="btn btn-sm" @click="handleScan" :disabled="scanning">Scan</button>
                 </h5>
-                <FrameworkSettings
-                    v-for="filtered in filteredFrameworks"
-                    :key="filtered.key"
-                    :repository="repository"
-                    :framework="filtered"
-                    :validator="filtered.validator"
-                    :dedicated="singleFramework"
-                    @input="handleChange(filtered, $event)"
-                    @remove="handleRemove(filtered)"
-                />
+                <template v-if="availableFrameworks">
+                    <FrameworkSettings
+                        v-for="filtered in filteredFrameworks"
+                        :key="filtered.key"
+                        :repository="repository"
+                        :framework="filtered"
+                        :validator="filtered.validator"
+                        :dedicated="singleFramework"
+                        :available-frameworks="availableFrameworks"
+                        @input="handleChange(filtered, $event)"
+                        @remove="handleRemove(filtered)"
+                    />
+                </template>
             </div>
         </div>
         <div slot="footer" class="modal-footer tertiary separated">
@@ -74,6 +77,7 @@ export default {
     },
     data () {
         return {
+            availableFrameworks: null,
             scanning: false,
             frameworks: [],
             removed: []
@@ -103,6 +107,10 @@ export default {
         }
     },
     created () {
+        ipcRenderer.invoke('framework-types').then(payload => {
+            this.availableFrameworks = JSON.parse(payload)
+        })
+
         this.parseFrameworks()
         if (this.scan) {
             this.handleScan()

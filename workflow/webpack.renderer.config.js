@@ -10,7 +10,6 @@ const webpack = require('webpack')
 
 const MinifyPlugin = require('babel-minify-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { VueLoaderPlugin } = require('vue-loader')
 const CircularDependencyPlugin = require('circular-dependency-plugin')
@@ -39,14 +38,37 @@ const rendererConfig = {
             },
             {
                 test: /\.scss$/,
-                use: ['vue-style-loader', 'css-loader', 'sass-loader']
+                use: [
+                    {
+                        loader: 'style-loader',
+                        options: { injectType: 'linkTag' }
+                    },
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: '[path][name].css'
+                        }
+                    },
+                    'sass-loader'
+                ]
             },
             {
                 test: /\.css$/,
-                use: ['vue-style-loader', 'css-loader']
+                use: [
+                    {
+                        loader: 'style-loader',
+                        options: { injectType: 'linkTag' }
+                    },
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: '[path][name].css'
+                        }
+                    }
+                ]
             },
             {
-                test: /\.tsx?$/,
+                test: /\.ts?$/,
                 loader: 'ts-loader',
                 exclude: /node_modules/,
                 options: {
@@ -63,9 +85,9 @@ const rendererConfig = {
                 use: {
                     loader: 'vue-loader',
                     options: {
-                        extractCSS: process.env.NODE_ENV === 'production',
+                        extractCSS: true,
                         loaders: {
-                            scss: 'vue-style-loader!css-loader!sass-loader'
+                            scss: 'style-loader!css-loader!sass-loader'
                         }
                     }
                 }
@@ -106,9 +128,6 @@ const rendererConfig = {
     },
     plugins: [
         new VueLoaderPlugin(),
-        new MiniCssExtractPlugin({
-            filename: 'styles.css'
-        }),
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: path.resolve(__dirname, '../src/index.ejs'),

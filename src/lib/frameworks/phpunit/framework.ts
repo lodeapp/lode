@@ -195,7 +195,7 @@ export class PHPUnit extends Framework {
     }
 
     /**
-     * Provide setup instructions for using Lode with Jest.
+     * Provide setup instructions for using Lode with PHPUnit.
      */
     public static instructions (): string {
         return ''

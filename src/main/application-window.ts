@@ -52,7 +52,8 @@ export class ApplicationWindow {
                 nodeIntegration: true,
                 contextIsolation: false,
                 worldSafeExecuteJavaScript: true,
-                enableRemoteModule: true
+                enableRemoteModule: true,
+                preload: __dirname + '../preload.js'
             },
             acceptFirstMouse: true
         }

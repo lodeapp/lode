@@ -2,6 +2,8 @@ import '@lib/crash/reporter'
 import '@lib/logger/main'
 import '@lib/tracker/main'
 
+import Fs from 'fs'
+import Path from 'path'
 import { stringify } from 'flatted'
 import { isEmpty, pickBy, identity } from 'lodash'
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
@@ -28,6 +30,7 @@ import {
     IProject
 } from '@lib/frameworks/project'
 import { IRepository } from '@lib/frameworks/repository'
+import { Frameworks } from '@lib/frameworks'
 import {
     FrameworkOptions,
     FrameworkFilter
@@ -124,19 +127,6 @@ function entities (
 
 app
     .on('ready', () => {
-        // @TODO: re-enable CSP once we figure out how to do it in Electron 10+
-        // session!.defaultSession!.webRequest.onHeadersReceived((details, callback) => {
-        //     callback({
-        //         responseHeaders: {
-        //             ...details.responseHeaders,
-        //             'Content-Security-Policy': [compact([
-        //                 'default-src \'self\'',
-        //                 process.env.NODE_ENV === 'development' ? 'style-src \'self\' \'unsafe-inline\'' : ''
-        //             ]).join('; ')]
-        //         }
-        //     })
-        // })
-
         track.screenview('Application started')
         currentWindow = ApplicationWindow.init(state.getCurrentProject())
         applicationMenu.build(currentWindow)
@@ -414,6 +404,16 @@ ipcMain
     })
 
 ipcMain
+    .handle('framework-types', async (event: Electron.IpcMainInvokeEvent) => {
+        return JSON.stringify(Frameworks.map(framework => {
+            return {
+                ...framework.getDefaults(),
+                instructions: framework.instructions()
+            }
+        }))
+    })
+
+ipcMain
     .handle('framework-get', async (event: Electron.IpcMainInvokeEvent, frameworkId: string) => {
         const { framework } = await entities(event, frameworkId)
         return JSON.stringify(framework.render())
@@ -461,6 +461,16 @@ ipcMain
                 })
                 .open()
         })
+    })
+
+ipcMain
+    .handle('terms', async (event: Electron.IpcMainInvokeEvent) => {
+        return Fs.readFileSync(Path.join(__static, '/LICENSE'), 'utf8') || ''
+    })
+
+ipcMain
+    .handle('licenses', async (event: Electron.IpcMainInvokeEvent) => {
+        return Fs.readFileSync(Path.join(__static, '/licenses.json'), 'utf8')
     })
 
 ipcMain

@@ -1,7 +1,11 @@
 <template>
     <Modal title="Terms and Conditions">
         <div class="terms">
-            <pre @click.prevent="$input.on($event, 'a', openLink)" v-markdown="license"></pre>
+            <pre
+                v-if="terms"
+                v-markdown.block="terms"
+                @click.prevent="$input.on($event, 'a', openLink)"
+            ></pre>
         </div>
         <div slot="footer" class="modal-footer tertiary flex-justify-end">
             <button type="button" class="btn btn-sm btn-primary" @click="$emit('hide')">
@@ -12,8 +16,7 @@
 </template>
 
 <script>
-import Fs from 'fs'
-import Path from 'path'
+import { ipcRenderer } from 'electron'
 import Modal from '@/components/modals/Modal'
 
 export default {
@@ -23,8 +26,11 @@ export default {
     },
     data () {
         return {
-            license: Fs.readFileSync(Path.join(__static, '/LICENSE'), 'utf8') || ''
+            terms: ''
         }
+    },
+    async created () {
+        this.terms = await ipcRenderer.invoke('terms')
     },
     methods: {
         openLink (event) {
