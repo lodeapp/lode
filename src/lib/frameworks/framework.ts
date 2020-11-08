@@ -3,6 +3,7 @@ import * as Fs from 'fs-extra'
 import { chunk, find, findIndex, get, omit, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import * as fuzzy from 'fuzzysearch'
+import { ApplicationWindow } from '@main/application-window'
 import { ProcessId, IProcess } from '@lib/process/process'
 import { ProcessFactory } from '@lib/process/factory'
 import { queue } from '@lib/process/queue'
@@ -122,6 +123,8 @@ export interface IFramework extends ProjectEventEmitter {
     getSuites (): Array<ISuite>
     getSuiteById (id: string): ISuite | undefined
     getSelected (): SuiteList
+    emitSuitesToRenderer (): void
+    emitAllSuitesToRenderer (): void
     setFilter (filter: FrameworkFilter, value: Array<string> | string | null): void
     getFilter (filter: FrameworkFilter): Array<string> | string | null
     hasFilters (): boolean
@@ -205,8 +208,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     static readonly defaults?: FrameworkDefaults
     static readonly sortDefault: FrameworkSort = 'name'
 
-    constructor (options: FrameworkOptions) {
-        super()
+    constructor (window: ApplicationWindow, options: FrameworkOptions) {
+        super(window)
         this.build(options)
     }
 
@@ -485,6 +488,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         const from = this.status
         this.status = to
         this.emit('status', to, from)
+        this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
+        this.emitToRenderer(`${this.id}:status:list`, to, from)
     }
 
     /**
@@ -731,7 +736,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                         }
                         this.running.push(this.debriefSuite(report))
                     } catch (error) {
-                        this.emit('error', error.toString(), this.troubleshoot(error))
+                        this.emit('error', error)
+                        this.emitToRenderer(`${this.id}:error`, error.toString(), this.troubleshoot(error))
                         log.error('Failed to debrief suite results.', error)
                     }
                 })
@@ -754,7 +760,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     protected afterRefresh () {
         this.cleanStaleSuites()
-        this.emit('refreshed', this.getAllSuites().map((suite: ISuite) => suite.render()))
+        this.emitAllSuitesToRenderer()
     }
 
     /**
@@ -826,7 +832,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     protected onError (error: Error): void {
         this.idleQueued()
         this.updateStatus('error')
-        this.emit('error', error.toString(), this.troubleshoot(error))
+        this.emit('error', error)
+        this.emitToRenderer(`${this.id}:error`, error.toString(), this.troubleshoot(error))
         this.emit('change', this)
         this.disassemble()
     }
@@ -930,7 +937,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             if (!suite) {
                 suite = this.newSuite(result)
                 suite
-                    .on('project-event', this.projectEventListener.bind(this))
                     .on('selected', this.updateSelected.bind(this))
                     .on('status', this.updateLedger.bind(this))
                 this.updateLedger(suite.getStatus())
@@ -1040,6 +1046,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
 
         this.selective = this.selected.suites.length > 0
         this.emit('selective', this.selected.suites.length)
+        this.emitToRenderer(`${this.id}:selective`, this.selected.suites.length)
     }
 
     /**
@@ -1055,7 +1062,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         if (from) {
             this.ledger[from]!--
         }
-        this.emit('ledger', this.ledger)
+        this.emitLedgerEvents()
     }
 
     /**
@@ -1065,7 +1072,15 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         for (let key of Object.keys(this.ledger)) {
             this.ledger[<Status>key] = 0
         }
+        this.emitLedgerEvents()
+    }
+
+    /**
+     * Emit ledger events.
+     */
+    protected emitLedgerEvents (): void {
         this.emit('ledger', this.ledger)
+        this.emitToRenderer(`${this.id}:ledger`, this.ledger)
     }
 
     /**
@@ -1319,6 +1334,20 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     }
 
     /**
+     * Send current suites to renderer process.
+     */
+    public emitSuitesToRenderer (): void {
+        this.emitToRenderer(`${this.id}:refreshed`, this.getSuites().map((suite: ISuite) => suite.render(false)))
+    }
+
+    /**
+     * Send all suites to renderer process.
+     */
+    public emitAllSuitesToRenderer (): void {
+        this.emitToRenderer(`${this.id}:refreshed`, this.getAllSuites().map((suite: ISuite) => suite.render(false)))
+    }
+
+    /**
      * Set a filter for this framework.
      */
     public setFilter (
@@ -1327,6 +1356,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     ): void {
         this.filters[filter] = Array.isArray(value) ? (value.length ? value : null) : value
         this.emit('filter', this.filters)
+        this.emitSuitesToRenderer()
     }
 
     /**
@@ -1352,6 +1382,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             status: null,
             group: null
         }
+        this.emitSuitesToRenderer()
     }
 
     /**

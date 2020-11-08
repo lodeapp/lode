@@ -1,5 +1,7 @@
 import { debounce, find, get, isArray, max, maxBy, pickBy, sum } from 'lodash'
+import { ApplicationWindow } from '@main/application-window'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
+import { ISuiteResult } from '@lib/frameworks/suite'
 import { ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
 
@@ -21,10 +23,22 @@ export abstract class Nugget extends ProjectEventEmitter {
 
     protected updateCountsListener: (nugget: Nugget, toggle: boolean) => Promise<void>
 
-    constructor () {
-        super()
+    constructor (window: ApplicationWindow) {
+        super(window)
         this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 100)
     }
+
+    /**
+     * Get the nugget's id.
+     */
+    public abstract getId (): string
+
+    /**
+     * Prepares the test for sending out to renderer process.
+     *
+     * @param status Which status to recursively set on tests.
+     */
+    public abstract render (status?: Status | false): ISuiteResult | ITestResult;
 
     /**
      * Instantiate a new test.
@@ -98,9 +112,7 @@ export abstract class Nugget extends ProjectEventEmitter {
         let test: ITest | undefined | boolean = force ? false : this.findTest(result.id)
         if (!test) {
             test = this.newTest(result)
-            test
-                .on('project-event', this.projectEventListener.bind(this))
-                .on('selected', this.updateCountsListener)
+            test.on('selected', this.updateCountsListener)
             // If nugget is selected, newly created test should be, too.
             test.selected = this.selected
             this.tests.push(test)
@@ -120,6 +132,7 @@ export abstract class Nugget extends ProjectEventEmitter {
         if (this.partial !== partial) {
             this.partial = partial
             this.emit('selective', this)
+            this.emitToRenderer(`${this.getId()}:selective`, this.render())
         }
 
         // Update whether this nugget should be selected or not, based on children
@@ -239,6 +252,8 @@ export abstract class Nugget extends ProjectEventEmitter {
             }
 
             this.emit('status', to, from)
+            this.emitToRenderer(`${this.getId()}:status:list`, to, from)
+            this.emitToRenderer(`${this.getId()}:status:active`, to, from)
         }
     }
 
@@ -343,6 +358,7 @@ export abstract class Nugget extends ProjectEventEmitter {
         }
 
         this.emit('selected', this, toggle)
+        this.emitToRenderer(`${this.getId()}:selected`, this.render(), toggle)
         return Promise.resolve()
     }
 

@@ -1,6 +1,7 @@
 import * as Fs from 'fs'
 import { v4 as uuid } from 'uuid'
 import { findIndex, fromPairs, omit } from 'lodash'
+import { ApplicationWindow } from '@main/application-window'
 import { state } from '@lib/state'
 import { Project as ProjectState } from '@lib/state/project'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
@@ -82,6 +83,8 @@ export interface IProject extends ProjectEventEmitter {
     getContextByFrameworkId (id: string): FrameworkWithContext | undefined
     getEmptyRepositories (): Array<IRepository>
     getProgressLedger (): ProgressLedger
+    getProgress (): number
+    emitRepositoriesToRenderer (): void
 }
 
 export class Project extends ProjectEventEmitter implements IProject {
@@ -99,8 +102,8 @@ export class Project extends ProjectEventEmitter implements IProject {
     protected initialRepositoryCount: number = 0
     protected initialRepositoryReady: number = 0
 
-    constructor (identifier: ProjectIdentifier) {
-        super()
+    constructor (window: ApplicationWindow, identifier: ProjectIdentifier) {
+        super(window)
         this.id = identifier.id || uuid()
         this.state = state.project({ ...identifier, id: this.id })
         this.name = this.state.get('options.name')
@@ -351,6 +354,8 @@ export class Project extends ProjectEventEmitter implements IProject {
         const from = this.status
         this.status = to
         this.emit('status', to, from)
+        this.emitToRenderer(`${this.id}:status:index`, to, from)
+        this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
     }
 
     /**
@@ -378,9 +383,8 @@ export class Project extends ProjectEventEmitter implements IProject {
      */
     public async addRepository (options: RepositoryOptions): Promise<IRepository> {
         return new Promise((resolve, reject) => {
-            const repository = new Repository(options)
+            const repository = new Repository(this.window, options)
             repository
-                .on('project-event', this.projectEventListener.bind(this))
                 .on('ready', this.onRepositoryReady.bind(this))
                 .on('status', this.statusListener.bind(this))
                 .on('state', this.stateListener.bind(this))
@@ -521,5 +525,12 @@ export class Project extends ProjectEventEmitter implements IProject {
     public getProgress (): number {
         const ledger = this.getProgressLedger()
         return ledger.total ? ledger.run / ledger.total : -1
+    }
+
+    /**
+     * Send project's repositories to the renderer process.
+     */
+    public emitRepositoriesToRenderer (): void {
+        this.emitToRenderer(`${this.id}:repositories`, this.repositories.map((repository: IRepository) => repository.render()))
     }
 }

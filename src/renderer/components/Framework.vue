@@ -128,7 +128,6 @@ import Filename from '@/components/Filename'
 import Indicator from '@/components/Indicator'
 import Ledger from '@/components/Ledger'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
-import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
     name: 'Framework',
@@ -138,8 +137,7 @@ export default {
         Ledger
     },
     mixins: [
-        HasFrameworkMenu,
-        HasStatus
+        HasFrameworkMenu
     ],
     props: {
         model: {
@@ -152,6 +150,7 @@ export default {
             suites: [],
             total: 0,
             selected: 0,
+            status: this.model.status || 'idle',
             keyword: this.$store.getters['filters/all'](this.model.id)['keyword'] || ''
         }
     },
@@ -200,32 +199,26 @@ export default {
     },
     created () {
         Lode.ipc
-            .on(`${this.model.id}:error`, this.onErrorEvent)
+            .on(`${this.model.id}:status:list`, this.statusListener)
             .on(`${this.model.id}:refreshed`, this.onSuitesEvent)
             .on(`${this.model.id}:selective`, this.onSelectiveEvent)
-            .on(`${this.model.id}:menu-event`, this.onAppMenuEvent)
 
         this.getSuites()
         this.selected = this.model.selected
     },
     beforeDestroy () {
         Lode.ipc
-            .removeAllListeners(`${this.model.id}:error`)
+            .removeAllListeners(`${this.model.id}:status:list`)
             .removeAllListeners(`${this.model.id}:refreshed`)
             .removeAllListeners(`${this.model.id}:selective`)
-            .removeAllListeners(`${this.model.id}:menu-event`)
     },
     methods: {
         getSuites () {
             Lode.ipc.send('framework-suites', this.model.id)
         },
-        onErrorEvent (event, payload) {
-            this.$payload(payload, (message, help) => {
-                this.$alert.show({
-                    type: 'error',
-                    message: this.$string.set('The process for **:0** terminated unexpectedly.', this.model.name),
-                    help
-                })
+        statusListener (event, payload) {
+            this.$payload(payload, (to, from) => {
+                this.status = to
             })
         },
         onSuitesEvent (event, payload) {
@@ -286,20 +279,6 @@ export default {
         },
         onChildContextMenu (context) {
             Lode.ipc.send('nugget-context-menu', this.model.id, context)
-        },
-        onAppMenuEvent (event, { name, properties }) {
-            if (!this.model) {
-                return
-            }
-
-            switch (name) {
-                case 'filter':
-                    this.$el.querySelector('[type="search"]').focus()
-                    if (properties) {
-                        this.keyword = properties
-                    }
-                    break
-            }
         },
         setKeywordFilter (keyword) {
             Lode.ipc.send('framework-filter', this.model.id, 'keyword', keyword)

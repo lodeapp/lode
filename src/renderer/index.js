@@ -147,6 +147,14 @@ export default new Vue({
                     case 'framework-remove':
                         this.frameworkRemove(properties)
                         break
+                    case 'filter':
+                        const filter = this.$el.querySelector('[type="search"]')
+                        filter.focus()
+                        if (properties) {
+                            filter.value = properties
+                            filter.dispatchEvent(new Event('input'))
+                        }
+                        break
                     case 'select-all':
                         this.selectAll()
                         break
@@ -234,7 +242,7 @@ export default new Vue({
 
             // Register project listeners
             if (this.project) {
-                Lode.ipc.on(`${this.project.id}:status`, this.projectStatusListener)
+                Lode.ipc.on(`${this.project.id}:status:index`, this.projectStatusListener)
             }
         },
         projectStatusListener (event, payload) {
@@ -306,7 +314,7 @@ export default new Vue({
         handleProjectSwitch (identifier) {
             // Before switching, remove project listeners
             if (this.project) {
-                Lode.ipc.removeAllListeners(`${this.project.id}:status`)
+                Lode.ipc.removeAllListeners(`${this.project.id}:status:index`)
             }
             this.loading = true
             this.project = null

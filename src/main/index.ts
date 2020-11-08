@@ -134,7 +134,14 @@ app
         if (!__DEV__) {
             // Start auto-updating process.
             new Updater()
+            return
         }
+
+        setInterval(() => {
+            process.getProcessMemoryInfo().then(memory => {
+                log.info(`Private: ${memory.private}, Shared: ${memory.shared}`)
+            })
+        }, 5000)
     })
 
 ipcMain
@@ -176,9 +183,7 @@ ipcMain
         }
     })
     .on('project-repositories', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier) => {
-        send(event.sender, 'repositories', [
-            getProject(event).repositories.map((repository: IRepository) => repository.render())
-        ])
+        getProject(event).emitRepositoriesToRenderer()
     })
     .on('project-active-framework', (event: Electron.IpcMainEvent, frameworkId: ProjectActiveIdentifiers['framework']) => {
         const project = getProject(event)
@@ -188,7 +193,7 @@ ipcMain
     .on('repository-remove', (event: Electron.IpcMainEvent, repositoryId: string) => {
         const project: IProject = getProject(event)
         project.removeRepository(repositoryId)
-        send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
+        project.emitRepositoriesToRenderer()
         ApplicationWindow.getFromWebContents(event.sender)!.refreshActiveFramework()
     })
     .on('repository-toggle', async (event: Electron.IpcMainEvent, repositoryId: string, toggle: boolean) => {
@@ -204,13 +209,13 @@ ipcMain
         repository.addFramework(options).then(framework => {
             framework.refresh()
         })
-        send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
+        repository.emitFrameworksToRenderer()
         ApplicationWindow.getFromWebContents(event.sender)!.refreshActiveFramework()
     })
     .on('framework-remove', async (event: Electron.IpcMainEvent, frameworkId: string) => {
         entities(event, frameworkId).then(({ repository, framework }) => {
             repository.removeFramework(framework.getId())
-            send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
+            repository.emitFrameworksToRenderer()
             ApplicationWindow.getFromWebContents(event.sender)!.refreshActiveFramework()
         })
     })
@@ -220,8 +225,9 @@ ipcMain
                 ...options,
                 repositoryPath: repository.getPath()
             })
-            send(event.sender, `${repository.getId()}:frameworks`, [repository.frameworks.map(framework => framework.render())])
+            repository.emitFrameworksToRenderer()
             send(event.sender, 'framework-options-updated', [framework.render()])
+            framework.emitSuitesToRenderer()
         })
     })
     .on('framework-refresh', (event: Electron.IpcMainEvent, frameworkId: string) => {
@@ -241,31 +247,17 @@ ipcMain
     })
     .on('framework-suites', (event: Electron.IpcMainEvent, frameworkId: string) => {
         entities(event, frameworkId).then(({ framework }) => {
-            send(
-                event.sender,
-                `${framework.getId()}:refreshed`,
-                [framework.getSuites().map((suite: ISuite) => suite.render(false))]
-            )
+            framework.emitSuitesToRenderer()
         })
     })
     .on('framework-filter', (event: Electron.IpcMainEvent, frameworkId: string, key: FrameworkFilter, value: any) => {
         entities(event, frameworkId).then(({ framework }) => {
             framework.setFilter(key, value)
-            send(
-                event.sender,
-                `${framework.getId()}:refreshed`,
-                [framework.getSuites().map((suite: ISuite) => suite.render(false))]
-            )
         })
     })
     .on('framework-reset-filters', (event: Electron.IpcMainEvent, frameworkId: string) => {
         entities(event, frameworkId).then(({ framework }) => {
             framework.resetFilters()
-            send(
-                event.sender,
-                `${framework.getId()}:refreshed`,
-                [framework.getSuites().map((suite: ISuite) => suite.render(false))]
-            )
         })
     })
     .on('framework-toggle-child', async (event: Electron.IpcMainEvent, frameworkId: string, identifiers: Array<string>, toggle: boolean) => {
@@ -364,7 +356,7 @@ ipcMain
         const repositories = await Promise.all(paths.map(path => {
             return project.addRepository({ path })
         }))
-        send(event.sender, 'repositories', [project.repositories.map((repository: IRepository) => repository.render())])
+        project.emitRepositoriesToRenderer()
         return JSON.stringify(repositories.map(repository => repository.render()))
     })
 

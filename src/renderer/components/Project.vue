@@ -82,7 +82,7 @@
                         <Framework
                             v-if="framework"
                             v-show="!frameworkLoading"
-                            :key="$string.from([frameworkKey, framework.id])"
+                            :key="framework.id"
                             :model="framework"
                             @activate="onTestActivation"
                             @mounted="frameworkLoading = false"
@@ -113,7 +113,6 @@ import Indicator from '@/components/Indicator'
 import Framework from '@/components/Framework'
 import Results from '@/components/Results'
 import Split from '@/components/Split'
-import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
     name: 'Project',
@@ -126,9 +125,6 @@ export default {
         Results,
         Split
     },
-    mixins: [
-        HasStatus
-    ],
     props: {
         model: {
             type: Object,
@@ -141,6 +137,7 @@ export default {
             loading: true,
             frameworkLoading: true,
             frameworkKey: this.$string.random(),
+            status: this.model.status || 'idle',
             menuActive: false,
             repositories: [],
             persistContext: {}
@@ -160,7 +157,8 @@ export default {
     },
     created () {
         Lode.ipc
-            .on('repositories', this.onRepositoriesEvent)
+            .on(`${this.model.id}:status:sidebar`, this.statusListener)
+            .on(`${this.model.id}:repositories`, this.onRepositoriesEvent)
             .on('framework-active', this.onFrameworkActive)
             .on('framework-options-updated', this.onFrameworkOptionsUpdated)
 
@@ -168,7 +166,8 @@ export default {
     },
     beforeDestroy () {
         Lode.ipc
-            .removeAllListeners('repositories')
+            .removeAllListeners(`${this.model.id}:status:sidebar`)
+            .removeAllListeners(`${this.model.id}:repositories`)
             .removeAllListeners('framework-active')
             .removeAllListeners('framework-options-updated')
     },
@@ -177,6 +176,11 @@ export default {
             Lode.ipc.send('project-repositories', {
                 id: this.model.id,
                 name: this.model.name
+            })
+        },
+        statusListener (event, payload) {
+            this.$payload(payload, (to, from) => {
+                this.status = to
             })
         },
         async onRepositoriesEvent (event, payload) {

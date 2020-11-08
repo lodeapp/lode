@@ -4,6 +4,7 @@ import { dialog } from 'electron'
 import { pathExistsSync } from 'fs-extra'
 import { v4 as uuid } from 'uuid'
 import { findIndex, omit } from 'lodash'
+import { ApplicationWindow } from '@main/application-window'
 import { Frameworks } from '@lib/frameworks'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
@@ -65,6 +66,7 @@ export interface IRepository extends ProjectEventEmitter {
     locate (window: Electron.BrowserWindow): void
     getProgressLedger (): ProgressLedger
     resetProgressLedger (): void
+    emitFrameworksToRenderer (): void
 }
 
 export class Repository extends ProjectEventEmitter implements IRepository {
@@ -86,8 +88,8 @@ export class Repository extends ProjectEventEmitter implements IRepository {
         total: 0
     }
 
-    constructor (options: RepositoryOptions) {
-        super()
+    constructor (window: ApplicationWindow, options: RepositoryOptions) {
+        super(window)
         this.id = options.id || uuid()
         this.path = options.path
         this.name = options.name || Path.basename(this.path) || 'untitled'
@@ -361,6 +363,7 @@ export class Repository extends ProjectEventEmitter implements IRepository {
         const from = this.status
         this.status = to
         this.emit('status', to, from)
+        this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
     }
 
     /**
@@ -388,9 +391,8 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      */
     public async addFramework (options: FrameworkOptions): Promise<IFramework> {
         return new Promise((resolve, reject) => {
-            const framework: IFramework = FrameworkFactory.make({ ...options, ...{ repositoryPath: this.path }})
+            const framework: IFramework = FrameworkFactory.make(this.window, { ...options, ...{ repositoryPath: this.path }})
             framework
-                .on('project-event', this.projectEventListener.bind(this))
                 .on('ready', this.onFrameworkReady.bind(this))
                 .on('status', this.statusListener.bind(this))
                 .on('state', this.stateListener.bind(this))
@@ -505,5 +507,12 @@ export class Repository extends ProjectEventEmitter implements IRepository {
         this.frameworks.forEach((framework: IFramework) => {
             framework.resetProgressLedger()
         })
+    }
+
+    /**
+     * Send repository's frameworks to the renderer process.
+     */
+    public emitFrameworksToRenderer (): void {
+        this.emitToRenderer(`${this.id}:frameworks`, this.frameworks.map(framework => framework.render()))
     }
 }

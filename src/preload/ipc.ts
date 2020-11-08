@@ -18,7 +18,6 @@ export class Ipc {
     }
 
     handleOn (event: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
-        console.log('REGISTERING LISTENER', event, listener)
         ipcRenderer.on(event, listener)
         return this
     }
@@ -29,7 +28,6 @@ export class Ipc {
     }
 
     handleRemoveAllListeners (event: string): this {
-        console.log('REMOVING LISTENER', event)
         ipcRenderer.removeAllListeners(event)
         return this
     }

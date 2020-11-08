@@ -1,4 +1,5 @@
 import { get, omit } from 'lodash'
+import { ApplicationWindow } from '@main/application-window'
 import { Status } from '@lib/frameworks/status'
 import { Nugget } from '@lib/frameworks/nugget'
 
@@ -49,8 +50,8 @@ export class Test extends Nugget implements ITest {
     protected status!: Status
     public result!: ITestResult
 
-    constructor (result: ITestResult) {
-        super()
+    constructor (window: ApplicationWindow, result: ITestResult) {
+        super(window)
         this.build(result, false)
     }
 
@@ -132,7 +133,7 @@ export class Test extends Nugget implements ITest {
      * @param result The test result with which to instantiate a new test.
      */
     protected newTest (result: ITestResult): ITest {
-        return new Test(result)
+        return new Test(this.window, result)
     }
 
     /**

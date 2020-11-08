@@ -143,10 +143,6 @@ export class ApplicationWindow {
         )
     }
 
-    protected projectEventListener ({ channel, args }: { channel: string, args: Array<any> }): void {
-        this.send(channel, args)
-    }
-
     public send (event: string, args: Array<any> = []) {
         send(this.window.webContents, event, args)
     }
@@ -162,7 +158,7 @@ export class ApplicationWindow {
     public setProject (identifier: ProjectIdentifier): void {
         // Instantiate new project from identifier. If it does not yet exist
         // in the store, it'll be created.
-        this.project = new Project(identifier)
+        this.project = new Project(this, identifier)
         this.project
             // @TODO: when setting another project, make sure previous one's
             // listeners are no longer active.
@@ -172,7 +168,6 @@ export class ApplicationWindow {
                 }
                 this.projectReady()
             })
-            .on('project-event', this.projectEventListener.bind(this))
             .on('progress', this.updateProgress.bind(this))
     }
 

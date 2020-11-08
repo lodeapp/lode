@@ -35,7 +35,6 @@
 import { mapGetters } from 'vuex'
 import Indicator from '@/components/Indicator'
 import SidebarFramework from '@/components/SidebarFramework'
-import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
     name: 'SidebarRepository',
@@ -43,9 +42,6 @@ export default {
         Indicator,
         SidebarFramework
     },
-    mixins: [
-        HasStatus
-    ],
     props: {
         model: {
             type: Object,
@@ -55,6 +51,7 @@ export default {
     data () {
         return {
             frameworks: [],
+            status: this.model.status || 'idle',
             menuActive: false
         }
     },
@@ -67,17 +64,28 @@ export default {
         })
     },
     created () {
-        Lode.ipc.on(`${this.model.id}:frameworks`, this.updateFrameworks)
+        Lode.ipc
+            .on(`${this.model.id}:status:sidebar`, this.statusListener)
+            .on(`${this.model.id}:frameworks`, this.updateFrameworks)
+
         if (this.model.expanded) {
             this.getFrameworks()
         }
     },
     beforeDestroy () {
-        Lode.ipc.removeAllListeners(`${this.model.id}:frameworks`)
+        Lode.ipc
+            .removeAllListeners(`${this.model.id}:status:sidebar`)
+            .removeAllListeners(`${this.model.id}:frameworks`)
     },
     methods: {
         async getFrameworks () {
             this.frameworks = JSON.parse(await Lode.ipc.invoke('repository-frameworks', this.model.id))
+        },
+        statusListener (event, payload) {
+            this.$payload(payload, (to, from) => {
+                this.status = to
+                this.$emit('status', to, from, this.model)
+            })
         },
         updateFrameworks (event, payload) {
             this.$payload(payload, frameworks => {

@@ -66,7 +66,7 @@ export class Suite extends Nugget implements ISuite {
     protected framework: IFramework
 
     constructor (framework: IFramework, result: ISuiteResult) {
-        super()
+        super(framework.getApplicationWindow())
         this.framework = framework
         this.build(result)
     }
@@ -163,7 +163,7 @@ export class Suite extends Nugget implements ISuite {
      * @param result The test result with which to instantiate a new test.
      */
     protected newTest (result: ITestResult): ITest {
-        return new Test(result)
+        return new Test(this.window, result)
     }
 
     /**

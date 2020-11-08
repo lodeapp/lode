@@ -59,13 +59,9 @@
 <script>
 import { mapGetters } from 'vuex'
 import { labels } from '@lib/frameworks/status'
-import HasStatus from '@/components/mixins/HasStatus'
 
 export default {
     name: 'Nugget',
-    mixins: [
-        HasStatus
-    ],
     props: {
         model: {
             type: Object,
@@ -87,11 +83,15 @@ export default {
     data () {
         return {
             tests: [],
+            status: this.model.status || 'idle',
             partial: this.model.partial,
             selected: this.model.selected || false
         }
     },
     computed: {
+        identifier () {
+            return this.model.id || this.model.file
+        },
         show () {
             return this.$store.getters['expand/expanded'](this.identifier)
         },
@@ -121,6 +121,7 @@ export default {
     },
     created () {
         Lode.ipc
+            .on(`${this.identifier}:status:list`, this.statusListener)
             .on(`${this.identifier}:framework-tests`, this.onTestsEvent)
             .on(`${this.identifier}:selective`, this.onSelectedEvent)
             .on(`${this.identifier}:selected`, this.onSelectedEvent)
@@ -131,11 +132,18 @@ export default {
     },
     beforeDestroy () {
         Lode.ipc
+            .removeAllListeners(`${this.identifier}:status:list`)
             .removeAllListeners(`${this.identifier}:framework-tests`)
             .removeAllListeners(`${this.identifier}:selective`)
             .removeAllListeners(`${this.identifier}:selected`)
     },
     methods: {
+        statusListener (event, payload) {
+            this.$payload(payload, (to, from) => {
+                this.status = to
+                this.$emit('status', to, from, this.model)
+            })
+        },
         onTestsEvent (event, payload) {
             this.$payload(payload, tests => {
                 this.tests = tests
