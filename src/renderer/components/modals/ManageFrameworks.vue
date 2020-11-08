@@ -30,6 +30,7 @@
                         :available-frameworks="availableFrameworks"
                         @input="handleChange(filtered, $event)"
                         @remove="handleRemove(filtered)"
+                        @keyup.native.enter="handleEnter"
                     />
                 </template>
             </div>
@@ -174,6 +175,11 @@ export default {
                 if (removed[0].id) {
                     this.removed.push(removed[0].id)
                 }
+            }
+        },
+        handleEnter () {
+            if (this.singleFramework) {
+                this.save()
             }
         },
         async save () {

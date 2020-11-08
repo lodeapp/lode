@@ -9,6 +9,6 @@ module.exports = {
     ...base,
     target: 'electron-preload',
     entry: {
-        preload: path.join(__dirname, '../src/preload/index.js')
+        preload: path.join(__dirname, '../src/preload/index.ts')
     }
 }
