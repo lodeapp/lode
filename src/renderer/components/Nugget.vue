@@ -57,7 +57,6 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
 import { mapGetters } from 'vuex'
 import { labels } from '@lib/frameworks/status'
 import HasStatus from '@/components/mixins/HasStatus'
@@ -121,7 +120,7 @@ export default {
         })
     },
     created () {
-        ipcRenderer
+        Lode.ipc
             .on(`${this.identifier}:framework-tests`, this.onTestsEvent)
             .on(`${this.identifier}:selective`, this.onSelectedEvent)
             .on(`${this.identifier}:selected`, this.onSelectedEvent)
@@ -131,10 +130,10 @@ export default {
         }
     },
     beforeDestroy () {
-        ipcRenderer
-            .removeListener(`${this.identifier}:framework-tests`, this.onTestsEvent)
-            .removeListener(`${this.identifier}:selective`, this.onSelectedEvent)
-            .removeListener(`${this.identifier}:selected`, this.onSelectedEvent)
+        Lode.ipc
+            .removeAllListeners(`${this.identifier}:framework-tests`)
+            .removeAllListeners(`${this.identifier}:selective`)
+            .removeAllListeners(`${this.identifier}:selected`)
     },
     methods: {
         onTestsEvent (event, payload) {

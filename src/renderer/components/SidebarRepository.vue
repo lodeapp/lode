@@ -32,7 +32,6 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
 import { mapGetters } from 'vuex'
 import Indicator from '@/components/Indicator'
 import SidebarFramework from '@/components/SidebarFramework'
@@ -68,17 +67,17 @@ export default {
         })
     },
     created () {
-        ipcRenderer.on(`${this.model.id}:frameworks`, this.updateFrameworks)
+        Lode.ipc.on(`${this.model.id}:frameworks`, this.updateFrameworks)
         if (this.model.expanded) {
             this.getFrameworks()
         }
     },
     beforeDestroy () {
-        ipcRenderer.removeListener(`${this.model.id}:frameworks`, this.updateFrameworks)
+        Lode.ipc.removeAllListeners(`${this.model.id}:frameworks`)
     },
     methods: {
         async getFrameworks () {
-            this.frameworks = JSON.parse(await ipcRenderer.invoke('repository-frameworks', this.model.id))
+            this.frameworks = JSON.parse(await Lode.ipc.invoke('repository-frameworks', this.model.id))
         },
         updateFrameworks (event, payload) {
             this.$payload(payload, frameworks => {
@@ -87,7 +86,7 @@ export default {
         },
         toggle () {
             this.model.expanded = !this.model.expanded
-            ipcRenderer.send('repository-toggle', this.model.id, this.model.expanded)
+            Lode.ipc.send('repository-toggle', this.model.id, this.model.expanded)
             if (this.model.expanded) {
                 this.getFrameworks()
                 return
@@ -96,7 +95,7 @@ export default {
         },
         onContextMenu () {
             this.menuActive = true
-            ipcRenderer.invoke('repository-context-menu', this.model.id).finally(() => {
+            Lode.ipc.invoke('repository-context-menu', this.model.id).finally(() => {
                 this.menuActive = false
             })
         },

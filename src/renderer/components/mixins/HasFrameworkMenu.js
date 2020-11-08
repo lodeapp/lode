@@ -1,5 +1,3 @@
-import { ipcRenderer } from 'electron'
-
 export default {
     data () {
         return {
@@ -13,7 +11,7 @@ export default {
                 rect = JSON.parse(JSON.stringify(this.$el.querySelector('.more-actions').getBoundingClientRect()))
             }
             this.menuActive = true
-            ipcRenderer.invoke('framework-context-menu', this.model.id, rect)
+            Lode.ipc.invoke('framework-context-menu', this.model.id, rect)
                 .finally(() => {
                     this.menuActive = false
                     const button = this.$el.querySelector('.more-actions')

@@ -27,7 +27,6 @@
 <script>
 import _cloneDeep from 'lodash/cloneDeep'
 import { mapGetters } from 'vuex'
-import { ipcRenderer } from 'electron'
 
 export default {
     name: 'Ledger',
@@ -74,10 +73,10 @@ export default {
         })
     },
     created () {
-        ipcRenderer.on(`${this.model.id}:ledger`, this.onLedgerEvent)
+        Lode.ipc.on(`${this.model.id}:ledger`, this.onLedgerEvent)
     },
     beforeDestroy () {
-        ipcRenderer.removeListener(`${this.model.id}:ledger`, this.onLedgerEvent)
+        Lode.ipc.removeAllListeners(`${this.model.id}:ledger`)
     },
     methods: {
         async onLedgerEvent (event, payload) {
@@ -108,7 +107,7 @@ export default {
             }
         },
         setFilter (filter) {
-            ipcRenderer.send('framework-filter', this.model.id, 'status', filter)
+            Lode.ipc.send('framework-filter', this.model.id, 'status', filter)
             this.$store.commit('filters/SET', {
                 id: this.model.id,
                 filters: {

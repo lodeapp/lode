@@ -6,13 +6,15 @@ const del = require('del')
 const webpack = require('webpack')
 
 const mainConfig = require('./webpack.main.config')
+const preloadConfig = require('./webpack.preload.config')
 const rendererConfig = require('./webpack.renderer.config')
 
 build()
 
 function build () {
-    del.sync(['dist/electron/*', '!.gitkeep'])
+    del.sync(['dist/*', '!.gitkeep'])
     pack(mainConfig)
+    pack(preloadConfig)
     pack(rendererConfig)
 }
 

@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
 import Modal from '@/components/modals/Modal'
 
 export default {
@@ -30,7 +29,7 @@ export default {
         }
     },
     async created () {
-        this.terms = await ipcRenderer.invoke('terms')
+        this.terms = await Lode.ipc.invoke('terms')
     },
     methods: {
         openLink (event) {

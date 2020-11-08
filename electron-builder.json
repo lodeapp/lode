@@ -6,11 +6,12 @@
     "output": "build"
   },
   "files": [
-    "dist/electron/**/*"
+    "dist/**/*"
   ],
   "asar": true,
   "asarUnpack": [
-    "dist/electron/static/reporters/**/**"
+    "dist/static/reporters/**/**",
+    "dist/preload.js"
   ],
   "extends": null,
   "afterSign": "./workflow/after-sign.js",

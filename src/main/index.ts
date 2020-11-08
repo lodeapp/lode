@@ -144,6 +144,12 @@ ipcMain
         // marked as being from the "main" process.
         writeLog(level, message)
     })
+    .on('track-screenview', (event: Electron.IpcMainEvent, screen: string) => {
+        track.screenview(screen)
+    })
+    .on('track-event', (event: Electron.IpcMainEvent, category: string, action: string, label: string | null, value: string | null) => {
+        track.event(category, action, label, value)
+    })
     .on('window-set', (event: Electron.IpcMainEvent, args: any[]) => {
         currentWindow = event as any
     })

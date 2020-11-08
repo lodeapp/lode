@@ -1,6 +1,7 @@
 import * as Path from 'path'
 import { get } from 'lodash'
 import { app, ipcMain, BrowserWindow } from 'electron'
+import { getResourceDirectory } from '@lib/helpers/paths'
 import { state } from '@lib/state'
 import { ProjectIdentifier, ProjectOptions, Project } from '@lib/frameworks/project'
 import { send } from '@main/ipc'
@@ -49,11 +50,11 @@ export class ApplicationWindow {
                 disableBlinkFeatures: 'Auxclick',
                 backgroundThrottling: false,
                 scrollBounce: true,
-                nodeIntegration: true,
-                contextIsolation: false,
+                nodeIntegration: false,
+                contextIsolation: true,
                 worldSafeExecuteJavaScript: true,
                 enableRemoteModule: true,
-                preload: __dirname + '../preload.js'
+                preload: Path.resolve(getResourceDirectory(), 'preload.js')
             },
             acceptFirstMouse: true
         }
@@ -142,8 +143,8 @@ export class ApplicationWindow {
         )
     }
 
-    protected projectEventListener ({ id, event, args }: { id: string, event: string, args: Array<any> }): void {
-        this.send(`${id}:${event}`, args)
+    protected projectEventListener ({ channel, args }: { channel: string, args: Array<any> }): void {
+        this.send(channel, args)
     }
 
     public send (event: string, args: Array<any> = []) {
@@ -163,14 +164,14 @@ export class ApplicationWindow {
         // in the store, it'll be created.
         this.project = new Project(identifier)
         this.project
+            // @TODO: when setting another project, make sure previous one's
+            // listeners are no longer active.
             .on('ready', async () => {
                 if (!this.ready) {
                     return
                 }
                 this.projectReady()
             })
-            // @TODO: when setting another project, make sure previous one's
-            // listeners are no longer active.
             .on('project-event', this.projectEventListener.bind(this))
             .on('progress', this.updateProgress.bind(this))
     }

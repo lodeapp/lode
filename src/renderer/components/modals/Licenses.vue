@@ -22,7 +22,6 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
 import Modal from '@/components/modals/Modal'
 
 export default {
@@ -37,7 +36,7 @@ export default {
     },
     async created () {
         try {
-            const licenses = await ipcRenderer.invoke('licenses')
+            const licenses = await Lode.ipc.invoke('licenses')
             this.licenses = licenses ? JSON.parse(licenses) : []
         } catch (_) {
             this.licenses = []

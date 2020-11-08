@@ -1,5 +1,3 @@
-import { ipcRenderer } from 'electron'
-
 export default {
     data () {
         return {
@@ -14,10 +12,10 @@ export default {
     created () {
         // @TODO: check frameworks being instantiated twice when switching in sidebar
         // console.log('created')
-        ipcRenderer.on(`${this.identifier}:status`, this.statusListener)
+        Lode.ipc.on(`${this.identifier}:status`, this.statusListener)
     },
     destroyed () {
-        ipcRenderer.removeListener(`${this.identifier}:status`, this.statusListener)
+        Lode.ipc.removeAllListeners(`${this.identifier}:status`)
     },
     methods: {
         statusListener (event, payload) {

@@ -46,7 +46,6 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
 import Modal from '@/components/modals/Modal'
@@ -107,7 +106,7 @@ export default {
         }
     },
     created () {
-        ipcRenderer.invoke('framework-types').then(payload => {
+        Lode.ipc.invoke('framework-types').then(payload => {
             this.availableFrameworks = JSON.parse(payload)
         })
 
@@ -119,7 +118,7 @@ export default {
     methods: {
         async parseFrameworks (scanned = false, pending = []) {
             const types = pending.map(p => p.type)
-            const frameworks = (JSON.parse(await ipcRenderer.invoke('repository-frameworks', this.repository.id)))
+            const frameworks = (JSON.parse(await Lode.ipc.invoke('repository-frameworks', this.repository.id)))
                 .map(framework => {
                     // If an existing framework has been removed, but user has
                     // triggered scan again, continue. This means the existing
@@ -157,7 +156,7 @@ export default {
         async handleScan () {
             this.scanning = true
             this.parseFrameworks(true, JSON.parse(
-                await ipcRenderer.invoke('repository-scan', this.repository.id))
+                await Lode.ipc.invoke('repository-scan', this.repository.id))
             )
             this.scanning = false
         },
@@ -181,7 +180,7 @@ export default {
             // Validate each slot before checking for errors in the form.
             for (let i = this.frameworks.length - 1; i >= 0; i--) {
                 this.frameworks[i].validator.refresh(JSON.parse(
-                    await ipcRenderer.invoke('framework-validate', this.repository.id, this.frameworks[i])
+                    await Lode.ipc.invoke('framework-validate', this.repository.id, this.frameworks[i])
                 ))
             }
 
@@ -191,10 +190,10 @@ export default {
                     .forEach(framework => {
                         // If the framework has an id (i.e. exists), update it, otherwise add.
                         if (framework.id) {
-                            ipcRenderer.send('framework-update', framework.id, framework)
+                            Lode.ipc.send('framework-update', framework.id, framework)
                             return
                         }
-                        ipcRenderer.send('framework-add', this.repository.id, framework)
+                        Lode.ipc.send('framework-add', this.repository.id, framework)
                     })
 
                 this.removeFrameworks()

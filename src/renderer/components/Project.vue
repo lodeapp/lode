@@ -106,7 +106,6 @@
 <script>
 import _findIndex from 'lodash/findIndex'
 import { mapGetters } from 'vuex'
-import { ipcRenderer } from 'electron'
 import Pane from '@/components/Pane'
 import ProjectLoader from '@/components/ProjectLoader'
 import SidebarRepository from '@/components/SidebarRepository'
@@ -160,7 +159,7 @@ export default {
         })
     },
     created () {
-        ipcRenderer
+        Lode.ipc
             .on('repositories', this.onRepositoriesEvent)
             .on('framework-active', this.onFrameworkActive)
             .on('framework-options-updated', this.onFrameworkOptionsUpdated)
@@ -168,14 +167,14 @@ export default {
         this.getRepositories()
     },
     beforeDestroy () {
-        ipcRenderer
-            .removeListener('repositories', this.onRepositoriesEvent)
-            .removeListener('framework-active', this.onFrameworkActive)
-            .removeListener('framework-options-updated', this.onFrameworkOptionsUpdated)
+        Lode.ipc
+            .removeAllListeners('repositories')
+            .removeAllListeners('framework-active')
+            .removeAllListeners('framework-options-updated')
     },
     methods: {
         getRepositories () {
-            ipcRenderer.send('project-repositories', {
+            Lode.ipc.send('project-repositories', {
                 id: this.model.id,
                 name: this.model.name
             })
@@ -241,7 +240,7 @@ export default {
         },
         onContextMenu () {
             this.menuActive = true
-            ipcRenderer.invoke('project-context-menu').finally(() => {
+            Lode.ipc.invoke('project-context-menu').finally(() => {
                 this.menuActive = false
             })
         }

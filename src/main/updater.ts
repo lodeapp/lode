@@ -12,6 +12,9 @@ export class Updater {
         autoUpdater.autoDownload = false
         autoUpdater.logger = log
         autoUpdater.checkForUpdates()
+            .catch(error => {
+                log.error(error)
+            })
 
         autoUpdater.on('checking-for-update', () => {
             applicationMenu.setOptions({

@@ -1,5 +1,11 @@
 import * as Path from 'path'
 
+export function getResourceDirectory (): string {
+    return __DEV__
+        ? Path.join(process.cwd(), 'dist')
+        : Path.join(process.resourcesPath, 'app.asar.unpacked', 'dist');
+}
+
 /**
  * Modifies a given path to return its location as an unpacked asset
  * (i.e. not part of the app's package, so publicly available. This is

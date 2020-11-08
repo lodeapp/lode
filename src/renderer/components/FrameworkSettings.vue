@@ -210,7 +210,6 @@
 <script>
 import * as Path from 'path'
 import _find from 'lodash/find'
-import { ipcRenderer } from 'electron'
 
 export default {
     name: 'FrameworkSettings',
@@ -290,7 +289,7 @@ export default {
     },
     methods: {
         async chooseAutoloadPath () {
-            const filePaths = await ipcRenderer.invoke('framework-autoload-path-menu', this.repository.path)
+            const filePaths = await Lode.ipc.invoke('framework-autoload-path-menu', this.repository.path)
             if (!filePaths || !filePaths.length) {
                 return
             }
@@ -299,7 +298,7 @@ export default {
             this.validator.reset('autoloadPath')
         },
         async chooseTestsPath () {
-            const filePaths = await ipcRenderer.invoke('framework-tests-path-menu', this.repository.path)
+            const filePaths = await Lode.ipc.invoke('framework-tests-path-menu', this.repository.path)
             if (!filePaths || !filePaths.length) {
                 return
             }
@@ -308,7 +307,7 @@ export default {
             this.validator.reset('path')
         },
         async chooseIdentity () {
-            const filePaths = await ipcRenderer.invoke('framework-identity-menu')
+            const filePaths = await Lode.ipc.invoke('framework-identity-menu')
             if (!filePaths || !filePaths.length) {
                 return
             }

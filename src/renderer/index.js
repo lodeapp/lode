@@ -3,10 +3,8 @@ import '@lib/tracker/renderer'
 
 import Vue from 'vue'
 import store from './store'
-import * as Path from 'path'
 import { get, isArray, isEmpty } from 'lodash'
 import { parse } from 'flatted'
-import { clipboard, ipcRenderer, shell } from 'electron'
 
 // Styles
 import '../styles/app.scss'
@@ -58,10 +56,6 @@ Vue.mixin({
     }
 })
 
-if (process.env.NODE_ENV !== 'development') {
-    window.__static = Path.join(__dirname, '/static').replace(/\\/g, '\\\\')
-}
-
 export default new Vue({
     components: {
         App
@@ -76,7 +70,7 @@ export default new Vue({
         }
     },
     created () {
-        ipcRenderer
+        Lode.ipc
             .on('did-finish-load', (event, payload) => {
                 this.$payload(payload, properties => {
                     document.body.classList.add(`platform-${process.platform}`)
@@ -160,16 +154,16 @@ export default new Vue({
                         this.$modal.confirm('ResetSettings')
                             .then(() => {
                                 this.handleProjectSwitch()
-                                ipcRenderer.send('settings-reset')
+                                Lode.ipc.send('settings-reset')
                             })
                             .catch(() => {})
                         break
                     case 'log-project':
-                        log.info(parse(await ipcRenderer.invoke('log-project')))
+                        log.info(parse(await Lode.ipc.invoke('log-project')))
                         break
                     case 'log-settings':
                         log.info({
-                            ...parse(await ipcRenderer.invoke('log-settings')),
+                            ...parse(await Lode.ipc.invoke('log-settings')),
                             vuex: store.getters['settings/value']()
                         })
                         break
@@ -240,7 +234,7 @@ export default new Vue({
 
             // Register project listeners
             if (this.project) {
-                ipcRenderer.on(`${this.project.id}:status`, this.projectStatusListener)
+                Lode.ipc.on(`${this.project.id}:status`, this.projectStatusListener)
             }
         },
         projectStatusListener (event, payload) {
@@ -251,7 +245,7 @@ export default new Vue({
         async projectAdd () {
             this.$modal.confirm('EditProject', { add: true })
                 .then(identifier => {
-                    ipcRenderer.once('project-ready', () => {
+                    Lode.ipc.once('project-ready', () => {
                         this.repositoryAdd()
                     })
                     this.handleProjectSwitch(identifier)
@@ -261,7 +255,7 @@ export default new Vue({
         async projectEdit () {
             this.$modal.confirm('EditProject')
                 .then(async options => {
-                    options = await ipcRenderer.invoke('project-update', options)
+                    options = await Lode.ipc.invoke('project-update', options)
                     this.project = options ? JSON.parse(options) : null
 
                     // Since current project hasn't changed, just been updated,
@@ -274,7 +268,7 @@ export default new Vue({
         async projectRemove () {
             this.$modal.confirm('RemoveProject')
                 .then(async () => {
-                    const switchTo = await ipcRenderer.invoke('project-remove', this.project.id)
+                    const switchTo = await Lode.ipc.invoke('project-remove', this.project.id)
                     this.handleProjectSwitch({ id: switchTo })
                 })
                 .catch(() => {})
@@ -312,12 +306,12 @@ export default new Vue({
         handleProjectSwitch (identifier) {
             // Before switching, remove project listeners
             if (this.project) {
-                ipcRenderer.removeListener(`${this.project.id}:status`, this.projectStatusListener)
+                Lode.ipc.removeAllListeners(`${this.project.id}:status`)
             }
             this.loading = true
             this.project = null
             store.commit('context/CLEAR')
-            ipcRenderer.send('project-switch', identifier)
+            Lode.ipc.send('project-switch', identifier)
         },
         repositoryAdd (directories) {
             if (!isArray(directories)) {
@@ -334,7 +328,7 @@ export default new Vue({
         },
         async scanEmptyRepositories () {
             this.scanRepositories(
-                JSON.parse(await ipcRenderer.invoke('project-empty-repositories')),
+                JSON.parse(await Lode.ipc.invoke('project-empty-repositories')),
                 0
             )
         },
@@ -378,15 +372,15 @@ export default new Vue({
                     }
 
                     this.onModelRemove(repository.id)
-                    ipcRenderer.send('repository-remove', repository.id)
+                    Lode.ipc.send('repository-remove', repository.id)
                 })
                 .catch(() => {})
         },
         async repositoryLocate (repository) {
-            return await ipcRenderer.invoke('repository-locate', repository.id)
+            return await Lode.ipc.invoke('repository-locate', repository.id)
         },
         async repositoryExists (repository) {
-            return await ipcRenderer.invoke('repository-exists', repository.id)
+            return await Lode.ipc.invoke('repository-exists', repository.id)
         },
         async frameworkRemove (framework) {
             this.$modal.confirm('RemoveFramework', { framework })
@@ -397,13 +391,13 @@ export default new Vue({
         },
         handleFrameworkRemove (frameworkId) {
             this.onModelRemove(frameworkId)
-            ipcRenderer.send('framework-remove', frameworkId)
+            Lode.ipc.send('framework-remove', frameworkId)
         },
         setting (key) {
             return store.getters['settings/value'](key)
         },
         updateSetting (key, value) {
-            ipcRenderer.send('settings-update', key, value)
+            Lode.ipc.send('settings-update', key, value)
         },
         updateSettings (settings = {}) {
             store.replaceState({
@@ -412,14 +406,14 @@ export default new Vue({
             })
         },
         refreshApplicationMenu () {
-            ipcRenderer.send('menu-refresh')
+            Lode.ipc.send('menu-refresh')
         },
         // @TODO: safe?
         openExternal (link) {
-            shell.openExternal(link)
+            Lode.shell.openExternal(link)
         },
         copyToClipboard (string) {
-            clipboard.writeText(string)
+            Lode.clipboard.writeText(string)
         },
         selectAll () {
             const event = new CustomEvent('select-all', {
@@ -428,7 +422,7 @@ export default new Vue({
             })
 
             if (document.activeElement.dispatchEvent(event)) {
-                ipcRenderer.send('select-all')
+                Lode.ipc.send('select-all')
             }
         },
         crash () {

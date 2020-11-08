@@ -123,7 +123,6 @@ import _debounce from 'lodash/debounce'
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
 import { mapGetters } from 'vuex'
-import { ipcRenderer } from 'electron'
 import { sortDisplayName } from '@lib/frameworks/sort'
 import Filename from '@/components/Filename'
 import Indicator from '@/components/Indicator'
@@ -200,25 +199,25 @@ export default {
         }, 150)
     },
     created () {
-        ipcRenderer
+        Lode.ipc
             .on(`${this.model.id}:error`, this.onErrorEvent)
             .on(`${this.model.id}:refreshed`, this.onSuitesEvent)
             .on(`${this.model.id}:selective`, this.onSelectiveEvent)
-            .on('menu-event', this.onAppMenuEvent)
+            .on(`${this.model.id}:menu-event`, this.onAppMenuEvent)
 
         this.getSuites()
         this.selected = this.model.selected
     },
     beforeDestroy () {
-        ipcRenderer
-            .removeListener(`${this.model.id}:error`, this.onErrorEvent)
-            .removeListener(`${this.model.id}:refreshed`, this.onSuitesEvent)
-            .removeListener(`${this.model.id}:selective`, this.onSelectiveEvent)
-            .removeListener('menu-event', this.onAppMenuEvent)
+        Lode.ipc
+            .removeAllListeners(`${this.model.id}:error`)
+            .removeAllListeners(`${this.model.id}:refreshed`)
+            .removeAllListeners(`${this.model.id}:selective`)
+            .removeAllListeners(`${this.model.id}:menu-event`)
     },
     methods: {
         getSuites () {
-            ipcRenderer.send('framework-suites', this.model.id)
+            Lode.ipc.send('framework-suites', this.model.id)
         },
         onErrorEvent (event, payload) {
             this.$payload(payload, (message, help) => {
@@ -246,21 +245,21 @@ export default {
         refresh () {
             // Optimistically set status to "queued".
             this.status = 'queued'
-            ipcRenderer.send('framework-refresh', this.model.id)
+            Lode.ipc.send('framework-refresh', this.model.id)
         },
         start () {
             // Optimistically set status to "queued".
             this.status = 'queued'
-            ipcRenderer.send('framework-start', this.model.id)
+            Lode.ipc.send('framework-start', this.model.id)
         },
         stop () {
-            ipcRenderer.send('framework-stop', this.model.id)
+            Lode.ipc.send('framework-stop', this.model.id)
         },
         updateTotal (total) {
             this.total = total
         },
         onChildToggle (context, toggle) {
-            ipcRenderer.send('framework-toggle-child', this.model.id, context, toggle)
+            Lode.ipc.send('framework-toggle-child', this.model.id, context, toggle)
         },
         onChildSelect (context, selected) {
             if (selected && !this.selected) {
@@ -268,7 +267,7 @@ export default {
                 // This allows us to show checkboxes on suites
                 this.selected++
             }
-            ipcRenderer.send('framework-select', this.model.id, context, selected)
+            Lode.ipc.send('framework-select', this.model.id, context, selected)
         },
         onChildActivation (context) {
             this.$emit('activate', context)
@@ -286,7 +285,7 @@ export default {
             }
         },
         onChildContextMenu (context) {
-            ipcRenderer.send('nugget-context-menu', this.model.id, context)
+            Lode.ipc.send('nugget-context-menu', this.model.id, context)
         },
         onAppMenuEvent (event, { name, properties }) {
             if (!this.model) {
@@ -303,7 +302,7 @@ export default {
             }
         },
         setKeywordFilter (keyword) {
-            ipcRenderer.send('framework-filter', this.model.id, 'keyword', keyword)
+            Lode.ipc.send('framework-filter', this.model.id, 'keyword', keyword)
             this.$store.commit('filters/SET', {
                 id: this.model.id,
                 filters: {
@@ -312,8 +311,9 @@ export default {
             })
         },
         resetFilters () {
-            ipcRenderer.send('framework-reset-filters', this.model.id)
+            Lode.ipc.send('framework-reset-filters', this.model.id)
             this.$store.commit('filters/RESET')
+            this.keyword = ''
         }
     }
 }

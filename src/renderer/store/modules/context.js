@@ -1,6 +1,5 @@
 import _clone from 'lodash/clone'
 import _last from 'lodash/last'
-import { ipcRenderer } from 'electron'
 
 export default {
     namespaced: true,
@@ -35,17 +34,17 @@ export default {
     actions: {
         async activateWithId ({ state, commit }, { frameworkId, repository }) {
             commit('ACTIVE', frameworkId)
-            ipcRenderer.invoke('framework-get', frameworkId).then(framework => {
+            Lode.ipc.invoke('framework-get', frameworkId).then(framework => {
                 commit('REPOSITORY', repository)
                 commit('FRAMEWORK', JSON.parse(framework))
             })
-            ipcRenderer.send('project-active-framework', frameworkId)
+            Lode.ipc.send('project-active-framework', frameworkId)
         },
         async activate ({ state, commit }, { framework, repository }) {
             commit('ACTIVE', framework ? framework.id : null)
             commit('REPOSITORY', repository)
             commit('FRAMEWORK', framework)
-            ipcRenderer.send('project-active-framework', framework ? framework.id : null)
+            Lode.ipc.send('project-active-framework', framework ? framework.id : null)
         },
         onRemove ({ state, commit, dispatch }, modelId) {
             if (state.nuggets.indexOf(modelId) > -1) {

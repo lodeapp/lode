@@ -3,16 +3,23 @@
 process.env.BABEL_ENV = 'reporters'
 
 const { getReplacements } = require('../app-info')
+const TerserWebpackPlugin = require('terser-webpack-plugin')
 const replacements = getReplacements()
 
 const path = require('path')
 const webpack = require('webpack')
 
-const MinifyPlugin = require('babel-minify-webpack-plugin')
-
 const config = {
+    target: 'node',
     entry: {
         main: path.join(__dirname, '../../src/lib/reporters/jest/index.js')
+    },
+    output: {
+        filename: 'index.js',
+        path: path.join(__dirname, '../../static/reporters/jest')
+    },
+    resolve: {
+        extensions: ['.js']
     },
     module: {
         rules: [
@@ -20,10 +27,6 @@ const config = {
                 test: /\.js$/,
                 use: 'babel-loader',
                 exclude: /node_modules/
-            },
-            {
-                test: /\.node$/,
-                use: 'node-loader'
             }
         ]
     },
@@ -31,27 +34,17 @@ const config = {
         __dirname: process.env.NODE_ENV !== 'production',
         __filename: process.env.NODE_ENV !== 'production'
     },
-    output: {
-        filename: 'index.js',
-        libraryTarget: 'commonjs2',
-        path: path.join(__dirname, '../../static/reporters/jest')
-    },
     plugins: [
-        new webpack.NoEmitOnErrorsPlugin()
+        new webpack.NoEmitOnErrorsPlugin(),
+        new webpack.DefinePlugin(replacements)
     ],
-    resolve: {
-        extensions: ['.js']
-    },
-    target: 'node'
+    optimization: {
+        minimizer: [new TerserWebpackPlugin()]
+    }
 }
-
-config.plugins.push(
-    new webpack.DefinePlugin(replacements)
-)
 
 if (process.env.NODE_ENV === 'production') {
     config.plugins.push(
-        new MinifyPlugin(),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': '"production"'
         })

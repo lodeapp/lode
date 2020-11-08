@@ -47,7 +47,6 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron'
 import _find from 'lodash/find'
 import _uniqBy from 'lodash/uniqBy'
 import Modal from '@/components/modals/Modal'
@@ -89,7 +88,7 @@ export default {
     },
     methods: {
         async choose (index) {
-            const filePaths = await ipcRenderer.invoke('project-add-repositories-menu')
+            const filePaths = await Lode.ipc.invoke('project-add-repositories-menu')
             if (!filePaths || !filePaths.length) {
                 return
             }
@@ -151,14 +150,14 @@ export default {
             // Validate each slot before checking for errors in the form.
             for (let i = this.slots.length - 1; i >= 0; i--) {
                 this.slots[i].validator.refresh(JSON.parse(
-                    await ipcRenderer.invoke('repository-validate', { path: this.slots[i].path })
+                    await Lode.ipc.invoke('repository-validate', { path: this.slots[i].path })
                 ))
             }
 
             if (!this.hasErrors) {
                 this.loading = true
                 const repositories = JSON.parse(
-                    await ipcRenderer.invoke('repository-add', _uniqBy(this.slots, 'path').map(slot => slot.path))
+                    await Lode.ipc.invoke('repository-add', _uniqBy(this.slots, 'path').map(slot => slot.path))
                 )
                 this.confirm({
                     repositories,
