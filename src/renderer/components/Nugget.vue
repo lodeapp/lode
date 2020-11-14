@@ -122,6 +122,7 @@ export default {
     created () {
         Lode.ipc
             .on(`${this.identifier}:status:list`, this.statusListener)
+            .on(`${this.identifier}:children`, this.onChildrenEvent)
             .on(`${this.identifier}:framework-tests`, this.onTestsEvent)
             .on(`${this.identifier}:selective`, this.onSelectedEvent)
             .on(`${this.identifier}:selected`, this.onSelectedEvent)
@@ -142,6 +143,11 @@ export default {
             this.$payload(payload, (to, from) => {
                 this.status = to
                 this.$emit('status', to, from, this.model)
+            })
+        },
+        onChildrenEvent (event, payload) {
+            this.$payload(payload, hasChildren => {
+                this.model.hasChildren = hasChildren
             })
         },
         onTestsEvent (event, payload) {

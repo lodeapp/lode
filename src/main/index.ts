@@ -418,6 +418,12 @@ ipcMain
     })
 
 ipcMain
+    .handle('framework-get-ledger', async (event: Electron.IpcMainInvokeEvent, frameworkId: string) => {
+        const { framework } = await entities(event, frameworkId)
+        return JSON.stringify(framework.getLedger())
+    })
+
+ipcMain
     .handle('framework-validate', async (event: Electron.IpcMainInvokeEvent, repositoryId: string, options: PotentialFrameworkOptions) => {
         const repository: IRepository = await getRepository(event, repositoryId)
         const validator = new FrameworkValidator(repository.getPath())

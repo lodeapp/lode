@@ -53,7 +53,7 @@ export class ApplicationWindow {
                 nodeIntegration: false,
                 contextIsolation: true,
                 worldSafeExecuteJavaScript: true,
-                enableRemoteModule: true,
+                enableRemoteModule: false,
                 preload: Path.resolve(getResourceDirectory(), 'preload.js')
             },
             acceptFirstMouse: true

@@ -31,8 +31,8 @@ import { mapGetters } from 'vuex'
 export default {
     name: 'Ledger',
     props: {
-        model: {
-            type: Object,
+        id: {
+            type: String,
             required: true
         },
         selected: {
@@ -42,7 +42,7 @@ export default {
     },
     data () {
         return {
-            base: this.model.ledger || {},
+            base: {},
             statusString: {
                 queued: 'queued|queued',
                 passed: 'passed|passed',
@@ -66,17 +66,18 @@ export default {
             return ledger
         },
         statusFilters () {
-            return this.filters(this.model.id)['status'] || []
+            return this.filters(this.id)['status'] || []
         },
         ...mapGetters({
             filters: 'filters/all'
         })
     },
-    created () {
-        Lode.ipc.on(`${this.model.id}:ledger`, this.onLedgerEvent)
+    async created () {
+        Lode.ipc.on(`${this.id}:ledger`, this.onLedgerEvent)
+        this.base = JSON.parse(await Lode.ipc.invoke('framework-get-ledger', this.id))
     },
     beforeDestroy () {
-        Lode.ipc.removeAllListeners(`${this.model.id}:ledger`)
+        Lode.ipc.removeAllListeners(`${this.id}:ledger`)
     },
     methods: {
         async onLedgerEvent (event, payload) {
@@ -107,9 +108,9 @@ export default {
             }
         },
         setFilter (filter) {
-            Lode.ipc.send('framework-filter', this.model.id, 'status', filter)
+            Lode.ipc.send('framework-filter', this.id, 'status', filter)
             this.$store.commit('filters/SET', {
-                id: this.model.id,
+                id: this.id,
                 filters: {
                     status: filter
                 }

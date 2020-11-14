@@ -64,7 +64,6 @@ export type FrameworkOptions = {
     canToggleTests?: boolean
     status?: FrameworkStatus
     supportedSorts?: Array<FrameworkSort>
-    ledger?: StatusLedger
 }
 
 /**
@@ -384,8 +383,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             sortReverse: this.sortReverse,
             selected: this.getSelected().suites.length,
             canToggleTests: this.canToggleTests,
-            supportedSorts: this.getSupportedSorts(),
-            ledger: this.ledger
+            supportedSorts: this.getSupportedSorts()
         }
     }
 
@@ -396,7 +394,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         return omit({
             ...this.render(),
             suites: this.suites.map((suite: ISuite) => suite.persist())
-        }, 'status', 'selective', 'supportedSorts', 'ledger')
+        }, 'status', 'selective', 'supportedSorts')
     }
 
     /**
@@ -1337,14 +1335,22 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Send current suites to renderer process.
      */
     public emitSuitesToRenderer (): void {
-        this.emitToRenderer(`${this.id}:refreshed`, this.getSuites().map((suite: ISuite) => suite.render(false)))
+        this.emitToRenderer(
+            `${this.id}:refreshed`,
+            this.getSuites().map((suite: ISuite) => suite.render(false)),
+            this.count()
+        )
     }
 
     /**
      * Send all suites to renderer process.
      */
     public emitAllSuitesToRenderer (): void {
-        this.emitToRenderer(`${this.id}:refreshed`, this.getAllSuites().map((suite: ISuite) => suite.render(false)))
+        this.emitToRenderer(
+            `${this.id}:refreshed`,
+            this.getAllSuites().map((suite: ISuite) => suite.render(false)),
+            this.count()
+        )
     }
 
     /**

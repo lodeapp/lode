@@ -320,6 +320,7 @@ export class Suite extends Nugget implements ISuite {
             this.bloom().then(() => {
                 this.debriefTests(result.tests || [], cleanup)
                     .then(() => {
+                        this.emitToRenderer(`${this.getId()}:children`, this.hasChildren())
                         resolve()
                     })
             })

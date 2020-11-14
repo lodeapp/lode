@@ -50,7 +50,7 @@
                 <div class="filters">
                     <Ledger
                         v-if="total"
-                        :model="model"
+                        :id="model.id"
                         :selected="selected"
                         @total="updateTotal"
                     />
@@ -222,11 +222,9 @@ export default {
             })
         },
         onSuitesEvent (event, payload) {
-            this.$payload(payload, suites => {
+            this.$payload(payload, (suites, total) => {
                 this.suites = suites
-                if (!this.isFiltering) {
-                    this.total = this.suites.length
-                }
+                this.total = total
                 this.$emit('mounted')
             })
         },
