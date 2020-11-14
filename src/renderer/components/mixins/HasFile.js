@@ -1,16 +1,9 @@
 // import * as Path from 'path'
-import _get from 'lodash/get'
 import Filename from '@/components/Filename'
 
 export default {
     components: {
         Filename
-    },
-    props: {
-        context: {
-            type: Array,
-            required: true
-        }
     },
     data () {
         return {
@@ -19,10 +12,10 @@ export default {
     },
     computed: {
         repository () {
-            return _get(this.context, 0)
+            // return _get(this.context, 0)
         },
         framework () {
-            return _get(this.context, 1)
+            // return _get(this.context, 1)
         }
     },
     methods: {

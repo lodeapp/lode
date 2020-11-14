@@ -72,7 +72,7 @@ export class Test extends Nugget implements ITest {
     /**
      * Prepare this test for persistence.
      *
-     * @param status Which status to recursively set. False will persist current status.
+     * @param status Which status to recursively set on tests. False will persist current status.
      */
     public persist (status: Status | false = 'idle'): ITestResult {
         return this.defaults(this.result, status)

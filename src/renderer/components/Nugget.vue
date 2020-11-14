@@ -13,7 +13,7 @@
         @contextmenu.stop.prevent="onContextMenu"
     >
         <div class="seam"></div>
-        <div class="header" @click.prevent @mousedown.prevent.stop="handleActivate">
+        <div class="header" @click.prevent @mousedown.prevent.stop="handleToggle">
             <div class="status" :aria-label="label" :title="label">
                 <Icon v-if="status === 'error'" symbol="issue-opened" />
             </div>
@@ -67,10 +67,6 @@ export default {
             type: Object,
             required: true
         },
-        handler: {
-            type: Function,
-            default: null
-        },
         running: {
             type: Boolean,
             default: false
@@ -119,7 +115,7 @@ export default {
             inContext: 'context/inContext'
         })
     },
-    created () {
+    mounted () {
         Lode.ipc
             .on(`${this.identifier}:status:list`, this.statusListener)
             .on(`${this.identifier}:children`, this.onChildrenEvent)
@@ -134,6 +130,7 @@ export default {
     beforeDestroy () {
         Lode.ipc
             .removeAllListeners(`${this.identifier}:status:list`)
+            .removeAllListeners(`${this.identifier}:children`)
             .removeAllListeners(`${this.identifier}:framework-tests`)
             .removeAllListeners(`${this.identifier}:selective`)
             .removeAllListeners(`${this.identifier}:selected`)
@@ -147,6 +144,7 @@ export default {
         },
         onChildrenEvent (event, payload) {
             this.$payload(payload, hasChildren => {
+                // @TODO: don't mutate model
                 this.model.hasChildren = hasChildren
             })
         },
@@ -161,39 +159,6 @@ export default {
                 this.partial = nugget.selected && nugget.partial
             })
         },
-        handleActivate (event) {
-            if (this.handler) {
-                if (this.handler.call() === false) {
-                    return
-                }
-            }
-            // Don't toggle children on right-clicks.
-            if (this.$input.isRightButton(event)) {
-                this.$el.focus()
-                return
-            }
-            this.toggleChildren(event)
-        },
-        onActivate () {
-            if (!this.model.hasChildren && !this.isActive) {
-                this.activate()
-                return false
-            }
-        },
-        activate () {
-            this.$el.focus()
-            this.$store.commit('context/ADD', this.identifier)
-            // @TODO: redo set active
-            // this.test.setActive(true)
-            setTimeout(() => {
-                this.$emit('activate', [this.identifier])
-            })
-        },
-        deactivate () {
-            // @TODO: redo set active
-            // this.test.setActive(false)
-        },
-
         handleKeydown (event) {
             if (event.code === 'ArrowRight' && !this.$input.isCycleForward(event)) {
                 event.stopPropagation()
@@ -203,17 +168,30 @@ export default {
                 this.handleCollapse(event)
             }
         },
+        handleToggle (event) {
+            // If it's a test with no children, handle activation instead of toggle.
+            if (!this.model.file && !this.model.hasChildren) {
+                this.handleActivate()
+                return
+            }
+            // Don't toggle children on right-clicks.
+            if (this.$input.isRightButton(event)) {
+                this.$el.focus()
+                return
+            }
+            this.toggleChildren(event)
+        },
         handleExpand (event) {
             if (!this.model.hasChildren || this.show) {
                 return
             }
-            this.handleActivate(event)
+            this.handleToggle(event)
         },
         handleCollapse (event) {
             if (!this.model.hasChildren || !this.show) {
                 return
             }
-            this.handleActivate(event)
+            this.handleToggle(event)
         },
         toggleChildren (event) {
             if (!this.model.hasChildren) {
@@ -241,10 +219,29 @@ export default {
             context.unshift(this.identifier)
             this.$emit('toggle', context, toggle)
         },
+        handleActivate () {
+            if (!this.isActive) {
+                this.activate()
+            }
+        },
+        activate () {
+            this.$el.focus()
+            this.$store.commit('context/CLEAR_NUGGETS')
+            this.$store.commit('context/NUGGET', this.identifier)
+            // @TODO: redo set active
+            // this.test.setActive(true)
+            setTimeout(() => {
+                this.$emit('activate', [this.identifier])
+            })
+        },
+        deactivate () {
+            // @TODO: redo set active false
+            // this.test.setActive(false)
+        },
         onChildActivation (context) {
             context.unshift(this.identifier)
-            this.$store.commit('context/ADD', this.identifier)
-            this.$nextTick(() => {
+            this.$store.commit('context/NUGGET', this.identifier)
+            setTimeout(() => {
                 this.$emit('activate', context)
             })
         },

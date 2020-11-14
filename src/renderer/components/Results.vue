@@ -6,30 +6,37 @@
                 <div class="spinner"></div>
             </div>
         </div>
-        <div v-if="test && !loading" class="has-status" :class="[`status--${test.getStatus()}`]">
+        <div v-if="testActive && !loading" class="has-status" :class="[`status--${status}`]">
             <div class="header">
                 <div class="title">
-                    <Indicator :status="test.getStatus()" />
-                    <h2 class="heading">{{ test.getDisplayName() }}</h2>
+                    <Indicator :status="status" />
+                    <h2 class="heading">{{ displayName }}</h2>
                 </div>
                 <nav class="breadcrumbs" aria-label="Breadcrumb">
                     <ol>
                         <li
                             v-for="breadcrumb in breadcrumbs"
-                            :key="breadcrumb.getId()"
+                            :key="$string.from(breadcrumb)"
                             class="breadcrumb-item text-small"
-                        >{{ breadcrumb.getDisplayName() }}</li>
+                        >{{ breadcrumb.relative || breadcrumb.name }}</li>
                     </ol>
                 </nav>
             </div>
-            <TestResult :context="context" :key="$string.from(test)" />
+            <TestResult
+                :key="$string.from(test)"
+                :framework="framework"
+                :suite="suite"
+                :test="test"
+                :status="status"
+            />
         </div>
     </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import _clone from 'lodash/clone'
 import _last from 'lodash/last'
+import { mapGetters } from 'vuex'
 import Indicator from '@/components/Indicator'
 import TestResult from '@/components/TestResult'
 
@@ -47,21 +54,20 @@ export default {
     },
     data () {
         return {
-            loading: false
+            loading: false,
+            status: 'idle',
+            breadcrumbs: [],
+            framework: {},
+            suite: {},
+            test: {}
         }
     },
     computed: {
-        test () {
-            if (this.context.length > 2) {
-                return _last(this.context)
-            }
-            return null
+        identifier () {
+            return _last(this.context)
         },
-        breadcrumbs () {
-            // Remove repository and framework from breadcrumbs, as it feels
-            // like an unnecessary repetition. We want both in the complete
-            // context for other purposes, just not necessarily here.
-            return this.context.slice(2, (this.context.length - 1))
+        displayName () {
+            return this.test.displayName || this.test.name
         },
         ...mapGetters({
             testActive: 'context/test'
@@ -70,13 +76,33 @@ export default {
     watch: {
         testActive (test) {
             if (!test) {
+                this.test = {}
                 this.$emit('reset')
                 return
             }
             this.loading = true
-        },
-        context () {
-            this.loading = false
+        }
+    },
+    async created () {
+        const context = _clone(this.context)
+        Lode.ipc.on(`${this.identifier}:status:active`, this.statusListener)
+        const frameworkId = context.shift()
+        const { framework, nuggets } = JSON.parse(await Lode.ipc.invoke('test-get', frameworkId, context))
+        this.breadcrumbs = nuggets
+        this.framework = framework
+        this.test = nuggets.pop()
+        this.suite = nuggets.shift()
+        this.status = this.test.status
+        this.loading = false
+    },
+    beforeDestroy () {
+        Lode.ipc.removeAllListeners(`${this.identifier}:status:active`)
+    },
+    methods: {
+        statusListener (event, payload) {
+            this.$payload(payload, (to, from) => {
+                this.status = to
+            })
         }
     }
 }

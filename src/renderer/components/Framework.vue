@@ -101,6 +101,7 @@
                     @toggle="onChildToggle"
                     @select="onChildSelect"
                     @status="onChildStatus"
+                    @activate="onChildActivation"
                     @context-menu="onChildContextMenu"
                 >
                     <Filename :key="suite.relative" />

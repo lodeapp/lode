@@ -6,10 +6,7 @@
                     <Icon symbol="issue-reopened" />
                     <span>Previous Error</span>
                 </div>
-                <Trace
-                    :context="context"
-                    :trace="item"
-                />
+                <Trace :trace="item" />
             </div>
         </template>
         <template v-else>

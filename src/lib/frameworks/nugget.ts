@@ -36,7 +36,7 @@ export abstract class Nugget extends ProjectEventEmitter {
     /**
      * Prepares the test for sending out to renderer process.
      *
-     * @param status Which status to recursively set on tests.
+     * @param status Which status to recursively set on tests. False will persist current status.
      */
     public abstract render (status?: Status | false): ISuiteResult | ITestResult;
 
@@ -72,7 +72,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      * Returns a given test result object to default values.
      *
      * @param result The result object that will be persisted.
-     * @param status Which status to recursively set. False will persist current status.
+     * @param status Which status to recursively set on tests. False will persist current status.
      */
     protected defaults (result: ITestResult, status: Status | false = 'idle'): ITestResult {
         return (pickBy({
@@ -399,6 +399,9 @@ export abstract class Nugget extends ProjectEventEmitter {
     }
 
     protected async wither (): Promise<void> {
+        if (!this.bloomed) {
+            return
+        }
         // Never wither a selected nugget or a nugget with an active test inside.
         if (this.selected || this.tests.some((test: ITest) => test.isActive())) {
             return

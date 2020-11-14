@@ -5,7 +5,7 @@ import '@lib/tracker/main'
 import Fs from 'fs'
 import Path from 'path'
 import { stringify } from 'flatted'
-import { isEmpty, pickBy, identity } from 'lodash'
+import { isEmpty, identity, pickBy } from 'lodash'
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import {
     applicationMenu,
@@ -464,6 +464,17 @@ ipcMain
                     resolve()
                 })
                 .open()
+        })
+    })
+
+ipcMain
+    .handle('test-get', async (event: Electron.IpcMainInvokeEvent, frameworkId: string, identifiers: Array<string>) => {
+        const { repository, framework, nuggets, nugget } = await entities(event, frameworkId, identifiers)
+        return JSON.stringify({
+            repository: repository.render(),
+            framework: framework.render(),
+            nuggets: nuggets!.map((nugget: Nugget) => nugget.render(false)),
+            nugget: nugget!.render(false)
         })
     })
 

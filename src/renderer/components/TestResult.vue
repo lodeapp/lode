@@ -31,13 +31,13 @@
         <div class="test-result-breakdown">
             <div class="test-result-general" v-if="error && tab === 'error'">
                 <p>An unexpected error prevented this test from running.</p>
-                <p v-if="framework" v-markdown.set="framework.getDisplayName()" @click.prevent="$input.on($event, 'a', refreshFramework)">
+                <p v-if="framework" v-markdown.set="framework.name" @click.prevent="$input.on($event, 'a', refreshFramework)">
                     {{ 'If tests have been removed, [refresh :0](#) to clear them from the list.' }}
                 </p>
             </div>
             <div v-else-if="!isTransient">
                 <div v-if="feedback && tab === 'feedback'">
-                    <Feedback v-if="feedback.type === 'feedback'" :context="context" :content="feedback.content || {}" />
+                    <Feedback v-if="feedback.type === 'feedback'" :content="feedback.content || {}" />
                     <KeyValue v-else-if="feedback.type === 'object'" :object="feedback.content || {}" />
                     <Ansi v-else-if="feedback.type === 'ansi'" :content="feedback.content" />
                     <!-- Catch-all for unknown content -->
@@ -50,7 +50,6 @@
                     <Console
                         v-for="(output, index) in console"
                         :key="`console-${index}`"
-                        :context="context"
                         :output="output"
                     />
                 </div>
@@ -58,13 +57,13 @@
                     <Console
                         v-for="(output, index) in suiteConsole"
                         :key="`suiteConsole-${index}`"
-                        :context="context"
                         :output="output"
                     />
                 </div>
             </div>
             <div v-if="stats && tab === 'stats'">
                 <TestInformation
+                    :key="$string.from([status, stats])"
                     :status="status"
                     :stats="stats"
                 />
@@ -79,7 +78,6 @@ import _get from 'lodash/get'
 import _identity from 'lodash/identity'
 import _indexOf from 'lodash/indexOf'
 import _isEmpty from 'lodash/isEmpty'
-import _last from 'lodash/last'
 import _pickBy from 'lodash/pickBy'
 import Ansi from '@/components/Ansi'
 import Console from '@/components/Console'
@@ -99,8 +97,20 @@ export default {
         TestInformation
     },
     props: {
-        context: {
-            type: Array,
+        framework: {
+            type: Object,
+            required: true
+        },
+        suite: {
+            type: Object,
+            required: true
+        },
+        test: {
+            type: Object,
+            required: true
+        },
+        status: {
+            type: String,
             required: true
         }
     },
@@ -136,12 +146,6 @@ export default {
                 parameters: this.parameter && !this.isTransients
             }, _identity))
         },
-        test () {
-            return _last(this.context)
-        },
-        status () {
-            return this.test.getStatus()
-        },
         error () {
             return this.status === 'error'
         },
@@ -151,26 +155,17 @@ export default {
         isTransient () {
             return ['idle', 'queued', 'running'].indexOf(this.status) > -1
         },
-        result () {
-            return this.test.result || {}
-        },
         feedback () {
-            return this.result && this.result.feedback && this.result.feedback.content ? this.result.feedback : false
+            return this.test && this.test.feedback && this.test.feedback.content ? this.test.feedback : false
         },
         parameters () {
-            return this.result && this.result.params
+            return this.test && this.test.params
         },
         console () {
-            return this.result && this.result.console && this.result.console.length ? this.result.console : false
+            return this.test && this.test.console && this.test.console.length ? this.test.console : false
         },
         stats () {
-            return this.result && this.result.stats && !_isEmpty(this.result.stats) ? this.result.stats : false
-        },
-        framework () {
-            return _get(this.context, 1)
-        },
-        suite () {
-            return _get(this.context, 2)
+            return this.test && this.test.stats && !_isEmpty(this.test.stats) ? this.test.stats : false
         },
         suiteConsole () {
             // Hide suite console output until test is in a definitive state
@@ -178,7 +173,9 @@ export default {
                 return false
             }
 
-            return this.suite && this.suite.getConsole() && this.suite.getConsole().length ? this.suite.getConsole() : false
+            // @TODO: redo console
+            return false
+            // return this.suite && this.suite.getConsole() && this.suite.getConsole().length ? this.suite.getConsole() : false
         },
         ...mapGetters({
             lastActiveTab: 'tabs/lastActive'
@@ -220,10 +217,7 @@ export default {
             this.setLastActiveTab(this.active)
         },
         refreshFramework () {
-            if (!this.framework) {
-                return
-            }
-            this.framework.refresh()
+            Lode.ipc.send('framework-refresh', this.framework.id)
         },
         ...mapActions({
             setLastActiveTab: 'tabs/setLastActive'

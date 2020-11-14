@@ -91,12 +91,16 @@
                 </Pane>
                 <Pane id="results">
                     <div class="draggable"></div>
-                    <Results
-                        v-if="framework"
-                        v-show="!repositoryMissing && !frameworkLoading"
-                        :key="framework.id"
-                        :context="fullContext"
-                    />
+                    <template v-if="framework && !repositoryMissing && !frameworkLoading">
+                        <div v-if="!context.length" class="results blankslate">
+                            <h3>No test selected</h3>
+                        </div>
+                        <Results
+                            v-else
+                            :key="$string.from(fullContext)"
+                            :context="fullContext"
+                        />
+                    </template>
                 </Pane>
             </Split>
         </template>
@@ -145,7 +149,10 @@ export default {
     },
     computed: {
         fullContext () {
-            return [this.repository, this.framework].concat(this.context)
+            if (!this.framework) {
+                return []
+            }
+            return [this.framework.id].concat(this.context)
         },
         repositoryMissing () {
             return this.repository && this.repository.status === 'missing'
@@ -241,6 +248,7 @@ export default {
         },
         // @TODO: redo test activation
         onTestActivation (context) {
+            this.context = context
         },
         onContextMenu () {
             this.menuActive = true

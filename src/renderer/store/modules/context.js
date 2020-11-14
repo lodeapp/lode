@@ -24,6 +24,9 @@ export default {
                 state.nuggets.unshift(payload)
             }
         },
+        CLEAR_NUGGETS (state) {
+            state.nuggets = []
+        },
         CLEAR (state) {
             state.active = null
             state.repository = null

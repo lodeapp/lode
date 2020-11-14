@@ -18,7 +18,6 @@
         </h4>
         <Trace
             v-if="trace && trace.length"
-            :context="context"
             :trace="trace"
             :key="$string.from(trace)"
         />
@@ -49,10 +48,6 @@ export default {
         Trace
     },
     props: {
-        context: {
-            type: Array,
-            required: true
-        },
         content: {
             type: Object,
             default () {
