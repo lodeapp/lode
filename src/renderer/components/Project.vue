@@ -185,16 +185,12 @@ export default {
                 name: this.model.name
             })
         },
-        statusListener (event, payload) {
-            this.$payload(payload, (to, from) => {
-                this.status = to
-            })
+        statusListener (event, to, from) {
+            this.status = to
         },
-        async onRepositoriesEvent (event, payload) {
-            this.$payload(payload, async repositories => {
-                this.repositories = repositories
-                this.loading = false
-            })
+        async onRepositoriesEvent (event, repositories) {
+            this.repositories = repositories
+            this.loading = false
         },
         onRepositoryStatus (to, from, repository) {
             const index = _findIndex(this.repositories, ['id', repository.id])
@@ -205,23 +201,19 @@ export default {
                 }
             }
         },
-        async onFrameworkOptionsUpdated (event, payload) {
+        async onFrameworkOptionsUpdated (event, framework) {
             this.frameworkLoading = true
-            this.$payload(payload, framework => {
-                if (this.framework.id === framework.id) {
-                    this.$store.commit('context/FRAMEWORK', framework)
-                    this.frameworkKey = this.$string.random()
-                }
-            })
+            if (this.framework.id === framework.id) {
+                this.$store.commit('context/FRAMEWORK', framework)
+                this.frameworkKey = this.$string.random()
+            }
         },
-        async onFrameworkActive (event, payload) {
-            this.$payload(payload, (frameworkId, repository) => {
-                if (!frameworkId) {
-                    this.$store.commit('context/CLEAR')
-                } else if (!this.framework || this.framework.id !== frameworkId) {
-                    this.onFrameworkActivation(frameworkId, repository)
-                }
-            })
+        async onFrameworkActive (event, frameworkId, repository) {
+            if (!frameworkId) {
+                this.$store.commit('context/CLEAR')
+            } else if (!this.framework || this.framework.id !== frameworkId) {
+                this.onFrameworkActivation(frameworkId, repository)
+            }
         },
         async onFrameworkActivation (frameworkId, repository) {
             this.frameworkLoading = true

@@ -66,18 +66,14 @@ export default {
             .removeAllListeners(`${this.model.id}:error`)
     },
     methods: {
-        statusListener (event, payload) {
-            this.$payload(payload, (to, from) => {
-                this.status = to
-            })
+        statusListener (event, to, from) {
+            this.status = to
         },
-        onErrorEvent (event, payload) {
-            this.$payload(payload, (message, help) => {
-                this.$alert.show({
-                    type: 'error',
-                    message: this.$string.set('The process for **:0** terminated unexpectedly.', this.model.name),
-                    help
-                })
+        onErrorEvent (event, message, help) {
+            this.$alert.show({
+                type: 'error',
+                message: this.$string.set('The process for **:0** terminated unexpectedly.', this.model.name),
+                help
             })
         },
         activate () {

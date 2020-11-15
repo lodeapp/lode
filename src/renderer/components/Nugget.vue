@@ -143,23 +143,17 @@ export default {
             .removeAllListeners(`${this.identifier}:selected`)
     },
     methods: {
-        onChildrenEvent (event, payload) {
-            this.$payload(payload, hasChildren => {
-                // @TODO: don't mutate model
-                this.model.hasChildren = hasChildren
-            })
+        onChildrenEvent (event, hasChildren) {
+            // @TODO: don't mutate model
+            this.model.hasChildren = hasChildren
         },
-        onTestsEvent (event, payload) {
-            this.$payload(payload, tests => {
-                this.$store.commit('status/UPDATE', _fromPairs(tests.map(test => [test.id, test.status])))
-                this.tests = tests
-            })
+        onTestsEvent (event, tests) {
+            this.$store.commit('status/UPDATE', _fromPairs(tests.map(test => [test.id, test.status])))
+            this.tests = tests
         },
-        onSelectedEvent (event, payload) {
-            this.$payload(payload, nugget => {
-                this.selected = nugget.selected
-                this.partial = nugget.selected && nugget.partial
-            })
+        onSelectedEvent (event, nugget) {
+            this.selected = nugget.selected
+            this.partial = nugget.selected && nugget.partial
         },
         handleKeydown (event) {
             if (event.code === 'ArrowRight' && !this.$input.isCycleForward(event)) {

@@ -17,7 +17,6 @@ import {
 } from '@main/menu'
 import { ApplicationWindow } from '@main/application-window'
 import { Updater } from '@main/updater'
-import { send } from '@main/ipc'
 import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
 import { state } from '@lib/state'
@@ -226,7 +225,7 @@ ipcMain
                 repositoryPath: repository.getPath()
             })
             repository.emitFrameworksToRenderer()
-            send(event.sender, 'framework-options-updated', [framework.render()])
+            event.sender.send('framework-options-updated', framework.render())
             framework.emitSuitesToRenderer()
         })
     })
@@ -264,10 +263,9 @@ ipcMain
         entities(event, frameworkId, identifiers).then(({ nugget }) => {
             if (toggle) {
                 // If we're expanding it, send the tests to the renderer.
-                send(
-                    event.sender,
+                event.sender.send(
                     `${nugget!.getId()}:framework-tests`,
-                    [nugget!.tests.map((test: ITest) => test.render(false))]
+                    nugget!.tests.map((test: ITest) => test.render(false))
                 )
                 return
             }
@@ -299,7 +297,7 @@ ipcMain
     })
     .on('settings-update', (event: Electron.IpcMainEvent, setting: string, value: any) => {
         state.set(setting, value)
-        send(event.sender, 'settings-updated', [state.get()])
+        event.sender.send('settings-updated', state.get())
     })
     .on('settings-reset', (event: Electron.IpcMainEvent) => {
         state.reset()
@@ -322,14 +320,14 @@ ipcMain
         const project: IProject | null = ApplicationWindow.getProjectFromWebContents(event.sender)
         if (project) {
             project.updateOptions(options)
-            return JSON.stringify(project.render())
+            return project.render()
         }
         return null
     })
 
 ipcMain
     .handle('project-empty-repositories', async (event: Electron.IpcMainInvokeEvent) => {
-        return JSON.stringify(getProject(event).getEmptyRepositories())
+        return getProject(event).getEmptyRepositories()
     })
 
 ipcMain
@@ -357,26 +355,26 @@ ipcMain
             return project.addRepository({ path })
         }))
         project.emitRepositoriesToRenderer()
-        return JSON.stringify(repositories.map(repository => repository.render()))
+        return repositories.map(repository => repository.render())
     })
 
 ipcMain
     .handle('repository-scan', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
         const repository: IRepository = await getRepository(event, repositoryId)
         const pending: Array<FrameworkOptions> = await repository.scan()
-        return JSON.stringify(pending)
+        return pending
     })
 
 ipcMain
     .handle('repository-validate', async (event: Electron.IpcMainInvokeEvent, options: PotentialRepositoryOptions) => {
         const project: IProject = getProject(event)
         const validator = new RepositoryValidator(project.repositories.map((repository: IRepository) => repository.getPath()))
-        return JSON.stringify(validator.validate(options).getErrors())
+        return validator.validate(options).getErrors()
     })
 
 ipcMain
     .handle('repository-frameworks', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
-        return JSON.stringify((await getRepository(event, repositoryId)).frameworks.map(framework => framework.render()))
+        return (await getRepository(event, repositoryId)).frameworks.map(framework => framework.render())
     })
 
 ipcMain
@@ -403,34 +401,34 @@ ipcMain
 
 ipcMain
     .handle('framework-types', async (event: Electron.IpcMainInvokeEvent) => {
-        return JSON.stringify(Frameworks.map(framework => {
+        return Frameworks.map(framework => {
             return {
                 ...framework.getDefaults(),
                 instructions: framework.instructions()
             }
-        }))
+        })
     })
 
 ipcMain
     .handle('framework-get', async (event: Electron.IpcMainInvokeEvent, frameworkId: string) => {
         const { framework } = await entities(event, frameworkId)
-        return JSON.stringify(framework.render())
+        return framework.render()
     })
 
 ipcMain
     .handle('framework-get-ledger', async (event: Electron.IpcMainInvokeEvent, frameworkId: string) => {
         const { framework } = await entities(event, frameworkId)
-        return JSON.stringify({
+        return {
             ledger: framework.getLedger(),
             status: framework.getStatusMap()
-        })
+        }
     })
 
 ipcMain
     .handle('framework-validate', async (event: Electron.IpcMainInvokeEvent, repositoryId: string, options: PotentialFrameworkOptions) => {
         const repository: IRepository = await getRepository(event, repositoryId)
         const validator = new FrameworkValidator(repository.getPath())
-        return JSON.stringify(validator.validate(options).getErrors())
+        return validator.validate(options).getErrors()
     })
 
 ipcMain
@@ -473,12 +471,12 @@ ipcMain
 ipcMain
     .handle('test-get', async (event: Electron.IpcMainInvokeEvent, frameworkId: string, identifiers: Array<string>) => {
         const { repository, framework, nuggets, nugget } = await entities(event, frameworkId, identifiers)
-        return JSON.stringify({
+        return {
             repository: repository.render(),
             framework: framework.render(),
             nuggets: nuggets!.map((nugget: Nugget) => nugget.render(false)),
             nugget: nugget!.render(false)
-        })
+        }
     })
 
 ipcMain

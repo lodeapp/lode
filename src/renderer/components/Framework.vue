@@ -205,7 +205,7 @@ export default {
             .on(`${this.model.id}:refreshed`, this.onSuitesEvent)
             .on(`${this.model.id}:selective`, this.onSelectiveEvent)
 
-        const { ledger, status } = JSON.parse(await Lode.ipc.invoke('framework-get-ledger', this.model.id))
+        const { ledger, status } = await Lode.ipc.invoke('framework-get-ledger', this.model.id)
         this.$store.commit('ledger/SET', ledger)
         this.$store.commit('status/SET', status)
 
@@ -220,32 +220,24 @@ export default {
             .removeAllListeners(`${this.model.id}:selective`)
     },
     methods: {
-        async onLedgerEvent (event, payload) {
-            this.$payload(payload, (ledger, status) => {
-                this.total = Object.values(ledger).reduce((a, b) => a + b, 0)
-                this.$store.commit('ledger/SET', ledger)
-                this.$store.commit('status/SET', status)
-            })
+        async onLedgerEvent (event, ledger, status) {
+            this.total = Object.values(ledger).reduce((a, b) => a + b, 0)
+            this.$store.commit('ledger/SET', ledger)
+            this.$store.commit('status/SET', status)
         },
         getSuites () {
             Lode.ipc.send('framework-suites', this.model.id)
         },
-        statusListener (event, payload) {
-            this.$payload(payload, (to, from) => {
-                this.status = to
-            })
+        statusListener (event, to, from) {
+            this.status = to
         },
-        onSuitesEvent (event, payload) {
-            this.$payload(payload, (suites, total) => {
-                this.suites = suites
-                this.total = total
-                this.$emit('mounted')
-            })
+        onSuitesEvent (event, suites, total) {
+            this.suites = suites
+            this.total = total
+            this.$emit('mounted')
         },
-        onSelectiveEvent (event, payload) {
-            this.$payload(payload, selected => {
-                this.selected = selected
-            })
+        onSelectiveEvent (event, selected) {
+            this.selected = selected
         },
         refresh () {
             // Optimistically set status to "queued".

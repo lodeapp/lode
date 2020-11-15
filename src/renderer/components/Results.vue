@@ -87,7 +87,7 @@ export default {
         const context = _clone(this.context)
         Lode.ipc.on(`${this.identifier}:status:active`, this.statusListener)
         const frameworkId = context.shift()
-        const { framework, nuggets } = JSON.parse(await Lode.ipc.invoke('test-get', frameworkId, context))
+        const { framework, nuggets } = await Lode.ipc.invoke('test-get', frameworkId, context)
         this.breadcrumbs = nuggets
         this.framework = framework
         this.test = nuggets.pop()
@@ -99,10 +99,8 @@ export default {
         Lode.ipc.removeAllListeners(`${this.identifier}:status:active`)
     },
     methods: {
-        statusListener (event, payload) {
-            this.$payload(payload, (to, from) => {
-                this.status = to
-            })
+        statusListener (event, to, from) {
+            this.status = to
         }
     }
 }

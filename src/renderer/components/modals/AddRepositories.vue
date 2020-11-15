@@ -149,15 +149,16 @@ export default {
         async add () {
             // Validate each slot before checking for errors in the form.
             for (let i = this.slots.length - 1; i >= 0; i--) {
-                this.slots[i].validator.refresh(JSON.parse(
+                this.slots[i].validator.refresh(
                     await Lode.ipc.invoke('repository-validate', { path: this.slots[i].path })
-                ))
+                )
             }
 
             if (!this.hasErrors) {
                 this.loading = true
-                const repositories = JSON.parse(
-                    await Lode.ipc.invoke('repository-add', _uniqBy(this.slots, 'path').map(slot => slot.path))
+                const repositories = await Lode.ipc.invoke(
+                    'repository-add',
+                    _uniqBy(this.slots, 'path').map(slot => slot.path)
                 )
                 this.confirm({
                     repositories,

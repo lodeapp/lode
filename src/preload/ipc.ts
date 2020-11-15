@@ -17,18 +17,18 @@ export class Ipc {
         this.removeAllListeners = this.handleRemoveAllListeners.bind(this)
     }
 
-    handleOn (event: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
-        ipcRenderer.on(event, listener)
+    handleOn (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
+        ipcRenderer.on(channel, listener)
         return this
     }
 
-    handleOnce (event: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
-        ipcRenderer.once(event, listener)
+    handleOnce (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
+        ipcRenderer.once(channel, listener)
         return this
     }
 
-    handleRemoveAllListeners (event: string): this {
-        ipcRenderer.removeAllListeners(event)
+    handleRemoveAllListeners (channel: string): this {
+        ipcRenderer.removeAllListeners(channel)
         return this
     }
 }

@@ -39,7 +39,7 @@ export default {
             commit('ACTIVE', frameworkId)
             Lode.ipc.invoke('framework-get', frameworkId).then(framework => {
                 commit('REPOSITORY', repository)
-                commit('FRAMEWORK', JSON.parse(framework))
+                commit('FRAMEWORK', framework)
             })
             Lode.ipc.send('project-active-framework', frameworkId)
         },

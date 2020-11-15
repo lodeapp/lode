@@ -4,7 +4,6 @@ import { app, ipcMain, BrowserWindow } from 'electron'
 import { getResourceDirectory } from '@lib/helpers/paths'
 import { state } from '@lib/state'
 import { ProjectIdentifier, ProjectOptions, Project } from '@lib/frameworks/project'
-import { send } from '@main/ipc'
 
 let windowStateKeeper: any | null = null
 
@@ -124,7 +123,7 @@ export class ApplicationWindow {
 
         this.window.webContents.on('did-finish-load', () => {
             this.onReady()
-            send(this.window.webContents, 'did-finish-load', [{
+            this.window.webContents.send('did-finish-load', [{
                 projectId: get(this.getProject(), 'id', null),
                 focus: this.window.isFocused(),
                 version: app.getVersion()
@@ -153,7 +152,7 @@ export class ApplicationWindow {
         // @TODO: Remove performance measurements
         this.events++
         console.count(event)
-        send(this.window.webContents, event, args)
+        this.window.webContents.send(event, ...args)
     }
 
     public reload () {
@@ -209,7 +208,7 @@ export class ApplicationWindow {
 
     public async projectReady (): Promise<void> {
         await this.project!.reset()
-        send(this.window.webContents, 'project-ready', [this.getProjectOptions()])
+        this.window.webContents.send('project-ready', this.getProjectOptions())
         this.refreshActiveFramework()
         this.refreshSettings()
     }
@@ -243,8 +242,8 @@ export class ApplicationWindow {
         this.send('clear')
     }
 
-    public sendMenuEvent (args: any) {
+    public sendMenuEvent (properties: any) {
         this.window.show()
-        this.window.webContents.send('menu-event', args)
+        this.window.webContents.send('menu-event', properties)
     }
 }

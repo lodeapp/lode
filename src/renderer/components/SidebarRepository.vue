@@ -79,20 +79,17 @@ export default {
     },
     methods: {
         async getFrameworks () {
-            this.frameworks = JSON.parse(await Lode.ipc.invoke('repository-frameworks', this.model.id))
+            this.frameworks = await Lode.ipc.invoke('repository-frameworks', this.model.id)
         },
-        statusListener (event, payload) {
-            this.$payload(payload, (to, from) => {
-                this.status = to
-                this.$emit('status', to, from, this.model)
-            })
+        statusListener (event, to, from) {
+            this.status = to
+            this.$emit('status', to, from, this.model)
         },
-        updateFrameworks (event, payload) {
-            this.$payload(payload, frameworks => {
-                this.frameworks = frameworks
-            })
+        updateFrameworks (event, frameworks) {
+            this.frameworks = frameworks
         },
         toggle () {
+            // @TODO: Don't mutate model
             this.model.expanded = !this.model.expanded
             Lode.ipc.send('repository-toggle', this.model.id, this.model.expanded)
             if (this.model.expanded) {

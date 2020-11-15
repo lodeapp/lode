@@ -107,8 +107,8 @@ export default {
         }
     },
     created () {
-        Lode.ipc.invoke('framework-types').then(payload => {
-            this.availableFrameworks = JSON.parse(payload)
+        Lode.ipc.invoke('framework-types').then(frameworks => {
+            this.availableFrameworks = frameworks
         })
 
         this.parseFrameworks()
@@ -119,7 +119,8 @@ export default {
     methods: {
         async parseFrameworks (scanned = false, pending = []) {
             const types = pending.map(p => p.type)
-            const frameworks = (JSON.parse(await Lode.ipc.invoke('repository-frameworks', this.repository.id)))
+            console.log(await Lode.ipc.invoke('repository-frameworks', this.repository.id))
+            const frameworks = (await Lode.ipc.invoke('repository-frameworks', this.repository.id))
                 .map(framework => {
                     // If an existing framework has been removed, but user has
                     // triggered scan again, continue. This means the existing
@@ -156,9 +157,7 @@ export default {
         },
         async handleScan () {
             this.scanning = true
-            this.parseFrameworks(true, JSON.parse(
-                await Lode.ipc.invoke('repository-scan', this.repository.id))
-            )
+            this.parseFrameworks(true, await Lode.ipc.invoke('repository-scan', this.repository.id))
             this.scanning = false
         },
         handleChange (framework, values) {
@@ -185,9 +184,9 @@ export default {
         async save () {
             // Validate each slot before checking for errors in the form.
             for (let i = this.frameworks.length - 1; i >= 0; i--) {
-                this.frameworks[i].validator.refresh(JSON.parse(
+                this.frameworks[i].validator.refresh(
                     await Lode.ipc.invoke('framework-validate', this.repository.id, this.frameworks[i])
-                ))
+                )
             }
 
             if (!this.hasErrors) {

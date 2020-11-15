@@ -47,15 +47,6 @@ Vue.directive('focusable', Focusable)
 Vue.component('Icon', Icon)
 Vue.component('Nugget', Nugget)
 
-Vue.mixin({
-    methods: {
-        $payload (payload, callback) {
-            payload = parse(payload)
-            return callback(...payload.args, payload.id)
-        }
-    }
-})
-
 export default new Vue({
     components: {
         App
@@ -71,18 +62,16 @@ export default new Vue({
     },
     created () {
         Lode.ipc
-            .on('did-finish-load', (event, payload) => {
-                this.$payload(payload, properties => {
-                    document.body.classList.add(`platform-${process.platform}`)
-                    if (properties.focus) {
-                        document.body.classList.add('is-focused')
-                    }
-                    if (!properties.projectId) {
-                        this.loading = false
-                    }
-                    this.version = properties.version
-                    this.ready = true
-                })
+            .on('did-finish-load', (event, properties) => {
+                document.body.classList.add(`platform-${process.platform}`)
+                if (properties.focus) {
+                    document.body.classList.add('is-focused')
+                }
+                if (!properties.projectId) {
+                    this.loading = false
+                }
+                this.version = properties.version
+                this.ready = true
             })
             .on('blur', () => {
                 document.body.classList.remove('is-focused')
@@ -90,26 +79,20 @@ export default new Vue({
             .on('focus', () => {
                 document.body.classList.add('is-focused')
             })
-            .on('project-ready', (event, payload) => {
-                this.$payload(payload, project => {
-                    this.loadProject(project)
-                })
+            .on('project-ready', (event, project) => {
+                this.loadProject(project)
             })
-            .on('settings-updated', (event, payload) => {
-                this.$payload(payload, settings => {
-                    this.updateSettings(settings)
-                })
+            .on('settings-updated', (event, settings) => {
+                this.updateSettings(settings)
             })
             .on('clear', () => {
                 this.loadProject()
             })
-            .on('error', (event, payload) => {
-                this.$payload(payload, (message, help) => {
-                    this.$alert.show({
-                        type: 'error',
-                        message,
-                        help
-                    })
+            .on('error', (event, message, help) => {
+                this.$alert.show({
+                    type: 'error',
+                    message,
+                    help
                 })
             })
             .on('menu-event', async (event, { name, properties }) => {
@@ -245,10 +228,8 @@ export default new Vue({
                 Lode.ipc.on(`${this.project.id}:status:index`, this.projectStatusListener)
             }
         },
-        projectStatusListener (event, payload) {
-            this.$payload(payload, (to, from) => {
-                this.project.status = to
-            })
+        projectStatusListener (event, to, from) {
+            this.project.status = to
         },
         async projectAdd () {
             this.$modal.confirm('EditProject', { add: true })
@@ -264,7 +245,7 @@ export default new Vue({
             this.$modal.confirm('EditProject')
                 .then(async options => {
                     options = await Lode.ipc.invoke('project-update', options)
-                    this.project = options ? JSON.parse(options) : null
+                    this.project = options || null
 
                     // Since current project hasn't changed, just been updated,
                     // we need to forcibly emit the change to the main process,
@@ -336,7 +317,7 @@ export default new Vue({
         },
         async scanEmptyRepositories () {
             this.scanRepositories(
-                JSON.parse(await Lode.ipc.invoke('project-empty-repositories')),
+                await Lode.ipc.invoke('project-empty-repositories'),
                 0
             )
         },
