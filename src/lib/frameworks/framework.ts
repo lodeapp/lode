@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { chunk, find, findIndex, get, omit, orderBy, trim, trimStart } from 'lodash'
+import { chunk, debounce, find, findIndex, get, omit, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import * as fuzzy from 'fuzzysearch'
 import { ApplicationWindow } from '@main/application-window'
@@ -134,6 +134,7 @@ export interface IFramework extends ProjectEventEmitter {
     setSortReverse (reverse?: boolean): void
     isSortReverse (): boolean
     getLedger (): StatusLedger
+    getStatusMap (): { [key: string]: Status }
     getProgressLedger (): ProgressLedger
     resetProgressLedger (): void
 }
@@ -186,6 +187,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     protected sort!: FrameworkSort
     protected sortReverse!: boolean
     protected supportedSorts?: Array<FrameworkSort>
+    protected emitLedgerToRenderer: Function
     protected ledger: StatusLedger = {
         queued: 0,
         running: 0,
@@ -199,6 +201,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         idle: 0,
         error: 0
     }
+    protected statuses: { [key: string]: Status } = {}
     protected progressLedger: ProgressLedger = {
         run: 0,
         total: 0
@@ -210,6 +213,9 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     constructor (window: ApplicationWindow, options: FrameworkOptions) {
         super(window)
         this.build(options)
+        this.emitLedgerToRenderer = debounce(() => {
+            this.emitToRenderer(`${this.id}:ledger`, this.ledger, this.statuses)
+        }, 50)
     }
 
     /**
@@ -626,9 +632,11 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
 
                     this.afterRefresh()
 
-                    this.suites.forEach(suite => {
+                    // Re-queue suites freshly added by the reload command.
+                    this.suites.filter(suite => suite.getStatus() === 'idle').forEach(suite => {
                         suite.queue(false)
                     })
+
                     this.report(this.runArgs())
                         .then((outcome: string) => {
                             if (outcome !== 'killed') {
@@ -758,6 +766,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     protected afterRefresh () {
         this.cleanStaleSuites()
+        this.rebuildLedger()
         this.emitAllSuitesToRenderer()
     }
 
@@ -817,7 +826,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     protected onSuiteRemove (suite: ISuite): void {
         suite.removeAllListeners()
-        this.updateLedger(null, suite.getStatus())
+        this.updateLedger(null, suite.getStatus(), suite)
         this.updateSelected(suite)
         this.emit('suiteRemoved', suite.getId())
     }
@@ -937,7 +946,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 suite
                     .on('selected', this.updateSelected.bind(this))
                     .on('status', this.updateLedger.bind(this))
-                this.updateLedger(suite.getStatus())
                 this.suites.push(suite)
             } else if (rebuild) {
                 suite.rebuildTests(result)
@@ -961,7 +969,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             suites: []
         }
         this.selective = false
-        this.resetLedger()
+        this.rebuildLedger()
     }
 
     /**
@@ -997,6 +1005,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                     // Hydrate results in case schema has changed from previously saved state
                     return this.makeSuite(this.hydrateSuiteResult(result), true)
                 })).then(() => {
+                    this.rebuildLedger()
                     this.onReady()
                     resolve()
                 })
@@ -1052,33 +1061,39 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param to The new status of a suite inside this framework.
      * @param from The old status of a suite inside this framework, if any.
+     * @param id The suite that caused the ledger to change
      */
-    protected updateLedger (to: Status | null, from?: Status): void {
+    protected updateLedger (to: Status | null, from: Status, suite: ISuite): void {
         if (to) {
             this.ledger[to]!++
         }
-        if (from) {
-            this.ledger[from]!--
+        this.ledger[from]!--
+        this.statuses = {
+            ...this.statuses,
+            ...suite.getStatusMap()
         }
-        this.emitLedgerEvents()
+
+        this.emitLedgerToRenderer()
     }
 
     /**
-     * Reset the framework's ledger to its initial value.
+     * Rebuild the status ledger
      */
-    protected resetLedger (): void {
+    protected rebuildLedger (): void {
+        // Reset ledger before starting
         for (let key of Object.keys(this.ledger)) {
             this.ledger[<Status>key] = 0
         }
-        this.emitLedgerEvents()
-    }
+        // Iterate through suites and update each ledger status
+        this.suites.forEach(suite => {
+            this.ledger[suite.getStatus()]++
+            this.statuses = {
+                ...this.statuses,
+                ...suite.getStatusMap()
+            }
+        })
 
-    /**
-     * Emit ledger events.
-     */
-    protected emitLedgerEvents (): void {
-        this.emit('ledger', this.ledger)
-        this.emitToRenderer(`${this.id}:ledger`, this.ledger)
+        this.emitLedgerToRenderer()
     }
 
     /**
@@ -1086,6 +1101,13 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     public getLedger (): StatusLedger {
         return this.ledger
+    }
+
+    /**
+     * Return the framework's status map.
+     */
+    public getStatusMap (): { [key: string]: Status } {
+        return this.statuses
     }
 
     /**
@@ -1179,6 +1201,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * if it's not yet executed simply by clearing the internal queue object.
      */
     public start (): void {
+        console.log('STARTING RUN')
         // Only queue job if no other is queued or currently running
         if (this.isBusy() || Object.keys(this.queue).length > 0) {
             return
@@ -1361,7 +1384,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         value: Array<string> | string | null
     ): void {
         this.filters[filter] = Array.isArray(value) ? (value.length ? value : null) : value
-        this.emit('filter', this.filters)
         this.emitSuitesToRenderer()
     }
 

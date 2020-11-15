@@ -55,7 +55,7 @@ export default {
             active: 'context/active'
         })
     },
-    created () {
+    mounted () {
         Lode.ipc
             .on(`${this.model.id}:status:sidebar`, this.statusListener)
             .on(`${this.model.id}:error`, this.onErrorEvent)

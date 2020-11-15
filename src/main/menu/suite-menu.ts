@@ -22,10 +22,9 @@ export class SuiteMenu extends Menu {
                 id: 'filter-and-run',
                 label: __DARWIN__ ? 'Filter this Item and Run' : 'Filter this item and run',
                 click: () => {
-                    suite.getFramework().once('filter', filters => {
-                        suite.getFramework().start()
-                    })
                     this.emit('filter', `"${suite.getRelativePath()}"`)
+                    suite.getFramework().setFilter('keyword', `"${suite.getRelativePath()}"`)
+                    suite.getFramework().start()
                 }
             })
             .separator()

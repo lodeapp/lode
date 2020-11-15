@@ -1,4 +1,4 @@
-import { debounce, find, get, isArray, max, maxBy, pickBy, sum } from 'lodash'
+import { debounce, extend, find, flatten, get, isArray, max, maxBy, pickBy, reduce, sum } from 'lodash'
 import { ApplicationWindow } from '@main/application-window'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { ISuiteResult } from '@lib/frameworks/suite'
@@ -25,7 +25,7 @@ export abstract class Nugget extends ProjectEventEmitter {
 
     constructor (window: ApplicationWindow) {
         super(window)
-        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 100)
+        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 50)
     }
 
     /**
@@ -237,9 +237,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      */
     protected updateStatus (to?: Status): void {
         if (typeof to === 'undefined') {
-            const statuses = this.bloomed
-                ? this.tests.map((test: ITest) => test.getStatus())
-                : this.getTestResults().map((test: ITestResult) => test.status)
+            const statuses = this.getTestResults().map((test: ITestResult) => test.status)
             to = parseStatus(statuses)
         }
         const from = this.getStatus()
@@ -251,9 +249,7 @@ export abstract class Nugget extends ProjectEventEmitter {
                 this.result.status = to
             }
 
-            this.emit('status', to, from)
-            this.emitToRenderer(`${this.getId()}:status:list`, to, from)
-            this.emitToRenderer(`${this.getId()}:status:active`, to, from)
+            this.emit('status', to, from, this)
         }
     }
 
@@ -262,6 +258,36 @@ export abstract class Nugget extends ProjectEventEmitter {
      */
     public getStatus (): Status {
         return this.status
+    }
+
+    /**
+     * Get this nugget's status map.
+     */
+    public getStatusMap (): { [key: string]: Status } {
+        return {
+            [this.getId()]: this.getStatus(),
+            ...<object>reduce(
+                this.bloomed
+                    ? this.tests.map((test: ITest) => test.getStatusMap())
+                    : flatten(this.getTestResults().map((test: ITestResult) => {
+                        return this.getRecursiveStatusMap(test)
+                    })),
+            extend)
+        }
+    }
+
+    /**
+     * Get the statuses of this nugget's children recursively, to form a status map.
+     *
+     * @param result The test result we're extracting the status from
+     */
+    protected getRecursiveStatusMap (result: ITestResult): Array<{ [key: string]: Status }> {
+        return flatten([
+            { [result.id]: result.status },
+            ...(result.tests || []).map((test: ITestResult) => {
+                return this.getRecursiveStatusMap(test)
+            })
+        ])
     }
 
     /**
@@ -475,13 +501,13 @@ export abstract class Nugget extends ProjectEventEmitter {
      */
     public queue (selective: boolean): void {
         this.setFresh(false)
-        this.updateStatus('queued')
         this.tests
             .filter(test => selective && this.canToggleTests() ? test.selected : true)
             .forEach(test => {
                 test.resetResult()
                 test.queue(selective)
             })
+        this.updateStatus('queued')
 
         if (!this.bloomed) {
             // If not bloomed, then granular selecting is not possible, so we
@@ -499,13 +525,13 @@ export abstract class Nugget extends ProjectEventEmitter {
      */
     public error (selective: boolean): void {
         this.setFresh(false)
-        this.updateStatus('error')
         this.tests
             .filter(test => selective && this.canToggleTests() ? test.selected : true)
             .forEach(test => {
                 test.resetResult()
                 test.error(selective)
             })
+        this.updateStatus('error')
 
         if (!this.bloomed) {
             // If not bloomed, then granular selecting is not possible, so we

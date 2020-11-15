@@ -100,7 +100,7 @@ export class Suite extends Nugget implements ISuite {
             tests: this.bloomed
                 ? this.tests.map((test: ITest) => test.persist(status))
                 : this.getTestResults().map((test: ITestResult) => this.defaults(test, status))
-        }, ['hasChildren', 'selected', 'partial', 'relative'])
+        }, ['status', 'hasChildren', 'selected', 'partial', 'relative'])
     }
 
     /**
@@ -310,6 +310,7 @@ export class Suite extends Nugget implements ISuite {
      * @param cleanup Whether to clean obsolete children after debriefing.
      */
     public async debrief (result: ISuiteResult, cleanup: boolean): Promise<void> {
+        let emit = !this.testsLoaded()
         this.file = result.file
         this.result.meta = result.meta
         this.result.console = result.console
@@ -320,7 +321,10 @@ export class Suite extends Nugget implements ISuite {
             this.bloom().then(() => {
                 this.debriefTests(result.tests || [], cleanup)
                     .then(() => {
-                        this.emitToRenderer(`${this.getId()}:children`, this.hasChildren())
+                        if (emit) {
+                            // Only emit the :children event if tests weren't loaded initially.
+                            this.emitToRenderer(`${this.getId()}:children`, this.testsLoaded() && this.hasChildren())
+                        }
                         resolve()
                     })
             })

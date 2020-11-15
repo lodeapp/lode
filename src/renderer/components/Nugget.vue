@@ -58,6 +58,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import _fromPairs from 'lodash/fromPairs'
 import { labels } from '@lib/frameworks/status'
 
 export default {
@@ -79,7 +80,6 @@ export default {
     data () {
         return {
             tests: [],
-            status: this.model.status || 'idle',
             partial: this.model.partial,
             selected: this.model.selected || false
         }
@@ -90,6 +90,9 @@ export default {
         },
         show () {
             return this.$store.getters['expand/expanded'](this.identifier)
+        },
+        status () {
+            return this.getStatus(this.identifier)
         },
         label () {
             return labels[this.status]
@@ -112,12 +115,17 @@ export default {
         },
         ...mapGetters({
             activeTest: 'context/test',
-            inContext: 'context/inContext'
+            inContext: 'context/inContext',
+            getStatus: 'status/nugget'
         })
+    },
+    watch: {
+        status (to, from) {
+            this.$emit('status', to, from, this.model.file, this.selected)
+        }
     },
     mounted () {
         Lode.ipc
-            .on(`${this.identifier}:status:list`, this.statusListener)
             .on(`${this.identifier}:children`, this.onChildrenEvent)
             .on(`${this.identifier}:framework-tests`, this.onTestsEvent)
             .on(`${this.identifier}:selective`, this.onSelectedEvent)
@@ -129,19 +137,12 @@ export default {
     },
     beforeDestroy () {
         Lode.ipc
-            .removeAllListeners(`${this.identifier}:status:list`)
             .removeAllListeners(`${this.identifier}:children`)
             .removeAllListeners(`${this.identifier}:framework-tests`)
             .removeAllListeners(`${this.identifier}:selective`)
             .removeAllListeners(`${this.identifier}:selected`)
     },
     methods: {
-        statusListener (event, payload) {
-            this.$payload(payload, (to, from) => {
-                this.status = to
-                this.$emit('status', to, from, this.model)
-            })
-        },
         onChildrenEvent (event, payload) {
             this.$payload(payload, hasChildren => {
                 // @TODO: don't mutate model
@@ -150,6 +151,7 @@ export default {
         },
         onTestsEvent (event, payload) {
             this.$payload(payload, tests => {
+                this.$store.commit('status/UPDATE', _fromPairs(tests.map(test => [test.id, test.status])))
                 this.tests = tests
             })
         },

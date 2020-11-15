@@ -20,6 +20,8 @@ export class ApplicationWindow {
     protected ready: boolean = false
     protected project: Project | null = null
 
+    protected events: number = 0
+
     public constructor (identifier: ProjectIdentifier | null) {
 
         if (!windowStateKeeper) {
@@ -141,9 +143,16 @@ export class ApplicationWindow {
                 ? `http://localhost:9080`
                 : `file://${__dirname}/index.html`
         )
+
+        setInterval(() => {
+            log.info(`IPC events: ${this.events}`)
+        }, 5000)
     }
 
     public send (event: string, args: Array<any> = []) {
+        // @TODO: Remove performance measurements
+        this.events++
+        console.count(event)
         send(this.window.webContents, event, args)
     }
 

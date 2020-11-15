@@ -63,7 +63,7 @@ export default {
             activeFramework: 'context/framework'
         })
     },
-    created () {
+    mounted () {
         Lode.ipc
             .on(`${this.model.id}:status:sidebar`, this.statusListener)
             .on(`${this.model.id}:frameworks`, this.updateFrameworks)

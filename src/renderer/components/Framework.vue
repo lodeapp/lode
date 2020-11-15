@@ -94,8 +94,8 @@
                 <Nugget
                     v-for="suite in suites"
                     class="suite"
-                    :model="suite"
                     :key="suite.relative"
+                    :model="suite"
                     :running="running"
                     :selectable="true"
                     @toggle="onChildToggle"
@@ -198,22 +198,35 @@ export default {
             this.setKeywordFilter(keyword)
         }, 150)
     },
-    created () {
+    async mounted () {
         Lode.ipc
+            .on(`${this.model.id}:ledger`, this.onLedgerEvent)
             .on(`${this.model.id}:status:list`, this.statusListener)
             .on(`${this.model.id}:refreshed`, this.onSuitesEvent)
             .on(`${this.model.id}:selective`, this.onSelectiveEvent)
+
+        const { ledger, status } = JSON.parse(await Lode.ipc.invoke('framework-get-ledger', this.model.id))
+        this.$store.commit('ledger/SET', ledger)
+        this.$store.commit('status/SET', status)
 
         this.getSuites()
         this.selected = this.model.selected
     },
     beforeDestroy () {
         Lode.ipc
+            .removeAllListeners(`${this.model.id}:ledger`)
             .removeAllListeners(`${this.model.id}:status:list`)
             .removeAllListeners(`${this.model.id}:refreshed`)
             .removeAllListeners(`${this.model.id}:selective`)
     },
     methods: {
+        async onLedgerEvent (event, payload) {
+            this.$payload(payload, (ledger, status) => {
+                this.total = Object.values(ledger).reduce((a, b) => a + b, 0)
+                this.$store.commit('ledger/SET', ledger)
+                this.$store.commit('status/SET', status)
+            })
+        },
         getSuites () {
             Lode.ipc.send('framework-suites', this.model.id)
         },
@@ -264,13 +277,13 @@ export default {
         onChildActivation (context) {
             this.$emit('activate', context)
         },
-        onChildStatus (to, from, suite) {
-            const index = _findIndex(this.suites, ['file', suite.file])
+        onChildStatus (to, from, file, selected) {
+            const index = _findIndex(this.suites, ['file', file])
             if (index > -1 && this.statusFilters.length) {
                 if (
                     this.statusFilters.indexOf(to) === -1 &&
                     ['queued', 'running'].indexOf(to) === -1 &&
-                    (this.statusFilters.indexOf('selected') === -1 || !suite.selected)
+                    (this.statusFilters.indexOf('selected') === -1 || !selected)
                 ) {
                     this.suites.splice(index, 1)
                 }

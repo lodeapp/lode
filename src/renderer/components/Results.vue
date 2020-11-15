@@ -83,7 +83,7 @@ export default {
             this.loading = true
         }
     },
-    async created () {
+    async mounted () {
         const context = _clone(this.context)
         Lode.ipc.on(`${this.identifier}:status:active`, this.statusListener)
         const frameworkId = context.shift()

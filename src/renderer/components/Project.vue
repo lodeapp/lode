@@ -162,7 +162,7 @@ export default {
             framework: 'context/framework'
         })
     },
-    created () {
+    mounted () {
         Lode.ipc
             .on(`${this.model.id}:status:sidebar`, this.statusListener)
             .on(`${this.model.id}:repositories`, this.onRepositoriesEvent)

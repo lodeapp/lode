@@ -42,7 +42,6 @@ export default {
     },
     data () {
         return {
-            base: {},
             statusString: {
                 queued: 'queued|queued',
                 passed: 'passed|passed',
@@ -69,23 +68,11 @@ export default {
             return this.filters(this.id)['status'] || []
         },
         ...mapGetters({
+            base: 'ledger/ledger',
             filters: 'filters/all'
         })
     },
-    async created () {
-        Lode.ipc.on(`${this.id}:ledger`, this.onLedgerEvent)
-        this.base = JSON.parse(await Lode.ipc.invoke('framework-get-ledger', this.id))
-    },
-    beforeDestroy () {
-        Lode.ipc.removeAllListeners(`${this.id}:ledger`)
-    },
     methods: {
-        async onLedgerEvent (event, payload) {
-            this.$payload(payload, ledger => {
-                this.base = ledger
-                this.$emit('total', Object.values(ledger).reduce((a, b) => a + b, 0))
-            })
-        },
         isActive (status) {
             return this.statusFilters.indexOf(status) > -1
         },

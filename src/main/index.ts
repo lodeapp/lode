@@ -420,7 +420,10 @@ ipcMain
 ipcMain
     .handle('framework-get-ledger', async (event: Electron.IpcMainInvokeEvent, frameworkId: string) => {
         const { framework } = await entities(event, frameworkId)
-        return JSON.stringify(framework.getLedger())
+        return JSON.stringify({
+            ledger: framework.getLedger(),
+            status: framework.getStatusMap()
+        })
     })
 
 ipcMain
