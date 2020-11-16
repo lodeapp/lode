@@ -2,30 +2,52 @@
     <div class="test-result">
         <div class="tabs">
             <nav>
-                <template v-if="error">
-                    <button type="button" @mousedown="setTab('error')" class="tab" :class="{ selected: tab === 'error' }">
-                        Error
-                    </button>
-                </template>
+                <button
+                    v-if="error"
+                    type="button"
+                    class="tab"
+                    :class="{ selected: tab === 'error' }"
+                    @mousedown="setTab('error')"
+                >Error</button>
                 <template v-else>
                     <template v-if="!isTransient">
-                        <button type="button" v-if="feedback" @mousedown="setTab('feedback')" class="tab" :class="{ selected: tab === 'feedback' }">
-                            Feedback
-                        </button>
-                        <button type="button" v-if="parameters" @mousedown="setTab('parameters')" class="tab" :class="{ selected: tab === 'parameters' }">
-                            Parameters
-                        </button>
-                        <button type="button" v-if="console" @mousedown="setTab('console')" class="tab" :class="{ selected: tab === 'console' }">
-                            Console
-                        </button>
-                        <button type="button" v-if="suiteConsole" @mousedown="setTab('suiteConsole')" class="tab" :class="{ selected: tab === 'suiteConsole' }">
-                            Suite Console
-                        </button>
+                        <button
+                            v-if="feedback"
+                            type="button"
+                            class="tab"
+                            :class="{ selected: tab === 'feedback' }"
+                            @mousedown="setTab('feedback')"
+                        >Feedback</button>
+                        <button
+                            v-if="parameters"
+                            type="button"
+                            class="tab"
+                            :class="{ selected: tab === 'parameters' }"
+                            @mousedown="setTab('parameters')"
+                        >Parameters</button>
+                        <button
+                            v-if="console"
+                            type="button"
+                            class="tab"
+                            :class="{ selected: tab === 'console' }"
+                            @mousedown="setTab('console')"
+                        >Console</button>
+                        <button
+                            v-if="suiteConsole"
+                            type="button"
+                            class="tab"
+                            :class="{ selected: tab === 'suiteConsole' }"
+                            @mousedown="setTab('suiteConsole')"
+                        >Suite Console</button>
                     </template>
                 </template>
-                <button type="button" v-if="stats" @mousedown="setTab('stats')" class="tab" :class="{ selected: tab === 'stats' }">
-                    Information
-                </button>
+                <button
+                    v-if="stats"
+                    type="button"
+                    class="tab"
+                    :class="{ selected: tab === 'stats' }"
+                    @mousedown="setTab('stats')"
+                >Information</button>
             </nav>
         </div>
         <div class="test-result-breakdown">

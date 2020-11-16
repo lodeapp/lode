@@ -13,7 +13,8 @@ import {
     RepositoryMenu,
     FrameworkMenu,
     SuiteMenu,
-    TestMenu
+    TestMenu,
+    FileMenu
 } from '@main/menu'
 import { ApplicationWindow } from '@main/application-window'
 import { Updater } from '@main/updater'
@@ -477,6 +478,17 @@ ipcMain
             nuggets: nuggets!.map((nugget: Nugget) => nugget.render(false)),
             nugget: nugget!.render(false)
         }
+    })
+
+ipcMain
+    .handle('file-context-menu', async (event: Electron.IpcMainInvokeEvent, filePath: string) => {
+        return new Promise(resolve => {
+            new FileMenu(filePath, event.sender)
+                .after(() => {
+                    resolve()
+                })
+                .open()
+        })
     })
 
 ipcMain

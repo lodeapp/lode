@@ -1,19 +1,24 @@
-.ansi {
+.ansi,
+.snippet {
     position: relative;
 
     button {
         -webkit-appearance: none;
-        background-color: transparent;
-        border: 0;
-        border-bottom: 1px solid var(--primary-border-color);
-        border-left: 1px solid var(--primary-border-color);
-        border-top-right-radius: 3px;
+        background-color: var(--primary-background-color);
+        border-radius: 3px;
+        border: 1px solid var(--primary-border-color);
+        float: right;
+        margin-left: 4px;
         opacity: 0;
         outline: none;
         position: absolute;
-        right: 0;
-        top: 0;
+        right: 4px;
+        top: 4px;
         transition: opacity 100ms ease-in;
+
+        &:nth-of-type(1) {
+            right: 38px;
+        }
 
         i {
             color: $gray-500;
@@ -31,7 +36,7 @@
 
         button {
             opacity: 1;
-            transition-delay: 500ms;
+            transition-delay: 200ms;
         }
     }
 }

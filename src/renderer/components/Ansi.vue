@@ -1,10 +1,13 @@
 <template>
     <div v-if="content" class="ansi">
-        <pre v-if="showRaw">{{ content }}</pre>
-        <pre v-else v-html="html"></pre>
         <button type="button" title="Show raw output" @click="showRaw = !showRaw">
             <Icon symbol="code" />
         </button>
+        <button type="button" title="Copy to clipboard" @click="clipboard">
+            <Icon symbol="clippy" />
+        </button>
+        <pre v-if="showRaw">{{ content }}</pre>
+        <pre v-else v-html="html"></pre>
     </div>
 </template>
 
@@ -49,6 +52,9 @@ export default {
             })
 
             return content + '\r\n'
+        },
+        clipboard () {
+            this.$root.copyToClipboard(this.showRaw ? this.content : this.$el.querySelector('pre').innerText)
         }
     }
 }

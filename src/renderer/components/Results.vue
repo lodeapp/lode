@@ -55,7 +55,6 @@ export default {
     data () {
         return {
             loading: false,
-            status: 'idle',
             breadcrumbs: [],
             framework: {},
             suite: {},
@@ -66,11 +65,15 @@ export default {
         identifier () {
             return _last(this.context)
         },
+        status () {
+            return this.getStatus(this.identifier)
+        },
         displayName () {
             return this.test.displayName || this.test.name
         },
         ...mapGetters({
-            testActive: 'context/test'
+            testActive: 'context/test',
+            getStatus: 'status/nugget'
         })
     },
     watch: {
@@ -85,23 +88,13 @@ export default {
     },
     async mounted () {
         const context = _clone(this.context)
-        Lode.ipc.on(`${this.identifier}:status:active`, this.statusListener)
         const frameworkId = context.shift()
         const { framework, nuggets } = await Lode.ipc.invoke('test-get', frameworkId, context)
         this.breadcrumbs = nuggets
         this.framework = framework
         this.test = nuggets.pop()
         this.suite = nuggets.shift()
-        this.status = this.test.status
         this.loading = false
-    },
-    beforeDestroy () {
-        Lode.ipc.removeAllListeners(`${this.identifier}:status:active`)
-    },
-    methods: {
-        statusListener (event, to, from) {
-            this.status = to
-        }
     }
 }
 </script>

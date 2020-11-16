@@ -12,7 +12,7 @@
             {{ 'Exception|Exceptions' | plural(trace.length) }}
             <small class="float-right">
                 <button type="button" class="btn-link more-actions" title="Reverse order" @click.prevent="reverse = !reverse">
-                    <Icon symbol="arrow-down" /><Icon symbol="arrow-up" />
+                    <Icon symbol="arrow-switch" class="rotate-90" />
                 </button>
             </small>
         </h4>

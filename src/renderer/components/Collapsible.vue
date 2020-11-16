@@ -2,7 +2,7 @@
     <div class="collapsible" :class="[content ? 'has-content' : '', `is-${expanded ? 'expanded' : 'collapsed'}`]">
         <div class="header" @dblclick.prevent="toggle">
             <button v-if="copy" class="btn-link" @click.stop.prevent="clipboard">
-                <Icon :symbol="'clippy'" />
+                <Icon symbol="clippy" />
             </button>
             <button v-if="content" class="btn btn-sm" @click.stop.prevent="toggle">
                 <Icon :symbol="expanded ? 'dash' : 'plus'" />

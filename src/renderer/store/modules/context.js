@@ -76,6 +76,18 @@ export default {
         },
         inContext: state => id => {
             return state.nuggets.indexOf(id) > -1
+        },
+        rootPath: state => {
+            if (!state.framework || !state.repository) {
+                return ''
+            }
+            return state.framework.runsInRemote ? state.framework.remotePath : state.repository.path
+        },
+        repositoryPath: state => {
+            if (!state.repository) {
+                return ''
+            }
+            return state.repository.path
         }
     }
 }
