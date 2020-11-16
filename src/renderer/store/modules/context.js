@@ -1,3 +1,4 @@
+import Vue from 'vue'
 import _clone from 'lodash/clone'
 import _last from 'lodash/last'
 
@@ -7,7 +8,9 @@ export default {
         active: null, // Active framework id, so switching can feel more responsive
         repository: null,
         framework: null,
-        nuggets: []
+        suitesKey: null,
+        nuggets: [],
+        persist: {}
     },
     mutations: {
         ACTIVE (state, payload) {
@@ -19,10 +22,14 @@ export default {
         FRAMEWORK (state, payload) {
             state.framework = _clone(payload)
         },
-        NUGGET (state, payload) {
-            if (state.nuggets.indexOf(payload) === -1) {
-                state.nuggets.unshift(payload)
-            }
+        SUITES (state, payload) {
+            state.suitesKey = Vue.prototype.$string.from(payload.map(suite => suite.file))
+        },
+        PERSIST_NUGGETS (state) {
+            Vue.set(state.persist, state.active, state.nuggets)
+        },
+        SET_NUGGETS (state, payload) {
+            state.nuggets = payload
         },
         CLEAR_NUGGETS (state) {
             state.nuggets = []
@@ -35,23 +42,28 @@ export default {
         }
     },
     actions: {
-        async activateWithId ({ state, commit }, { frameworkId, repository }) {
+        async activate ({ state, commit }, { frameworkId, repository }) {
+            // If there's an active framework, persist active nuggets, if any.
+            if (state.active) {
+                commit('PERSIST_NUGGETS')
+                commit('CLEAR_NUGGETS')
+            }
             commit('ACTIVE', frameworkId)
             Lode.ipc.invoke('framework-get', frameworkId).then(framework => {
                 commit('REPOSITORY', repository)
                 commit('FRAMEWORK', framework)
+                // Restore previously persisted nuggets, if applicable
+                if (state.persist[framework.id]) {
+                    commit('SET_NUGGETS', state.persist[framework.id])
+                }
             })
             Lode.ipc.send('project-active-framework', frameworkId)
         },
-        async activate ({ state, commit }, { framework, repository }) {
-            commit('ACTIVE', framework ? framework.id : null)
-            commit('REPOSITORY', repository)
-            commit('FRAMEWORK', framework)
-            Lode.ipc.send('project-active-framework', framework ? framework.id : null)
-        },
         onRemove ({ state, commit, dispatch }, modelId) {
-            if (state.nuggets.indexOf(modelId) > -1) {
+            if (state.repository.id === modelId || state.active === modelId) {
                 commit('CLEAR')
+            } else if (state.nuggets.indexOf(modelId) > -1) {
+                commit('CLEAR_NUGGETS')
             }
         },
         clear ({ commit }) {
@@ -73,6 +85,9 @@ export default {
         },
         test: state => {
             return _last(state.nuggets)
+        },
+        suitesKey: state => {
+            return state.suitesKey
         },
         inContext: state => id => {
             return state.nuggets.indexOf(id) > -1

@@ -1,109 +1,107 @@
 <template>
     <main class="project">
-        <template>
-            <ProjectLoader
-                v-if="loading"
-                :name="model.name"
-            />
-            <Split v-else :class="{ 'empty': !repository || !framework || frameworkLoading || repositoryMissing }">
-                <Pane class="sidebar">
-                    <div class="draggable"></div>
-                    <header>
-                        <h5 class="sidebar-header">Project</h5>
-                        <div
-                            class="sidebar-item has-status"
-                            :class="[
-                                `status--${status}`,
-                                menuActive ? 'is-menu-active' : '',
-                            ]"
-                            @contextmenu="onContextMenu"
-                        >
-                            <div class="header">
-                                <div class="title">
-                                    <Indicator :status="status" />
-                                    <h4 class="heading">
-                                        <span class="name" :title="model.name">
-                                            {{ model.name }}
-                                        </span>
-                                    </h4>
-                                </div>
+        <ProjectLoader
+            v-if="loading"
+            :name="model.name"
+        />
+        <Split v-else :class="{ 'empty': !repository || !framework || frameworkLoading || repositoryMissing }">
+            <Pane class="sidebar">
+                <div class="draggable"></div>
+                <header>
+                    <h5 class="sidebar-header">Project</h5>
+                    <div
+                        class="sidebar-item has-status"
+                        :class="[
+                            `status--${status}`,
+                            menuActive ? 'is-menu-active' : '',
+                        ]"
+                        @contextmenu="onContextMenu"
+                    >
+                        <div class="header">
+                            <div class="title">
+                                <Indicator :status="status" />
+                                <h4 class="heading">
+                                    <span class="name" :title="model.name">
+                                        {{ model.name }}
+                                    </span>
+                                </h4>
                             </div>
                         </div>
-                        <h5 v-if="repositories.length" class="sidebar-header">
-                            <span>Repositories</span>
-                            <button type="button" class="sidebar-action" @click="this.$root.repositoryAdd">
-                                <Icon symbol="plus" />
-                            </button>
-                        </h5>
-                    </header>
-                    <section>
-                        <div class="shadow"></div>
-                        <div class="shadow-overlay"></div>
-                        <SidebarRepository
-                            v-for="repository in repositories"
-                            :model="repository"
-                            :key="repository.id"
-                            @status="onRepositoryStatus"
-                            @framework-activate="onFrameworkActivation"
-                        />
-                    </section>
-                </Pane>
-                <Pane id="list">
-                    <div class="draggable"></div>
-                    <template v-if="!repositories.length">
-                        <div class="cta">
-                            <h2>{{ 'Add repositories to :0' | set(model.name) }}</h2>
-                            <p>Lode can have multiple repositories and frameworks inside a project.</p>
-                            <button class="btn btn-primary" @click="this.$root.repositoryAdd">Add repositories</button>
+                    </div>
+                    <h5 v-if="repositories.length" class="sidebar-header">
+                        <span>Repositories</span>
+                        <button type="button" class="sidebar-action" @click="this.$root.repositoryAdd">
+                            <Icon symbol="plus" />
+                        </button>
+                    </h5>
+                </header>
+                <section>
+                    <div class="shadow"></div>
+                    <div class="shadow-overlay"></div>
+                    <SidebarRepository
+                        v-for="repository in repositories"
+                        :model="repository"
+                        :key="repository.id"
+                        @status="onRepositoryStatus"
+                        @framework-activate="onFrameworkActivation"
+                    />
+                </section>
+            </Pane>
+            <Pane id="list">
+                <div class="draggable"></div>
+                <template v-if="!repositories.length">
+                    <div class="cta">
+                        <h2>{{ 'Add repositories to :0' | set(model.name) }}</h2>
+                        <p>Lode can have multiple repositories and frameworks inside a project.</p>
+                        <button class="btn btn-primary" @click="this.$root.repositoryAdd">Add repositories</button>
+                    </div>
+                </template>
+                <template v-else-if="!framework">
+                    <div class="cta">
+                        <h2>Scan for frameworks inside your repositories</h2>
+                        <p>Lode can scan the project's repositories for testing frameworks. If none are found, your frameworks may not be supported, yet.</p>
+                        <button class="btn btn-primary" @click="$root.scanEmptyRepositories">Scan for frameworks</button>
+                    </div>
+                </template>
+                <template v-else-if="repositoryMissing && repository">
+                    <div class="cta">
+                        <h2>Lode can't find "{{ repository.name }}"</h2>
+                        <p v-markdown>It was last seen at `{{ repository.path }}`.</p>
+                        <button class="btn btn-primary" @click="$root.repositoryLocate(repository)">Locate</button>
+                        <button class="btn" @click="$root.repositoryRemove(repository)">Remove</button>
+                        <button class="btn" @click="$root.repositoryExists(repository)">Check again</button>
+                    </div>
+                </template>
+                <template v-else>
+                    <div v-if="frameworkLoading" class="loading">
+                        <div class="loading-group">
+                            <div class="spinner"></div>
                         </div>
-                    </template>
-                    <template v-else-if="!framework">
-                        <div class="cta">
-                            <h2>Scan for frameworks inside your repositories</h2>
-                            <p>Lode can scan the project's repositories for testing frameworks. If none are found, your frameworks may not be supported, yet.</p>
-                            <button class="btn btn-primary" @click="$root.scanEmptyRepositories">Scan for frameworks</button>
-                        </div>
-                    </template>
-                    <template v-else-if="repositoryMissing && repository">
-                        <div class="cta">
-                            <h2>Lode can't find "{{ repository.name }}"</h2>
-                            <p v-markdown>It was last seen at `{{ repository.path }}`.</p>
-                            <button class="btn btn-primary" @click="$root.repositoryLocate(repository)">Locate</button>
-                            <button class="btn" @click="$root.repositoryRemove(repository)">Remove</button>
-                            <button class="btn" @click="$root.repositoryExists(repository)">Check again</button>
-                        </div>
-                    </template>
-                    <template v-else>
-                        <div v-if="frameworkLoading" class="loading">
-                            <div class="loading-group">
-                                <div class="spinner"></div>
-                            </div>
-                        </div>
-                        <Framework
-                            v-if="framework"
-                            v-show="!frameworkLoading"
-                            :key="framework.id"
-                            :model="framework"
-                            @activate="onTestActivation"
-                            @mounted="frameworkLoading = false"
-                        />
-                    </template>
-                </Pane>
-                <Pane id="results">
-                    <div class="draggable"></div>
-                    <template v-if="framework && !repositoryMissing && !frameworkLoading">
-                        <div v-if="!context.length" class="results blankslate">
-                            <h3>No test selected</h3>
-                        </div>
-                        <Results
-                            v-else
-                            :key="$string.from(fullContext)"
-                            :context="fullContext"
-                        />
-                    </template>
-                </Pane>
-            </Split>
-        </template>
+                    </div>
+                    <Framework
+                        v-if="framework"
+                        v-show="!frameworkLoading"
+                        :key="framework.id"
+                        :model="framework"
+                        @activate="onTestActivation"
+                        @mounted="frameworkLoading = false"
+                    />
+                </template>
+            </Pane>
+            <Pane id="results">
+                <div class="draggable"></div>
+                <template v-if="framework && !repositoryMissing">
+                    <div v-if="!context.length" class="results blankslate">
+                        <h3>No test selected</h3>
+                    </div>
+                    <Results
+                        v-else-if="!frameworkLoading"
+                        :key="$string.from(context)"
+                        :context="context"
+                    />
+                </template>
+            </Pane>
+        </Split>
     </main>
 </template>
 
@@ -137,7 +135,6 @@ export default {
     },
     data () {
         return {
-            context: [],
             loading: true,
             frameworkLoading: true,
             frameworkKey: this.$string.random(),
@@ -148,18 +145,19 @@ export default {
         }
     },
     computed: {
-        fullContext () {
-            if (!this.framework) {
+        context () {
+            if (!this.framework || this.frameworkLoading) {
                 return []
             }
-            return [this.framework.id].concat(this.context)
+            return [this.framework.id].concat(this.nuggets)
         },
         repositoryMissing () {
             return this.repository && this.repository.status === 'missing'
         },
         ...mapGetters({
             repository: 'context/repository',
-            framework: 'context/framework'
+            framework: 'context/framework',
+            nuggets: 'context/nuggets'
         })
     },
     mounted () {
@@ -218,29 +216,10 @@ export default {
         async onFrameworkActivation (frameworkId, repository) {
             this.frameworkLoading = true
             this.$root.repositoryExists(repository)
-            this.$store.dispatch('context/activateWithId', { frameworkId, repository })
-
-            // @TODO: persist context, if necessary
-            // If there's currently an active test, remember it.
-            // if (this.context.length) {
-            //     this.persistContext[this.framework.id] = this.context.map(context => context.id || context.file)
-            // }
-            // this.resetContext()
-            // this.$store.commit('context/CLEAR')
-
-            // @TODO: persist context, if necessary
-            // Activate the test previously active for this framework.
-            // if (this.persistContext[frameworkId]) {
-            //     this.$store.commit('context/SET', this.persistContext[frameworkId])
-            // }
-            // this.repository = repository
-            // this.framework = framework
-
-            // this.onRepositoryChanged()
+            this.$store.dispatch('context/activate', { frameworkId, repository })
         },
-        // @TODO: redo test activation
-        onTestActivation (context) {
-            this.context = context
+        onTestActivation (nuggets) {
+            this.$store.commit('context/SET_NUGGETS', nuggets)
         },
         onContextMenu () {
             this.menuActive = true

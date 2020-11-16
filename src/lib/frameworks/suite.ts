@@ -1,7 +1,7 @@
 import * as Path from 'path'
 import { get, omit } from 'lodash'
 import { File } from '@main/file'
-import { Status, parseStatus } from '@lib/frameworks/status'
+import { Status, StatusMap, parseStatus } from '@lib/frameworks/status'
 import { IFramework } from '@lib/frameworks/framework'
 import { ITest, ITestResult, Test } from '@lib/frameworks/test'
 import { Nugget } from '@lib/frameworks/nugget'
@@ -17,9 +17,9 @@ export interface ISuite extends Nugget {
     getRelativePath (): string
     getDisplayName (): string
     getStatus (): Status
+    getStatusMap (): StatusMap
     getMeta (): any
     resetMeta (): void
-    getConsole (): Array<any>
     getFramework (): IFramework
     testsLoaded (): boolean
     rebuildTests (result: ISuiteResult): void
@@ -269,13 +269,6 @@ export class Suite extends Nugget implements ISuite {
         if (this.result.meta) {
             this.result.meta = null
         }
-    }
-
-    /**
-     * Get this suite's console output.
-     */
-    public getConsole (): Array<any> {
-        return this.result.console!
     }
 
     /**

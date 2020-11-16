@@ -1,12 +1,12 @@
 <template>
-    <div class="results" :class="{ blankslate: !testActive || loading }">
-        <h3 v-if="!testActive">No test selected</h3>
+    <div class="results" :class="{ blankslate: !activeTest || loading }">
+        <h3 v-if="!activeTest">No test selected</h3>
         <div v-if="loading" class="loading">
             <div class="loading-group">
                 <div class="spinner"></div>
             </div>
         </div>
-        <div v-if="testActive && !loading" class="has-status" :class="[`status--${status}`]">
+        <div v-if="activeTest && !loading" class="has-status" :class="[`status--${status}`]">
             <div class="header">
                 <div class="title">
                     <Indicator :status="status" />
@@ -72,29 +72,44 @@ export default {
             return this.test.displayName || this.test.name
         },
         ...mapGetters({
-            testActive: 'context/test',
+            activeTest: 'context/test',
+            suitesKey: 'context/suitesKey',
             getStatus: 'status/nugget'
         })
     },
     watch: {
-        testActive (test) {
-            if (!test) {
-                this.test = {}
-                this.$emit('reset')
+        status () {
+            this.load()
+        },
+        suitesKey () {
+            this.load()
+        }
+    },
+    mounted () {
+        this.load()
+    },
+    methods: {
+        async load () {
+            if (this.context.length < 3) {
                 return
             }
             this.loading = true
+            const context = _clone(this.context)
+            const frameworkId = context.shift()
+            const { framework, nuggets } = await Lode.ipc.invoke('test-get', frameworkId, context)
+            if (!framework) {
+                // If an error occurs when trying to get a test, assume it's
+                // been removed and force user to select another.
+                this.$store.commit('context/CLEAR_NUGGETS')
+                this.loading = false
+                return
+            }
+            this.breadcrumbs = nuggets
+            this.framework = framework
+            this.test = nuggets.pop()
+            this.suite = nuggets.shift()
+            this.loading = false
         }
-    },
-    async mounted () {
-        const context = _clone(this.context)
-        const frameworkId = context.shift()
-        const { framework, nuggets } = await Lode.ipc.invoke('test-get', frameworkId, context)
-        this.breadcrumbs = nuggets
-        this.framework = framework
-        this.test = nuggets.pop()
-        this.suite = nuggets.shift()
-        this.loading = false
     }
 }
 </script>

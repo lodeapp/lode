@@ -235,6 +235,10 @@ export default {
             this.suites = suites
             this.total = total
             this.$emit('mounted')
+            // If we're not filtering, update the suites' mapping key.
+            if (!this.statusFilters.length) {
+                this.$store.commit('context/SUITES', suites)
+            }
         },
         onSelectiveEvent (event, selected) {
             this.selected = selected

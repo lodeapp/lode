@@ -10,7 +10,7 @@ import { queue } from '@lib/process/queue'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { IRepository, ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
-import { FrameworkStatus, Status, StatusLedger, parseStatus } from '@lib/frameworks/status'
+import { FrameworkStatus, Status, StatusLedger, StatusMap, parseStatus } from '@lib/frameworks/status'
 import { ProgressLedger } from '@lib/frameworks/progress'
 import { FrameworkSort, sortDirection } from '@lib/frameworks/sort'
 import { FrameworkValidator } from '@lib/frameworks/validator'
@@ -119,7 +119,7 @@ export interface IFramework extends ProjectEventEmitter {
     hasFilters (): boolean
     resetFilters (): void
     getLedger (): StatusLedger
-    getStatusMap (): { [key: string]: Status }
+    getStatusMap (): StatusMap
     getProgressLedger (): ProgressLedger
     resetProgressLedger (): void
 }
@@ -1087,7 +1087,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Return the framework's status map.
      */
-    public getStatusMap (): { [key: string]: Status } {
+    public getStatusMap (): StatusMap {
         return this.statuses
     }
 

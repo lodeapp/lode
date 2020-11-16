@@ -471,12 +471,21 @@ ipcMain
 
 ipcMain
     .handle('test-get', async (event: Electron.IpcMainInvokeEvent, frameworkId: string, identifiers: Array<string>) => {
-        const { repository, framework, nuggets, nugget } = await entities(event, frameworkId, identifiers)
-        return {
-            repository: repository.render(),
-            framework: framework.render(),
-            nuggets: nuggets!.map((nugget: Nugget) => nugget.render(false)),
-            nugget: nugget!.render(false)
+        try {
+            const { repository, framework, nuggets, nugget } = await entities(event, frameworkId, identifiers)
+            return {
+                repository: repository.render(),
+                framework: framework.render(),
+                nuggets: nuggets!.map((nugget: Nugget) => nugget.render(false)),
+                nugget: nugget!.render(false)
+            }
+        } catch (_) {
+            // If any entity is not found while trying to load a test, assume
+            // something's been removed and force the user to select one again.
+            return {
+                framework: null,
+                nuggets: null
+            }
         }
     })
 

@@ -107,11 +107,7 @@ export default {
             return this.model.displayName || this.model.name
         },
         isActive () {
-            if (this.identifier === this.activeTest) {
-                return true
-            }
-            this.deactivate()
-            return false
+            return this.identifier === this.activeTest
         },
         ...mapGetters({
             activeTest: 'context/test',
@@ -223,23 +219,11 @@ export default {
         activate () {
             this.$el.focus()
             this.$store.commit('context/CLEAR_NUGGETS')
-            this.$store.commit('context/NUGGET', this.identifier)
-            // @TODO: redo set active
-            // this.test.setActive(true)
-            setTimeout(() => {
-                this.$emit('activate', [this.identifier])
-            })
-        },
-        deactivate () {
-            // @TODO: redo set active false
-            // this.test.setActive(false)
+            this.$emit('activate', [this.identifier])
         },
         onChildActivation (context) {
             context.unshift(this.identifier)
-            this.$store.commit('context/NUGGET', this.identifier)
-            setTimeout(() => {
-                this.$emit('activate', context)
-            })
+            this.$emit('activate', context)
         },
         onSelect (event) {
             if (this.running) {

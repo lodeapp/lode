@@ -3,7 +3,7 @@ import { ApplicationWindow } from '@main/application-window'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { ISuiteResult } from '@lib/frameworks/suite'
 import { ITest, ITestResult } from '@lib/frameworks/test'
-import { Status, parseStatus } from '@lib/frameworks/status'
+import { Status, StatusMap, parseStatus } from '@lib/frameworks/status'
 
 /**
  * Nuggets are the testable elements inside a repository
@@ -19,7 +19,6 @@ export abstract class Nugget extends ProjectEventEmitter {
     protected result?: any
     protected fresh: boolean = false
     protected bloomed: boolean = false
-    protected active: boolean = false
 
     protected updateCountsListener: (nugget: Nugget, toggle: boolean) => Promise<void>
 
@@ -80,10 +79,12 @@ export abstract class Nugget extends ProjectEventEmitter {
             name: result.name,
             displayName: result.displayName !== result.name ? result.displayName : null,
             status: status ? status : result.status,
+            // @TODO: Offload to separate store
             feedback: result.feedback,
             console: result.console,
             params: result.params,
             stats: result.stats,
+            // ...
             tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
         }, property => {
             return isArray(property) ? property.length : !!property
@@ -263,7 +264,7 @@ export abstract class Nugget extends ProjectEventEmitter {
     /**
      * Get this nugget's status map.
      */
-    public getStatusMap (): { [key: string]: Status } {
+    public getStatusMap (): StatusMap {
         return {
             [this.getId()]: this.getStatus(),
             ...<object>reduce(
@@ -371,30 +372,14 @@ export abstract class Nugget extends ProjectEventEmitter {
         if (!this.bloomed) {
             return
         }
-        // Never wither a selected nugget or a nugget with an active test inside.
-        if (this.selected || this.tests.some((test: ITest) => test.isActive())) {
+        // Never wither a selected nugget.
+        if (this.selected) {
             return
         }
         this.result.tests = this.tests.map((test: ITest) => test.persist(false))
         this.tests = []
         this.bloomed = false
         return Promise.resolve()
-    }
-
-    /**
-     * Set the active state of a nugget.
-     *
-     * @param active The active state to set.
-     */
-    public setActive (active: boolean): void {
-        this.active = active
-    }
-
-    /**
-     * Get the active state of a nugget.
-     */
-    public isActive (): boolean {
-        return this.active
     }
 
     /**
