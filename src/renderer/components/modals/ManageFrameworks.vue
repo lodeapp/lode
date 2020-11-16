@@ -119,7 +119,6 @@ export default {
     methods: {
         async parseFrameworks (scanned = false, pending = []) {
             const types = pending.map(p => p.type)
-            console.log(await Lode.ipc.invoke('repository-frameworks', this.repository.id))
             const frameworks = (await Lode.ipc.invoke('repository-frameworks', this.repository.id))
                 .map(framework => {
                     // If an existing framework has been removed, but user has

@@ -4,7 +4,6 @@ import { Status } from '@lib/frameworks/status'
 import { Nugget } from '@lib/frameworks/nugget'
 
 export interface ITest extends Nugget {
-    result?: ITestResult
     selected: boolean
 
     getId (): string
@@ -18,18 +17,14 @@ export interface ITest extends Nugget {
     persist (status?: Status | false): ITestResult
     resetResult (): void
     idle (selective: boolean): Promise<void>
-    queue (selective: boolean): void
-    error (selective: boolean): void
+    queue (selective: boolean): Promise<void>
+    error (selective: boolean): Promise<void>
     idleQueued (selective: boolean): void
     errorQueued (selective: boolean): void
     debrief (result: ITestResult, cleanup: boolean): Promise<void>
     countChildren (): number
     hasChildren(): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
-    getLastUpdated (): string | null
-    getLastRun (): string | null
-    getTotalDuration (): number
-    getMaxDuration (): number
 }
 
 export interface ITestResult {
@@ -48,7 +43,7 @@ export interface ITestResult {
 
 export class Test extends Nugget implements ITest {
     protected status!: Status
-    public result!: ITestResult
+    protected result!: ITestResult
 
     constructor (window: ApplicationWindow, result: ITestResult) {
         super(window)

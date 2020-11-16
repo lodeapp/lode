@@ -5,7 +5,6 @@ import { unpacked, loc, posix } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, FrameworkDefaults, Framework } from '@lib/frameworks/framework'
 import { ISuite } from '@lib/frameworks/suite'
-import { FrameworkSort } from '@lib/frameworks/sort'
 
 export class Jest extends Framework {
 
@@ -137,16 +136,6 @@ export class Jest extends Framework {
         })
 
         return args.concat(this.runArgs())
-    }
-
-    /**
-     * Get all sort options supported by this framework.
-     */
-    public getSupportedSorts (): Array<FrameworkSort> {
-        const supported = super.getSupportedSorts()
-        return supported.filter((sort: FrameworkSort) => {
-            return sort !== 'framework'
-        })
     }
 
     /**

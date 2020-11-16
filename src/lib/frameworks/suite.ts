@@ -28,8 +28,8 @@ export interface ISuite extends Nugget {
     toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
     toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
     idle (selective: boolean): Promise<void>
-    queue (selective: boolean): void
-    error (selective: boolean): void
+    queue (selective: boolean): Promise<void>
+    error (selective: boolean): Promise<void>
     idleQueued (selective: boolean): void
     errorQueued (selective: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
@@ -41,10 +41,6 @@ export interface ISuite extends Nugget {
     hasChildren(): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
     getRunningOrder (): number | null
-    getLastUpdated (): string | null
-    getLastRun (): string | null
-    getTotalDuration (): number
-    getMaxDuration (): number
 }
 
 export interface ISuiteResult {
@@ -62,7 +58,7 @@ export interface ISuiteResult {
 
 export class Suite extends Nugget implements ISuite {
     public file!: string
-    public result!: ISuiteResult
+    protected result!: ISuiteResult
     protected framework: IFramework
 
     constructor (framework: IFramework, result: ISuiteResult) {

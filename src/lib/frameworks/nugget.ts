@@ -1,4 +1,4 @@
-import { debounce, extend, find, flatten, get, isArray, max, maxBy, pickBy, reduce, sum } from 'lodash'
+import { debounce, extend, find, flatten, isArray, pickBy, reduce } from 'lodash'
 import { ApplicationWindow } from '@main/application-window'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { ISuiteResult } from '@lib/frameworks/suite'
@@ -10,13 +10,13 @@ import { Status, parseStatus } from '@lib/frameworks/status'
  * (i.e. either a suite or a test).
  */
 export abstract class Nugget extends ProjectEventEmitter {
-    protected status: Status = 'idle'
     public tests: Array<ITest> = []
     public selected: boolean = false
     public expanded: boolean = false
     public partial: boolean = false
-    public result?: any
 
+    protected status: Status = 'idle'
+    protected result?: any
     protected fresh: boolean = false
     protected bloomed: boolean = false
     protected active: boolean = false
@@ -291,70 +291,6 @@ export abstract class Nugget extends ProjectEventEmitter {
     }
 
     /**
-     * Get this nugget's last updated date as a string.
-     */
-    public getLastUpdated (): string | null {
-        if (this.hasChildren()) {
-            const dates = this.bloomed
-                ? this.tests.map((test: ITest) => test.getLastUpdated())
-                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.first', null))
-            return maxBy(dates, date => {
-                return date ? Date.parse(date).valueOf() : null
-            })
-        }
-
-        // If no children exist, just return this nugget's own information.
-        return get(this.result, 'stats.first', null)
-    }
-
-    /**
-     * Get this nugget's last run date as a string.
-     */
-    public getLastRun (): string | null {
-        if (this.hasChildren()) {
-            const dates = this.bloomed
-                ? this.tests.map((test: ITest) => test.getLastRun())
-                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.last', null))
-            return maxBy(dates, date => {
-                return date ? Date.parse(date).valueOf() : null
-            })
-        }
-
-        // If no children exist, just return this nugget's own information.
-        return get(this.result, 'stats.last', null)
-    }
-
-    /**
-     * Get this nugget's maximum duration in milliseconds.
-     */
-    public getTotalDuration (): number {
-        if (this.hasChildren()) {
-            const durations = this.bloomed
-                ? this.tests.map((test: ITest) => test.getMaxDuration())
-                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.duration', 0))
-            return sum(durations) || 0
-        }
-
-        // If no children exist, just return this nugget's own information.
-        return get(this.result, 'stats.duration', 0)
-    }
-
-    /**
-     * Get this nugget's maximum duration in milliseconds.
-     */
-    public getMaxDuration (): number {
-        if (this.hasChildren()) {
-            const durations = this.bloomed
-                ? this.tests.map((test: ITest) => test.getMaxDuration())
-                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.duration', 0))
-            return max(durations) || 0
-        }
-
-        // If no children exist, just return this nugget's own information.
-        return get(this.result, 'stats.duration', 0)
-    }
-
-    /**
      * Whether the nugget can run tests selectively.
      */
     public canToggleTests (): boolean {
@@ -411,6 +347,9 @@ export abstract class Nugget extends ProjectEventEmitter {
         return Promise.resolve()
     }
 
+    /**
+     * Make the test objects nested to this nugget.
+     */
     protected async bloom (): Promise<void> {
         if (this.bloomed) {
             return
@@ -424,6 +363,10 @@ export abstract class Nugget extends ProjectEventEmitter {
         })
     }
 
+    /**
+     * Destroy the test objects nested to this nugget, leaving only the static
+     * JSON structure with which to build them again.
+     */
     protected async wither (): Promise<void> {
         if (!this.bloomed) {
             return
@@ -477,13 +420,13 @@ export abstract class Nugget extends ProjectEventEmitter {
      */
     public async idle (selective: boolean): Promise<void> {
         this.setFresh(false)
-        this.updateStatus('idle')
         this.tests
             .filter(test => selective && this.canToggleTests() ? test.selected : true)
             .forEach(test => {
                 test.resetResult()
                 test.idle(selective)
             })
+        this.updateStatus('idle')
 
         if (!this.bloomed) {
             // If not bloomed, then granular selecting is not possible, so we
@@ -499,7 +442,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param selective Whether we're currently in selective mode or not.
      */
-    public queue (selective: boolean): void {
+    public async queue (selective: boolean): Promise<void> {
         this.setFresh(false)
         this.tests
             .filter(test => selective && this.canToggleTests() ? test.selected : true)
@@ -523,7 +466,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param selective Whether we're currently in selective mode or not.
      */
-    public error (selective: boolean): void {
+    public async error (selective: boolean): Promise<void> {
         this.setFresh(false)
         this.tests
             .filter(test => selective && this.canToggleTests() ? test.selected : true)

@@ -12,7 +12,7 @@ import { IRepository, ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
 import { FrameworkStatus, Status, StatusLedger, parseStatus } from '@lib/frameworks/status'
 import { ProgressLedger } from '@lib/frameworks/progress'
-import { FrameworkSort, sortOptions, sortDirection } from '@lib/frameworks/sort'
+import { FrameworkSort, sortDirection } from '@lib/frameworks/sort'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 import { SSHOptions } from '@lib/process/ssh'
 import pool from '@lib/process/pool'
@@ -59,11 +59,9 @@ export type FrameworkOptions = {
     scanStatus?: 'pending' | 'removed'
     proprietary: any
     sort?: FrameworkSort
-    sortReverse?: boolean
     selected?: number
     canToggleTests?: boolean
     status?: FrameworkStatus
-    supportedSorts?: Array<FrameworkSort>
 }
 
 /**
@@ -82,21 +80,13 @@ export type FrameworkDefaults = {
 export interface IFramework extends ProjectEventEmitter {
     name: string
     type: string
-    command: string
     path: string
     repositoryPath: string
     fullPath: string
     runsInRemote: boolean,
     remotePath: string | null
-    sshHost: string
-    sshUser: string | null
-    sshPort: number | null
-    sshIdentity: string | null
-    runner: string | null
-    process?: ProcessId
     status: FrameworkStatus
-    queue: { [index: string]: Function }
-    canToggleTests: boolean
+    readonly canToggleTests: boolean
 
     getId (): string
     getDisplayName (): string
@@ -128,11 +118,6 @@ export interface IFramework extends ProjectEventEmitter {
     getFilter (filter: FrameworkFilter): Array<string> | string | null
     hasFilters (): boolean
     resetFilters (): void
-    setSort (sort: FrameworkSort): void
-    getSort (): FrameworkSort
-    getSupportedSorts (): Array<FrameworkSort>
-    setSortReverse (reverse?: boolean): void
-    isSortReverse (): boolean
     getLedger (): StatusLedger
     getStatusMap (): { [key: string]: Status }
     getProgressLedger (): ProgressLedger
@@ -146,25 +131,26 @@ export interface IFramework extends ProjectEventEmitter {
 export abstract class Framework extends ProjectEventEmitter implements IFramework {
     public name!: string
     public type!: string
-    public command!: string
     public path!: string
     public repositoryPath!: string
     public fullPath!: string
-    public runner!: string | null
     public remotePath!: string
     public runsInRemote!: boolean
-    public sshHost!: string
-    public sshUser!: string | null
-    public sshPort!: number | null
-    public sshIdentity!: string | null
-    public process?: ProcessId
-    public running: Array<Promise<void>> = []
-    public killed: boolean = false
     public status: FrameworkStatus = 'loading'
-    public queue: { [index: string]: Function } = {}
-    public canToggleTests: boolean = false
+    public readonly canToggleTests: boolean = false
 
     protected id!: string
+
+    protected command!: string
+    protected sshHost!: string
+    protected sshUser!: string | null
+    protected sshPort!: number | null
+    protected sshIdentity!: string | null
+    protected runner!: string | null
+    protected process?: ProcessId
+    protected running: Array<Promise<void>> = []
+    protected killed: boolean = false
+    protected queue: { [index: string]: Function } = {}
 
     protected parsed: boolean = false
     protected ready: boolean = false
@@ -185,8 +171,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         group: null
     }
     protected sort!: FrameworkSort
-    protected sortReverse!: boolean
-    protected supportedSorts?: Array<FrameworkSort>
     protected emitLedgerToRenderer: Function
     protected ledger: StatusLedger = {
         queued: 0,
@@ -248,7 +232,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         }
         this.active = options.active || false
         this.sort = options.sort || (this.constructor as typeof Framework).sortDefault
-        this.sortReverse = options.sortReverse || false
 
         this.initialSuiteCount = (options.suites || []).length
         this.hasSuites = this.initialSuiteCount > 0
@@ -386,10 +369,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             status: this.status,
             proprietary: this.proprietary,
             sort: this.getSort(),
-            sortReverse: this.sortReverse,
             selected: this.getSelected().suites.length,
-            canToggleTests: this.canToggleTests,
-            supportedSorts: this.getSupportedSorts()
+            canToggleTests: this.canToggleTests
         }
     }
 
@@ -400,7 +381,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         return omit({
             ...this.render(),
             suites: this.suites.map((suite: ISuite) => suite.persist())
-        }, 'status', 'selective', 'supportedSorts')
+        }, 'status', 'selective')
     }
 
     /**
@@ -1279,12 +1260,10 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     }
 
     /**
-     * Get the framework's suites in active sort order.
+     * Get all the framework's suites in active sort order.
      */
     public getAllSuites (): Array<ISuite> {
-        return this.sortSuites(this.suites.map(suite => {
-            return suite
-        }))
+        return this.sortSuites(this.suites)
     }
 
     /**
@@ -1440,47 +1419,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     }
 
     /**
-     * Set the sort order property for this framework.
-     *
-     * @param sort Which option to use for sorting this framework.
-     */
-    public setSort (sort: FrameworkSort): void {
-        this.sort = sort
-        this.emit('change', this)
-    }
-
-    /**
      * Get the current sort option for this framework.
      */
-    public getSort (): FrameworkSort {
-        return this.sort || (this.constructor as typeof Framework).sortDefault
+    protected getSort (): FrameworkSort {
+        return (this.constructor as typeof Framework).sortDefault
     }
 
     /**
-     * Get all sort options supported by this framework.
-     */
-    public getSupportedSorts (): Array<FrameworkSort> {
-        // If framework has not defined its supported sorts, assume all.
-        return this.supportedSorts || (Object.keys(sortOptions) as Array<FrameworkSort>)
-    }
-
-    /**
-     * Set the reverse sort order property.
-     */
-    public setSortReverse (reverse?: boolean): void {
-        this.sortReverse = typeof reverse !== 'undefined' ? reverse : !this.sortReverse
-        this.emit('change', this)
-    }
-
-    /**
-     * Whether the current sort order is reversed.
-     */
-    public isSortReverse (): boolean {
-        return this.sortReverse
-    }
-
-    /**
-     * Sort suites by the framework's currently selected sorting option.
+     * Sort suites by the framework's sorting option.
      *
      * @param suites The suites to sort
      */
@@ -1488,7 +1434,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         return orderBy(
             suites,
             (suite: ISuite) => this.sortProperty(suite, this.sort),
-            sortDirection(this.sort, this.sortReverse)
+            sortDirection(this.sort, false)
         )
     }
 
@@ -1504,14 +1450,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 return suite.getRunningOrder()
             case 'name':
                 return suite.getDisplayName()
-            case 'updated':
-                return suite.getLastUpdated()
-            case 'run':
-                return suite.getLastRun()
-            case 'duration':
-                return suite.getTotalDuration()
-            case 'maxduration':
-                return suite.getMaxDuration()
             default:
                 return null
         }
