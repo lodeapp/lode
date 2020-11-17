@@ -43,7 +43,7 @@ export default {
     },
     methods: {
         clipboard () {
-            this.$root.copyToClipboard(this.copy)
+            Lode.copyToClipboard(this.copy)
         }
     }
 }

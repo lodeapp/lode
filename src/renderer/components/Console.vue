@@ -5,7 +5,7 @@
     >
         <Collapsible
             :show="!isLarge"
-            :copy="$code.asString(output.content)"
+            :copy="relativePath(output.file)"
             :class="{ 'has-context-menu': hasContextMenu(0) }"
             @contextmenu.native.stop.prevent="onContextMenu(output.file, 0)"
         >

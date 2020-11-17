@@ -42,7 +42,7 @@ export default {
             this.expanded = !this.expanded
         },
         clipboard () {
-            this.$root.copyToClipboard(this.copy)
+            Lode.copyToClipboard(this.copy)
         }
     }
 }

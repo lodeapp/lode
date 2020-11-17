@@ -4,7 +4,7 @@
         :class="[
             `status--${status}`,
             `is-${show ? 'expanded' : 'collapsed'}`,
-            model.hasChildren ? 'has-children' : '',
+            hasChildren ? 'has-children' : '',
             isChildActive ? 'is-child-active' : ''
         ]"
         tabindex="0"
@@ -35,11 +35,11 @@
                     <div class="test-name" :title="displayName">{{ displayName }}</div>
                 </slot>
             </div>
-            <div v-if="model.hasChildren" class="toggle">
+            <div v-if="hasChildren" class="toggle">
                 <Icon :symbol="show ? 'chevron-down' : 'chevron-right'" />
             </div>
         </div>
-        <div v-if="model.hasChildren && show" class="nugget-items">
+        <div v-if="hasChildren && show" class="nugget-items">
             <Nugget
                 v-for="test in tests"
                 class="test"
@@ -81,7 +81,8 @@ export default {
         return {
             tests: [],
             partial: this.model.partial,
-            selected: this.model.selected || false
+            selected: this.model.selected || false,
+            hasChildren: this.model.hasChildren
         }
     },
     computed: {
@@ -140,8 +141,7 @@ export default {
     },
     methods: {
         onChildrenEvent (event, hasChildren) {
-            // @TODO: don't mutate model
-            this.model.hasChildren = hasChildren
+            this.hasChildren = hasChildren
         },
         onTestsEvent (event, tests) {
             this.$store.commit('status/UPDATE', _fromPairs(tests.map(test => [test.id, test.status])))
@@ -162,7 +162,7 @@ export default {
         },
         handleToggle (event) {
             // If it's a test with no children, handle activation instead of toggle.
-            if (!this.model.file && !this.model.hasChildren) {
+            if (!this.model.file && !this.hasChildren) {
                 this.handleActivate()
                 return
             }
@@ -174,19 +174,19 @@ export default {
             this.toggleChildren(event)
         },
         handleExpand (event) {
-            if (!this.model.hasChildren || this.show) {
+            if (!this.hasChildren || this.show) {
                 return
             }
             this.handleToggle(event)
         },
         handleCollapse (event) {
-            if (!this.model.hasChildren || !this.show) {
+            if (!this.hasChildren || !this.show) {
                 return
             }
             this.handleToggle(event)
         },
         toggleChildren (event) {
-            if (!this.model.hasChildren) {
+            if (!this.hasChildren) {
                 return
             }
             if (this.show) {

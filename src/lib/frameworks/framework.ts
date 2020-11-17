@@ -1182,7 +1182,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * if it's not yet executed simply by clearing the internal queue object.
      */
     public start (): void {
-        console.log('STARTING RUN')
         // Only queue job if no other is queued or currently running
         if (this.isBusy() || Object.keys(this.queue).length > 0) {
             return

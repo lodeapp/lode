@@ -52,13 +52,11 @@ export default {
         return {
             frameworks: [],
             status: this.model.status || 'idle',
+            show: this.model.expanded,
             menuActive: false
         }
     },
     computed: {
-        show () {
-            return this.model.expanded
-        },
         ...mapGetters({
             activeFramework: 'context/framework'
         })
@@ -68,7 +66,7 @@ export default {
             .on(`${this.model.id}:status:sidebar`, this.statusListener)
             .on(`${this.model.id}:frameworks`, this.updateFrameworks)
 
-        if (this.model.expanded) {
+        if (this.show) {
             this.getFrameworks()
         }
     },
@@ -89,10 +87,9 @@ export default {
             this.frameworks = frameworks
         },
         toggle () {
-            // @TODO: Don't mutate model
-            this.model.expanded = !this.model.expanded
-            Lode.ipc.send('repository-toggle', this.model.id, this.model.expanded)
-            if (this.model.expanded) {
+            this.show = !this.show
+            Lode.ipc.send('repository-toggle', this.model.id, this.show)
+            if (this.show) {
                 this.getFrameworks()
                 return
             }

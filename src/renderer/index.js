@@ -397,12 +397,8 @@ export default new Vue({
         refreshApplicationMenu () {
             Lode.ipc.send('menu-refresh')
         },
-        // @TODO: safe?
         openExternal (link) {
-            Lode.shell.openExternal(link)
-        },
-        copyToClipboard (string) {
-            Lode.clipboard.writeText(string)
+            Lode.openExternal(link)
         },
         selectAll () {
             const event = new CustomEvent('select-all', {
