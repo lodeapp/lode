@@ -42,6 +42,7 @@ export enum AllowedIpcInvocationMap {
     'project-empty-repositories',
     'project-remove',
     'project-update',
+    'repository-add',
     'repository-context-menu',
     'repository-exists',
     'repository-frameworks',
