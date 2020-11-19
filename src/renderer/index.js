@@ -3,7 +3,7 @@ import '@lib/tracker/renderer'
 
 import Vue from 'vue'
 import store from './store'
-import { get, isArray, isEmpty } from 'lodash'
+import { isArray, isEmpty } from 'lodash'
 import { parse } from 'flatted'
 
 // Styles
@@ -354,12 +354,6 @@ export default new Vue({
         repositoryRemove (repository) {
             this.$modal.confirm('RemoveRepository', { repository })
                 .then(() => {
-                    // If the repository we're removing is the currently active one,
-                    // make sure to clear the Vuex context, too
-                    if (repository.id === get(this.$store.getters['context/repository'], 'id')) {
-                        this.$store.commit('context/CLEAR')
-                    }
-
                     this.onModelRemove(repository.id)
                     Lode.ipc.send('repository-remove', repository.id)
                 })

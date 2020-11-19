@@ -12,6 +12,7 @@ export enum AllowedIpcEventMap {
   'framework-suites',
   'framework-toggle-child',
   'framework-update',
+  'log',
   'menu-refresh',
   'nugget-context-menu',
   'project-active-framework',
@@ -21,7 +22,9 @@ export enum AllowedIpcEventMap {
   'repository-toggle',
   'select-all',
   'settings-reset',
-  'settings-update'
+  'settings-update',
+  'track-event',
+  'track-screenview'
 }
 
 export enum AllowedIpcInvocationMap {

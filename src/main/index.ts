@@ -477,15 +477,16 @@ ipcMain
                 repository: repository.render(),
                 framework: framework.render(),
                 nuggets: nuggets!.map((nugget: Nugget) => nugget.render(false)),
-                nugget: nugget!.render(false)
+                nugget: nugget!.render(false),
+                results: {
+                    ...(nugget as ITest)!.getResult(),
+                    'suite-console': (nuggets![0] as ISuite).getConsole()
+                }
             }
         } catch (_) {
             // If any entity is not found while trying to load a test, assume
             // something's been removed and force the user to select one again.
-            return {
-                framework: null,
-                nuggets: null
-            }
+            return {}
         }
     })
 

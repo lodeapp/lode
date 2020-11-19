@@ -156,10 +156,15 @@ class Base64TestReporter {
 
         return _compact(output.map(o => {
             try {
+                // In Jest 25+, origin is a more complex string containing a
+                // trace, with filename in parenthesis. Previously it was
+                // just a string of `{path}:{linenum}:{charnum}`
+                let file = o.origin.match(/\(([^\)]+)\:\d+\:\d+\)/mi)
+                file = file ? file[1] : o.origin.replace(/:\d+$/mi, '')
                 return {
                     content: o.message,
-                    file: o.origin.replace(/:\d+$/mi, ''),
-                    line: o.origin.replace(/(.+):(\d+)$/mi, '$2'),
+                    file,
+                    line: o.origin.slice(o.origin.indexOf(file) + file.length).replace(/^:(\d+)[\S\s]*/mi, '$1'),
                     render: 'ansi',
                     type: o.type
                 }

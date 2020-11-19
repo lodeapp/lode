@@ -57,7 +57,9 @@ export abstract class Nugget extends ProjectEventEmitter {
      * Count this nugget's children.
      */
     public countChildren (): number {
-        return this.getTestResults().length
+        return this.bloomed
+            ? this.tests.length
+            : this.getTestResults().length
     }
 
     /**

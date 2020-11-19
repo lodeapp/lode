@@ -14,6 +14,7 @@ export interface ITest extends Nugget {
     toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
     render (status?: Status | false): ITestResult
     persist (status?: Status | false): ITestResult
+    getResult (): ITestResult
     resetResult (): void
     idle (selective: boolean): Promise<void>
     queue (selective: boolean): Promise<void>
@@ -73,6 +74,14 @@ export class Test extends Nugget implements ITest {
     }
 
     /**
+     * Get this test's result object.
+     */
+    public getResult (): ITestResult {
+        // @TODO: load from store, don't persist in memory.
+        return this.result
+    }
+
+    /**
      * Reset this test's result (i.e. remove feedback etc, as if the
      * test never ran, but persist its identifying data).
      */
@@ -90,6 +99,7 @@ export class Test extends Nugget implements ITest {
         // We allow result status to be empty from reporters, but we'll
         // amend them before building the actual test.
         result.status = this.getRecursiveStatus(result)
+        // @TODO: save actual results and stats on store, don't merge them in.
         this.result = this.mergeResults(result)
         this.updateStatus(result.status || 'idle')
         if (result.tests && result.tests.length) {

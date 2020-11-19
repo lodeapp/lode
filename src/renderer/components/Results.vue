@@ -23,10 +23,9 @@
                 </nav>
             </div>
             <TestResult
-                :key="$string.from(test)"
+                :key="$string.from([test, results])"
                 :framework="framework"
-                :suite="suite"
-                :test="test"
+                :results="results"
                 :status="status"
             />
         </div>
@@ -57,8 +56,8 @@ export default {
             loading: false,
             breadcrumbs: [],
             framework: {},
-            suite: {},
-            test: {}
+            test: {},
+            results: {}
         }
     },
     computed: {
@@ -96,7 +95,7 @@ export default {
             this.loading = true
             const context = _clone(this.context)
             const frameworkId = context.shift()
-            const { framework, nuggets } = await Lode.ipc.invoke('test-get', frameworkId, context)
+            const { framework, nuggets, results } = await Lode.ipc.invoke('test-get', frameworkId, context)
             if (!framework) {
                 // If an error occurs when trying to get a test, assume it's
                 // been removed and force user to select another.
@@ -107,7 +106,7 @@ export default {
             this.breadcrumbs = nuggets
             this.framework = framework
             this.test = nuggets.pop()
-            this.suite = nuggets.shift()
+            this.results = results
             this.loading = false
         }
     }

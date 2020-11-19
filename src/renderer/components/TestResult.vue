@@ -123,11 +123,7 @@ export default {
             type: Object,
             required: true
         },
-        suite: {
-            type: Object,
-            required: true
-        },
-        test: {
+        results: {
             type: Object,
             required: true
         },
@@ -178,16 +174,16 @@ export default {
             return ['idle', 'queued', 'running'].indexOf(this.status) > -1
         },
         feedback () {
-            return this.test && this.test.feedback && this.test.feedback.content ? this.test.feedback : false
+            return this.results && this.results.feedback && this.results.feedback.content ? this.results.feedback : false
         },
         parameters () {
-            return this.test && this.test.params
+            return this.results && this.results.params
         },
         console () {
-            return this.test && this.test.console && this.test.console.length ? this.test.console : false
+            return this.results && this.results.console && this.results.console.length ? this.results.console : false
         },
         stats () {
-            return this.test && this.test.stats && !_isEmpty(this.test.stats) ? this.test.stats : false
+            return this.results && this.results.stats && !_isEmpty(this.results.stats) ? this.results.stats : false
         },
         suiteConsole () {
             // Hide suite console output until test is in a definitive state
@@ -195,9 +191,7 @@ export default {
                 return false
             }
 
-            // @TODO: redo console
-            return false
-            // return this.suite && this.suite.getConsole() && this.suite.getConsole().length ? this.suite.getConsole() : false
+            return _get(this.results, 'suite-console', false)
         },
         ...mapGetters({
             lastActiveTab: 'tabs/lastActive'

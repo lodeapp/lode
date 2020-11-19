@@ -20,6 +20,7 @@ export interface ISuite extends Nugget {
     getStatusMap (): StatusMap
     getMeta (): any
     resetMeta (): void
+    getConsole (): Array<any> | null
     getFramework (): IFramework
     testsLoaded (): boolean
     rebuildTests (result: ISuiteResult): void
@@ -269,6 +270,13 @@ export class Suite extends Nugget implements ISuite {
         if (this.result.meta) {
             this.result.meta = null
         }
+    }
+
+    /**
+     * Get this suite's console output.
+     */
+    public getConsole (): Array<any> | null {
+        return this.result.console && this.result.console.length ? this.result.console : null
     }
 
     /**
