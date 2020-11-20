@@ -90,12 +90,11 @@
             </Pane>
             <Pane id="results">
                 <div class="draggable"></div>
-                <template v-if="framework && !repositoryMissing">
+                <template v-if="framework && !repositoryMissing && !frameworkLoading">
                     <div v-if="!context.length" class="results blankslate">
                         <h3>No test selected</h3>
                     </div>
                     <Results
-                        v-else-if="!frameworkLoading"
                         :key="$string.from(context)"
                         :context="context"
                     />

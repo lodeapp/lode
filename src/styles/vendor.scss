@@ -1,6 +1,12 @@
 // ========================================================================
-// Vendor CSS
+// Vendor SCSS
 // ========================================================================
 
 @import "node_modules/@primer/css/core/index.scss";
 @import "node_modules/@primer/css/product/index.scss";
+
+// ========================================================================
+// Vendor CSS
+// ========================================================================
+
+@import "../../node_modules/overlayscrollbars/css/OverlayScrollbars.css";

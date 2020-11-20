@@ -196,7 +196,7 @@ export default {
     watch: {
         keyword: _debounce(function (keyword) {
             this.setKeywordFilter(keyword)
-        }, 150)
+        }, 300)
     },
     async mounted () {
         Lode.ipc

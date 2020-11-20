@@ -361,9 +361,11 @@ export class Repository extends ProjectEventEmitter implements IRepository {
             to = parseFrameworkStatus(this.frameworks.map(framework => framework.status))
         }
         const from = this.status
-        this.status = to
-        this.emit('status', to, from)
-        this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
+        if (to !== from) {
+            this.status = to
+            this.emit('status', to, from)
+            this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
+        }
     }
 
     /**

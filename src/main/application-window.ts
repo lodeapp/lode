@@ -123,11 +123,11 @@ export class ApplicationWindow {
 
         this.window.webContents.on('did-finish-load', () => {
             this.onReady()
-            this.window.webContents.send('did-finish-load', [{
+            this.window.webContents.send('did-finish-load', {
                 projectId: get(this.getProject(), 'id', null),
                 focus: this.window.isFocused(),
                 version: app.getVersion()
-            }])
+            })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
         })
 
@@ -143,9 +143,11 @@ export class ApplicationWindow {
                 : `file://${__dirname}/index.html`
         )
 
-        setInterval(() => {
-            log.info(`IPC events: ${this.events}`)
-        }, 5000)
+        if (__DEV__) {
+            setInterval(() => {
+                log.info(`IPC events: ${this.events}`)
+            }, 5000)
+        }
     }
 
     public send (event: string, args: Array<any> = []) {

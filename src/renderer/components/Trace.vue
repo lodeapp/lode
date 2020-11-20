@@ -21,7 +21,7 @@
                 >
                     <template #header>
                         <template v-if="typeof item === 'object'">
-                            <Filename :key="relativePath(item.file)" :truncate="true" @dblclick.native.stop />
+                            <Filename :key="relativePath(item.file)" :truncate="true" />
                             <span v-if="item.function" class="Label Label--outline Label--normal"><code>{{ item.function }}</code></span>
                             <span v-if="item.line" class="Label Label--outline Label--idle">{{ 'Line :0' | set(item.line) }}</span>
                         </template>

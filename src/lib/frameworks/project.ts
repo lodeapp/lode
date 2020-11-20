@@ -353,10 +353,12 @@ export class Project extends ProjectEventEmitter implements IProject {
             to = parseFrameworkStatus(this.repositories.map(repository => repository.status))
         }
         const from = this.status
-        this.status = to
-        this.emit('status', to, from)
-        this.emitToRenderer(`${this.id}:status:index`, to, from)
-        this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
+        if (to !== from) {
+            this.status = to
+            this.emit('status', to, from)
+            this.emitToRenderer(`${this.id}:status:index`, to, from)
+            this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
+        }
     }
 
     /**

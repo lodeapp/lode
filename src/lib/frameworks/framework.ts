@@ -471,10 +471,12 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             to = parseStatus(this.suites.map(suite => suite.getStatus()))
         }
         const from = this.status
-        this.status = to
-        this.emit('status', to, from)
-        this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
-        this.emitToRenderer(`${this.id}:status:list`, to, from)
+        if (to !== from) {
+            this.status = to
+            this.emit('status', to, from)
+            this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
+            this.emitToRenderer(`${this.id}:status:list`, to, from)
+        }
     }
 
     /**

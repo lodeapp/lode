@@ -9,14 +9,10 @@ import { ProjectIdentifier, IProject } from '@lib/frameworks/project'
 import { IRepository } from '@lib/frameworks/repository'
 import { IFramework } from '@lib/frameworks/framework'
 
-// We seem to be unable to simple declare menu items as "radio" without TS
-// raising an alert, so we need to forcibly cast types when defining them.
-type MenuItemType = ('normal' | 'separator' | 'submenu' | 'checkbox' | 'radio')
-
 type ClickHandler = (
     menuItem: Electron.MenuItem,
     browserWindow: Electron.BrowserWindow | undefined,
-    event: Electron.Event
+    event: Electron.KeyboardEvent
 ) => void
 
 enum ZoomDirection {
@@ -115,7 +111,7 @@ class ApplicationMenu {
                     submenu: projects && projects.length > 1 ? projects.map(project => {
                         return {
                             label: project.name,
-                            type: <MenuItemType>'checkbox',
+                            type: 'checkbox',
                             checked: !!currentProject && currentProject.id === project.id,
                             click: emit('project-switch', project.id, (menuItem: Electron.MenuItem) => {
                                 // Don't toggle the item, unless it's the current project,
