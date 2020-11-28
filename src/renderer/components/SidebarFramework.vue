@@ -69,10 +69,11 @@ export default {
         statusListener (event, to, from) {
             this.status = to
         },
-        onErrorEvent (event, message, help) {
+        onErrorEvent (event, error, help) {
             this.$alert.show({
                 type: 'error',
                 message: this.$string.set('The process for **:0** terminated unexpectedly.', this.model.name),
+                error,
                 help
             })
         },

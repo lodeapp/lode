@@ -136,7 +136,6 @@ export default {
         return {
             loading: true,
             frameworkLoading: true,
-            frameworkKey: this.$string.random(),
             status: this.model.status || 'idle',
             menuActive: false,
             repositories: [],
@@ -191,7 +190,7 @@ export default {
         },
         onRepositoryStatus (to, from, repository) {
             const index = _findIndex(this.repositories, ['id', repository.id])
-            if (index) {
+            if (index > -1) {
                 this.repositories[index].status = to
                 if (this.repository && this.repository.id === repository.id) {
                     this.$store.commit('context/REPOSITORY', this.repositories[index])
@@ -202,7 +201,6 @@ export default {
             this.frameworkLoading = true
             if (this.framework.id === framework.id) {
                 this.$store.commit('context/FRAMEWORK', framework)
-                this.frameworkKey = this.$string.random()
             }
         },
         async onFrameworkActive (event, frameworkId, repository) {

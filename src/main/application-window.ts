@@ -17,6 +17,7 @@ export class ApplicationWindow {
     protected minHeight = 660
 
     protected ready: boolean = false
+    protected closed: boolean = false
     protected project: Project | null = null
 
     protected events: number = 0
@@ -92,6 +93,7 @@ export class ApplicationWindow {
         windows[window.getChild().id] = window
 
         window.onClosed(async () => {
+            window.closed = true
             if (window.isBusy()) {
                 log.info('Window is busy. Attempting teardown of pending processes.')
                 try {
@@ -192,6 +194,10 @@ export class ApplicationWindow {
         }
     }
 
+    public canReceiveEvents (): boolean {
+        return !this.closed
+    }
+
     public getChild (): BrowserWindow {
         return this.window
     }
@@ -230,8 +236,10 @@ export class ApplicationWindow {
     }
 
     protected updateProgress (progress: number): void {
-        // If project progress has reached 100%, disable the progress bar.
-        this.window.setProgressBar(progress === 1 ? -1 : progress)
+        if (this.canReceiveEvents()) {
+            // If project progress has reached 100%, disable the progress bar.
+            this.window.setProgressBar(progress === 1 ? -1 : progress)
+        }
     }
 
     public isBusy (): boolean {

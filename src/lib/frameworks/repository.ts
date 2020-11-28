@@ -1,7 +1,7 @@
+import * as Fs from 'fs'
 import * as Path from 'path'
 import { Glob } from 'glob'
 import { dialog } from 'electron'
-import { pathExistsSync } from 'fs-extra'
 import { v4 as uuid } from 'uuid'
 import { findIndex, omit } from 'lodash'
 import { ApplicationWindow } from '@main/application-window'
@@ -61,9 +61,8 @@ export interface IRepository extends ProjectEventEmitter {
     removeFramework (id: string): void
     getFrameworkById (id: string): IFramework | undefined
     getPath (): string
-    updatePath (path: string): void
-    exists (): boolean
-    locate (window: Electron.BrowserWindow): void
+    exists (): Promise<boolean>
+    locate (window: Electron.BrowserWindow): Promise<void>
     getProgressLedger (): ProgressLedger
     resetProgressLedger (): void
     emitFrameworksToRenderer (): void
@@ -124,7 +123,12 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      */
     public stop (): Promise<any> {
         return Promise.all(this.frameworks.map((framework: IFramework) => {
-            return framework.stop()
+            return new Promise((resolve, reject) => {
+                framework.once('disassembled', () => {
+                    resolve()
+                })
+                framework.stop()
+            })
         }))
     }
 
@@ -212,25 +216,27 @@ export class Repository extends ProjectEventEmitter implements IRepository {
     /**
      * Scan the repository folder for testing frameworks.
      */
-    public scan (): Promise<Array<FrameworkOptions>> {
+    public async scan (): Promise<Array<FrameworkOptions>> {
         this.scanning = true
-        const scanned: Array<FrameworkOptions> = []
         const glob = new Glob('*', {
             cwd: this.path,
             dot: true,
             sync: true
         })
-        return new Promise((resolve, reject) => {
-            Frameworks.forEach(framework => {
-                const options = framework.spawnForDirectory({
+        return new Promise(async (resolve, reject) => {
+            const frameworks: Array<FrameworkOptions | false> = await Promise.all(Frameworks.map(framework => {
+                return framework.spawnForDirectory({
                     path: this.path,
                     files: glob.found
                 })
-                if (options) {
-                    scanned.push({ ...options, ...{ scanStatus: 'pending' }})
+            }))
+
+            resolve(frameworks.filter(options => !!options).map(options => {
+                return <FrameworkOptions>{
+                    ...options,
+                    scanStatus: 'pending'
                 }
-            })
-            resolve(scanned)
+            }))
             this.scanning = false
         })
     }
@@ -351,7 +357,7 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      * @param to The status we're updating to.
      */
     protected updateStatus (to?: FrameworkStatus): void {
-        // If repository if marked as missing, don't update status until
+        // If repository is marked as missing, don't update status until
         // the `exists` method is called and filesystem is checked.
         if (this.status === 'missing') {
             return
@@ -446,41 +452,43 @@ export class Repository extends ProjectEventEmitter implements IRepository {
     /**
      * Update the repository's path.
      */
-    public updatePath (path: string): void {
+    protected async updatePath (path: string): Promise<void> {
         this.path = path
-        this.frameworks.forEach((framework: IFramework) => {
-            framework.updateOptions({
+        await Promise.all(this.frameworks.map((framework: IFramework) => {
+            return framework.updateOptions({
                 ...framework.persist(),
                 ...{ repositoryPath: path }
             })
-        })
-        this.exists()
+        }))
+        await this.exists()
         this.save()
     }
 
     /**
      * Whether the repository exists in the filesystem
      */
-    public exists (): boolean {
-        const exists = pathExistsSync(this.path)
-        this.status = 'loading'
-        this.updateStatus(exists ? undefined : 'missing')
-        return exists
+    public async exists (): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            Fs.access(this.path, Fs.constants.R_OK, error => {
+                this.status = 'loading'
+                this.updateStatus(error ? 'missing' : undefined)
+                resolve(!error)
+            })
+        })
     }
 
     /**
      * Locate this repository, if missing.
      */
-    public locate (window: Electron.BrowserWindow): void {
-        dialog.showOpenDialog(window, {
+    public async locate (window: Electron.BrowserWindow): Promise<void> {
+        const { filePaths } = await dialog.showOpenDialog(window, {
             properties: ['openDirectory', 'multiSelections']
-        }).then(({ filePaths }) => {
-            if (!filePaths || !filePaths.length) {
-                return
-            }
-
-            this.updatePath(filePaths[0])
         })
+
+        if (!filePaths || !filePaths.length) {
+            return
+        }
+        this.updatePath(filePaths[0])
     }
 
     /**

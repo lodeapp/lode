@@ -24,10 +24,10 @@ export class Jest extends Framework {
      *
      * @param repository The parsed repository to test.
      */
-    public static spawnForDirectory (repository: ParsedRepository): FrameworkOptions | false {
+    public static async spawnForDirectory (repository: ParsedRepository): Promise<FrameworkOptions | false> {
         // Use repository's package.json to determine whether Jest exists or not.
         if (repository.files.includes('package.json')) {
-            const pkg = Fs.readJsonSync(Path.join(repository.path, 'package.json'), { throws: false }) || {}
+            const pkg = await Fs.readJson(Path.join(repository.path, 'package.json'), { throws: false }) || {}
             try {
                 // First, test for possible scripts, and adjust default command accordingly
                 const scripts = get(pkg, 'scripts')
@@ -57,13 +57,13 @@ export class Jest extends Framework {
     /**
      * Prepare this framework for running.
      */
-    protected assemble (): void {
+    protected async assemble (): Promise<void> {
         super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
                 ? Path.resolve(__dirname, loc('../../reporters/jest'))
                 : unpacked(Path.join(__static, loc('./reporters/jest')))
-            Fs.copySync(reporter, this.injectPath())
+            await Fs.copy(reporter, this.injectPath())
         }
     }
 

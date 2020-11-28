@@ -220,8 +220,8 @@ ipcMain
         })
     })
     .on('framework-update', (event: Electron.IpcMainEvent, frameworkId: string, options: FrameworkOptions) => {
-        entities(event, frameworkId).then(({ repository, framework }) => {
-            framework.updateOptions({
+        entities(event, frameworkId).then(async ({ repository, framework }) => {
+            await framework.updateOptions({
                 ...options,
                 repositoryPath: repository.getPath()
             })
@@ -264,10 +264,7 @@ ipcMain
         entities(event, frameworkId, identifiers).then(({ nugget }) => {
             if (toggle) {
                 // If we're expanding it, send the tests to the renderer.
-                event.sender.send(
-                    `${nugget!.getId()}:framework-tests`,
-                    nugget!.tests.map((test: ITest) => test.render(false))
-                )
+                nugget!.emitTestsToRenderer()
                 return
             }
             // If collapsing, just wither the nugget, no response is needed.
@@ -300,8 +297,8 @@ ipcMain
         state.set(setting, value)
         event.sender.send('settings-updated', state.get())
     })
-    .on('settings-reset', (event: Electron.IpcMainEvent) => {
-        state.reset()
+    .on('settings-reset', async (event: Electron.IpcMainEvent) => {
+        await state.reset()
         const window: ApplicationWindow | null = ApplicationWindow.getFromWebContents(event.sender)
         if (window) {
             window.clear()
@@ -361,9 +358,7 @@ ipcMain
 
 ipcMain
     .handle('repository-scan', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
-        const repository: IRepository = await getRepository(event, repositoryId)
-        const pending: Array<FrameworkOptions> = await repository.scan()
-        return pending
+        return await (await getRepository(event, repositoryId)).scan()
     })
 
 ipcMain
@@ -374,18 +369,18 @@ ipcMain
     })
 
 ipcMain
-    .handle('repository-frameworks', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
-        return (await getRepository(event, repositoryId)).frameworks.map(framework => framework.render())
-    })
-
-ipcMain
     .handle('repository-exists', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
-        return (await getRepository(event, repositoryId)).exists()
+        return await (await getRepository(event, repositoryId)).exists()
     })
 
 ipcMain
     .handle('repository-locate', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
         return (await getRepository(event, repositoryId)).locate(currentWindow!.getChild())
+    })
+
+ipcMain
+    .handle('repository-frameworks', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
+        return (await getRepository(event, repositoryId)).frameworks.map(framework => framework.render())
     })
 
 ipcMain

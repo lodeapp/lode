@@ -116,13 +116,13 @@ export class State extends EventEmitter {
         this.emit('save', state)
     }
 
-    public reset (): void {
+    public async reset (): Promise<void> {
         log.info('Resetting settings.')
         this.emit('clear', this.get())
         this.store.clear()
         const userData = app.getPath('userData')
         if (userData) {
-            Fs.removeSync(Path.join(userData, 'Projects'))
+            await Fs.remove(Path.join(userData, 'Projects'))
         }
     }
 

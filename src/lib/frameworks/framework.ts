@@ -104,7 +104,7 @@ export interface IFramework extends ProjectEventEmitter {
     render (): FrameworkOptions
     persist (): FrameworkOptions
     save (): void
-    updateOptions (options: FrameworkOptions): void
+    updateOptions (options: FrameworkOptions): Promise<void>
     setActive (active: boolean): void
     isActive (): boolean
     isSelective (): boolean
@@ -113,13 +113,14 @@ export interface IFramework extends ProjectEventEmitter {
     getSuiteById (id: string): ISuite | undefined
     getSelected (): SuiteList
     emitSuitesToRenderer (): void
-    emitAllSuitesToRenderer (): void
     setFilter (filter: FrameworkFilter, value: Array<string> | string | null): void
     getFilter (filter: FrameworkFilter): Array<string> | string | null
     hasFilters (): boolean
     resetFilters (): void
     getLedger (): StatusLedger
     getStatusMap (): StatusMap
+    getNuggetStatus (id: string): Status
+    setNuggetStatus (id: string, to: Status, from: Status, updateLedger: boolean): void
     getProgressLedger (): ProgressLedger
     resetProgressLedger (): void
 }
@@ -171,7 +172,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         group: null
     }
     protected sort!: FrameworkSort
-    protected emitLedgerToRenderer: Function
     protected ledger: StatusLedger = {
         queued: 0,
         running: 0,
@@ -190,16 +190,23 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         run: 0,
         total: 0
     }
+    protected emitLedgerToRenderer: Function
 
     static readonly defaults?: FrameworkDefaults
     static readonly sortDefault: FrameworkSort = 'name'
 
     constructor (window: ApplicationWindow, options: FrameworkOptions) {
         super(window)
-        this.build(options)
+
+        // Debounce sending ledger and status to renderer
         this.emitLedgerToRenderer = debounce(() => {
             this.emitToRenderer(`${this.id}:ledger`, this.ledger, this.statuses)
-        }, 50)
+        }, 30)
+
+        this.build(options).then(() => {
+            // If options include suites already (i.e. persisted state), add them.
+            this.loadSuites(options.suites || [])
+        })
     }
 
     /**
@@ -209,7 +216,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param options The options to build the framework with.
      */
-    protected build (options: FrameworkOptions) {
+    protected async build (options: FrameworkOptions): Promise<void> {
         this.id = options.id || uuid()
         this.name = options.name
         this.type = options.type
@@ -235,18 +242,15 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
 
         this.initialSuiteCount = (options.suites || []).length
         this.hasSuites = this.initialSuiteCount > 0
-
-        // If options include suites already (i.e. persisted state), add them.
-        this.loadSuites(options.suites || [])
     }
 
     /**
      * Prepare this framework for running.
      */
-    protected assemble (): void {
+    protected async assemble (): Promise<void> {
         this.emit('state')
         this.emit('assembled')
-        log.info(`Assembled ${this.name}`)
+        log.debug(`Assembled ${this.name}`)
     }
 
     /**
@@ -259,24 +263,22 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Clean-up after running a process for this framework.
      */
-    protected disassemble (): void {
-        setTimeout(() => {
-            if (this.runsInRemote) {
-                try {
-                    Fs.removeSync(this.injectPath())
-                    const files = Fs.readdirSync(Path.join(this.repositoryPath, '.lode'))
-                    if (!files.length) {
-                        Fs.removeSync(Path.join(this.repositoryPath, '.lode'));
-                    }
-                } catch (error) {
-                    // Fail silently if folder is not found
-                    // or can't be removed.
+    protected async disassemble (): Promise<void> {
+        if (this.runsInRemote) {
+            try {
+                await Fs.remove(this.injectPath())
+                const files = await Fs.readdir(Path.join(this.repositoryPath, '.lode'))
+                if (!files.length) {
+                    await Fs.remove(Path.join(this.repositoryPath, '.lode'));
                 }
+            } catch (error) {
+                // Fail silently if folder is not found
+                // or can't be removed.
             }
-            this.emit('state')
-            this.emit('disassembled')
-            log.info(`Disassembled ${this.name}`)
-        })
+        }
+        this.emit('state')
+        this.emit('disassembled')
+        log.debug(`Disassembled ${this.name}`)
     }
 
     /**
@@ -306,7 +308,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param repository The parsed repository to test.
      */
-    public static spawnForDirectory (repository: ParsedRepository): FrameworkOptions | false {
+    public static async spawnForDirectory (repository: ParsedRepository): Promise<FrameworkOptions | false> {
         return false
     }
 
@@ -396,7 +398,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param options The new set of options to build the framework with.
      */
-    public updateOptions (options: FrameworkOptions): void {
+    public async updateOptions (options: FrameworkOptions): Promise<void> {
         const initChanged = options.command !== this.command
             || this.runsInRemote !== options.runsInRemote
             || this.sshHost !== options.sshHost
@@ -412,16 +414,16 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         }
 
         // Rebuild the options, except id (if not enforced) and suites.
-        this.build({
+        await this.build({
             ...options,
-            ...{ id: options.id || this.id || uuid() },
-            ...{ suites: [] }
+            ...{ id: options.id || this.id || uuid() }
         })
 
         if (initChanged) {
             // If framework initialization has changed, we need to remove the
             // existing suites and add them again, because their unique identifier
             // will potentially have changed (i.e. their absolute file path)
+            this.resetFilters()
             this.resetSuites()
             this.refresh()
         }
@@ -475,7 +477,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             this.status = to
             this.emit('status', to, from)
             this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
-            this.emitToRenderer(`${this.id}:status:list`, to, from)
+            this.emitToRenderer(`${this.id}:status:list`, to, from);
         }
     }
 
@@ -483,7 +485,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Run this framework's test suites, either fully or selectively.
      */
     protected async handleRun (): Promise<void> {
-        this.assemble()
+        await this.assemble()
         if (this.selective || this.hasFilters()) {
             return this.runSelective()
                 .then(() => {
@@ -539,7 +541,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             this.idleQueued()
             this.updateStatus()
             this.emit('change', this)
-            log.info(`Stopping ${this.name}`)
+            log.debug(`Stopping ${this.name}`)
         })
         .catch(error => {
             this.killed = false
@@ -552,9 +554,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     public async reset (): Promise<any> {
         this.resetFilters()
-        return Promise.all(this.suites.map((suite: ISuite) => {
-            return suite.idle(false)
-        }))
     }
 
     /**
@@ -596,9 +595,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Run all suites inside this framework.
      */
     protected async run (): Promise<void> {
-        this.suites.forEach(suite => {
-            suite.queue(false)
-        })
+        this.rebuildStatusMap('queued')
+        this.rebuildLedger()
 
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
@@ -613,12 +611,11 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                         return
                     }
 
+                    // Re-queue suites and tests freshly added by the reload
+                    // command. Note that Ledger will be rebuilt as part of
+                    // the `afterRefresh` routine.
+                    this.rebuildStatusMap('queued')
                     this.afterRefresh()
-
-                    // Re-queue suites freshly added by the reload command.
-                    this.suites.filter(suite => suite.getStatus() === 'idle').forEach(suite => {
-                        suite.queue(false)
-                    })
 
                     this.report(this.runArgs())
                         .then((outcome: string) => {
@@ -652,8 +649,12 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         }
 
         suites.forEach(suite => {
-            suite.queue(this.selective)
+            suite.getNuggetIds(this.selective).forEach(id => {
+                this.statuses[id] = 'queued'
+            })
         })
+
+        this.rebuildLedger()
 
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
@@ -684,7 +685,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Refresh the list of suites inside this framework.
      */
     protected async handleRefresh (): Promise<void> {
-        this.assemble()
+        await this.assemble()
         this.updateStatus('refreshing')
         this.suites.forEach(suite => {
             suite.setFresh(false)
@@ -749,8 +750,16 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     protected afterRefresh () {
         this.cleanStaleSuites()
-        this.rebuildLedger()
-        this.emitAllSuitesToRenderer()
+        // After a full refresh, emit tests from expanded nuggets recursively
+        // to the renderer process.
+        this.suites.filter(suite => suite.expanded)
+            .forEach(suite => {
+                suite.emitTestsToRenderer()
+                suite.tests.filter(test => test.expanded)
+                    .forEach(test => {
+                        test.emitTestsToRenderer()
+                    })
+            })
     }
 
     /**
@@ -761,10 +770,15 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         // If a selected suite didn't run, mark their status as "error".
         if (this.selective) {
             this.selected.suites.forEach(suite => {
-                if (['queued', 'running'].indexOf(suite.getStatus()) > -1) {
-                    suite.errorQueued(true)
-                }
+                suite.getNuggetIds(true).forEach(id => {
+                    if (['queued', 'running'].indexOf(this.statuses[id]) > -1) {
+                        this.statuses[id] = 'error'
+                    }
+                })
             })
+            this.updateStatus()
+            this.emit('change', this)
+            return
         }
 
         // Suites which remain queued after a run are stale
@@ -780,26 +794,50 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param status The status by which to clean the suites.
      */
     protected cleanSuitesByStatus (status: Status): void {
+        let nuggets: Array<string> = []
         this.suites = this.suites.filter((suite: ISuite) => {
             if (suite.getStatus() === status) {
                 this.onSuiteRemove(suite)
                 return false
             }
+            nuggets = nuggets.concat(suite.getNuggetIds(false))
             return true
         })
+
+        // Reset status when removing nuggets
+        Object.keys(this.statuses)
+            .filter(id => !nuggets.includes(id))
+            .forEach(id => {
+                delete this.statuses[id]
+            })
+
+        this.emitSuitesToRenderer()
+        this.rebuildLedger()
     }
 
     /**
      * Clean currently loaded suites that are not marked as "fresh".
      */
     protected cleanStaleSuites (): void {
+        let nuggets: Array<string> = []
         this.suites = this.suites.filter((suite: ISuite) => {
             if (!suite.isFresh()) {
                 this.onSuiteRemove(suite)
                 return false
             }
+            nuggets = nuggets.concat(suite.getNuggetIds(false))
             return true
         })
+
+        // Reset status when removing nuggets
+        Object.keys(this.statuses)
+            .filter(id => !nuggets.includes(id))
+            .forEach(id => {
+                delete this.statuses[id]
+            })
+
+        this.emitSuitesToRenderer()
+        this.rebuildLedger()
     }
 
     /**
@@ -809,9 +847,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     protected onSuiteRemove (suite: ISuite): void {
         suite.removeAllListeners()
-        this.updateLedger(null, suite.getStatus(), suite)
         this.updateSelected(suite)
-        this.emit('suiteRemoved', suite.getId())
     }
 
     /**
@@ -832,16 +868,19 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Reset all previously queued suites.
      */
     protected idleQueued (): void {
-        if (this.selective) {
-            this.selected.suites.forEach(suite => {
-                suite.idleQueued(true)
+        const suites = this.selective ? this.selected.suites : this.suites
+        suites.forEach(suite => {
+            const nuggets = suite.getNuggetIds(this.selective)
+            nuggets.shift()
+            nuggets.forEach(id => {
+                if (['queued', 'running'].indexOf(this.getNuggetStatus(id)) > -1) {
+                    this.statuses[id] = 'idle'
+                }
             })
-            return
-        }
-
-        this.suites.forEach(suite => {
-            suite.idleQueued(false)
+            this.statuses[suite.getId()] = parseStatus(nuggets.map(id => this.getNuggetStatus(id)))
         })
+
+        this.rebuildLedger()
     }
 
     /**
@@ -921,17 +960,15 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         result: ISuiteResult,
         rebuild: boolean = false
     ): Promise<ISuite> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             let suite: ISuite | undefined = this.findSuite(result.file)
 
             if (!suite) {
                 suite = this.newSuite(result)
-                suite
-                    .on('selected', this.updateSelected.bind(this))
-                    .on('status', this.updateLedger.bind(this))
+                suite.on('selected', this.updateSelected.bind(this))
                 this.suites.push(suite)
             } else if (rebuild) {
-                suite.rebuildTests(result)
+                await suite.rebuildTests(result)
             }
 
             // Mark suite as freshly made before returning,
@@ -952,6 +989,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             suites: []
         }
         this.selective = false
+        this.rebuildStatusMap()
         this.rebuildLedger()
     }
 
@@ -983,15 +1021,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     protected async loadSuites (suites: Array<ISuiteResult>): Promise<void> {
         return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                Promise.all(suites.map((result: ISuiteResult) => {
-                    // Hydrate results in case schema has changed from previously saved state
-                    return this.makeSuite(this.hydrateSuiteResult(result), true)
-                })).then(() => {
-                    this.rebuildLedger()
-                    this.onReady()
-                    resolve()
-                })
+            Promise.all(suites.map((result: ISuiteResult) => {
+                // Hydrate results in case schema has changed from previously saved state
+                return this.makeSuite(this.hydrateSuiteResult(result), true)
+            })).then(() => {
+                this.rebuildStatusMap()
+                this.rebuildLedger()
+                this.onReady()
+                resolve()
             })
         })
     }
@@ -1035,7 +1072,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         }
 
         this.selective = this.selected.suites.length > 0
-        this.emit('selective', this.selected.suites.length)
         this.emitToRenderer(`${this.id}:selective`, this.selected.suites.length)
     }
 
@@ -1044,17 +1080,12 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param to The new status of a suite inside this framework.
      * @param from The old status of a suite inside this framework, if any.
-     * @param id The suite that caused the ledger to change
      */
-    protected updateLedger (to: Status | null, from: Status, suite: ISuite): void {
+    protected updateLedger (to: Status | null, from: Status): void {
         if (to) {
             this.ledger[to]!++
         }
         this.ledger[from]!--
-        this.statuses = {
-            ...this.statuses,
-            ...suite.getStatusMap()
-        }
 
         this.emitLedgerToRenderer()
     }
@@ -1067,15 +1098,11 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         for (let key of Object.keys(this.ledger)) {
             this.ledger[<Status>key] = 0
         }
+
         // Iterate through suites and update each ledger status
         this.suites.forEach(suite => {
             this.ledger[suite.getStatus()]++
-            this.statuses = {
-                ...this.statuses,
-                ...suite.getStatusMap()
-            }
         })
-
         this.emitLedgerToRenderer()
     }
 
@@ -1087,10 +1114,41 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     }
 
     /**
+     * Rebuild the status map.
+     */
+    protected rebuildStatusMap (status: Status = 'idle'): void {
+        this.statuses = {}
+        this.suites.forEach((suite: ISuite) => {
+            suite.getNuggetIds(false).forEach(id => {
+                this.statuses[id] = status
+            })
+        })
+    }
+
+    /**
      * Return the framework's status map.
      */
     public getStatusMap (): StatusMap {
         return this.statuses
+    }
+
+    /**
+     * Return the status of a nugget from this framework.
+     */
+    public getNuggetStatus (id: string): Status {
+        return get(this.statuses, id, 'idle')
+    }
+
+    /**
+     * Set the status of a nugget from this framework.
+     */
+    public setNuggetStatus (id: string, to: Status, from: Status, updateLedger: boolean): void {
+        this.statuses[id] = to
+        if (updateLedger) {
+            this.updateLedger(to, from)
+            return
+        }
+        this.emitLedgerToRenderer()
     }
 
     /**
@@ -1341,17 +1399,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         this.emitToRenderer(
             `${this.id}:refreshed`,
             this.getSuites().map((suite: ISuite) => suite.render(false)),
-            this.count()
-        )
-    }
-
-    /**
-     * Send all suites to renderer process.
-     */
-    public emitAllSuitesToRenderer (): void {
-        this.emitToRenderer(
-            `${this.id}:refreshed`,
-            this.getAllSuites().map((suite: ISuite) => suite.render(false)),
             this.count()
         )
     }

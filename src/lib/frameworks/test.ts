@@ -1,5 +1,5 @@
 import { get, omit } from 'lodash'
-import { ApplicationWindow } from '@main/application-window'
+import { IFramework } from '@lib/frameworks/framework'
 import { Status } from '@lib/frameworks/status'
 import { Nugget } from '@lib/frameworks/nugget'
 
@@ -16,11 +16,6 @@ export interface ITest extends Nugget {
     persist (status?: Status | false): ITestResult
     getResult (): ITestResult
     resetResult (): void
-    idle (selective: boolean): Promise<void>
-    queue (selective: boolean): Promise<void>
-    error (selective: boolean): Promise<void>
-    idleQueued (selective: boolean): void
-    errorQueued (selective: boolean): void
     debrief (result: ITestResult, cleanup: boolean): Promise<void>
     countChildren (): number
     hasChildren(): boolean
@@ -45,8 +40,8 @@ export class Test extends Nugget implements ITest {
     protected status!: Status
     protected result!: ITestResult
 
-    constructor (window: ApplicationWindow, result: ITestResult) {
-        super(window)
+    constructor (framework: IFramework, result: ITestResult) {
+        super(framework)
         this.build(result, false)
     }
 
@@ -101,7 +96,6 @@ export class Test extends Nugget implements ITest {
         result.status = this.getRecursiveStatus(result)
         // @TODO: save actual results and stats on store, don't merge them in.
         this.result = this.mergeResults(result)
-        this.updateStatus(result.status || 'idle')
         if (result.tests && result.tests.length) {
             this.debriefTests(result.tests, cleanup)
         }
@@ -137,7 +131,7 @@ export class Test extends Nugget implements ITest {
      * @param result The test result with which to instantiate a new test.
      */
     protected newTest (result: ITestResult): ITest {
-        return new Test(this.window, result)
+        return new Test(this.framework, result)
     }
 
     /**
@@ -172,7 +166,7 @@ export class Test extends Nugget implements ITest {
         result.stats = { ...(result.stats || {}), ...{ last: new Date().toISOString() }}
         return new Promise((resolve, reject) => {
             this.build(result, cleanup)
-            this.emit('debriefed')
+            this.updateStatus(this.result.status || 'idle')
             resolve()
         })
     }

@@ -5,6 +5,7 @@
             `status--${status}`,
             `is-${show ? 'expanded' : 'collapsed'}`,
             hasChildren ? 'has-children' : '',
+            isActive ? 'is-active' : '',
             isChildActive ? 'is-child-active' : ''
         ]"
         tabindex="0"
@@ -58,7 +59,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import _fromPairs from 'lodash/fromPairs'
 import { labels } from '@lib/frameworks/status'
 
 export default {
@@ -144,7 +144,6 @@ export default {
             this.hasChildren = hasChildren
         },
         onTestsEvent (event, tests) {
-            this.$store.commit('status/UPDATE', _fromPairs(tests.map(test => [test.id, test.status])))
             this.tests = tests
         },
         onSelectedEvent (event, nugget) {
@@ -158,6 +157,9 @@ export default {
             } else if (event.code === 'ArrowLeft' && !this.$input.isCycleBackward(event)) {
                 event.stopPropagation()
                 this.handleCollapse(event)
+            } else if (event.code === 'Enter') {
+                event.stopPropagation()
+                this.handleToggle(event)
             }
         },
         handleToggle (event) {

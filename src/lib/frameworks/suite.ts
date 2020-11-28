@@ -1,7 +1,7 @@
 import * as Path from 'path'
-import { get, omit } from 'lodash'
+import { flatten, get, omit } from 'lodash'
 import { File } from '@main/file'
-import { Status, StatusMap, parseStatus } from '@lib/frameworks/status'
+import { Status, parseStatus } from '@lib/frameworks/status'
 import { IFramework } from '@lib/frameworks/framework'
 import { ITest, ITestResult, Test } from '@lib/frameworks/test'
 import { Nugget } from '@lib/frameworks/nugget'
@@ -17,22 +17,17 @@ export interface ISuite extends Nugget {
     getRelativePath (): string
     getDisplayName (): string
     getStatus (): Status
-    getStatusMap (): StatusMap
+    getNuggetIds (selective: boolean): Array<string>
     getMeta (): any
     resetMeta (): void
     getConsole (): Array<any> | null
     getFramework (): IFramework
     testsLoaded (): boolean
-    rebuildTests (result: ISuiteResult): void
+    rebuildTests (result: ISuiteResult): Promise<void>
     canBeOpened (): boolean
     canToggleTests (): boolean
     toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
     toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
-    idle (selective: boolean): Promise<void>
-    queue (selective: boolean): Promise<void>
-    error (selective: boolean): Promise<void>
-    idleQueued (selective: boolean): void
-    errorQueued (selective: boolean): void
     debrief (result: ISuiteResult, selective: boolean): Promise<void>
     render (status?: Status | false): ISuiteResult
     persist (status?: Status | false): ISuiteResult
@@ -60,11 +55,9 @@ export interface ISuiteResult {
 export class Suite extends Nugget implements ISuite {
     public file!: string
     protected result!: ISuiteResult
-    protected framework: IFramework
 
     constructor (framework: IFramework, result: ISuiteResult) {
-        super(framework.getApplicationWindow())
-        this.framework = framework
+        super(framework)
         this.build(result)
     }
 
@@ -76,7 +69,6 @@ export class Suite extends Nugget implements ISuite {
     public render (status: Status | false = 'idle'): ISuiteResult {
         return {
             file: this.file,
-            status: status ? status : this.status,
             meta: this.getMeta(),
             hasChildren: this.testsLoaded() && this.hasChildren(),
             selected: this.selected,
@@ -122,22 +114,18 @@ export class Suite extends Nugget implements ISuite {
      *
      * @param result The result object with which to build this suite's tests.
      */
-    public rebuildTests (result: ISuiteResult): void {
-        // Bloom the suite before rebuilding tests, so we can map the existing
-        // tests more precisely.
-        this.bloom().then(() => {
-            this.tests = (result.tests || []).map((result: ITestResult) => {
-                return this.makeTest(result, false)
-            })
-
-            if (!this.expanded) {
-                this.wither()
-            }
-
-            // Update the status in case new tests have been created
-            // or old tests have been removed.
-            this.updateStatus()
+    public async rebuildTests (result: ISuiteResult): Promise<void> {
+        this.tests = (result.tests || []).map((result: ITestResult) => {
+            return this.makeTest(result, false)
         })
+
+        if (!this.expanded) {
+            await this.wither()
+        }
+
+        // Update the status in case new tests have been created
+        // or old tests have been removed.
+        this.updateStatus()
     }
 
     /**
@@ -160,7 +148,7 @@ export class Suite extends Nugget implements ISuite {
      * @param result The test result with which to instantiate a new test.
      */
     protected newTest (result: ITestResult): ITest {
-        return new Test(this.window, result)
+        return new Test(this.framework, result)
     }
 
     /**
@@ -175,13 +163,16 @@ export class Suite extends Nugget implements ISuite {
         if (typeof to === 'undefined') {
             const statuses = this.bloomed
                 ? this.tests.map((test: ITest) => test.getStatus())
-                : this.getTestResults().map((test: ITestResult) => test.status)
+                : this.getTestResults().map((test: ITestResult) => this.framework.getNuggetStatus(test.id))
             to = parseStatus(statuses)
             if (to === 'empty' && !this.testsLoaded()) {
                 to = 'idle'
             }
         }
-        super.updateStatus(to)
+        const from = this.getStatus()
+        if (to !== from) {
+            this.framework.setNuggetStatus(this.getId(), to, from, true)
+        }
     }
 
     /**
@@ -246,10 +237,31 @@ export class Suite extends Nugget implements ISuite {
         // If tests haven't been loaded, suite status will of course come back
         // as empty. This won't be confirmed until we actually  parse the suite
         // and load its tests, so until then we'll force an "idle" status.
-        if (this.status === 'empty' && !this.testsLoaded()) {
+        if (super.getStatus() === 'empty' && !this.testsLoaded()) {
             return 'idle'
         }
-        return this.status
+        return super.getStatus()
+    }
+
+    /**
+     * Get the ids of this suite and the nuggets it is supposed to run.
+     */
+    public getNuggetIds (selective: boolean): Array<string> {
+        return flatten([
+            this.getId(),
+            ...(
+                selective && this.canToggleTests()
+                    ? this.tests
+                        .filter(test => test.selected)
+                        .map((test: ITest) => this.getRecursiveNuggetIds(test.getResult()))
+                    : (this.bloomed
+                        ? this.tests.map((test: ITest) => this.getRecursiveNuggetIds(test.getResult()))
+                        : (this.result.tests || []).map((test: ITestResult) => {
+                            return this.getRecursiveNuggetIds(test)
+                        })
+                    )
+                )
+        ])
     }
 
     /**

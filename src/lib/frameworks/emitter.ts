@@ -18,7 +18,9 @@ export class ProjectEventEmitter extends EventEmitter {
      * Emit an event to the renderer process.
      */
     public emitToRenderer (event: string, ...args: any[]): void {
-        this.window.send(event, args)
+        if (this.window.canReceiveEvents()) {
+            this.window.send(event, args)
+        }
     }
 
     /**

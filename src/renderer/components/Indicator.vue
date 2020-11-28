@@ -25,9 +25,9 @@ export default {
             required: true
         }
     },
-    data () {
-        return {
-            label: labels[this.status]
+    computed: {
+        label () {
+            return labels[this.status]
         }
     }
 }
