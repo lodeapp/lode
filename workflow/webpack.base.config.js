@@ -2,6 +2,7 @@
 
 const path = require('path')
 const TerserWebpackPlugin = require('terser-webpack-plugin')
+const ESLintPlugin = require('eslint-webpack-plugin')
 
 module.exports = {
     output: {
@@ -26,18 +27,6 @@ module.exports = {
                 exclude: /node_modules/
             },
             {
-                test: /\.(js)$/,
-                enforce: 'pre',
-                exclude: /node_modules/,
-                use: {
-                    loader: 'eslint-loader',
-                    options: {
-                        formatter: require('eslint-friendly-formatter'),
-                        quiet: true
-                    }
-                }
-            },
-            {
                 test: /\.js$/,
                 use: 'babel-loader',
                 exclude: /node_modules/
@@ -47,5 +36,6 @@ module.exports = {
     optimization: {
         minimizer: [new TerserWebpackPlugin()]
     },
-    devtool: process.env.NODE_ENV !== 'production' ? 'source-map' : false
+    devtool: process.env.NODE_ENV !== 'production' ? 'source-map' : false,
+    plugins: [new ESLintPlugin()]
 }

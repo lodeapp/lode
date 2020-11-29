@@ -27,7 +27,7 @@
     "__SILENT__": true,
     "ts-jest": {
       "babelConfig": true,
-      "tsConfig": "tsconfig.json"
+      "tsconfig": "tsconfig.json"
     }
   },
   "clearMocks": true,

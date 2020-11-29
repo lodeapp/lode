@@ -42,9 +42,15 @@ describe('directives/markdown.js', () => {
         }, {
             localVue
         })
-        expect(wrapper.html()).toBe('<div><h1>Top biscuits</h1>\n<ul>\n<li>Hobnobs</li>\n<li>Digestives</li>\n</ul>\n</div>')
+        expect(wrapper.html()).toBe(`<div>
+  <h1>Top biscuits</h1>
+  <ul>
+    <li>Hobnobs</li>
+    <li>Digestives</li>
+  </ul>
+</div>`)
     })
-    it('updates if props change', () => {
+    it('updates if props change', async () => {
         const wrapper = mount({
             template: '<p v-markdown.set="[favourite]">**:0** are my favourite biscuits.</p>',
             props: ['favourite']
@@ -55,7 +61,7 @@ describe('directives/markdown.js', () => {
             }
         })
         expect(wrapper.html()).toBe('<p><strong>Hobnobs</strong> are my favourite biscuits.</p>')
-        wrapper.setProps({ favourite: 'Digestives' })
+        await wrapper.setProps({ favourite: 'Digestives' })
         expect(wrapper.html()).toBe('<p><strong>Digestives</strong> are my favourite biscuits.</p>')
     })
 })

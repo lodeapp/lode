@@ -20,7 +20,7 @@ export abstract class Nugget extends ProjectEventEmitter {
     protected fresh: boolean = false
     protected bloomed: boolean = false
 
-    protected updateCountsListener: (nugget: Nugget, toggle: boolean) => Promise<void>
+    protected updateCountsListener: _.DebouncedFunc<(nugget: Nugget, toggle: boolean) => Promise<void>>
 
     constructor (framework: IFramework) {
         super(framework.getApplicationWindow())
@@ -153,7 +153,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      * @param tests An array of test results.
      * @param cleanup Whether to clean obsolete tests after debriefing. Can be overridden by the method's logic.
      */
-    protected debriefTests (tests: Array<ITestResult>, cleanup: boolean) {
+    protected async debriefTests (tests: Array<ITestResult>, cleanup: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
 
             // Attempt to find out if this is the last test to run.

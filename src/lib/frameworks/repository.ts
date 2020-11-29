@@ -122,7 +122,7 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      * Stop any test framework in this repository that might be running.
      */
     public stop (): Promise<any> {
-        return Promise.all(this.frameworks.map((framework: IFramework) => {
+        return Promise.all(this.frameworks.map((framework: IFramework): Promise<void> => {
             return new Promise((resolve, reject) => {
                 framework.once('disassembled', () => {
                     resolve()

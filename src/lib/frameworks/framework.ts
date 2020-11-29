@@ -94,7 +94,7 @@ export interface IFramework extends ProjectEventEmitter {
     getFullRemotePath (): string
     start (): void
     refresh (): void
-    stop (): Promise<void>
+    stop (): Promise<any>
     reset (): Promise<any>
     isRunning (): boolean
     isRefreshing (): boolean
@@ -190,7 +190,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         run: 0,
         total: 0
     }
-    protected emitLedgerToRenderer: Function
+    protected emitLedgerToRenderer: _.DebouncedFunc<() => Promise<void>>
 
     static readonly defaults?: FrameworkDefaults
     static readonly sortDefault: FrameworkSort = 'name'
@@ -509,7 +509,9 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * running, refreshing or cancelling any queued jobs.
      */
     public async stop (): Promise<void> {
-        return new Promise((resolve, reject) => {
+        // Returned promise is being chained and will always fulfill,
+        // so we need to instantiate it with <void> on Typescript 4.1+
+        return new Promise<void>((resolve, reject) => {
             // Before checking the actual process, clear the queue
             this.queue = {}
 

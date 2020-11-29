@@ -323,7 +323,7 @@ ipcMain
     })
 
 ipcMain
-    .handle('project-context-menu', async (event: Electron.IpcMainInvokeEvent) => {
+    .handle('project-context-menu', async (event: Electron.IpcMainInvokeEvent): Promise<void> => {
         return new Promise(resolve => {
             new ProjectMenu(getProject(event), event.sender)
                 .after(() => {
@@ -371,7 +371,7 @@ ipcMain
     })
 
 ipcMain
-    .handle('repository-context-menu', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
+    .handle('repository-context-menu', async (event: Electron.IpcMainInvokeEvent, repositoryId: string): Promise<void> => {
         const repository: IRepository = await getRepository(event, repositoryId)
         return new Promise(resolve => {
             new RepositoryMenu(repository, event.sender)
@@ -439,7 +439,7 @@ ipcMain
     })
 
 ipcMain
-    .handle('framework-context-menu', async (event: Electron.IpcMainInvokeEvent, frameworkId: string, rect?: DOMRect) => {
+    .handle('framework-context-menu', async (event: Electron.IpcMainInvokeEvent, frameworkId: string, rect?: DOMRect): Promise<void> => {
         const { repository, framework } = await entities(event, frameworkId)
         return new Promise(resolve => {
             new FrameworkMenu(repository, framework, event.sender)
@@ -473,7 +473,7 @@ ipcMain
     })
 
 ipcMain
-    .handle('file-context-menu', async (event: Electron.IpcMainInvokeEvent, filePath: string) => {
+    .handle('file-context-menu', async (event: Electron.IpcMainInvokeEvent, filePath: string): Promise<void> => {
         return new Promise(resolve => {
             new FileMenu(filePath, event.sender)
                 .after(() => {
