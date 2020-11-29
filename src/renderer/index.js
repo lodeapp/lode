@@ -20,7 +20,6 @@ import Durations from './plugins/durations'
 
 // Directives
 import Markdown from './directives/markdown'
-import Focusable from './directives/focusable'
 
 // Global / recursive components
 import App from '@/components/App'
