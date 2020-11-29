@@ -53,19 +53,6 @@ mergeEnvFromShell()
 // Set `__static` path to static files in production
 if (process.env.NODE_ENV !== 'development') {
     (global as any).__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
-} else {
-    // Check for special development scripts (e.g. migrations)
-    const argv = process.argv.slice(3)
-    if (argv.length) {
-        if (argv[0] === 'migrate') {
-            if (argv[1] === 'down') {
-                state.migrateDownTo()
-            } else if (argv[1] === 'up') {
-                state.migrateUpTo()
-            }
-        }
-        process.exit()
-    }
 }
 
 function getProject (event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent): IProject {

@@ -34,7 +34,7 @@ export class Jest extends Framework {
                 for (let script in scripts) {
                     // Test for whole-word "jest". Should match "jest" shorthand
                     // and also "./node_modules/jest/bin/jest.js", etc.
-                    if (scripts[script].search(/(?<![^\/\\\s])jest(\.js)?(?!\.)/i) > -1) {
+                    if (scripts[script].search(/(?<![^\/\\\s])\bjest\b(\.js)?(?!\.)/i) > -1) {
                         return this.hydrate({
                             command: `yarn ${script}`
                         })

@@ -2,9 +2,6 @@
 /** Is the app running in dev mode? */
 declare const __DEV__: boolean
 
-/** Should the app run state migrations? */
-declare const __MIGRATE__: boolean
-
 /** Should the app use the logger classes or just output to console? */
 declare const __LOGGER__: boolean
 

@@ -161,6 +161,7 @@
         "module": false,
         "process": false,
         "require": false,
+        "test": false,
         "track": false
     }
 }

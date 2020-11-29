@@ -19,7 +19,7 @@
   ],
   "transform": {
     ".*\\.(vue)$": "vue-jest",
-    "^.+\\.(ts|tsx)$": "ts-jest",
+    "^.+\\.(ts)$": "ts-jest",
     "^.+\\.js$": "babel-jest"
   },
   "globals": {
