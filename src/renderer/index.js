@@ -40,7 +40,6 @@ Vue.use(new Durations())
 
 // Register directives
 Vue.directive('markdown', Markdown(Vue))
-Vue.directive('focusable', Focusable)
 
 // Register global or recursive components
 Vue.component('Icon', Icon)
