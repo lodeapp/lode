@@ -3,7 +3,7 @@
     border-radius: 0.0001px; // Prevent .shadow from overflowing.
     display: flex;
     flex-direction: column;
-    padding: 35px 0 0;
+    padding: 33px 0 0;
     height: 100vh;
 
     @include darwin {

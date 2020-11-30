@@ -35,7 +35,7 @@
                         </button>
                     </h5>
                 </header>
-                <section>
+                <Scrollable>
                     <div class="shadow"></div>
                     <div class="shadow-overlay"></div>
                     <SidebarRepository
@@ -45,7 +45,7 @@
                         @status="onRepositoryStatus"
                         @framework-activate="onFrameworkActivation"
                     />
-                </section>
+                </Scrollable>
             </Pane>
             <Pane id="list">
                 <div class="draggable"></div>
@@ -108,6 +108,7 @@
 import _findIndex from 'lodash/findIndex'
 import { mapGetters } from 'vuex'
 import Pane from '@/components/Pane'
+import Scrollable from '@/components/Scrollable'
 import ProjectLoader from '@/components/ProjectLoader'
 import SidebarRepository from '@/components/SidebarRepository'
 import Indicator from '@/components/Indicator'
@@ -119,6 +120,7 @@ export default {
     name: 'Project',
     components: {
         Pane,
+        Scrollable,
         ProjectLoader,
         SidebarRepository,
         Indicator,

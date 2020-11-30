@@ -51,7 +51,7 @@ let currentWindow: ApplicationWindow | null = null
 mergeEnvFromShell()
 
 // Set `__static` path to static files in production
-if (process.env.NODE_ENV !== 'development') {
+if (!__DEV__) {
     (global as any).__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
