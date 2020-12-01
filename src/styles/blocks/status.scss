@@ -11,6 +11,7 @@
                 display: flex;
                 flex-grow: 1;
                 padding: 0 var(--spacing-half);
+                overflow-wrap: anywhere;
             }
 
             & > .status {
