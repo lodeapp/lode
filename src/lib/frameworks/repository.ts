@@ -123,11 +123,9 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      */
     public stop (): Promise<any> {
         return Promise.all(this.frameworks.map((framework: IFramework): Promise<void> => {
-            return new Promise((resolve, reject) => {
-                framework.once('disassembled', () => {
-                    resolve()
-                })
-                framework.stop()
+            return new Promise(async (resolve, reject) => {
+                await framework.stop()
+                resolve()
             })
         }))
     }

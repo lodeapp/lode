@@ -101,9 +101,7 @@ const rendererConfig = {
             failOnError: true,
             allowAsyncCycles: false,
             cwd: process.cwd()
-        }),
-        // Exclude moment.js's locale files.
-        new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+        })
     ]
 }
 

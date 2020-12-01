@@ -1,4 +1,5 @@
 {
+  "globalSetup": "./tests/setup.js",
   "moduleFileExtensions": [
     "js",
     "ts",
