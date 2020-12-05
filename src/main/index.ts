@@ -4,7 +4,6 @@ import '@lib/tracker/main'
 
 import Fs from 'fs'
 import Path from 'path'
-import { stringify } from 'flatted'
 import { isEmpty, identity, pickBy } from 'lodash'
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import {
@@ -497,22 +496,16 @@ ipcMain
     .handle('log-project', async (event: Electron.IpcMainInvokeEvent) => {
         const project: IProject = getProject(event)
         const projectState = state.project({ id: project.getId() })
-        return stringify({
-            project: {
-                object: project,
-                string: stringify(project)
-            },
-            state: {
-                json: projectState.get(),
-                string: stringify(projectState.get())
-            }
-        })
+        return {
+            object: projectState.get(),
+            string: JSON.stringify(projectState.get())
+        }
     })
 
 ipcMain
     .handle('log-settings', async (event: Electron.IpcMainInvokeEvent) => {
-        return stringify({
+        return {
             object: state.get(),
-            string: stringify(state.get())
-        })
+            string: JSON.stringify(state.get())
+        }
     })

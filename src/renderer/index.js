@@ -4,7 +4,6 @@ import '@lib/tracker/renderer'
 import Vue from 'vue'
 import store from './store'
 import { isArray, isEmpty } from 'lodash'
-import { parse } from 'flatted'
 
 // Styles
 import '../styles/app.scss'
@@ -147,11 +146,11 @@ export default new Vue({
                             .catch(() => {})
                         break
                     case 'log-project':
-                        log.info(parse(await Lode.ipc.invoke('log-project')))
+                        log.info(await Lode.ipc.invoke('log-project'))
                         break
                     case 'log-settings':
                         log.info({
-                            ...parse(await Lode.ipc.invoke('log-settings')),
+                            ...await Lode.ipc.invoke('log-settings'),
                             vuex: store.getters['settings/value']()
                         })
                         break
