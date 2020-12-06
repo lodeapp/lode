@@ -31,7 +31,7 @@ describe('lib/frameworks/framework', () => {
         repositoryPath: '/mcvities/hobnobs/',
         suites: [
             {
-                file: '/mcvities/hobnobs/isTasty.js',
+                file: 'isTasty.js',
                 testsLoaded: true,
                 tests: [
                     {
@@ -55,7 +55,7 @@ describe('lib/frameworks/framework', () => {
                 ]
             },
             {
-                file: '/mcvities/hobnobs/isNobbly.js',
+                file: 'isNobbly.js',
                 testsLoaded: false,
                 tests: []
             }
@@ -134,7 +134,11 @@ describe('lib/frameworks/framework', () => {
         expect(framework.runsInRemote).toBe(true)
         expect(framework.remotePath).toBe('/var/www/')
         expect(framework.getRemotePath()).toBe('/var/www/')
-        expect(framework.getFullRemotePath()).toBe('/var/www/tests')
+        expect(framework.getFullRemotePath()).toBe(
+            __WIN32__
+                ? '\\var\\www\\tests'
+                : '/var/www/tests'
+        )
     })
 
     it('sorts suites by name by default', async () => {
@@ -143,8 +147,8 @@ describe('lib/frameworks/framework', () => {
 
         // Public access to suites is sorted by name, regardless of how they
         // were registered in the framework originally.
-        expect(framework.getAllSuites()[0].getId()).toBe('/mcvities/hobnobs/isNobbly.js')
-        expect(framework.getAllSuites()[1].getId()).toBe('/mcvities/hobnobs/isTasty.js')
+        expect(framework.getAllSuites()[0].getId()).toBe('isNobbly.js')
+        expect(framework.getAllSuites()[1].getId()).toBe('isTasty.js')
     })
 
     it('can format a framework to use in the renderer process', async () => {
@@ -173,8 +177,8 @@ describe('lib/frameworks/framework', () => {
             '222': 'idle',
             '333': 'idle',
             '444': 'idle',
-            '/mcvities/hobnobs/isTasty.js': 'idle',
-            '/mcvities/hobnobs/isNobbly.js': 'idle'
+            'isTasty.js': 'idle',
+            'isNobbly.js': 'idle'
         })
 
         expect(framework.getNuggetStatus('111')).toBe('idle')
@@ -236,8 +240,8 @@ describe('lib/frameworks/framework', () => {
         expect(framework.getLedger().idle).toBe(2)
         expect(framework.getLedger().queued).toBe(0)
 
-        framework.setNuggetStatus('/mcvities/hobnobs/isTasty.js', 'queued', 'idle', true)
-        expect(framework.getNuggetStatus('/mcvities/hobnobs/isTasty.js')).toBe('queued')
+        framework.setNuggetStatus('isTasty.js', 'queued', 'idle', true)
+        expect(framework.getNuggetStatus('isTasty.js')).toBe('queued')
         expect(framework.emitLedgerToRenderer).toHaveBeenCalledTimes(2)
         expect(framework.getLedger().idle).toBe(1)
         expect(framework.getLedger().queued).toBe(1)
@@ -248,12 +252,12 @@ describe('lib/frameworks/framework', () => {
         await flushPromises()
 
         // Set an arbitrary status to ensure they are kept after refresh
-        framework.setNuggetStatus('/mcvities/hobnobs/isTasty.js', 'passed', 'idle', true)
+        framework.setNuggetStatus('isTasty.js', 'passed', 'idle', true)
 
         // Refreshing should queue the job before running
         framework.refresh()
         expect(framework.status).toBe('queued')
-        expect(framework.getNuggetStatus('/mcvities/hobnobs/isTasty.js')).toBe('passed')
+        expect(framework.getNuggetStatus('isTasty.js')).toBe('passed')
         expect(Object.values(framework.queue).length).toBe(1)
         expect(Object.values(framework.queue)[0]).toBeInstanceOf(Function)
         expect(framework.isBusy()).toBe(true)
@@ -262,7 +266,7 @@ describe('lib/frameworks/framework', () => {
         framework.reload = jest.fn(() => {
             // Only mark one suite as fresh, so second should be considered stale and removed
             framework.getAllSuites()
-                .filter(suite => suite.getId() === '/mcvities/hobnobs/isTasty.js')
+                .filter(suite => suite.getId() === 'isTasty.js')
                 .forEach(suite => suite.setFresh(true))
 
             return Promise.resolve()
@@ -275,8 +279,8 @@ describe('lib/frameworks/framework', () => {
         expect(framework.reload).toHaveBeenCalledTimes(1)
         expect(framework.isBusy()).toBe(false)
         expect(framework.getAllSuites().length).toBe(1)
-        expect(framework.getAllSuites()[0].getId()).toBe('/mcvities/hobnobs/isTasty.js')
-        expect(framework.getNuggetStatus('/mcvities/hobnobs/isTasty.js')).toBe('passed')
+        expect(framework.getAllSuites()[0].getId()).toBe('isTasty.js')
+        expect(framework.getNuggetStatus('isTasty.js')).toBe('passed')
         // Framework now only has one suite, and if its previoys status was kept, it should
         // be passed. Therefore, the framework's status after a refresh is now "passed".
         expect(framework.status).toBe('passed')

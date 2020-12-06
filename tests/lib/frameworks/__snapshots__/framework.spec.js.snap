@@ -41,7 +41,7 @@ Object {
   "sshUser": null,
   "suites": Array [
     Object {
-      "file": "/mcvities/hobnobs/isTasty.js",
+      "file": "isTasty.js",
       "meta": Object {},
       "tests": Array [
         Object {
@@ -70,7 +70,7 @@ Object {
       "testsLoaded": true,
     },
     Object {
-      "file": "/mcvities/hobnobs/isNobbly.js",
+      "file": "isNobbly.js",
       "meta": Object {},
       "tests": Array [],
       "testsLoaded": false,
