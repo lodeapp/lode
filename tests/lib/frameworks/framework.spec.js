@@ -16,6 +16,10 @@ beforeAll(() => {
         warn () {},
         error () {}
     }
+
+    global.__WIN32__ = process.platform === 'win32'
+    global.__DARWIN__ = process.platform === 'darwin'
+    global.__LINUX__ = process.platform === 'linux'
 })
 
 describe('lib/frameworks/framework', () => {
@@ -72,7 +76,11 @@ describe('lib/frameworks/framework', () => {
         // Trims leading forward slashes from tests path
         expect(framework.path).toBe('tests')
         expect(framework.repositoryPath).toBe('/mcvities/hobnobs/')
-        expect(framework.fullPath).toBe('/mcvities/hobnobs/tests')
+        expect(framework.fullPath).toBe(
+            __WIN32__
+                ? '\\mcvities\\hobnobs\\tests'
+                : '/mcvities/hobnobs/tests'
+        )
         expect(framework.runsInRemote).toBe(false)
         expect(framework.remotePath).toBe('')
         expect(framework.getRemotePath()).toBe('')
