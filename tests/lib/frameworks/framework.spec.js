@@ -126,7 +126,11 @@ describe('lib/frameworks/framework', () => {
         expect(framework.command).toBe('./bake')
         expect(framework.path).toBe('tests')
         expect(framework.repositoryPath).toBe('/mcvities/hobnobs/')
-        expect(framework.fullPath).toBe('/mcvities/hobnobs/tests')
+        expect(framework.fullPath).toBe(
+            __WIN32__
+                ? '\\mcvities\\hobnobs\\tests'
+                : '/mcvities/hobnobs/tests'
+        )
         expect(framework.runsInRemote).toBe(true)
         expect(framework.remotePath).toBe('/var/www/')
         expect(framework.getRemotePath()).toBe('/var/www/')
