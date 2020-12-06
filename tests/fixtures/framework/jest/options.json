@@ -1,0 +1,2280 @@
+{
+    "id": "e325dfc3-dfc5-4a50-ab31-74cc43e783c1",
+    "name": "Jest",
+    "type": "jest",
+    "command": "yarn test",
+    "path": "",
+    "runsInRemote": false,
+    "remotePath": "",
+    "sshHost": "",
+    "sshUser": null,
+    "sshPort": null,
+    "sshIdentity": null,
+    "active": false,
+    "proprietary": {},
+    "sort": "name",
+    "selected": 0,
+    "canToggleTests": false,
+    "suites": [
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/BadlyNested.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "7f61939a2f96e697b00b250916eb3b9431b4b691",
+                    "name": "Describe one",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:37.441Z",
+                        "first": "2020-12-01T15:36:55.083Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "864848bb1c7463a2fd57ad3e584088e3f43c60e7",
+                            "name": "Parent test",
+                            "status": "idle",
+                            "feedback": {
+                                "content": {
+                                    "title": "Error",
+                                    "text": "Tests cannot be nested. Test \"Child test\" cannot run because it is nested within \"Parent test\".",
+                                    "trace": [
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmine/Env.js",
+                                            "line": 605,
+                                            "code": {
+                                                "602": "          // This check throws an error to warn the user about the edge-case.",
+                                                "603": "",
+                                                "604": "          if (currentSpec !== null) {",
+                                                "605": "            throw new Error(",
+                                                "606": "              `Tests cannot be nested. Test \"${spec.description}\" cannot run because it is nested within \"${currentSpec.description}\".`",
+                                                "607": "            );",
+                                                "608": "          }"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmineAsyncInstall.js",
+                                            "line": 134,
+                                            "code": {
+                                                "131": "      }",
+                                                "132": "    };",
+                                                "133": "",
+                                                "134": "    return originalFn.call(env, specName, asyncJestTest, timeout);",
+                                                "135": "  };",
+                                                "136": "}",
+                                                "137": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmine/jasmineLight.js",
+                                            "line": 100,
+                                            "code": {
+                                                "97": "    },",
+                                                "98": "",
+                                                "99": "    it() {",
+                                                "100": "      return env.it.apply(env, arguments);",
+                                                "101": "    },",
+                                                "102": "",
+                                                "103": "    xit() {"
+                                            }
+                                        },
+                                        {
+                                            "file": "__tests__/BadlyNested.spec.js",
+                                            "line": 3,
+                                            "code": {
+                                                "1": "describe('Describe one', () => {",
+                                                "2": "    it('Parent test', () => {",
+                                                "3": "        it('Child test', () => {",
+                                                "4": "            expect(true).toBe(false)",
+                                                "5": "        })",
+                                                "6": "    })"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmineAsyncInstall.js",
+                                            "line": 106,
+                                            "code": {
+                                                "103": "      const wrappedFn = (0, _isGeneratorFn.default)(fn)",
+                                                "104": "        ? _co.default.wrap(fn)",
+                                                "105": "        : fn;",
+                                                "106": "      const returnValue = wrappedFn.call({}, doneFnNoop);",
+                                                "107": "",
+                                                "108": "      if (isPromise(returnValue)) {",
+                                                "109": "        returnValue.then(done.bind(null, null), error => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 45,
+                                            "code": {
+                                                "42": "      };",
+                                                "43": "",
+                                                "44": "      try {",
+                                                "45": "        fn.call(options.userContext, next);",
+                                                "46": "      } catch (e) {",
+                                                "47": "        options.onException(e);",
+                                                "48": "        resolve();"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 28,
+                                            "code": {
+                                                "25": "  });",
+                                                "26": "",
+                                                "27": "  const mapper = ({fn, timeout, initError = new Error()}) => {",
+                                                "28": "    let promise = new Promise(resolve => {",
+                                                "29": "      const next = function (...args) {",
+                                                "30": "        const err = args[0];",
+                                                "31": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 75,
+                                            "code": {
+                                                "72": "  };",
+                                                "73": "",
+                                                "74": "  const result = options.queueableFns.reduce(",
+                                                "75": "    (promise, fn) => promise.then(() => mapper(fn)),",
+                                                "76": "    Promise.resolve()",
+                                                "77": "  );",
+                                                "78": "  return {"
+                                            }
+                                        },
+                                        {
+                                            "file": "internal/process/task_queues.js",
+                                            "line": 94
+                                        }
+                                    ]
+                                },
+                                "type": "feedback"
+                            },
+                            "stats": {
+                                "duration": 2,
+                                "last": "2020-12-05T11:22:00.058Z",
+                                "first": "2020-12-01T15:36:55.083Z"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/Console.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "d11168914996c374aad406636cf37b1a73342af8",
+                    "name": "Describe success",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:37.972Z",
+                        "first": "2020-12-01T15:36:55.464Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "a9a99841907c1567fa29d905bb6103fadec7155b",
+                            "name": "Console log string",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-05T11:40:29.683Z",
+                                "first": "2020-12-01T15:36:55.464Z"
+                            }
+                        },
+                        {
+                            "id": "f5d1028d5a735929d0970825182e98ba3f123314",
+                            "name": "Console dir string",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 1,
+                                "last": "2020-12-05T11:40:29.683Z",
+                                "first": "2020-12-01T15:36:55.464Z"
+                            }
+                        },
+                        {
+                            "id": "6d0b1a76c39ce387d85a959ad58f21e767ecc2fc",
+                            "name": "Console count",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 1,
+                                "last": "2020-12-05T11:40:29.683Z",
+                                "first": "2020-12-01T15:36:55.464Z"
+                            }
+                        },
+                        {
+                            "id": "819f14b9b693787166915e99887b16d48fdd8926",
+                            "name": "Console log array",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 2,
+                                "last": "2020-12-05T11:40:29.684Z",
+                                "first": "2020-12-01T15:36:55.464Z"
+                            }
+                        },
+                        {
+                            "id": "c7b9a3626969f3a69aa6f75f67888fc3d8ab9729",
+                            "name": "Console log object",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-05T11:40:29.684Z",
+                                "first": "2020-12-01T15:36:55.464Z"
+                            }
+                        },
+                        {
+                            "id": "24c057c6244f821fbc182ba1ecea5449a072489b",
+                            "name": "Console log multiple",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 23,
+                                "last": "2020-12-05T11:40:29.684Z",
+                                "first": "2020-12-01T15:36:55.464Z"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/DeclarationException.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "4e0b62780104a418f2f094e3a3fcd56775838d93",
+                    "name": "Describe one",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:37.623Z",
+                        "first": "2020-12-01T15:36:54.966Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "34b3acc9e045c46ec99f68dac4bd5df456872059",
+                            "name": "Describe two",
+                            "status": "idle",
+                            "stats": {
+                                "last": "2020-12-02T06:56:37.623Z",
+                                "first": "2020-12-01T15:36:54.966Z"
+                            },
+                            "tests": [
+                                {
+                                    "id": "f4c3aab64e2496e8df4f196bdf0947dbf15b035a",
+                                    "name": "Describe three",
+                                    "status": "idle",
+                                    "stats": {
+                                        "last": "2020-12-02T06:56:37.623Z",
+                                        "first": "2020-12-01T15:36:54.966Z"
+                                    },
+                                    "tests": [
+                                        {
+                                            "id": "3f9c5e691f48529af2ff7207a456eab38c78051d",
+                                            "name": "encountered a declaration exception",
+                                            "status": "idle",
+                                            "feedback": {
+                                                "content": {
+                                                    "title": "Error",
+                                                    "ansi": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                                                    "trace": [
+                                                        {
+                                                            "file": "__tests__/DeclarationException.spec.js",
+                                                            "line": 4,
+                                                            "code": {
+                                                                "1": "describe('Describe one', () => {",
+                                                                "2": "    describe('Describe two', () => {",
+                                                                "3": "        describe('Describe three', () => {",
+                                                                "4": "            expect(true).toBe(false)",
+                                                                "5": "        })",
+                                                                "6": "    })",
+                                                                "7": "})"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-jasmine2/build/jasmine/Env.js",
+                                                            "line": 444,
+                                                            "code": {
+                                                                "441": "          let describeReturnValue;",
+                                                                "442": "",
+                                                                "443": "          try {",
+                                                                "444": "            describeReturnValue = specDefinitions.call(suite);",
+                                                                "445": "          } catch (e) {",
+                                                                "446": "            declarationError = e;",
+                                                                "447": "          } // TODO throw in Jest 25: declarationError = new Error"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-jasmine2/build/jasmine/Env.js",
+                                                            "line": 414,
+                                                            "code": {
+                                                                "411": "            suite.todo();",
+                                                                "412": "          }",
+                                                                "413": "",
+                                                                "414": "          addSpecsToSuite(suite, specDefinitions);",
+                                                                "415": "          return suite;",
+                                                                "416": "        };",
+                                                                "417": ""
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-jasmine2/build/jasmine/jasmineLight.js",
+                                                            "line": 88,
+                                                            "code": {
+                                                                "85": "const _interface = function (jasmine, env) {",
+                                                                "86": "  const jasmineInterface = {",
+                                                                "87": "    describe(description, specDefinitions) {",
+                                                                "88": "      return env.describe(description, specDefinitions);",
+                                                                "89": "    },",
+                                                                "90": "",
+                                                                "91": "    xdescribe(description, specDefinitions) {"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "__tests__/DeclarationException.spec.js",
+                                                            "line": 3,
+                                                            "code": {
+                                                                "1": "describe('Describe one', () => {",
+                                                                "2": "    describe('Describe two', () => {",
+                                                                "3": "        describe('Describe three', () => {",
+                                                                "4": "            expect(true).toBe(false)",
+                                                                "5": "        })",
+                                                                "6": "    })"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-jasmine2/build/jasmine/Env.js",
+                                                            "line": 444,
+                                                            "code": {
+                                                                "441": "          let describeReturnValue;",
+                                                                "442": "",
+                                                                "443": "          try {",
+                                                                "444": "            describeReturnValue = specDefinitions.call(suite);",
+                                                                "445": "          } catch (e) {",
+                                                                "446": "            declarationError = e;",
+                                                                "447": "          } // TODO throw in Jest 25: declarationError = new Error"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-jasmine2/build/jasmine/Env.js",
+                                                            "line": 414,
+                                                            "code": {
+                                                                "411": "            suite.todo();",
+                                                                "412": "          }",
+                                                                "413": "",
+                                                                "414": "          addSpecsToSuite(suite, specDefinitions);",
+                                                                "415": "          return suite;",
+                                                                "416": "        };",
+                                                                "417": ""
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-jasmine2/build/jasmine/jasmineLight.js",
+                                                            "line": 88,
+                                                            "code": {
+                                                                "85": "const _interface = function (jasmine, env) {",
+                                                                "86": "  const jasmineInterface = {",
+                                                                "87": "    describe(description, specDefinitions) {",
+                                                                "88": "      return env.describe(description, specDefinitions);",
+                                                                "89": "    },",
+                                                                "90": "",
+                                                                "91": "    xdescribe(description, specDefinitions) {"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "__tests__/DeclarationException.spec.js",
+                                                            "line": 2,
+                                                            "code": {
+                                                                "1": "describe('Describe one', () => {",
+                                                                "2": "    describe('Describe two', () => {",
+                                                                "3": "        describe('Describe three', () => {",
+                                                                "4": "            expect(true).toBe(false)",
+                                                                "5": "        })"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-jasmine2/build/jasmine/Env.js",
+                                                            "line": 444,
+                                                            "code": {
+                                                                "441": "          let describeReturnValue;",
+                                                                "442": "",
+                                                                "443": "          try {",
+                                                                "444": "            describeReturnValue = specDefinitions.call(suite);",
+                                                                "445": "          } catch (e) {",
+                                                                "446": "            declarationError = e;",
+                                                                "447": "          } // TODO throw in Jest 25: declarationError = new Error"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-jasmine2/build/jasmine/Env.js",
+                                                            "line": 414,
+                                                            "code": {
+                                                                "411": "            suite.todo();",
+                                                                "412": "          }",
+                                                                "413": "",
+                                                                "414": "          addSpecsToSuite(suite, specDefinitions);",
+                                                                "415": "          return suite;",
+                                                                "416": "        };",
+                                                                "417": ""
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-jasmine2/build/jasmine/jasmineLight.js",
+                                                            "line": 88,
+                                                            "code": {
+                                                                "85": "const _interface = function (jasmine, env) {",
+                                                                "86": "  const jasmineInterface = {",
+                                                                "87": "    describe(description, specDefinitions) {",
+                                                                "88": "      return env.describe(description, specDefinitions);",
+                                                                "89": "    },",
+                                                                "90": "",
+                                                                "91": "    xdescribe(description, specDefinitions) {"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "__tests__/DeclarationException.spec.js",
+                                                            "line": 1,
+                                                            "code": {
+                                                                "1": "describe('Describe one', () => {",
+                                                                "2": "    describe('Describe two', () => {",
+                                                                "3": "        describe('Describe three', () => {",
+                                                                "4": "            expect(true).toBe(false)"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-runtime/build/index.js",
+                                                            "line": 1299,
+                                                            "code": {
+                                                                "1296": "    });",
+                                                                "1297": "",
+                                                                "1298": "    try {",
+                                                                "1299": "      compiledFunction.call(",
+                                                                "1300": "        module.exports,",
+                                                                "1301": "        module, // module object",
+                                                                "1302": "        module.exports, // module exports"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-runtime/build/index.js",
+                                                            "line": 898,
+                                                            "code": {
+                                                                "895": "      // Only include the fromPath if a moduleName is given. Else treat as root.",
+                                                                "896": "      const fromPath = moduleName ? from : null;",
+                                                                "897": "",
+                                                                "898": "      this._execModule(localModule, options, moduleRegistry, fromPath);",
+                                                                "899": "    }",
+                                                                "900": "",
+                                                                "901": "    localModule.loaded = true;"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-runtime/build/index.js",
+                                                            "line": 746,
+                                                            "code": {
+                                                                "743": "    };",
+                                                                "744": "    moduleRegistry.set(modulePath, localModule);",
+                                                                "745": "",
+                                                                "746": "    this._loadModule(",
+                                                                "747": "      localModule,",
+                                                                "748": "      from,",
+                                                                "749": "      moduleName,"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-jasmine2/build/index.js",
+                                                            "line": 230,
+                                                            "code": {
+                                                                "227": "  if (esm) {",
+                                                                "228": "    await runtime.unstable_importModule(testPath);",
+                                                                "229": "  } else {",
+                                                                "230": "    runtime.requireModule(testPath);",
+                                                                "231": "  }",
+                                                                "232": "",
+                                                                "233": "  await env.execute();"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-runner/build/runTest.js",
+                                                            "line": 380,
+                                                            "code": {
+                                                                "377": "        await runtime.collectV8Coverage();",
+                                                                "378": "      }",
+                                                                "379": "",
+                                                                "380": "      result = await testFramework(",
+                                                                "381": "        globalConfig,",
+                                                                "382": "        config,",
+                                                                "383": "        environment,"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "internal/process/task_queues.js",
+                                                            "line": 94
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-runner/build/runTest.js",
+                                                            "line": 472,
+                                                            "code": {
+                                                                "469": "  context,",
+                                                                "470": "  sendMessageToJest",
+                                                                "471": ") {",
+                                                                "472": "  const {leakDetector, result} = await runTestInternal(",
+                                                                "473": "    path,",
+                                                                "474": "    globalConfig,",
+                                                                "475": "    config,"
+                                                            }
+                                                        },
+                                                        {
+                                                            "file": "node_modules/jest-runner/build/testWorker.js",
+                                                            "line": 133,
+                                                            "code": {
+                                                                "130": "",
+                                                                "131": "async function worker({config, globalConfig, path, context}) {",
+                                                                "132": "  try {",
+                                                                "133": "    return await (0, _runTest.default)(",
+                                                                "134": "      path,",
+                                                                "135": "      globalConfig,",
+                                                                "136": "      config,"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "type": "feedback"
+                                            },
+                                            "stats": {
+                                                "duration": 2,
+                                                "last": "2020-12-02T06:56:37.623Z",
+                                                "first": "2020-12-01T15:36:54.966Z"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/Empty.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "7182c0df3e5a921377ead48f215599b5618ea5aa",
+                    "name": "Empty test",
+                    "status": "idle",
+                    "stats": {
+                        "duration": 0,
+                        "last": "2020-12-02T06:56:38.259Z",
+                        "first": "2020-12-01T15:36:55.383Z"
+                    }
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/EmptyDescribe.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "d5b3d3b0d73c2754126f828ec3c9691761f0c0f3",
+                    "name": "Test suite failed to run",
+                    "status": "idle",
+                    "feedback": {
+                        "content": {
+                            "title": "Error",
+                            "text": "Your test suite must contain at least one test.",
+                            "trace": [
+                                {
+                                    "file": "node_modules/@jest/core/build/TestScheduler.js",
+                                    "line": 175,
+                                    "code": {
+                                        "172": "        const message = 'Your test suite must contain at least one test.';",
+                                        "173": "        return onFailure(test, {",
+                                        "174": "          message,",
+                                        "175": "          stack: new Error(message).stack",
+                                        "176": "        });",
+                                        "177": "      } // Throws when the context is leaked after executing a test.",
+                                        "178": ""
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/@jest/core/build/TestScheduler.js",
+                                    "line": 304,
+                                    "code": {
+                                        "301": "                onTestFileStart(test)",
+                                        "302": "              ),",
+                                        "303": "              testRunner.on('test-file-success', ([test, testResult]) =>",
+                                        "304": "                onResult(test, testResult)",
+                                        "305": "              ),",
+                                        "306": "              testRunner.on('test-file-failure', ([test, error]) =>",
+                                        "307": "                onFailure(test, error)"
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/emittery/index.js",
+                                    "line": 260,
+                                    "code": {
+                                        "257": "\t\tawait Promise.all([",
+                                        "258": "\t\t\t...staticListeners.map(async listener => {",
+                                        "259": "\t\t\t\tif (listeners.has(listener)) {",
+                                        "260": "\t\t\t\t\treturn listener(eventData);",
+                                        "261": "\t\t\t\t}",
+                                        "262": "\t\t\t}),",
+                                        "263": "\t\t\t...staticAnyListeners.map(async listener => {"
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/emittery/index.js",
+                                    "line": 258,
+                                    "code": {
+                                        "255": "",
+                                        "256": "\t\tawait resolvedPromise;",
+                                        "257": "\t\tawait Promise.all([",
+                                        "258": "\t\t\t...staticListeners.map(async listener => {",
+                                        "259": "\t\t\t\tif (listeners.has(listener)) {",
+                                        "260": "\t\t\t\t\treturn listener(eventData);",
+                                        "261": "\t\t\t\t}"
+                                    }
+                                },
+                                {
+                                    "file": "internal/process/task_queues.js",
+                                    "line": 94
+                                }
+                            ]
+                        },
+                        "type": "feedback"
+                    },
+                    "stats": {
+                        "last": "2020-12-02T06:56:38.524Z",
+                        "first": "2020-12-01T15:36:56.179Z"
+                    }
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/Failure.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "b3036d5f084b90834bbc78755bb4b89767e60d75",
+                    "name": "Describe failure",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:37.727Z",
+                        "first": "2020-12-01T15:36:55.200Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "c46a97f26481d84b062321a9f52c01c6dee81bc2",
+                            "name": "Test success",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 10,
+                                "last": "2020-12-02T06:56:37.727Z",
+                                "first": "2020-12-01T15:36:55.200Z"
+                            }
+                        },
+                        {
+                            "id": "18d7f4250300dd41308a983f3659baf0c53a65d8",
+                            "name": "Test error exception",
+                            "status": "idle",
+                            "feedback": {
+                                "content": {
+                                    "title": "Error",
+                                    "text": "This is a custom exception message",
+                                    "trace": [
+                                        {
+                                            "file": "__tests__/Failure.spec.js",
+                                            "line": 8,
+                                            "code": {
+                                                "5": "    })",
+                                                "6": "",
+                                                "7": "    it('Test error exception', () => {",
+                                                "8": "        throw Error('This is a custom exception message')",
+                                                "9": "    })",
+                                                "10": "",
+                                                "11": "    it('Test boolean diff', () => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmineAsyncInstall.js",
+                                            "line": 106,
+                                            "code": {
+                                                "103": "      const wrappedFn = (0, _isGeneratorFn.default)(fn)",
+                                                "104": "        ? _co.default.wrap(fn)",
+                                                "105": "        : fn;",
+                                                "106": "      const returnValue = wrappedFn.call({}, doneFnNoop);",
+                                                "107": "",
+                                                "108": "      if (isPromise(returnValue)) {",
+                                                "109": "        returnValue.then(done.bind(null, null), error => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 45,
+                                            "code": {
+                                                "42": "      };",
+                                                "43": "",
+                                                "44": "      try {",
+                                                "45": "        fn.call(options.userContext, next);",
+                                                "46": "      } catch (e) {",
+                                                "47": "        options.onException(e);",
+                                                "48": "        resolve();"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 28,
+                                            "code": {
+                                                "25": "  });",
+                                                "26": "",
+                                                "27": "  const mapper = ({fn, timeout, initError = new Error()}) => {",
+                                                "28": "    let promise = new Promise(resolve => {",
+                                                "29": "      const next = function (...args) {",
+                                                "30": "        const err = args[0];",
+                                                "31": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 75,
+                                            "code": {
+                                                "72": "  };",
+                                                "73": "",
+                                                "74": "  const result = options.queueableFns.reduce(",
+                                                "75": "    (promise, fn) => promise.then(() => mapper(fn)),",
+                                                "76": "    Promise.resolve()",
+                                                "77": "  );",
+                                                "78": "  return {"
+                                            }
+                                        },
+                                        {
+                                            "file": "internal/process/task_queues.js",
+                                            "line": 94
+                                        }
+                                    ]
+                                },
+                                "type": "feedback"
+                            },
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:37.727Z",
+                                "first": "2020-12-01T15:36:55.200Z"
+                            }
+                        },
+                        {
+                            "id": "e50e3a4bff9ca907ed8ab90f53ebd52ffc7af830",
+                            "name": "Test boolean diff",
+                            "status": "idle",
+                            "feedback": {
+                                "content": {
+                                    "title": "Error",
+                                    "ansi": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                                    "trace": [
+                                        {
+                                            "file": "__tests__/Failure.spec.js",
+                                            "line": 12,
+                                            "code": {
+                                                "9": "    })",
+                                                "10": "",
+                                                "11": "    it('Test boolean diff', () => {",
+                                                "12": "        expect(true).toBe(false)",
+                                                "13": "    })",
+                                                "14": "",
+                                                "15": "    it('Test string diff', () => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmineAsyncInstall.js",
+                                            "line": 106,
+                                            "code": {
+                                                "103": "      const wrappedFn = (0, _isGeneratorFn.default)(fn)",
+                                                "104": "        ? _co.default.wrap(fn)",
+                                                "105": "        : fn;",
+                                                "106": "      const returnValue = wrappedFn.call({}, doneFnNoop);",
+                                                "107": "",
+                                                "108": "      if (isPromise(returnValue)) {",
+                                                "109": "        returnValue.then(done.bind(null, null), error => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 45,
+                                            "code": {
+                                                "42": "      };",
+                                                "43": "",
+                                                "44": "      try {",
+                                                "45": "        fn.call(options.userContext, next);",
+                                                "46": "      } catch (e) {",
+                                                "47": "        options.onException(e);",
+                                                "48": "        resolve();"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 28,
+                                            "code": {
+                                                "25": "  });",
+                                                "26": "",
+                                                "27": "  const mapper = ({fn, timeout, initError = new Error()}) => {",
+                                                "28": "    let promise = new Promise(resolve => {",
+                                                "29": "      const next = function (...args) {",
+                                                "30": "        const err = args[0];",
+                                                "31": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 75,
+                                            "code": {
+                                                "72": "  };",
+                                                "73": "",
+                                                "74": "  const result = options.queueableFns.reduce(",
+                                                "75": "    (promise, fn) => promise.then(() => mapper(fn)),",
+                                                "76": "    Promise.resolve()",
+                                                "77": "  );",
+                                                "78": "  return {"
+                                            }
+                                        },
+                                        {
+                                            "file": "internal/process/task_queues.js",
+                                            "line": 94
+                                        }
+                                    ]
+                                },
+                                "type": "feedback"
+                            },
+                            "stats": {
+                                "duration": 2,
+                                "last": "2020-12-02T06:56:37.727Z",
+                                "first": "2020-12-01T15:36:55.200Z"
+                            }
+                        },
+                        {
+                            "id": "0214296a496b040c0322418129876b6c15c7d0c8",
+                            "name": "Test string diff",
+                            "status": "idle",
+                            "feedback": {
+                                "content": {
+                                    "title": "Error",
+                                    "ansi": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mDigestive\u001b[27ms\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mHobnob\u001b[27ms\"\u001b[39m",
+                                    "trace": [
+                                        {
+                                            "file": "__tests__/Failure.spec.js",
+                                            "line": 16,
+                                            "code": {
+                                                "13": "    })",
+                                                "14": "",
+                                                "15": "    it('Test string diff', () => {",
+                                                "16": "        expect('Hobnobs').toBe('Digestives')",
+                                                "17": "    })",
+                                                "18": "",
+                                                "19": "    it('Test number diff', () => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmineAsyncInstall.js",
+                                            "line": 106,
+                                            "code": {
+                                                "103": "      const wrappedFn = (0, _isGeneratorFn.default)(fn)",
+                                                "104": "        ? _co.default.wrap(fn)",
+                                                "105": "        : fn;",
+                                                "106": "      const returnValue = wrappedFn.call({}, doneFnNoop);",
+                                                "107": "",
+                                                "108": "      if (isPromise(returnValue)) {",
+                                                "109": "        returnValue.then(done.bind(null, null), error => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 45,
+                                            "code": {
+                                                "42": "      };",
+                                                "43": "",
+                                                "44": "      try {",
+                                                "45": "        fn.call(options.userContext, next);",
+                                                "46": "      } catch (e) {",
+                                                "47": "        options.onException(e);",
+                                                "48": "        resolve();"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 28,
+                                            "code": {
+                                                "25": "  });",
+                                                "26": "",
+                                                "27": "  const mapper = ({fn, timeout, initError = new Error()}) => {",
+                                                "28": "    let promise = new Promise(resolve => {",
+                                                "29": "      const next = function (...args) {",
+                                                "30": "        const err = args[0];",
+                                                "31": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 75,
+                                            "code": {
+                                                "72": "  };",
+                                                "73": "",
+                                                "74": "  const result = options.queueableFns.reduce(",
+                                                "75": "    (promise, fn) => promise.then(() => mapper(fn)),",
+                                                "76": "    Promise.resolve()",
+                                                "77": "  );",
+                                                "78": "  return {"
+                                            }
+                                        },
+                                        {
+                                            "file": "internal/process/task_queues.js",
+                                            "line": 94
+                                        }
+                                    ]
+                                },
+                                "type": "feedback"
+                            },
+                            "stats": {
+                                "duration": 3,
+                                "last": "2020-12-02T06:56:37.727Z",
+                                "first": "2020-12-01T15:36:55.200Z"
+                            }
+                        },
+                        {
+                            "id": "ac3f3a33bc2a51ad5b5e85e2ce7b65d7d141b7cc",
+                            "name": "Test number diff",
+                            "status": "idle",
+                            "feedback": {
+                                "content": {
+                                    "title": "Error",
+                                    "ansi": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m11\u001b[39m\nReceived: \u001b[31m42\u001b[39m",
+                                    "trace": [
+                                        {
+                                            "file": "__tests__/Failure.spec.js",
+                                            "line": 20,
+                                            "code": {
+                                                "17": "    })",
+                                                "18": "",
+                                                "19": "    it('Test number diff', () => {",
+                                                "20": "        expect(42).toBe(11)",
+                                                "21": "    })",
+                                                "22": "",
+                                                "23": "    it('Test array diff', () => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmineAsyncInstall.js",
+                                            "line": 106,
+                                            "code": {
+                                                "103": "      const wrappedFn = (0, _isGeneratorFn.default)(fn)",
+                                                "104": "        ? _co.default.wrap(fn)",
+                                                "105": "        : fn;",
+                                                "106": "      const returnValue = wrappedFn.call({}, doneFnNoop);",
+                                                "107": "",
+                                                "108": "      if (isPromise(returnValue)) {",
+                                                "109": "        returnValue.then(done.bind(null, null), error => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 45,
+                                            "code": {
+                                                "42": "      };",
+                                                "43": "",
+                                                "44": "      try {",
+                                                "45": "        fn.call(options.userContext, next);",
+                                                "46": "      } catch (e) {",
+                                                "47": "        options.onException(e);",
+                                                "48": "        resolve();"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 28,
+                                            "code": {
+                                                "25": "  });",
+                                                "26": "",
+                                                "27": "  const mapper = ({fn, timeout, initError = new Error()}) => {",
+                                                "28": "    let promise = new Promise(resolve => {",
+                                                "29": "      const next = function (...args) {",
+                                                "30": "        const err = args[0];",
+                                                "31": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 75,
+                                            "code": {
+                                                "72": "  };",
+                                                "73": "",
+                                                "74": "  const result = options.queueableFns.reduce(",
+                                                "75": "    (promise, fn) => promise.then(() => mapper(fn)),",
+                                                "76": "    Promise.resolve()",
+                                                "77": "  );",
+                                                "78": "  return {"
+                                            }
+                                        },
+                                        {
+                                            "file": "internal/process/task_queues.js",
+                                            "line": 94
+                                        }
+                                    ]
+                                },
+                                "type": "feedback"
+                            },
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:37.727Z",
+                                "first": "2020-12-01T15:36:55.200Z"
+                            }
+                        },
+                        {
+                            "id": "be5a029e6c46c02ebfed01ddcf6dd89e7a836ab6",
+                            "name": "Test array diff",
+                            "status": "idle",
+                            "feedback": {
+                                "content": {
+                                    "title": "Error",
+                                    "ansi": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n",
+                                    "diff": {
+                                        "@": "--- Expected  - 1\n+ Received  + 3\n\n  Array [\n-   \"Rich Tea\",\n+   \"Hobnobs\",\n+   \"Digestives\",\n+   \"Jaffa Cakes\",\n  ]"
+                                    },
+                                    "trace": [
+                                        {
+                                            "file": "__tests__/Failure.spec.js",
+                                            "line": 24,
+                                            "code": {
+                                                "21": "    })",
+                                                "22": "",
+                                                "23": "    it('Test array diff', () => {",
+                                                "24": "        expect(['Hobnobs', 'Digestives', 'Jaffa Cakes']).toEqual(['Rich Tea'])",
+                                                "25": "    })",
+                                                "26": "",
+                                                "27": "    it('Test object diff', () => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmineAsyncInstall.js",
+                                            "line": 106,
+                                            "code": {
+                                                "103": "      const wrappedFn = (0, _isGeneratorFn.default)(fn)",
+                                                "104": "        ? _co.default.wrap(fn)",
+                                                "105": "        : fn;",
+                                                "106": "      const returnValue = wrappedFn.call({}, doneFnNoop);",
+                                                "107": "",
+                                                "108": "      if (isPromise(returnValue)) {",
+                                                "109": "        returnValue.then(done.bind(null, null), error => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 45,
+                                            "code": {
+                                                "42": "      };",
+                                                "43": "",
+                                                "44": "      try {",
+                                                "45": "        fn.call(options.userContext, next);",
+                                                "46": "      } catch (e) {",
+                                                "47": "        options.onException(e);",
+                                                "48": "        resolve();"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 28,
+                                            "code": {
+                                                "25": "  });",
+                                                "26": "",
+                                                "27": "  const mapper = ({fn, timeout, initError = new Error()}) => {",
+                                                "28": "    let promise = new Promise(resolve => {",
+                                                "29": "      const next = function (...args) {",
+                                                "30": "        const err = args[0];",
+                                                "31": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 75,
+                                            "code": {
+                                                "72": "  };",
+                                                "73": "",
+                                                "74": "  const result = options.queueableFns.reduce(",
+                                                "75": "    (promise, fn) => promise.then(() => mapper(fn)),",
+                                                "76": "    Promise.resolve()",
+                                                "77": "  );",
+                                                "78": "  return {"
+                                            }
+                                        },
+                                        {
+                                            "file": "internal/process/task_queues.js",
+                                            "line": 94
+                                        }
+                                    ]
+                                },
+                                "type": "feedback"
+                            },
+                            "stats": {
+                                "duration": 2,
+                                "last": "2020-12-02T06:56:37.727Z",
+                                "first": "2020-12-01T15:36:55.200Z"
+                            }
+                        },
+                        {
+                            "id": "c59d7a05a7cce83a105b9a5c41c88d28bae489e4",
+                            "name": "Test object diff",
+                            "status": "idle",
+                            "feedback": {
+                                "content": {
+                                    "title": "Error",
+                                    "ansi": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n",
+                                    "diff": {
+                                        "@": "--- Expected  - 1\n+ Received  + 4\n\n  Object {\n-   \"bread\": \"Banana\",\n+   \"biscuit\": Array [\n+     \"Hobnobs\",\n+     \"Digestives\",\n+   ],\n  }"
+                                    },
+                                    "trace": [
+                                        {
+                                            "file": "__tests__/Failure.spec.js",
+                                            "line": 28,
+                                            "code": {
+                                                "25": "    })",
+                                                "26": "",
+                                                "27": "    it('Test object diff', () => {",
+                                                "28": "        expect({ biscuit: ['Hobnobs', 'Digestives'] }).toEqual({ bread: 'Banana' })",
+                                                "29": "    })",
+                                                "30": "})",
+                                                "31": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmineAsyncInstall.js",
+                                            "line": 106,
+                                            "code": {
+                                                "103": "      const wrappedFn = (0, _isGeneratorFn.default)(fn)",
+                                                "104": "        ? _co.default.wrap(fn)",
+                                                "105": "        : fn;",
+                                                "106": "      const returnValue = wrappedFn.call({}, doneFnNoop);",
+                                                "107": "",
+                                                "108": "      if (isPromise(returnValue)) {",
+                                                "109": "        returnValue.then(done.bind(null, null), error => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 45,
+                                            "code": {
+                                                "42": "      };",
+                                                "43": "",
+                                                "44": "      try {",
+                                                "45": "        fn.call(options.userContext, next);",
+                                                "46": "      } catch (e) {",
+                                                "47": "        options.onException(e);",
+                                                "48": "        resolve();"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 28,
+                                            "code": {
+                                                "25": "  });",
+                                                "26": "",
+                                                "27": "  const mapper = ({fn, timeout, initError = new Error()}) => {",
+                                                "28": "    let promise = new Promise(resolve => {",
+                                                "29": "      const next = function (...args) {",
+                                                "30": "        const err = args[0];",
+                                                "31": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 75,
+                                            "code": {
+                                                "72": "  };",
+                                                "73": "",
+                                                "74": "  const result = options.queueableFns.reduce(",
+                                                "75": "    (promise, fn) => promise.then(() => mapper(fn)),",
+                                                "76": "    Promise.resolve()",
+                                                "77": "  );",
+                                                "78": "  return {"
+                                            }
+                                        },
+                                        {
+                                            "file": "internal/process/task_queues.js",
+                                            "line": 94
+                                        }
+                                    ]
+                                },
+                                "type": "feedback"
+                            },
+                            "stats": {
+                                "duration": 1,
+                                "last": "2020-12-02T06:56:37.727Z",
+                                "first": "2020-12-01T15:36:55.200Z"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/Malformed.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "6b25f1ca05b8745bdf2b1c963a3afd1aaa1ba564",
+                    "name": "Test suite failed to run",
+                    "status": "idle",
+                    "feedback": {
+                        "content": {
+                            "title": "SyntaxError: /Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/Malformed.spec.js",
+                            "ansi": "\u001b[1m\u001b[31mJest encountered an unexpected token\u001b[39m\u001b[22m\n\nThis usually means that you are trying to import a file which Jest cannot parse, e.g. it's not plain JavaScript.\n\nBy default, if Jest sees a Babel config, it will use that to transform your files, ignoring \"node_modules\".\n\nHere's what you can do:\n • If you are trying to use ECMAScript Modules, see \u001b[4mhttps://jestjs.io/docs/en/ecmascript-modules\u001b[24m for how to enable it.\n • To have some of your \"node_modules\" files transformed, you can specify a custom \u001b[1m\"transformIgnorePatterns\"\u001b[22m in your config.\n • If you need a custom transformation specify a \u001b[1m\"transform\"\u001b[22m option in your config.\n • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the \u001b[1m\"moduleNameMapper\"\u001b[22m config option.\n\nYou'll find more details and examples of these config options in the docs:\n\u001b[36mhttps://jestjs.io/docs/en/configuration.html\u001b[39m\n\n\u001b[1m\u001b[31mDetails:\u001b[39m\u001b[22m\n\nSyntaxError: /Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/Malformed.spec.js: Unexpected token (2:0)\n\n\u001b[0m \u001b[90m 1 | \u001b[39mdescribe(\u001b[32m'Malformed suite'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 2 | \u001b[39m\u001b[0m\n\u001b[0m \u001b[90m   | \u001b[39m\u001b[31m\u001b[1m^\u001b[22m\u001b[39m\u001b[0m",
+                            "trace": [
+                                {
+                                    "file": "node_modules/@babel/parser/src/parser/error.js",
+                                    "line": 60
+                                },
+                                {
+                                    "file": "node_modules/@babel/parser/src/parser/error.js",
+                                    "line": 55
+                                },
+                                {
+                                    "file": "node_modules/@babel/parser/src/parser/error.js",
+                                    "line": 39
+                                },
+                                {
+                                    "file": "node_modules/@babel/parser/src/parser/util.js",
+                                    "line": 139
+                                },
+                                {
+                                    "file": "node_modules/@babel/parser/src/parser/expression.js",
+                                    "line": 1159
+                                },
+                                {
+                                    "file": "node_modules/@babel/parser/src/parser/expression.js",
+                                    "line": 568
+                                },
+                                {
+                                    "file": "node_modules/@babel/parser/src/parser/expression.js",
+                                    "line": 548
+                                },
+                                {
+                                    "file": "node_modules/@babel/parser/src/parser/expression.js",
+                                    "line": 532
+                                },
+                                {
+                                    "file": "node_modules/@babel/parser/src/parser/expression.js",
+                                    "line": 348
+                                },
+                                {
+                                    "file": "node_modules/@babel/parser/src/parser/expression.js",
+                                    "line": 313
+                                }
+                            ]
+                        },
+                        "type": "feedback"
+                    },
+                    "stats": {
+                        "last": "2020-12-02T06:56:38.919Z",
+                        "first": "2020-12-01T15:36:56.272Z"
+                    }
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/Nested.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "225e7a95dc176c0af318e3074784274c7ab442e8",
+                    "name": "1",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:37.825Z",
+                        "first": "2020-12-01T15:36:55.434Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "21b2e0df3d7ffdfcc4ef37e9a34964e8e60814d8",
+                            "name": "1.1",
+                            "status": "idle",
+                            "stats": {
+                                "last": "2020-12-02T06:56:37.825Z",
+                                "first": "2020-12-01T15:36:55.434Z"
+                            },
+                            "tests": [
+                                {
+                                    "id": "d6e2497b02bc00af4bd48e6b782e4df8704b41ca",
+                                    "name": "1.1.1",
+                                    "status": "idle",
+                                    "stats": {
+                                        "last": "2020-12-02T06:56:37.825Z",
+                                        "first": "2020-12-01T15:36:55.434Z"
+                                    },
+                                    "tests": [
+                                        {
+                                            "id": "3212efd51ecb40d41cde6bc56c1a0fe276ac1429",
+                                            "name": "1.1.1.1",
+                                            "status": "idle",
+                                            "stats": {
+                                                "last": "2020-12-02T06:56:37.825Z",
+                                                "first": "2020-12-01T15:36:55.434Z"
+                                            },
+                                            "tests": [
+                                                {
+                                                    "id": "78df7be00a68903e5a228739f1681932cb4e9afc",
+                                                    "name": "1.1.1.1.1",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 1,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "5b374c8c542ed00bb339289e1e384028a63cc26f",
+                                                    "name": "1.1.1.1.2",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "eefa7209428dbbfe0fc24553c5d42647b4bf884c",
+                                            "name": "1.1.1.2",
+                                            "status": "idle",
+                                            "stats": {
+                                                "last": "2020-12-02T06:56:37.825Z",
+                                                "first": "2020-12-01T15:36:55.434Z"
+                                            },
+                                            "tests": [
+                                                {
+                                                    "id": "f89512647d70e66c1cf23a0cf859b8df90b5e1f9",
+                                                    "name": "1.1.1.2.1",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "e1aa4449bddda08cff4e7de8afbfc55d1465b5fc",
+                                                    "name": "1.1.1.2.2",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 1,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "c18da5d3deba343305de6a8ebce7357e943eb5c4",
+                                            "name": "1.1.1.3",
+                                            "status": "idle",
+                                            "stats": {
+                                                "last": "2020-12-02T06:56:37.825Z",
+                                                "first": "2020-12-01T15:36:55.434Z"
+                                            },
+                                            "tests": [
+                                                {
+                                                    "id": "7ac3acc613ee199ccfb3acdd805ae94b6322f012",
+                                                    "name": "1.1.1.3.1",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "84035c0de770223b8840a05ec075d0ef5bc7003c",
+                                                    "name": "1.1.1.3.2",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "8c63cbf21ccd58cfde722ace0b8359f72ac5f733",
+                                    "name": "1.1.2",
+                                    "status": "idle",
+                                    "stats": {
+                                        "last": "2020-12-02T06:56:37.825Z",
+                                        "first": "2020-12-01T15:36:55.434Z"
+                                    },
+                                    "tests": [
+                                        {
+                                            "id": "b261425ef30fa6b9f0a0c3d790cb0ce0a5509a42",
+                                            "name": "1.1.2.1",
+                                            "status": "idle",
+                                            "stats": {
+                                                "last": "2020-12-02T06:56:37.825Z",
+                                                "first": "2020-12-01T15:36:55.434Z"
+                                            },
+                                            "tests": [
+                                                {
+                                                    "id": "5b25a64514cc58478c033fe007753a4b6ce300e2",
+                                                    "name": "1.1.2.1.1",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "5d590656c9bd8896725f4870bbc1897d32137bc2",
+                                                    "name": "1.1.2.1.2",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 1,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "5095f4fefee0ed460b47dbf48187a4cf8dac5b64",
+                                            "name": "1.1.2.2",
+                                            "status": "idle",
+                                            "stats": {
+                                                "last": "2020-12-02T06:56:37.825Z",
+                                                "first": "2020-12-01T15:36:55.434Z"
+                                            },
+                                            "tests": [
+                                                {
+                                                    "id": "04e7f5719d93f6b6c45cd9e41afb8852f8e7d225",
+                                                    "name": "1.1.2.2.1",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "0d32736eea56c2da2e14676cc05f5f8b169e28c8",
+                                                    "name": "1.1.2.2.2",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "7b7f3b94ac6d9b25cc50f44f5374bda27f28a317",
+                                            "name": "1.1.2.3",
+                                            "status": "idle",
+                                            "stats": {
+                                                "last": "2020-12-02T06:56:37.825Z",
+                                                "first": "2020-12-01T15:36:55.434Z"
+                                            },
+                                            "tests": [
+                                                {
+                                                    "id": "4a09cc38046b1ecaa88bff3ac4a5bc5673206723",
+                                                    "name": "1.1.2.3.1",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "c4c9a5acfc686db08cd4d3e377376b2f4cab725d",
+                                                    "name": "1.1.2.3.2",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.434Z"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "5511f67ab4fe52cf46b601436535f28f1d59e98d",
+                                    "name": "1.1.3",
+                                    "status": "idle",
+                                    "stats": {
+                                        "last": "2020-12-02T06:56:37.825Z",
+                                        "first": "2020-12-01T15:36:55.435Z"
+                                    },
+                                    "tests": [
+                                        {
+                                            "id": "f527dd8ab45fddf22da3d91343b8ceab68bc2f02",
+                                            "name": "1.1.3.1",
+                                            "status": "idle",
+                                            "stats": {
+                                                "last": "2020-12-02T06:56:37.825Z",
+                                                "first": "2020-12-01T15:36:55.435Z"
+                                            },
+                                            "tests": [
+                                                {
+                                                    "id": "f094bba3cd910358d2053517b2a614e414946689",
+                                                    "name": "1.1.3.1.1",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 1,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.435Z"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "ea61d8e13dca20be9e108450f8c233bdc80cf3f0",
+                                                    "name": "1.1.3.1.2",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.435Z"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "e3f06ad06e6ebcada8d636ea00624d321bfded00",
+                                            "name": "1.1.3.2",
+                                            "status": "idle",
+                                            "stats": {
+                                                "last": "2020-12-02T06:56:37.825Z",
+                                                "first": "2020-12-01T15:36:55.435Z"
+                                            },
+                                            "tests": [
+                                                {
+                                                    "id": "8cb39916f6e94d335ebba2a0326fa335db435357",
+                                                    "name": "1.1.3.2.1",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.435Z"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "a9e25e716f7fa0a7f37d78e1ec95358abda78eb5",
+                                                    "name": "1.1.3.2.2",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.435Z"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "5d2843ac21a7d8720e1ad03919618661f3a0654b",
+                                            "name": "1.1.3.3",
+                                            "status": "idle",
+                                            "stats": {
+                                                "last": "2020-12-02T06:56:37.825Z",
+                                                "first": "2020-12-01T15:36:55.435Z"
+                                            },
+                                            "tests": [
+                                                {
+                                                    "id": "e0d2f6e94c2a612b8868a213d3679c359cd7f1e2",
+                                                    "name": "1.1.3.3.1",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 0,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.436Z"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "287d65b6ff1e9fc6fc98d44ce541ed9dd0b52635",
+                                                    "name": "1.1.3.3.2",
+                                                    "status": "idle",
+                                                    "stats": {
+                                                        "duration": 1,
+                                                        "last": "2020-12-02T06:56:37.825Z",
+                                                        "first": "2020-12-01T15:36:55.436Z"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/NoDescribe.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "47cf4dd5f96a4db376b3ecafcad8cad8319a5a4d",
+                    "name": "Test without describe",
+                    "status": "idle",
+                    "stats": {
+                        "duration": 18,
+                        "last": "2020-12-02T06:56:38.144Z",
+                        "first": "2020-12-01T15:36:55.678Z"
+                    }
+                },
+                {
+                    "id": "6905f2804570c0b4f7a334769ec78f5861713881",
+                    "name": "Another test without describe",
+                    "status": "idle",
+                    "stats": {
+                        "duration": 0,
+                        "last": "2020-12-02T06:56:38.144Z",
+                        "first": "2020-12-01T15:36:55.678Z"
+                    }
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/Skip.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "bfed84c87ce612a7c60589075e8647a96a57c335",
+                    "name": "Describe runs",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:38.063Z",
+                        "first": "2020-12-01T15:36:55.749Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "5d5fa86598967351958529643176a828e99d7e2a",
+                            "name": "Test runs",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 3,
+                                "last": "2020-12-02T06:56:38.063Z",
+                                "first": "2020-12-01T15:36:55.749Z"
+                            }
+                        },
+                        {
+                            "id": "94534ba935b7be986e7e2a4c64d7c39c71109a7d",
+                            "name": "Test skipped",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.063Z",
+                                "first": "2020-12-01T15:36:55.749Z"
+                            }
+                        },
+                        {
+                            "id": "af1ed4a9eabb24e822943e480eb06b702d4eb580",
+                            "name": "Test also skipped",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.063Z",
+                                "first": "2020-12-01T15:36:55.749Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "f90fdc5f4fce93fed00268c97ddaf6df56288377",
+                    "name": "Describe skipped",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:38.063Z",
+                        "first": "2020-12-01T15:36:55.749Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "50fb1faa472df534499baf01c89d61e41fe1d65e",
+                            "name": "Test skipped",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.063Z",
+                                "first": "2020-12-01T15:36:55.749Z"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/SkipDescribe.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "10efd4f300eab76eff23acb1ce960a9aa8db090c",
+                    "name": "Describe runs",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:38.346Z",
+                        "first": "2020-12-01T15:36:55.990Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "3e98698ab05b457c676ac8d89d143cd4b97451fe",
+                            "name": "Test runs",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.346Z",
+                                "first": "2020-12-01T15:36:55.990Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "fc15195d46ea8108dd82f3dee9791d2120e4a911",
+                    "name": "Describe skipped",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:38.346Z",
+                        "first": "2020-12-01T15:36:55.990Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "41f548f40d61bdfac42097410cf466d284d6e605",
+                            "name": "Test skipped",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.346Z",
+                                "first": "2020-12-01T15:36:55.990Z"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "828fd01f3c47b2661d9464032ee52a7c9fe40341",
+                    "name": "Describe also skipped",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:38.346Z",
+                        "first": "2020-12-01T15:36:55.990Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "1ba0edf429bb727bfa45f6fef90352f411116b79",
+                            "name": "Test also skipped",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.346Z",
+                                "first": "2020-12-01T15:36:55.990Z"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/Success.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "c8d136988089e6767b9a4672b1ccdca66fb3c442",
+                    "name": "Describe success",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:37.946Z",
+                        "first": "2020-12-01T15:36:55.780Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "c2952ea552e4fe4ffaac071c15e7d8d1b0c92122",
+                            "name": "Test success",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:37.946Z",
+                                "first": "2020-12-01T15:36:55.780Z"
+                            }
+                        },
+                        {
+                            "id": "b41a5604526432a31123bd58444de2158dfeab00",
+                            "name": "Test another success",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:37.946Z",
+                                "first": "2020-12-01T15:36:55.780Z"
+                            }
+                        },
+                        {
+                            "id": "bbc39185780ca6e5de20e7019a62588592d5fc9e",
+                            "name": "Test more success",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 1,
+                                "last": "2020-12-02T06:56:37.946Z",
+                                "first": "2020-12-01T15:36:55.780Z"
+                            }
+                        },
+                        {
+                            "id": "f3457a11d31e242ce2693a563b9deab7b5490f1e",
+                            "name": "Test even more success",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:37.946Z",
+                                "first": "2020-12-01T15:36:55.780Z"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/UnexistingDependency.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "e248eefa3c055929850f7ce5ff98d420b09ad2c5",
+                    "name": "Test suite failed to run",
+                    "status": "idle",
+                    "feedback": {
+                        "content": {
+                            "title": "Error",
+                            "text": "Cannot find module 'ho' from '__tests__/UnexistingDependency.spec.js'",
+                            "trace": [
+                                {
+                                    "file": "node_modules/jest-resolve/build/index.js",
+                                    "line": 306,
+                                    "code": {
+                                        "303": "    const relativePath =",
+                                        "304": "      (0, _slash().default)(path().relative(this._options.rootDir, from)) ||",
+                                        "305": "      '.';",
+                                        "306": "    throw new _ModuleNotFoundError.default(",
+                                        "307": "      `Cannot find module '${moduleName}' from '${relativePath}'`,",
+                                        "308": "      moduleName",
+                                        "309": "    );"
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/jest-resolve/build/index.js",
+                                    "line": 445,
+                                    "code": {
+                                        "442": "    return virtualMocks[virtualMockPath]",
+                                        "443": "      ? virtualMockPath",
+                                        "444": "      : moduleName",
+                                        "445": "      ? this.resolveModule(from, moduleName)",
+                                        "446": "      : from;",
+                                        "447": "  }",
+                                        "448": ""
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/jest-resolve/build/index.js",
+                                    "line": 431,
+                                    "code": {
+                                        "428": "",
+                                        "429": "    return this._isModuleResolved(from, moduleName)",
+                                        "430": "      ? this.getModule(moduleName)",
+                                        "431": "      : this._getVirtualMockPath(virtualMocks, from, moduleName);",
+                                        "432": "  }",
+                                        "433": "",
+                                        "434": "  _getMockPath(from, moduleName) {"
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/jest-resolve/build/index.js",
+                                    "line": 404,
+                                    "code": {
+                                        "401": "",
+                                        "402": "    const moduleType = this._getModuleType(moduleName);",
+                                        "403": "",
+                                        "404": "    const absolutePath = this._getAbsolutePath(virtualMocks, from, moduleName);",
+                                        "405": "",
+                                        "406": "    const mockPath = this._getMockPath(from, moduleName);",
+                                        "407": ""
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/jest-runtime/build/index.js",
+                                    "line": 1521,
+                                    "code": {
+                                        "1518": "  _shouldMock(from, moduleName) {",
+                                        "1519": "    const explicitShouldMock = this._explicitShouldMock;",
+                                        "1520": "",
+                                        "1521": "    const moduleID = this._resolver.getModuleID(",
+                                        "1522": "      fromEntries(this._virtualMocks),",
+                                        "1523": "      from,",
+                                        "1524": "      moduleName"
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/jest-runtime/build/index.js",
+                                    "line": 916,
+                                    "code": {
+                                        "913": "    }",
+                                        "914": "",
+                                        "915": "    try {",
+                                        "916": "      if (this._shouldMock(from, moduleName)) {",
+                                        "917": "        return this.requireMock(from, moduleName);",
+                                        "918": "      } else {",
+                                        "919": "        return this.requireModule(from, moduleName);"
+                                    }
+                                },
+                                {
+                                    "file": "__tests__/UnexistingDependency.spec.js",
+                                    "line": 1,
+                                    "code": {
+                                        "1": "const hey = require('ho')",
+                                        "2": "",
+                                        "3": "it('Error from lookup above should be descriptive', () => {",
+                                        "4": "    expect(true).toBe(true)"
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/jest-runtime/build/index.js",
+                                    "line": 1299,
+                                    "code": {
+                                        "1296": "    });",
+                                        "1297": "",
+                                        "1298": "    try {",
+                                        "1299": "      compiledFunction.call(",
+                                        "1300": "        module.exports,",
+                                        "1301": "        module, // module object",
+                                        "1302": "        module.exports, // module exports"
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/jest-runtime/build/index.js",
+                                    "line": 898,
+                                    "code": {
+                                        "895": "      // Only include the fromPath if a moduleName is given. Else treat as root.",
+                                        "896": "      const fromPath = moduleName ? from : null;",
+                                        "897": "",
+                                        "898": "      this._execModule(localModule, options, moduleRegistry, fromPath);",
+                                        "899": "    }",
+                                        "900": "",
+                                        "901": "    localModule.loaded = true;"
+                                    }
+                                },
+                                {
+                                    "file": "node_modules/jest-runtime/build/index.js",
+                                    "line": 746,
+                                    "code": {
+                                        "743": "    };",
+                                        "744": "    moduleRegistry.set(modulePath, localModule);",
+                                        "745": "",
+                                        "746": "    this._loadModule(",
+                                        "747": "      localModule,",
+                                        "748": "      from,",
+                                        "749": "      moduleName,"
+                                    }
+                                }
+                            ]
+                        },
+                        "type": "feedback"
+                    },
+                    "stats": {
+                        "last": "2020-12-02T06:56:38.434Z",
+                        "first": "2020-12-01T15:36:56.037Z"
+                    }
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/LongNames.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "c93b188b8486f6af7a90c53f9eea4d770146c981",
+                    "name": "A test suite with long names",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T06:56:38.197Z",
+                        "first": "2020-12-01T16:45:45.183Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "133e1f853c2f1feeef7e44107a6ac478cd9bc59a",
+                            "name": "will produce a very long name that should be truncated: \"Mollit nulla sint Lorem non veniam ipsum officia ad culpa sint ea.\"",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 1,
+                                "last": "2020-12-02T06:56:38.197Z",
+                                "first": "2020-12-01T16:45:45.183Z"
+                            }
+                        },
+                        {
+                            "id": "91f6b6f7e96cc0925e18c9135b4dd2604c303792",
+                            "name": "will produce a very long name that should be truncated: \"Eu enim sunt ullamco Lorem sint sit ipsum.\"",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.197Z",
+                                "first": "2020-12-01T16:45:45.183Z"
+                            }
+                        },
+                        {
+                            "id": "727862655c2452fad1a6b9e0fd5c55c62634c334",
+                            "name": "will produce a very long name that should be truncated: \"Dolor esse Lorem dolore nostrud velit et ea sunt.\"",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.197Z",
+                                "first": "2020-12-01T16:45:45.183Z"
+                            }
+                        },
+                        {
+                            "id": "a3d6692572ddd987b53410601426b04204272ee1",
+                            "name": "will produce a very long name that should be truncated: \"Proident in reprehenderit et dolor labore veniam eiusmod irure qui Lorem voluptate incididunt eu ad.\"",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.197Z",
+                                "first": "2020-12-01T16:45:45.183Z"
+                            }
+                        },
+                        {
+                            "id": "b4a799e2eb6ead39611e4e8f22e023bbed6a5d8a",
+                            "name": "will produce a very long name that should be truncated: \"Veniam ea laboris dolore qui velit enim laborum ullamco consequat ullamco sint enim.\"",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 1,
+                                "last": "2020-12-02T06:56:38.197Z",
+                                "first": "2020-12-01T16:45:45.183Z"
+                            }
+                        },
+                        {
+                            "id": "b40c8bcbcce42b06fa9b48184d8681f94a1534fa",
+                            "name": "will produce a very long name that should be truncated: \"Commodo voluptate mollit quis incididunt nulla pariatur esse.\"",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.197Z",
+                                "first": "2020-12-01T16:45:45.183Z"
+                            }
+                        },
+                        {
+                            "id": "bd1f4f617e7f7c2cbfffc3eff3b9c0cf96379d6d",
+                            "name": "will produce a very long name that should be truncated: \"Occaecat eu nulla reprehenderit commodo cupidatat ex ea.\"",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T06:56:38.197Z",
+                                "first": "2020-12-01T16:45:45.183Z"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "/Users/tomasbuteler/Sites/Lode/testing/jest-26/__tests__/Snapshot.spec.js",
+            "testsLoaded": true,
+            "tests": [
+                {
+                    "id": "e2cb0d09da1961f16762d00701b2036fa952d72c",
+                    "name": "A test with snapshots",
+                    "status": "idle",
+                    "stats": {
+                        "last": "2020-12-02T07:26:37.634Z",
+                        "first": "2020-12-02T06:57:47.261Z"
+                    },
+                    "tests": [
+                        {
+                            "id": "65a6e92623b80ce473a853dd3968284d96ec053b",
+                            "name": "Matches snapshot",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 2,
+                                "last": "2020-12-02T07:26:37.634Z",
+                                "first": "2020-12-02T06:57:47.261Z"
+                            }
+                        },
+                        {
+                            "id": "957c1854aa5c8134a5857e14c3bb2f6e41399a03",
+                            "name": "Matches HTML snapshot",
+                            "status": "idle",
+                            "stats": {
+                                "duration": 0,
+                                "last": "2020-12-02T07:26:37.635Z",
+                                "first": "2020-12-02T06:57:47.261Z"
+                            }
+                        },
+                        {
+                            "id": "538c324a8c249f728e2ce3b236f800779cffe932",
+                            "name": "Does not match snapshot",
+                            "status": "idle",
+                            "feedback": {
+                                "content": {
+                                    "title": "Error",
+                                    "ansi": "\u001b[2mexpect(\u001b[22m\u001b[38;5;23m\u001b[48;5;195mreceived\u001b[49m\u001b[39m\u001b[2m).\u001b[22mtoMatchSnapshot\u001b[2m()\u001b[22m\n\nSnapshot name: `A test with snapshots Does not match snapshot 1`\n\nSnapshot: \u001b[38;5;90m\u001b[48;5;225m\"\u001b[7mNisi occaecat ullamco laborum lab\u001b[27mor\u001b[7mu\u001b[27mm \u001b[7mv\u001b[27mol\u001b[7muptate consectetur do minim et officia enim\u001b[27m.\"\u001b[49m\u001b[39m\nReceived: \u001b[38;5;23m\u001b[48;5;195m\"\u001b[7mAnim ea ea velit aliqua quis L\u001b[27mor\u001b[7me\u001b[27mm \u001b[7md\u001b[27mol\u001b[7mor\u001b[27m.\"\u001b[49m\u001b[39m",
+                                    "trace": [
+                                        {
+                                            "file": "__tests__/Snapshot.spec.js",
+                                            "line": 16,
+                                            "code": {
+                                                "13": "    })",
+                                                "14": "",
+                                                "15": "    it('Does not match snapshot', () => {",
+                                                "16": "        expect('Anim ea ea velit aliqua quis Lorem dolor.').toMatchSnapshot()",
+                                                "17": "    })",
+                                                "18": "",
+                                                "19": "    it('Does not match HTML snapshot', () => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmineAsyncInstall.js",
+                                            "line": 106,
+                                            "code": {
+                                                "103": "      const wrappedFn = (0, _isGeneratorFn.default)(fn)",
+                                                "104": "        ? _co.default.wrap(fn)",
+                                                "105": "        : fn;",
+                                                "106": "      const returnValue = wrappedFn.call({}, doneFnNoop);",
+                                                "107": "",
+                                                "108": "      if (isPromise(returnValue)) {",
+                                                "109": "        returnValue.then(done.bind(null, null), error => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 45,
+                                            "code": {
+                                                "42": "      };",
+                                                "43": "",
+                                                "44": "      try {",
+                                                "45": "        fn.call(options.userContext, next);",
+                                                "46": "      } catch (e) {",
+                                                "47": "        options.onException(e);",
+                                                "48": "        resolve();"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 28,
+                                            "code": {
+                                                "25": "  });",
+                                                "26": "",
+                                                "27": "  const mapper = ({fn, timeout, initError = new Error()}) => {",
+                                                "28": "    let promise = new Promise(resolve => {",
+                                                "29": "      const next = function (...args) {",
+                                                "30": "        const err = args[0];",
+                                                "31": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 75,
+                                            "code": {
+                                                "72": "  };",
+                                                "73": "",
+                                                "74": "  const result = options.queueableFns.reduce(",
+                                                "75": "    (promise, fn) => promise.then(() => mapper(fn)),",
+                                                "76": "    Promise.resolve()",
+                                                "77": "  );",
+                                                "78": "  return {"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "type": "feedback"
+                            },
+                            "stats": {
+                                "duration": 5,
+                                "last": "2020-12-02T07:26:37.635Z",
+                                "first": "2020-12-02T06:57:47.262Z"
+                            }
+                        },
+                        {
+                            "id": "2256252b8ee5722ad6487577fd01d4d9b1d082da",
+                            "name": "Does not match HTML snapshot",
+                            "status": "idle",
+                            "feedback": {
+                                "content": {
+                                    "title": "Error",
+                                    "ansi": "\u001b[2mexpect(\u001b[22m\u001b[38;5;23m\u001b[48;5;195mreceived\u001b[49m\u001b[39m\u001b[2m).\u001b[22mtoMatchSnapshot\u001b[2m()\u001b[22m\n\nSnapshot name: `A test with snapshots Does not match HTML snapshot 1`\n\n\u001b[38;5;90m\u001b[48;5;225m- Snapshot  - 3\u001b[49m\u001b[39m\n\u001b[38;5;23m\u001b[48;5;195m+ Received  + 3\u001b[49m\u001b[39m\n\n\u001b[2m  <div>\u001b[22m\n\u001b[38;5;90m\u001b[48;5;225m-   <h2>Hello\u001b[7m world\u001b[27m!</h2>\u001b[49m\u001b[39m\n\u001b[38;5;23m\u001b[48;5;195m+   <h2>Hello\u001b[7m, there\u001b[27m!</h2>\u001b[49m\u001b[39m\n\u001b[38;5;90m\u001b[48;5;225m-   <p\u001b[7m>Esse excepteur aliqua proident aliquip deserunt fugiat officia et consequat sit sint aliqua exercitation\u001b[27m.</p>\u001b[49m\u001b[39m\n\u001b[38;5;23m\u001b[48;5;195m+   <p\u001b[7m class=\"wrong\">Ad do ipsum anim excepteur aute commodo quis ullamco\u001b[27m.</p>\u001b[49m\u001b[39m\n\u001b[38;5;90m\u001b[48;5;225m-   <s\u001b[7mmall\u001b[27m>Culpa \u001b[7mcupidatat ut velit aliqua.</small\u001b[27m>\u001b[49m\u001b[39m\n\u001b[38;5;23m\u001b[48;5;195m+   <s\u001b[7mub\u001b[27m>Culpa \u001b[7melit minim non ut velit mollit ullamco ea.</sub\u001b[27m>\u001b[49m\u001b[39m\n\u001b[2m  </div>\u001b[22m",
+                                    "trace": [
+                                        {
+                                            "file": "__tests__/Snapshot.spec.js",
+                                            "line": 25,
+                                            "code": {
+                                                "22": "  <p class=\"wrong\">Ad do ipsum anim excepteur aute commodo quis ullamco.</p>",
+                                                "23": "  <sub>Culpa elit minim non ut velit mollit ullamco ea.</sub>",
+                                                "24": "</div>`",
+                                                "25": "        expect(html).toMatchSnapshot()",
+                                                "26": "    })",
+                                                "27": "})",
+                                                "28": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/jasmineAsyncInstall.js",
+                                            "line": 106,
+                                            "code": {
+                                                "103": "      const wrappedFn = (0, _isGeneratorFn.default)(fn)",
+                                                "104": "        ? _co.default.wrap(fn)",
+                                                "105": "        : fn;",
+                                                "106": "      const returnValue = wrappedFn.call({}, doneFnNoop);",
+                                                "107": "",
+                                                "108": "      if (isPromise(returnValue)) {",
+                                                "109": "        returnValue.then(done.bind(null, null), error => {"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 45,
+                                            "code": {
+                                                "42": "      };",
+                                                "43": "",
+                                                "44": "      try {",
+                                                "45": "        fn.call(options.userContext, next);",
+                                                "46": "      } catch (e) {",
+                                                "47": "        options.onException(e);",
+                                                "48": "        resolve();"
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 28,
+                                            "code": {
+                                                "25": "  });",
+                                                "26": "",
+                                                "27": "  const mapper = ({fn, timeout, initError = new Error()}) => {",
+                                                "28": "    let promise = new Promise(resolve => {",
+                                                "29": "      const next = function (...args) {",
+                                                "30": "        const err = args[0];",
+                                                "31": ""
+                                            }
+                                        },
+                                        {
+                                            "file": "node_modules/jest-jasmine2/build/queueRunner.js",
+                                            "line": 75,
+                                            "code": {
+                                                "72": "  };",
+                                                "73": "",
+                                                "74": "  const result = options.queueableFns.reduce(",
+                                                "75": "    (promise, fn) => promise.then(() => mapper(fn)),",
+                                                "76": "    Promise.resolve()",
+                                                "77": "  );",
+                                                "78": "  return {"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "type": "feedback"
+                            },
+                            "stats": {
+                                "duration": 9,
+                                "last": "2020-12-02T07:26:37.635Z",
+                                "first": "2020-12-02T06:57:47.262Z"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

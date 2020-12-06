@@ -109,10 +109,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      * @param result The test result with which to instantiate a new test.
      * @param force Whether to bypass looking for the test in the nugget's current children.
      */
-    protected makeTest (
-        result: ITestResult,
-        force: boolean = false
-    ): ITest {
+    protected makeTest (result: ITestResult, force: boolean = false): ITest {
         let test: ITest | undefined | boolean = force ? false : this.findTest(result.id)
         if (!test) {
             test = this.newTest(result)
@@ -127,7 +124,7 @@ export abstract class Nugget extends ProjectEventEmitter {
     /**
      * Trigger an update of this nugget's selected count.
      */
-    protected async updateSelectedCounts (nugget: Nugget, toggle: boolean): Promise<void> {
+    protected async updateSelectedCounts (): Promise<void> {
         const total = this.tests.length
         const selectedChildren = this.tests.filter(test => test.selected).length
         const partial = selectedChildren > 0 && total > 0 && total > selectedChildren

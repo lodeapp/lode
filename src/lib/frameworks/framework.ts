@@ -153,7 +153,6 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     protected killed: boolean = false
     protected queue: { [index: string]: Function } = {}
 
-    protected parsed: boolean = false
     protected ready: boolean = false
     protected suites: Array<ISuite> = []
     protected selective: boolean = false
@@ -958,10 +957,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param result An object representing a suite's test results.
      * @param rebuild Whether to rebuild the tests inside the suite, regardless of them being built already.
      */
-    protected async makeSuite (
-        result: ISuiteResult,
-        rebuild: boolean = false
-    ): Promise<ISuite> {
+    protected async makeSuite (result: ISuiteResult, rebuild: boolean = false): Promise<ISuite> {
         return new Promise(async (resolve, reject) => {
             let suite: ISuite | undefined = this.findSuite(result.file)
 

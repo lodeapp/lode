@@ -89,7 +89,7 @@ export class Suite extends Nugget implements ISuite {
             tests: this.bloomed
                 ? this.tests.map((test: ITest) => test.persist(status))
                 : this.getTestResults().map((test: ITestResult) => this.defaults(test, status))
-        }, ['status', 'hasChildren', 'selected', 'partial', 'relative'])
+        }, ['hasChildren', 'selected', 'partial', 'relative'])
     }
 
     /**
@@ -269,7 +269,7 @@ export class Suite extends Nugget implements ISuite {
      */
     public getMeta (key?: string, fallback?: any): any {
         if (!key) {
-            return this.result.meta!
+            return this.result.meta || {}
         }
 
         return !this.result.meta ? fallback : get(this.result.meta!, key, fallback)

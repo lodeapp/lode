@@ -85,4 +85,18 @@ describe('lib/frameworks/status', () => {
             'refreshing'
         ])).toBe('refreshing')
     })
+
+    it('can determine error status from missing components', () => {
+        expect(parseFrameworkStatus([
+            'empty',
+            'idle',
+            'error',
+            'failed',
+            'warning',
+            'incomplete',
+            'skipped',
+            'passed',
+            'missing'
+        ])).toBe('error')
+    })
 })
