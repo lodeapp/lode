@@ -25,11 +25,13 @@ jobs:
       run: yarn run clean && yarn run build
     - name: Publish
       working-directory: docs/dist
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
         git init
         git add -A
         git commit -m 'Deploy Lode website'
-        git remote -v
-        # git push -f git@github.com:lodeapp/lode.git master:gh-pages
+        git remote set-url --push origin https://github-actions:$GITHUB_TOKEN@github.com/lodeapp/lode
+        git push -f origin master:gh-pages
