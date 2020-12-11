@@ -8,7 +8,7 @@ on:
 jobs:
   publish:
     name: Publish website
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v1
@@ -19,6 +19,6 @@ jobs:
     - name: Go to docs directory
       run: cd docs
     - name: Install dependencies
-      run: yarn
+      run: yarn install
     - name: Build and publish
       run: ./deploy.sh
