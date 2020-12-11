@@ -21,5 +21,14 @@ jobs:
         node-version: '12.x'
     - name: Install dependencies
       run: yarn install
-    - name: Build and publish
-      run: ls -la && ./deploy.sh
+    - name: Build
+      run: yarn run clean && yarn run build
+    - name: Publish
+      working-directory: docs/dist
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git init
+        git add -A
+        git commit -m 'Deploy Lode website'
+        git push -f git@github.com:lodeapp/lode.git master:gh-pages
