@@ -56,8 +56,8 @@ releases.forEach(release => {
     feed.item({
         title: release.version,
         description: releaseNotesHtml(release.notes),
-        url: `https://lode.run/release-notes/#${release.version}`,
-        guid: `https://lode.run/release-notes/#${release.version}`,
+        url: `https://lode.run/release-notes/#v${release.version}`,
+        guid: `https://lode.run/release-notes/#v${release.version}`,
         author: 'Tomas Buteler',
         date: new Date(release.date).toUTCString()
     })

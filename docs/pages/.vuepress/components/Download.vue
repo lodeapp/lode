@@ -3,11 +3,10 @@
         <template v-if="os === 'linux'">
             <a href="#" class="btn btn-large btn-primary f3 my-3" @click.stop.prevent="notify">Notify me on Linux release</a>
             <a class="github btn btn-large f3 my-3 mx-3" href="https://github.com/lodeapp/lode">
-                <Icon symbol="mark-github" height="32" width="32" />
-                GitHub
+                <GitHub />
             </a>
             <small class="version">
-                <span>Latest version: <a :href="`release-notes/#${version('mac')}`">{{ version('mac') }}</a></span><Badge v-if="isBeta('mac')" text="Beta" />
+                <span>Latest version: <a :href="`release-notes/#v${version('mac')}`">{{ version('mac') }}</a></span><Badge v-if="isBeta('mac')" text="Beta" />
                 <span>&mdash; Download for <a :href="path('mac')" @click="download('mac')">macOS</a>. Windows and Linux coming&nbsp;soon.</span>
             </small>
             <small class="d-block">By downloading, you agree to the <RouterLink to="/terms/">Terms&nbsp;&&nbsp;Conditions</RouterLink>.</small>
@@ -15,11 +14,10 @@
         <template v-else-if="os === 'win'">
             <a href="#" class="btn btn-large btn-primary f3 my-3" @click.stop.prevent="notify">Notify me on Windows release</a>
             <a class="github btn btn-large f3 my-3 mx-3" href="https://github.com/lodeapp/lode">
-                <Icon symbol="mark-github" height="32" width="32" />
-                GitHub
+                <GitHub />
             </a>
             <small class="version">
-                <span>Latest version: <a :href="`/release-notes/#${version('mac')}`">{{ version('mac') }}</a></span><Badge v-if="isBeta('mac')" text="Beta" />
+                <span>Latest version: <a :href="`/release-notes/#v${version('mac')}`">{{ version('mac') }}</a></span><Badge v-if="isBeta('mac')" text="Beta" />
                 <span>&mdash; Download for <a :href="path('mac')" @click="download('mac')">macOS</a>. Windows and Linux coming&nbsp;soon.</span>
             </small>
             <small class="d-block">By downloading, you agree to the <RouterLink to="/terms/">Terms&nbsp;&&nbsp;Conditions</RouterLink>.</small>
@@ -27,11 +25,10 @@
         <template v-else>
             <a class="btn btn-large btn-primary f3 my-3" :href="path('mac')" @click="download('mac')">Download for macOS</a>
             <a class="github btn btn-large f3 my-3 mx-3" href="https://github.com/lodeapp/lode">
-                <Icon symbol="mark-github" height="32" width="32" />
-                GitHub
+                <GitHub />
             </a>
             <small class="version">
-                <span>Latest version: <RouterLink :to="`release-notes/#${version('mac')}`">{{ version('mac') }}</RouterLink></span><Badge v-if="isBeta('mac')" text="Beta" />
+                <span>Latest version: <RouterLink :to="`release-notes/#v${version('mac')}`">{{ version('mac') }}</RouterLink></span><Badge v-if="isBeta('mac')" text="Beta" />
                 <span>&mdash; Windows and Linux coming&nbsp;soon. <a href="#" @click.stop.prevent="notify">Get notified</a>.</span>
             </small>
             <small class="d-block">By downloading, you agree to the <RouterLink to="/terms/">Terms&nbsp;&&nbsp;Conditions</RouterLink>.</small>

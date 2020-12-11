@@ -24,8 +24,11 @@
 
     ul,
     ol {
-        padding-left: 30px;
-        margin-bottom: 20px;
+
+        &:not(.list-style-none) {
+            padding-left: 30px;
+            margin-bottom: 20px;
+        }
     }
 
     table {

@@ -13,7 +13,7 @@ title: A universal GUI for unit testing
     <p class="col-md-8 mx-auto mb-4 f2-light">Supports <strong>PHPUnit</strong> and <strong>Jest</strong>, with more frameworks coming&nbsp;soon.</p>
     <Download />
     <div class="d-block width-fit mx-auto mb-8 mt-6">
-        <img :src="$withBase('macos-light-full.png')" class="full-screenshot">
+        <img :src="$withBase('/macos-light-full.png')" class="full-screenshot">
     </div>
 </div>
 
@@ -32,12 +32,6 @@ title: A universal GUI for unit testing
     title="See results in real-time"
     description="Syntax-highlighted diffs and traces available as soon as a test fails &mdash; no more waiting for the full run to see what went wrong, or scanning through traces in the CLI. Every test result has its own pane and each trace frame is actionable, so you can copy its contents or open the affected files with just a few clicks."
     class="feature--right"
-/>
-
-<Feature
-    slug="light-feature-3"
-    title="Dynamic sorting"
-    description="Sort your test files by name, last run or last updated dates, or even by duration &mdash; before, after or even during a run. Understand which tests are making your suites run slowly so you can prioritize the ones to take action on."
 />
 
 <Mailchimp />

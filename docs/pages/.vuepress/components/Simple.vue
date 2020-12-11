@@ -1,5 +1,5 @@
 <template>
-    <div class="theme-container container simple">
+    <div class="theme-container container simple clearfix">
         <header>
             <div class="container-new py-5 px-3 text-center">
                 <RouterLink to="/" class="logo">
