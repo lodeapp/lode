@@ -11,5 +11,6 @@ jobs:
     runs-on: macos-latest
 
     steps:
+    - uses: actions/checkout@v1
     - name: Build and publish
       run: cd docs && ./deploy.sh
