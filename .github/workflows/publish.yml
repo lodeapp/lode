@@ -31,4 +31,5 @@ jobs:
         git init
         git add -A
         git commit -m 'Deploy Lode website'
-        git push -f git@github.com:lodeapp/lode.git master:gh-pages
+        git remote -v
+        # git push -f git@github.com:lodeapp/lode.git master:gh-pages
