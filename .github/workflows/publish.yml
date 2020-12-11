@@ -9,8 +9,9 @@ jobs:
   publish:
     name: Publish website
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./docs
+    defaults:
+      run:
+        working-directory: docs
 
     steps:
     - uses: actions/checkout@v1
