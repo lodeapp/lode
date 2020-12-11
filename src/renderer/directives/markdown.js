@@ -29,9 +29,6 @@ export default function (Vue) {
             el.markdown = new MarkdownDirective(Vue, el, binding)
             el.innerHTML = el.markdown.html(el, binding)
         },
-        updated (el, binding, vnode) {
-            el.innerHTML = el.markdown.html(el, binding)
-        },
         componentUpdated (el, binding, vnode) {
             el.innerHTML = el.markdown.html(el, binding)
         }

@@ -6,10 +6,7 @@
                     <Icon symbol="issue-reopened" />
                     <span>Previous Error</span>
                 </div>
-                <Trace
-                    :context="context"
-                    :trace="item"
-                />
+                <Trace :trace="item" />
             </div>
         </template>
         <template v-else>
@@ -18,13 +15,13 @@
                     v-for="(item, index) in trace"
                     :key="index"
                     :show="!index"
-                    :copy="$code.asString(item.code)"
+                    :copy="relativePath(item.file)"
                     :class="{ 'has-context-menu': hasContextMenu(index) }"
-                    @contextmenu.native.stop.prevent="onContextMenu(item, index, $event)"
+                    @contextmenu.native.stop.prevent="onContextMenu(item.file, index)"
                 >
-                    <template v-slot:header>
+                    <template #header>
                         <template v-if="typeof item === 'object'">
-                            <Filename :path="toRelative(item.file)" :truncate="true" @dblclick.native.stop />
+                            <Filename :key="relativePath(item.file)" :truncate="true" />
                             <span v-if="item.function" class="Label Label--outline Label--normal"><code>{{ item.function }}</code></span>
                             <span v-if="item.line" class="Label Label--outline Label--idle">{{ 'Line :0' | set(item.line) }}</span>
                         </template>
@@ -37,6 +34,7 @@
                             :code="item.code"
                             :line="item.line"
                             :language="item.lang"
+                            :copy="$code.asString(item.code)"
                         />
                     </template>
                 </Collapsible>

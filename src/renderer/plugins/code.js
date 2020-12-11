@@ -1,4 +1,4 @@
-import highlight from 'highlight.js/lib/highlight'
+import highlight from 'highlight.js/lib/core'
 import diff from 'highlight.js/lib/languages/diff'
 import php from 'highlight.js/lib/languages/php'
 import javascript from 'highlight.js/lib/languages/javascript'

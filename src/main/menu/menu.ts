@@ -1,13 +1,20 @@
-import { remote } from 'electron'
+import { ApplicationWindow } from '@main/application-window'
+import { File } from '@main/file'
+import { Menu as Base } from 'electron'
 
 export class Menu {
 
+    protected window: ApplicationWindow
     protected built: boolean = false
     protected menu: Electron.Menu | null = null
     protected options: object = {}
     protected template: Array<Electron.MenuItemConstructorOptions> = []
     protected beforeCallbacks: Array<Function> = []
     protected afterCallbacks: Array<Function> = []
+
+    constructor (webContents: Electron.WebContents) {
+        this.window = ApplicationWindow.getFromWebContents(webContents)!
+    }
 
     add (item: Electron.MenuItemConstructorOptions): this {
         this.template.push(item)
@@ -46,9 +53,9 @@ export class Menu {
         return this
     }
 
-    attachTo (element: Element | undefined): this {
-        if (element) {
-            const { x, y, height } = <DOMRect>element.getBoundingClientRect()
+    attachTo (rect: DOMRect | undefined): this {
+        if (rect) {
+            const { x, y, height } = rect
             this.options = {
                 ...this.options,
                 ...{
@@ -61,7 +68,7 @@ export class Menu {
     }
 
     build (): this {
-        this.menu = remote.Menu.buildFromTemplate(this.template)
+        this.menu = Base.buildFromTemplate(this.template)
 
         if (this.beforeCallbacks.length) {
             this.beforeCallbacks.forEach(callback => {
@@ -91,9 +98,29 @@ export class Menu {
 
         this.menu!.popup({
             ...this.options,
-            ...{ window: remote.getCurrentWindow() },
+            ...{ window: this.window.getChild() },
             ...(options || {})
         })
         return this
+    }
+
+    public getTemplate (): Array<Electron.MenuItemConstructorOptions> {
+        return this.template
+    }
+
+    public emit (name: MenuEvent, properties?: any) {
+        this.window.sendMenuEvent({ name, properties })
+    }
+
+    public async openFile (path: string): Promise<void> {
+        try {
+            await File.open(path)
+        } catch (error) {
+            log.error(`Error while trying to open file in path: '${path}'`, error)
+            this.window.send('error', [
+                'Unable to open file in an external program. Please check you have a program associated with this file extension.',
+                'The following path was attempted: `' + path + '`',
+            ])
+        }
     }
 }

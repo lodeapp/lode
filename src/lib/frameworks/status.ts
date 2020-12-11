@@ -3,18 +3,61 @@ import { uniq } from 'lodash'
 /**
  * Possible statuses for tests.
  */
-export type Status = 'queued' | 'running' | 'passed' | 'failed' | 'incomplete' | 'skipped' | 'warning' | 'partial' | 'empty' | 'idle' | 'error'
+export type Status =
+    | 'queued'
+    | 'running'
+    | 'passed'
+    | 'failed'
+    | 'incomplete'
+    | 'skipped'
+    | 'warning'
+    | 'partial'
+    | 'empty'
+    | 'idle'
+    | 'error'
 
 /**
  * Possible statuses for frameworks.
  */
-export type FrameworkStatus = Status | 'refreshing' | 'loading' | 'missing'
+export type FrameworkStatus =
+    | Status
+    | 'refreshing'
+    | 'loading'
+    | 'missing'
 
 /**
  * A ledger of statuses.
  */
 export type StatusLedger = {
     [key in Status]: number
+}
+
+/**
+ * A map of ids and their statuses.
+ */
+export type StatusMap = {
+    [key: string]: Status
+}
+
+/**
+ * Labels for each status
+ */
+export const labels = {
+    empty: 'Empty',
+    error: 'Error',
+    failed: 'Failed',
+    idle: 'Idle',
+    incomplete: 'Incomplete',
+    loading: 'Loading',
+    missing: 'Missing',
+    partial: 'Partial',
+    passed: 'Passed',
+    queued: 'Queued',
+    refreshing: 'Refreshing',
+    running: 'Running',
+    skipped: 'Skipped',
+    stopped: 'Stopped',
+    warning: 'Warning'
 }
 
 /**
@@ -44,7 +87,7 @@ export function parseStatus (components: Array<Status>): Status {
     // final status as running, assuming this is transient because the status
     // will update again until queued components are run or process is stopped,
     // in which case we'll manually change from running to something else.
-    if (components.includes('queued')) {
+    if (components.includes('queued') || components.includes('running')) {
         return 'running'
     }
 
@@ -60,7 +103,7 @@ export function parseStatus (components: Array<Status>): Status {
         return 'warning'
     }
 
-    if (components.includes('incomplete')) {
+    if (components.includes('incomplete') && !components.includes('idle')) {
         return 'incomplete'
     }
 
@@ -71,7 +114,7 @@ export function parseStatus (components: Array<Status>): Status {
     // activated by the user itself rather than activated and skipped by the
     // framework itself. Not 100% sure this is the right way to go, so we can
     // revisit this in the future with more experience and feedback.
-    if (components.includes('skipped')) {
+    if (components.includes('skipped') && !components.includes('idle')) {
         return 'incomplete'
     }
 
@@ -99,12 +142,12 @@ export function parseFrameworkStatus (components: Array<FrameworkStatus>): Frame
         return 'loading'
     }
 
-    if (components.includes('running')) {
-        return 'running'
-    }
-
     if (components.includes('refreshing')) {
         return 'refreshing'
+    }
+
+    if (components.includes('missing')) {
+        return 'error'
     }
 
     return parseStatus(components as Array<Status>)

@@ -1,11 +1,10 @@
-import { ipcRenderer } from 'electron'
 import { LogLevel } from './levels'
 import { formatLogMessage } from './format'
 
 const g = global as any
 
 function log(level: LogLevel, message: string, error?: Error) {
-    ipcRenderer.send('log', level, '[renderer]: ' + formatLogMessage(message, error))
+    Lode.ipc.send('log', level, '[renderer]: ' + formatLogMessage(message, error))
 }
 
 g.log = {

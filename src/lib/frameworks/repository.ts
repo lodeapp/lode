@@ -1,10 +1,12 @@
+import * as Fs from 'fs'
 import * as Path from 'path'
 import { Glob } from 'glob'
-import { pathExistsSync } from 'fs-extra'
+import { dialog } from 'electron'
 import { v4 as uuid } from 'uuid'
-import { findIndex } from 'lodash'
-import { EventEmitter } from 'events'
+import { findIndex, omit } from 'lodash'
+import { ApplicationWindow } from '@main/application-window'
 import { Frameworks } from '@lib/frameworks'
+import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
 import { ProgressLedger } from '@lib/frameworks/progress'
 import { FrameworkFactory } from '@lib/frameworks/factory'
@@ -19,6 +21,7 @@ export type RepositoryOptions = {
     path: string
     expanded?: boolean
     frameworks?: Array<FrameworkOptions>
+    status?: FrameworkStatus
 }
 
 /**
@@ -30,7 +33,7 @@ export type ParsedRepository = {
     files: Array<string>
 }
 
-export interface IRepository extends EventEmitter {
+export interface IRepository extends ProjectEventEmitter {
     frameworks: Array<IFramework>
     status: FrameworkStatus
     selected: boolean
@@ -40,26 +43,32 @@ export interface IRepository extends EventEmitter {
     getDisplayName (): string
     start (): void
     refresh (): void
-    stop (): Promise<void>
+    stop (): Promise<any>
+    reset (): Promise<any>
     save (): void
     scan (): Promise<Array<FrameworkOptions>>
-    toggle (): void
+    expand (): void
+    collapse (): void
     isRunning (): boolean
-    isRrefreshing (): boolean
+    isRefreshing (): boolean
     isBusy (): boolean
+    empty (): boolean
+    count (): number
     isExpanded (): boolean
+    render (): RepositoryOptions
     persist (): RepositoryOptions
     addFramework (options: FrameworkOptions): Promise<IFramework>
     removeFramework (id: string): void
     getFrameworkById (id: string): IFramework | undefined
     getPath (): string
-    updatePath (path: string): void
-    exists (): boolean
+    exists (): Promise<boolean>
+    locate (window: Electron.BrowserWindow): Promise<void>
     getProgressLedger (): ProgressLedger
     resetProgressLedger (): void
+    emitFrameworksToRenderer (): void
 }
 
-export class Repository extends EventEmitter implements IRepository {
+export class Repository extends ProjectEventEmitter implements IRepository {
     public frameworks: Array<IFramework> = []
     public status: FrameworkStatus = 'loading'
     public selected: boolean = false
@@ -78,13 +87,14 @@ export class Repository extends EventEmitter implements IRepository {
         total: 0
     }
 
-    constructor (options: RepositoryOptions) {
-        super()
+    constructor (window: ApplicationWindow, options: RepositoryOptions) {
+        super(window)
         this.id = options.id || uuid()
         this.path = options.path
         this.name = options.name || Path.basename(this.path) || 'untitled'
         this.expanded = typeof options.expanded === 'undefined' ? true : options.expanded
         this.initialFrameworkCount = (options.frameworks || []).length
+        this.exists()
 
         // If options include frameworks already (i.e. persisted state), add them.
         this.loadFrameworks(options.frameworks || [])
@@ -111,14 +121,22 @@ export class Repository extends EventEmitter implements IRepository {
     /**
      * Stop any test framework in this repository that might be running.
      */
-    public stop (): Promise<void> {
-        return new Promise((resolve, reject) => {
-            Promise.all(this.frameworks.map((framework: IFramework) => {
-                return framework.stop()
-            })).then(() => {
+    public stop (): Promise<any> {
+        return Promise.all(this.frameworks.map((framework: IFramework): Promise<void> => {
+            return new Promise(async (resolve, reject) => {
+                await framework.stop()
                 resolve()
             })
-        })
+        }))
+    }
+
+    /**
+     * Reset this repository's state.
+     */
+    public async reset (): Promise<any> {
+        return Promise.all(this.frameworks.map((framework: IFramework) => {
+            return framework.reset()
+        }))
     }
 
     /**
@@ -131,8 +149,8 @@ export class Repository extends EventEmitter implements IRepository {
     /**
      * Whether this repository is refreshing.
      */
-    public isRrefreshing (): boolean {
-        return this.frameworks.some((framework: IFramework) => framework.isRrefreshing())
+    public isRefreshing (): boolean {
+        return this.frameworks.some((framework: IFramework) => framework.isRefreshing())
     }
 
     /**
@@ -143,6 +161,20 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
+     * How many frameworks the repository currently has.
+     */
+    public count (): number {
+        return this.frameworks.length
+    }
+
+    /**
+     * Whether this repository has any frameworks.
+     */
+    public empty (): boolean {
+        return this.count() === 0
+    }
+
+    /**
      * Whether this repository is expanded.
      */
     public isExpanded (): boolean {
@@ -150,16 +182,26 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
-     * Prepares the repository for persistence.
+     * Prepares the repository for sending out to renderer process.
      */
-    public persist (): RepositoryOptions {
+    public render (): RepositoryOptions {
         return {
             id: this.id,
             name: this.name,
             path: this.path,
-            expanded: this.expanded,
-            frameworks: this.frameworks.map(framework => framework.persist())
+            status: this.status,
+            expanded: this.expanded
         }
+    }
+
+    /**
+     * Prepares the repository for persistence.
+     */
+    public persist (): RepositoryOptions {
+        return omit({
+            ...this.render(),
+            frameworks: this.frameworks.map(framework => framework.persist())
+        }, 'status')
     }
 
     /**
@@ -172,25 +214,27 @@ export class Repository extends EventEmitter implements IRepository {
     /**
      * Scan the repository folder for testing frameworks.
      */
-    public scan (): Promise<Array<FrameworkOptions>> {
+    public async scan (): Promise<Array<FrameworkOptions>> {
         this.scanning = true
-        const scanned: Array<FrameworkOptions> = []
         const glob = new Glob('*', {
             cwd: this.path,
             dot: true,
             sync: true
         })
-        return new Promise((resolve, reject) => {
-            Frameworks.forEach(framework => {
-                const options = framework.spawnForDirectory({
+        return new Promise(async (resolve, reject) => {
+            const frameworks: Array<FrameworkOptions | false> = await Promise.all(Frameworks.map(framework => {
+                return framework.spawnForDirectory({
                     path: this.path,
                     files: glob.found
                 })
-                if (options) {
-                    scanned.push({ ...options, ...{ scanStatus: 'pending' }})
+            }))
+
+            resolve(frameworks.filter(options => !!options).map(options => {
+                return <FrameworkOptions>{
+                    ...options,
+                    scanStatus: 'pending'
                 }
-            })
-            resolve(scanned)
+            }))
             this.scanning = false
         })
     }
@@ -210,10 +254,18 @@ export class Repository extends EventEmitter implements IRepository {
     }
 
     /**
-     * Toggle this repository's visibility.
+     * Expand this repository.
      */
-    public toggle (): void {
-        this.expanded = !this.expanded
+    public expand (): void {
+        this.expanded = true
+        this.emit('change', this)
+    }
+
+    /**
+     * Collapse this repository.
+     */
+    public collapse (): void {
+        this.expanded = false
         this.emit('change', this)
     }
 
@@ -303,12 +355,21 @@ export class Repository extends EventEmitter implements IRepository {
      * @param to The status we're updating to.
      */
     protected updateStatus (to?: FrameworkStatus): void {
+        // If repository is marked as missing, don't update status until
+        // the `exists` method is called and filesystem is checked.
+        if (this.status === 'missing') {
+            return
+        }
+
         if (typeof to === 'undefined') {
             to = parseFrameworkStatus(this.frameworks.map(framework => framework.status))
         }
         const from = this.status
-        this.status = to
-        this.emit('status', to, from)
+        if (to !== from) {
+            this.status = to
+            this.emit('status', to, from)
+            this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
+        }
     }
 
     /**
@@ -336,7 +397,7 @@ export class Repository extends EventEmitter implements IRepository {
      */
     public async addFramework (options: FrameworkOptions): Promise<IFramework> {
         return new Promise((resolve, reject) => {
-            const framework: IFramework = FrameworkFactory.make({ ...options, ...{ repositoryPath: this.path }})
+            const framework: IFramework = FrameworkFactory.make(this.window, { ...options, ...{ repositoryPath: this.path }})
             framework
                 .on('ready', this.onFrameworkReady.bind(this))
                 .on('status', this.statusListener.bind(this))
@@ -347,7 +408,6 @@ export class Repository extends EventEmitter implements IRepository {
                 .on('progress', this.progressListener.bind(this))
             this.frameworks.push(framework)
             this.updateStatus()
-            this.emit('frameworkAdded', framework)
             resolve(framework)
         })
     }
@@ -360,11 +420,10 @@ export class Repository extends EventEmitter implements IRepository {
     public removeFramework (id: string): void {
         const index = findIndex(this.frameworks, framework => framework.getId() === id)
         if (index > -1) {
-            const frameworkId = this.frameworks[index].getId()
             this.frameworks[index].removeAllListeners()
             this.frameworks.splice(index, 1)
             this.updateStatus()
-            this.emit('frameworkRemoved', frameworkId)
+            this.save()
         }
     }
 
@@ -391,25 +450,43 @@ export class Repository extends EventEmitter implements IRepository {
     /**
      * Update the repository's path.
      */
-    public updatePath (path: string): void {
+    protected async updatePath (path: string): Promise<void> {
         this.path = path
-        this.frameworks.forEach((framework: IFramework) => {
-            framework.updateOptions({
+        await Promise.all(this.frameworks.map((framework: IFramework) => {
+            return framework.updateOptions({
                 ...framework.persist(),
                 ...{ repositoryPath: path }
             })
-        })
-        this.updateStatus()
+        }))
+        await this.exists()
         this.save()
     }
 
     /**
      * Whether the repository exists in the filesystem
      */
-    public exists (): boolean {
-        const exists = pathExistsSync(this.path)
-        this.updateStatus(exists ? undefined : 'missing')
-        return exists
+    public async exists (): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            Fs.access(this.path, Fs.constants.R_OK, error => {
+                this.status = 'loading'
+                this.updateStatus(error ? 'missing' : undefined)
+                resolve(!error)
+            })
+        })
+    }
+
+    /**
+     * Locate this repository, if missing.
+     */
+    public async locate (window: Electron.BrowserWindow): Promise<void> {
+        const { filePaths } = await dialog.showOpenDialog(window, {
+            properties: ['openDirectory', 'multiSelections']
+        })
+
+        if (!filePaths || !filePaths.length) {
+            return
+        }
+        this.updatePath(filePaths[0])
     }
 
     /**
@@ -417,6 +494,7 @@ export class Repository extends EventEmitter implements IRepository {
      */
     protected progress(): void {
         this.progressLedger.run++
+        this.emit('progress')
     }
 
     /**
@@ -437,5 +515,12 @@ export class Repository extends EventEmitter implements IRepository {
         this.frameworks.forEach((framework: IFramework) => {
             framework.resetProgressLedger()
         })
+    }
+
+    /**
+     * Send repository's frameworks to the renderer process.
+     */
+    public emitFrameworksToRenderer (): void {
+        this.emitToRenderer(`${this.id}:frameworks`, this.frameworks.map(framework => framework.render()))
     }
 }

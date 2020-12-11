@@ -1,0 +1,110 @@
+.legal,
+.release-notes,
+.documentation {
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        border: 0;
+        margin-bottom: .5em !important;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 40px;
+        font-weight: 300;
+    }
+
+    p {
+        margin: .5em 0 1em;
+    }
+
+    ul,
+    ol {
+
+        &:not(.list-style-none) {
+            padding-left: 30px;
+            margin-bottom: 20px;
+        }
+    }
+
+    table {
+        display: table;
+        margin-bottom: 20px;
+        overflow: visible;
+        width: 100%;
+
+        code {
+            background-color: $blue-100;
+            color: $blue-700;
+        }
+
+        tbody,
+        thead {
+            font-size: 13px;
+
+            tr {
+                background-color: lighten($brand-contrast-color, .5%);
+
+                th,
+                td {
+                    border-color: $blue-200;
+                    padding: 10px;
+                    text-align: left;
+
+                    &.center {
+                        text-align: center;
+                    }
+                }
+            }
+        }
+    }
+
+    .page-nav {
+        color: $brand-color;
+
+        .inner {
+            border-color: $blue-200;
+        }
+    }
+}
+
+.documentation {
+
+    h1 {
+        text-align: left;
+        font-weight: 400;
+    }
+
+    &,
+    .page {
+        background: lighten($brand-contrast-color, 2%);
+    }
+
+    .image-wrapper {
+        display: inline-block;
+
+        img {
+            border: 1px solid rgb(200, 200, 200);
+            border-radius: 5px;
+            box-shadow: 0 2px 15px transparentize($brand-contrast-text-color, .75);
+        }
+
+        &.resize-50 {
+
+            img {
+                width: 50%;
+            }
+        }
+
+        &.resize-75 {
+
+            img {
+                width: 75%;
+            }
+        }
+    }
+}

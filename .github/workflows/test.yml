@@ -8,8 +8,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [10.x]
-        os: [macOS-latest, windows-latest, ubuntu-latest]
+        node-version: [12.x]
+        os: [macOS-latest, ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v1
@@ -22,7 +22,7 @@ jobs:
     - name: Lint
       run: yarn lint
     - name: Test
-      run: yarn tests
+      run: yarn test
       env:
         CI: true
     - name: Package

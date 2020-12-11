@@ -9,7 +9,7 @@
             <tbody>
                 <tr>
                     <td class="heading">Status</td>
-                    <td>{{ displayStatus(status) }}</td>
+                    <td>{{ label }}</td>
                 </tr>
                 <tr v-if="typeof stats.first !== 'undefined'">
                     <td class="heading">First seen</td>
@@ -35,9 +35,10 @@
 </template>
 
 <script>
-import moment from 'moment'
+import format from 'date-fns/format'
+import formatDistanceToNow from 'date-fns/formatDistanceToNow'
 import _isEmpty from 'lodash/isEmpty'
-import { mapGetters } from 'vuex'
+import { labels } from '@lib/frameworks/status'
 import Duration from '@/components/Duration'
 
 export default {
@@ -57,6 +58,7 @@ export default {
     },
     data () {
         return {
+            label: labels[this.status],
             timeKey: this.$string.random(),
             timeInterval: null
         }
@@ -66,14 +68,11 @@ export default {
             return _isEmpty(this.stats)
         },
         lastRun () {
-            return moment(this.stats.last).format('MMMM Do YYYY, HH:mm:ss')
+            return format(new Date(this.stats.last), 'MMMM do yyyy, HH:mm:ss')
         },
         firstSeen () {
-            return moment(this.stats.first).format('MMMM Do YYYY, HH:mm:ss')
-        },
-        ...mapGetters({
-            displayStatus: 'status/display'
-        })
+            return format(new Date(this.stats.first), 'MMMM do yyyy, HH:mm:ss')
+        }
     },
     mounted () {
         this.timeInterval = window.setInterval(() => {
@@ -85,10 +84,10 @@ export default {
     },
     methods: {
         displayLastRun () {
-            return moment(this.stats.last).fromNow()
+            return formatDistanceToNow(new Date(this.stats.last), { addSuffix: true })
         },
         displayFirstSeen () {
-            return moment(this.stats.first).fromNow()
+            return formatDistanceToNow(new Date(this.stats.first), { addSuffix: true })
         }
     }
 }

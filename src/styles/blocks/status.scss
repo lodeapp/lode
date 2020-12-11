@@ -11,6 +11,7 @@
                 display: flex;
                 flex-grow: 1;
                 padding: 0 var(--spacing-half);
+                overflow-wrap: anywhere;
             }
 
             & > .status {
@@ -56,10 +57,10 @@
         height: 14px;
         position: relative;
         top: 0;
-        transition: background-color 100ms ease-in-out, border-color 100ms ease-in-out, box-shadow 100ms ease-in-out;
         width: 14px;
 
         i {
+            left: -1px;
             line-height: 0;
             position: relative;
             top: -2px;
@@ -139,7 +140,12 @@
 
         & > .indicator {
             background-color: theme-color('queued');
-            box-shadow: 0 0 0 4px theme-color('queued', 100);
+            box-shadow: 0 0 0 4px transparent;
+
+            .spinner {
+                border-color: theme-color('queued', 200);
+                border-left-color: theme-color('queued', 400);
+            }
         }
     }
 

@@ -5,7 +5,6 @@ import { unpacked, loc, posix } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, FrameworkDefaults, Framework } from '@lib/frameworks/framework'
 import { ISuite } from '@lib/frameworks/suite'
-import { FrameworkSort } from '@lib/frameworks/sort'
 
 export class Jest extends Framework {
 
@@ -25,17 +24,17 @@ export class Jest extends Framework {
      *
      * @param repository The parsed repository to test.
      */
-    public static spawnForDirectory (repository: ParsedRepository): FrameworkOptions | false {
+    public static async spawnForDirectory (repository: ParsedRepository): Promise<FrameworkOptions | false> {
         // Use repository's package.json to determine whether Jest exists or not.
         if (repository.files.includes('package.json')) {
-            const pkg = Fs.readJsonSync(Path.join(repository.path, 'package.json'), { throws: false }) || {}
+            const pkg = await Fs.readJson(Path.join(repository.path, 'package.json'), { throws: false }) || {}
             try {
                 // First, test for possible scripts, and adjust default command accordingly
                 const scripts = get(pkg, 'scripts')
                 for (let script in scripts) {
                     // Test for whole-word "jest". Should match "jest" shorthand
                     // and also "./node_modules/jest/bin/jest.js", etc.
-                    if (scripts[script].search(/(?<![^\/\\\s])jest(\.js)?(?!\.)/i) > -1) {
+                    if (scripts[script].search(/(?<![^\/\\\s])\bjest\b(\.js)?(?!\.)/i) > -1) {
                         return this.hydrate({
                             command: `yarn ${script}`
                         })
@@ -58,13 +57,13 @@ export class Jest extends Framework {
     /**
      * Prepare this framework for running.
      */
-    protected assemble (): void {
+    protected async assemble (): Promise<void> {
         super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
                 ? Path.resolve(__dirname, loc('../../reporters/jest'))
                 : unpacked(Path.join(__static, loc('./reporters/jest')))
-            Fs.copySync(reporter, this.injectPath())
+            await Fs.copy(reporter, this.injectPath())
         }
     }
 
@@ -137,16 +136,6 @@ export class Jest extends Framework {
         })
 
         return args.concat(this.runArgs())
-    }
-
-    /**
-     * Get all sort options supported by this framework.
-     */
-    public getSupportedSorts (): Array<FrameworkSort> {
-        const supported = super.getSupportedSorts()
-        return supported.filter((sort: FrameworkSort) => {
-            return sort !== 'framework'
-        })
     }
 
     /**

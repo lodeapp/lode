@@ -1,12 +1,11 @@
 <template>
     <span class="filename" :class="{ 'filename--truncate': truncate }">
         <template v-if="truncate">
-            <span v-html="'&lrm;'"></span>{{ dir }}<strong>{{ name }}</strong>{{ extension }}
+            <span v-html="'&lrm;'"></span>{{ dir }}<strong>{{ name }}</strong>
         </template>
         <template v-else>
             <span class="dir" v-html="dir"></span>
             <span class="name" v-html="name"></span>
-            <span class="extension" v-html="extension"></span>
         </template>
     </span>
 </template>
@@ -18,9 +17,9 @@ import _escape from 'lodash/escape'
 export default {
     name: 'Filename',
     props: {
-        path: {
+        root: {
             type: String,
-            required: true
+            default: ''
         },
         truncate: {
             type: Boolean,
@@ -30,8 +29,16 @@ export default {
     data () {
         return {
             dir: '',
-            name: '',
-            extension: ''
+            name: ''
+        }
+    },
+    computed: {
+        path () {
+            const path = this.$vnode.key
+            if (!this.root || !path.startsWith('/')) {
+                return path
+            }
+            return Path.relative(this.root, path)
         }
     },
     created () {
@@ -41,13 +48,7 @@ export default {
     },
     methods: {
         renderChunk (string) {
-            // Since markdown transformations don't work well with punctuation
-            // characters, we need to roll our own highlighting delimiters.
-            // Note that this doesn't work for truncated strings, but we
-            // should never highlight those, either.
             return _escape(string)
-                .replace(/\[==\]/g, '<mark>')
-                .replace(/\[\!==\]/g, '</mark>')
         }
     }
 }

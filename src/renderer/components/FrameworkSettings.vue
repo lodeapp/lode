@@ -43,9 +43,9 @@
                         <option value="">Select Test Framework</option>
                         <option
                             v-for="available in availableFrameworks"
-                            :key="available.getDefaults().type"
-                            :value="available.getDefaults().type"
-                        >{{ available.getDefaults().name }}</option>
+                            :key="available.type"
+                            :value="available.type"
+                        >{{ available.name }}</option>
                     </select>
                 </dd>
             </dl>
@@ -209,8 +209,7 @@
 
 <script>
 import * as Path from 'path'
-import { remote } from 'electron'
-import { getFrameworkByType, Frameworks } from '@lib/frameworks'
+import _find from 'lodash/find'
 
 export default {
     name: 'FrameworkSettings',
@@ -225,6 +224,10 @@ export default {
         },
         validator: {
             type: Object,
+            required: true
+        },
+        availableFrameworks: {
+            type: Array,
             required: true
         },
         dedicated: {
@@ -258,18 +261,14 @@ export default {
         removed () {
             return this.framework.scanStatus === 'removed'
         },
-        availableFrameworks () {
-            console.log({ Frameworks })
-            return Frameworks
-        },
         frameworkType () {
-            return getFrameworkByType(this.fields.type)
+            return _find(this.availableFrameworks, ['type', this.fields.type])
         },
         currentFrameworkName () {
-            return this.frameworkType ? this.frameworkType.getDefaults().name : ''
+            return this.frameworkType ? this.frameworkType.name : ''
         },
         currentFrameworkInstructions () {
-            return this.frameworkType ? this.frameworkType.instructions() : ''
+            return this.frameworkType ? this.frameworkType.instructions : ''
         }
     },
     watch: {
@@ -290,43 +289,31 @@ export default {
     },
     methods: {
         async chooseAutoloadPath () {
-            remote.dialog.showOpenDialog({
-                defaultPath: this.repository.getPath(),
-                properties: ['openFile']
-            }).then(({ filePaths }) => {
-                if (!filePaths || !filePaths.length) {
-                    return
-                }
+            const filePaths = await Lode.ipc.invoke('framework-autoload-path-menu', this.repository.path)
+            if (!filePaths || !filePaths.length) {
+                return
+            }
 
-                this.fields.proprietary.autoloadPath = Path.relative(this.repository.getPath(), filePaths[0])
-                this.validator.reset('autoloadPath')
-            })
+            this.fields.proprietary.autoloadPath = Path.relative(this.repository.path, filePaths[0])
+            this.validator.reset('autoloadPath')
         },
         async chooseTestsPath () {
-            remote.dialog.showOpenDialog({
-                defaultPath: this.repository.getPath(),
-                properties: ['createDirectory', 'openDirectory']
-            }).then(({ filePaths }) => {
-                if (!filePaths || !filePaths.length) {
-                    return
-                }
+            const filePaths = await Lode.ipc.invoke('framework-tests-path-menu', this.repository.path)
+            if (!filePaths || !filePaths.length) {
+                return
+            }
 
-                this.fields.path = Path.relative(this.repository.getPath(), filePaths[0])
-                this.validator.reset('path')
-            })
+            this.fields.path = Path.relative(this.repository.path, filePaths[0])
+            this.validator.reset('path')
         },
         async chooseIdentity () {
-            remote.dialog.showOpenDialog({
-                properties: ['openFile', 'showHiddenFiles'],
-                message: 'Choose a custom SSH key file to use with this connection.\nNote that ~/.ssh/id_rsa and identities defined in your SSH configuration are included by default.'
-            }).then(({ filePaths }) => {
-                if (!filePaths || !filePaths.length) {
-                    return
-                }
+            const filePaths = await Lode.ipc.invoke('framework-identity-menu')
+            if (!filePaths || !filePaths.length) {
+                return
+            }
 
-                this.fields.sshIdentity = filePaths[0]
-                this.validator.reset('sshIdentity')
-            })
+            this.fields.sshIdentity = filePaths[0]
+            this.validator.reset('sshIdentity')
         },
         remove () {
             this.$emit('remove')

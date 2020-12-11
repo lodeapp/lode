@@ -33,7 +33,7 @@ export default {
         }
     },
     getters: {
-        alerts: (state) => {
+        alerts: state => {
             return state.alerts
         }
     }

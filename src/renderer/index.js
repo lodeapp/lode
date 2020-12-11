@@ -3,20 +3,13 @@ import '@lib/tracker/renderer'
 
 import Vue from 'vue'
 import store from './store'
-import * as Path from 'path'
 import { isArray, isEmpty } from 'lodash'
-import { clipboard, remote, ipcRenderer, shell } from 'electron'
-import { state } from '@lib/state'
-import { Project } from '@lib/frameworks/project'
-import { Titlebar, Color } from 'custom-electron-titlebar'
 
 // Styles
 import '../styles/app.scss'
-import 'overlayscrollbars/css/OverlayScrollbars.css'
 
 // Plugins
 import Alerts from './plugins/alerts'
-import Filesystem from './plugins/filesystem'
 import Filters from './plugins/filters'
 import Code from './plugins/code'
 import Input from './plugins/input'
@@ -26,18 +19,16 @@ import Durations from './plugins/durations'
 
 // Directives
 import Markdown from './directives/markdown'
-import Focusable from './directives/focusable'
 
 // Global / recursive components
 import App from '@/components/App'
-import Test from '@/components/Test'
 import Icon from '@/components/Icon'
+import Nugget from '@/components/Nugget'
 
 Vue.config.productionTip = false
 
 // Register plugins
 Vue.use(new Alerts(store))
-Vue.use(new Filesystem())
 Vue.use(new Filters())
 Vue.use(new Code())
 Vue.use(new Input())
@@ -47,15 +38,10 @@ Vue.use(new Durations())
 
 // Register directives
 Vue.directive('markdown', Markdown(Vue))
-Vue.directive('focusable', Focusable)
 
 // Register global or recursive components
 Vue.component('Icon', Icon)
-Vue.component('Test', Test)
-
-if (process.env.NODE_ENV !== 'development') {
-    window.__static = Path.join(__dirname, '/static').replace(/\\/g, '\\\\')
-}
+Vue.component('Nugget', Nugget)
 
 export default new Vue({
     components: {
@@ -63,30 +49,25 @@ export default new Vue({
     },
     data () {
         return {
+            version: null,
             modals: [],
+            ready: false,
+            loading: true,
             project: null
         }
     },
-    computed: {
-        progress () {
-            return this.project ? this.project.getProgress() : -1
-        }
-    },
-    watch: {
-        progress (value) {
-            remote.getCurrentWindow().setProgressBar(this.project.getProgress())
-        }
-    },
     created () {
-        this.titlebar()
-        this.loadProject(remote.getCurrentWindow().getProjectOptions())
-
-        ipcRenderer
-            .on('did-finish-load', () => {
+        Lode.ipc
+            .on('did-finish-load', (event, properties) => {
                 document.body.classList.add(`platform-${process.platform}`)
-                if (remote.getCurrentWindow().isFocused()) {
+                if (properties.focus) {
                     document.body.classList.add('is-focused')
                 }
+                if (!properties.projectId) {
+                    this.loading = false
+                }
+                this.version = properties.version
+                this.ready = true
             })
             .on('blur', () => {
                 document.body.classList.remove('is-focused')
@@ -94,21 +75,23 @@ export default new Vue({
             .on('focus', () => {
                 document.body.classList.add('is-focused')
             })
-            .on('close', () => {
-                // Disassemble is not synchronous. We're giving a small timeout
-                // to increase the lieklihood it's finished before green-lighting
-                // the closing of the window, but this is not guaranteed.
-                this.project.stop().then(() => {
-                    setTimeout(() => {
-                        ipcRenderer.send('window-should-close')
-                    }, 10)
+            .on('project-ready', (event, project) => {
+                this.loadProject(project)
+            })
+            .on('settings-updated', (event, settings) => {
+                this.updateSettings(settings)
+            })
+            .on('clear', () => {
+                this.loadProject()
+            })
+            .on('error', (event, message, help) => {
+                this.$alert.show({
+                    type: 'error',
+                    message,
+                    help
                 })
             })
-            .on('project-switched', (event, projectOptions) => {
-                this.loadProject(projectOptions)
-                this.gc()
-            })
-            .on('menu-event', (event, { name, properties }) => {
+            .on('menu-event', async (event, { name, properties }) => {
                 switch (name) {
                     case 'show-about':
                         this.$modal.open('About')
@@ -116,65 +99,69 @@ export default new Vue({
                     case 'show-preferences':
                         this.$modal.open('Preferences')
                         break
-                    case 'new-project':
-                        this.addProject()
+                    case 'project-add':
+                        this.projectAdd()
                         break
-                    case 'switch-project':
-                        this.switchProject(properties)
+                    case 'project-switch':
+                        this.projectSwitch(properties)
+                        break
+                    case 'project-edit':
+                        this.projectEdit()
+                        break
+                    case 'project-remove':
+                        this.projectRemove()
+                        break
+                    case 'repository-add':
+                        this.repositoryAdd()
+                        break
+                    case 'repository-manage':
+                        this.repositoryManage(properties)
+                        break
+                    case 'repository-scan':
+                        this.repositoryScan(properties)
+                        break
+                    case 'repository-remove':
+                        this.repositoryRemove(properties)
+                        break
+                    case 'framework-remove':
+                        this.frameworkRemove(properties)
+                        break
+                    case 'filter':
+                        const filter = this.$el.querySelector('[type="search"]')
+                        filter.focus()
+                        if (properties) {
+                            filter.value = properties
+                            filter.dispatchEvent(new Event('input'))
+                        }
                         break
                     case 'select-all':
                         this.selectAll()
                         break
-                    case 'refresh-all':
-                        this.project.refresh()
-                        break
-                    case 'run-all':
-                        this.project.start()
-                        break
-                    case 'stop-all':
-                        this.project.stop()
-                        break
-                    case 'rename-project':
-                        this.editProject()
-                        break
-                    case 'remove-project':
-                        this.removeProject()
-                        break
-                    case 'add-repositories':
-                        this.addRepositories()
+                    case 'settings-reset':
+                        this.$modal.confirm('ResetSettings')
+                            .then(() => {
+                                this.handleProjectSwitch()
+                                Lode.ipc.send('settings-reset')
+                            })
+                            .catch(() => {})
                         break
                     case 'log-project':
-                        const projectState = state.project(this.project.getId())
-                        log.info({
-                            project: {
-                                object: this.project,
-                                string: JSON.stringify(this.project)
-                            },
-                            state: {
-                                json: projectState.get(),
-                                string: JSON.stringify(projectState.get())
-                            }
-                        })
+                        log.info(await Lode.ipc.invoke('log-project'))
                         break
                     case 'log-settings':
                         log.info({
-                            object: state.get(),
-                            json: JSON.stringify(state.get())
+                            ...await Lode.ipc.invoke('log-settings'),
+                            vuex: store.getters['settings/value']()
                         })
+                        break
+                    case 'log-renderer-state':
+                        log.info(store.state)
                         break
                     case 'crash':
                         this.crash()
                         break
                     case 'feedback':
                         window.location.href = 'mailto:support@lode.run'
-                        break
-                    case 'reset-settings':
-                        this.$modal.confirm('ResetSettings')
-                            .then(() => {
-                                ipcRenderer.sendSync('reset-settings')
-                                remote.getCurrentWindow().reload()
-                            })
-                            .catch(() => {})
                         break
                 }
             })
@@ -197,53 +184,64 @@ export default new Vue({
             }
             if (e.dataTransfer != null) {
                 const files = e.dataTransfer.files
-                this.addRepositories(Array.from(files).map(({ path }) => path))
+                this.repositoryAdd(Array.from(files).map(({ path }) => path))
             }
             e.preventDefault()
         }
     },
     methods: {
-        titlebar () {
-            if (__WIN32__) {
-                const titlebar = new Titlebar({
-                    backgroundColor: Color.fromHex('#ffffff'),
-                    icon: 'static/icons/gem.svg',
-                    overflow: 'hidden'
+        mapStatuses (project) {
+            const mapTests = (nugget, statuses) => {
+                (nugget.tests || []).forEach(test => {
+                    statuses[test.id] = null
+                    mapTests(test, statuses)
                 })
-                document.title = ''
-                titlebar.updateTitle()
-
-                ipcRenderer
-                    .on('menu-updated', () => {
-                        titlebar.updateMenu(remote.Menu.getApplicationMenu())
+            }
+            const statuses = {
+                [project.id]: null
+            }
+            project.repositories.forEach(repository => {
+                statuses[repository.id] = null
+                repository.frameworks.forEach(framework => {
+                    statuses[framework.id] = null
+                    framework.suites.forEach(suite => {
+                        statuses[suite.file] = null
+                        mapTests(suite, statuses)
                     })
+                })
+            })
+
+            return statuses
+        },
+        loadProject (project) {
+            this.$store.commit('filters/RESET')
+            this.project = !isEmpty(project) ? project : null
+            this.refreshApplicationMenu()
+            this.loading = false
+
+            // Register project listeners
+            if (this.project) {
+                Lode.ipc.on(`${this.project.id}:status:index`, this.projectStatusListener)
             }
         },
-        loadProject (projectOptions) {
-            projectOptions = JSON.parse(projectOptions)
-            this.project = isEmpty(projectOptions) ? null : new Project(projectOptions)
-            this.refreshApplicationMenu()
+        projectStatusListener (event, to, from) {
+            this.project.status = to
         },
-        addProject () {
+        async projectAdd () {
             this.$modal.confirm('EditProject', { add: true })
-                .then(options => {
-                    // Stop current project before adding a new one.
-                    (this.project ? this.project.stop() : Promise.resolve()).then(() => {
-                        store.commit('context/CLEAR')
-                        const project = new Project(options)
-                        ipcRenderer.once('project-switched', () => {
-                            this.addRepositories()
-                        })
-                        this.handleSwitchProject(project.getId())
+                .then(identifier => {
+                    Lode.ipc.once('project-ready', () => {
+                        this.repositoryAdd()
                     })
+                    this.handleProjectSwitch(identifier)
                 })
                 .catch(() => {})
         },
-        editProject () {
+        async projectEdit () {
             this.$modal.confirm('EditProject')
-                .then(options => {
-                    this.project.updateOptions(options)
-                    this.project.save()
+                .then(async options => {
+                    options = await Lode.ipc.invoke('project-update', options)
+                    this.project = options || null
 
                     // Since current project hasn't changed, just been updated,
                     // we need to forcibly emit the change to the main process,
@@ -252,26 +250,17 @@ export default new Vue({
                 })
                 .catch(() => {})
         },
-        removeProject () {
+        async projectRemove () {
             this.$modal.confirm('RemoveProject')
-                .then(() => {
-                    this.project.stop().then(() => {
-                        store.commit('context/CLEAR')
-                        const switchTo = state.removeProject(this.project.getId())
-                        // Switch information should be available only
-                        // if there are still projects to switch to.
-                        if (switchTo) {
-                            this.handleSwitchProject(switchTo)
-                        } else {
-                            this.loadProject(null)
-                        }
-                    })
+                .then(async () => {
+                    const switchTo = await Lode.ipc.invoke('project-remove', this.project.id)
+                    this.handleProjectSwitch({ id: switchTo })
                 })
                 .catch(() => {})
         },
-        switchProject (projectId) {
+        projectSwitch (projectId) {
             // Clicking on current project shouldn't have any effect.
-            if (projectId === this.project.getId()) {
+            if (projectId === this.project.id) {
                 // Windows will uncheck the project regardless of it being
                 // selected already, so refresh the menu to undo it.
                 if (__WIN32__) {
@@ -281,16 +270,15 @@ export default new Vue({
             }
 
             this.$modal.confirmIf(() => {
-                return this.project.status === 'idle' ? false : state.get('confirm.switchProject')
+                return ['idle', 'empty', 'loading'].includes(this.project.status)
+                    ? false
+                    : this.setting('confirm.switchProject')
             }, 'ConfirmSwitchProject')
                 .then(disableConfirm => {
                     if (disableConfirm) {
-                        state.set('confirm.switchProject', false)
+                        this.updateSetting('confirm.switchProject', false)
                     }
-                    this.project.stop().then(() => {
-                        store.commit('context/CLEAR')
-                        this.handleSwitchProject(projectId)
-                    })
+                    this.handleProjectSwitch({ id: projectId })
                 })
                 .catch(() => {
                     // Windows will check the project regardless of
@@ -300,69 +288,107 @@ export default new Vue({
                     }
                 })
         },
-        handleSwitchProject (projectId) {
-            ipcRenderer.send('switch-project', projectId)
+        handleProjectSwitch (identifier) {
+            // Before switching, remove project listeners
+            if (this.project) {
+                Lode.ipc.removeAllListeners(`${this.project.id}:status:index`)
+            }
+            this.loading = true
+            this.project = null
+            store.commit('context/CLEAR')
+            Lode.ipc.send('project-switch', identifier)
         },
-        addRepositories (directories) {
+        repositoryAdd (directories) {
             if (!isArray(directories)) {
                 directories = null
             }
             this.$modal.confirm('AddRepositories', { directories })
                 .then(({ repositories, autoScan }) => {
+                    this.project.repositories = repositories
                     if (autoScan) {
-                        this.scanRepositories(repositories.map(repository => repository.getId()), 0)
+                        this.scanRepositories(repositories, 0)
                     }
                 })
                 .catch(() => {})
         },
-        scanRepositories (repositoryIds, index) {
-            const id = repositoryIds[index]
-            const repository = this.project.getRepositoryById(id)
-            if (!repository) {
-                return
-            }
+        async scanEmptyRepositories () {
+            this.scanRepositories(
+                await Lode.ipc.invoke('project-empty-repositories'),
+                0
+            )
+        },
+        async scanRepositories (repositories, n) {
             // Scan repository and queue the following one the modal callback.
-            this.scanRepository(repository, () => {
-                this.scanRepositories(repositoryIds, (index + 1))
+            this.repositoryScan(repositories[n], () => {
+                if ((n + 1) >= repositories.length) {
+                    return
+                }
+                this.scanRepositories(repositories, (n + 1))
             })
         },
-        scanRepository (repository, callback = null) {
-            if (!repository.exists()) {
+        async repositoryScan (repository, callback = null) {
+            const exists = await this.repositoryExists(repository)
+            if (!exists) {
                 if (callback) {
                     callback()
                 }
                 return
             }
+
             this.$modal.open('ManageFrameworks', {
                 repository,
                 scan: true
             }, callback)
         },
-        refreshApplicationMenu () {
-            ipcRenderer.send('refresh-menu')
+        repositoryManage ({ repository, framework }) {
+            this.$modal.open('ManageFrameworks', {
+                repository,
+                scan: false,
+                framework
+            })
         },
-        setApplicationMenuOption (options = {}) {
-            ipcRenderer.send('set-menu-options', options)
+        repositoryRemove (repository) {
+            this.$modal.confirm('RemoveRepository', { repository })
+                .then(() => {
+                    this.onModelRemove(repository.id)
+                    Lode.ipc.send('repository-remove', repository.id)
+                })
+                .catch(() => {})
+        },
+        async repositoryLocate (repository) {
+            return await Lode.ipc.invoke('repository-locate', repository.id)
+        },
+        async repositoryExists (repository) {
+            return await Lode.ipc.invoke('repository-exists', repository.id)
+        },
+        async frameworkRemove (framework) {
+            this.$modal.confirm('RemoveFramework', { framework })
+                .then(() => {
+                    this.handleFrameworkRemove(framework.id)
+                })
+                .catch(() => {})
+        },
+        handleFrameworkRemove (frameworkId) {
+            this.onModelRemove(frameworkId)
+            Lode.ipc.send('framework-remove', frameworkId)
+        },
+        setting (key) {
+            return store.getters['settings/value'](key)
+        },
+        updateSetting (key, value) {
+            Lode.ipc.send('settings-update', key, value)
+        },
+        updateSettings (settings = {}) {
+            store.replaceState({
+                ...store.state,
+                settings
+            })
+        },
+        refreshApplicationMenu () {
+            Lode.ipc.send('menu-refresh')
         },
         openExternal (link) {
-            shell.openExternal(link)
-        },
-        async openFile (path) {
-            try {
-                await shell.openExternal(`file://${path}`)
-            } catch (_) {
-                this.$alert.show({
-                    message: 'Unable to open file in an external program. Please check you have a program associated with this file extension.',
-                    help: 'The following path was attempted: `' + path + '`',
-                    type: 'error'
-                })
-            }
-        },
-        revealFile (path) {
-            ipcRenderer.send('show-item-in-folder', path)
-        },
-        copyToClipboard (string) {
-            clipboard.writeText(string)
+            Lode.openExternal(link)
         },
         selectAll () {
             const event = new CustomEvent('select-all', {
@@ -371,22 +397,13 @@ export default new Vue({
             })
 
             if (document.activeElement.dispatchEvent(event)) {
-                remote.getCurrentWebContents().selectAll()
+                Lode.ipc.send('select-all')
             }
         },
         crash () {
             window.setImmediate(() => {
                 throw new Error('Boomtown!')
             })
-        },
-        gc () {
-            try {
-                if (global.gc) {
-                    global.gc()
-                }
-            } catch (error) {
-                // ...
-            }
         },
         onModelRemove (modelId) {
             store.dispatch('context/onRemove', modelId)

@@ -1,21 +1,30 @@
 <template>
     <div
-        class="header"
-        @mousedown="activate"
-        @contextmenu="openMenu"
+        class="sidebar-item sidebar-item--framework has-status"
+        :class="[
+            `status--${status}`,
+            isActive ? 'is-active' : ''
+        ]"
     >
-        <div class="title">
-            <Indicator :status="framework.status" />
-            <h4 class="heading">
-                <span class="name" :title="framework.getDisplayName()">
-                    {{ framework.getDisplayName() }}
-                </span>
-            </h4>
+        <div
+            class="header"
+            @mousedown="activate"
+            @contextmenu="onContextMenu"
+        >
+            <div class="title">
+                <Indicator :status="status" />
+                <h4 class="heading">
+                    <span class="name" :title="model.name">
+                        {{ model.name }}
+                    </span>
+                </h4>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Indicator from '@/components/Indicator'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 
@@ -28,15 +37,50 @@ export default {
         HasFrameworkMenu
     ],
     props: {
-        framework: {
+        model: {
             type: Object,
             required: true
         }
     },
+    data () {
+        return {
+            status: this.model.status || 'idle'
+        }
+    },
+    computed: {
+        isActive () {
+            return this.active === this.model.id
+        },
+        ...mapGetters({
+            active: 'context/active'
+        })
+    },
+    mounted () {
+        Lode.ipc
+            .on(`${this.model.id}:status:sidebar`, this.statusListener)
+            .on(`${this.model.id}:error`, this.onErrorEvent)
+    },
+    beforeDestroy () {
+        Lode.ipc
+            .removeAllListeners(`${this.model.id}:status:sidebar`)
+            .removeAllListeners(`${this.model.id}:error`)
+    },
     methods: {
+        statusListener (event, to, from) {
+            this.status = to
+        },
+        onErrorEvent (event, error, help) {
+            this.$alert.show({
+                type: 'error',
+                message: this.$string.set('The process for **:0** terminated unexpectedly.', this.model.name),
+                error,
+                help
+            })
+        },
         activate () {
-            this.framework.setActive(true)
-            this.$emit('activate', this.framework.getId())
+            if (!this.isActive) {
+                this.$emit('activate', this.model.id)
+            }
         }
     }
 }

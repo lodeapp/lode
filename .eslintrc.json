@@ -137,15 +137,15 @@
         "ecmaVersion": 2018
     },
     "globals": {
+        "__CRASH_URL__": false,
         "__DARWIN__": false,
         "__DEV__": false,
         "__dirname": false,
         "__LINUX__": false,
+        "__MIGRATE__": false,
         "__SILENT__": false,
         "__static": false,
         "__WIN32__": false,
-        "__CRASH_URL__": false,
-        "__MIGRATE__": false,
         "afterAll": false,
         "afterEach": false,
         "beforeAll": false,
@@ -156,10 +156,12 @@
         "global": false,
         "it": false,
         "jest": false,
+        "Lode": false,
         "log": false,
-        "track": false,
         "module": false,
         "process": false,
-        "require": false
+        "require": false,
+        "test": false,
+        "track": false
     }
 }

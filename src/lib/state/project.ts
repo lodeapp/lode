@@ -1,5 +1,4 @@
 import ElectronStore from 'electron-store'
-import { ipcRenderer } from 'electron'
 import { ProjectOptions } from '@lib/frameworks/project'
 
 export class Project {
@@ -12,7 +11,6 @@ export class Project {
             encryptionKey: process.env.NODE_ENV === 'production' ? 'v1' : undefined,
             name: 'project',
             defaults: {
-                busy: false,
                 options: {
                     id
                 }
@@ -39,19 +37,14 @@ export class Project {
     }
 
     public save (options: ProjectOptions): void {
-        options = {...this.store.get('options'), ...options}
-        this.store.set('options', options)
-        if (ipcRenderer) {
-            ipcRenderer.emit('project-saved', JSON.stringify(options))
-        }
+        this.store.set('options', {
+            ...this.store.get('options'),
+            ...options
+        })
     }
 
     public toJSON (): ProjectOptions {
         return this.store.get('options')
-    }
-
-    public isBusy (): boolean {
-        return this.store.get('busy', false)
     }
 }
 

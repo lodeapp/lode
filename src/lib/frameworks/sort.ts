@@ -8,24 +8,16 @@ type SortDirection = 'asc' | 'desc'
 /**
  * A list of possible framework sort options.
  */
-export type FrameworkSort = 'framework' | 'name' | 'updated' | 'run' | 'duration' | 'maxduration'
+export type FrameworkSort = 'framework' | 'name'
 
 export const sortOptions: { [key in FrameworkSort]: string } = {
     framework: 'Running order',
-    name: 'Name',
-    updated: 'Date last updated',
-    run: 'Date last run',
-    duration: 'Slowest',
-    maxduration: 'Slowest test presence'
+    name: 'Name'
 }
 
 export const sortDirections: { [key in FrameworkSort]: SortDirection } = {
     framework: 'asc',
-    name: 'asc',
-    updated: 'desc',
-    run: 'desc',
-    duration: 'desc',
-    maxduration: 'desc'
+    name: 'asc'
 }
 
 /**

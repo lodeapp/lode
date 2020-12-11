@@ -1,6 +1,6 @@
 import { app, dialog } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import { applicationMenu } from './menu'
+import { applicationMenu } from '@main/menu'
 
 export class Updater {
 
@@ -12,6 +12,9 @@ export class Updater {
         autoUpdater.autoDownload = false
         autoUpdater.logger = log
         autoUpdater.checkForUpdates()
+            .catch(error => {
+                log.error(error)
+            })
 
         autoUpdater.on('checking-for-update', () => {
             applicationMenu.setOptions({

@@ -1,13 +1,13 @@
 <template>
     <div class="progress-breakdown">
         <span
-            v-if="framework.isSelective() || isActive('selected')"
+            v-if="selected > 0 || isActive('selected')"
             class="Label Label--outline Label--selected"
             :class="[isActive('selected') ? 'is-active' : '']"
             @click="toggle('selected')"
         >
-            <span>{{ selected.length }}</span>
-            {{ 'selected|selected' | plural(selected.length) }}
+            <span>{{ selected }}</span>
+            {{ 'selected|selected' | plural(selected) }}
         </span>
         <template v-for="(count, status) in ledger">
             <span
@@ -26,13 +26,18 @@
 
 <script>
 import _cloneDeep from 'lodash/cloneDeep'
+import { mapGetters } from 'vuex'
 
 export default {
     name: 'Ledger',
     props: {
-        framework: {
-            type: Object,
+        id: {
+            type: String,
             required: true
+        },
+        selected: {
+            type: Number,
+            default: 0
         }
     },
     data () {
@@ -52,23 +57,24 @@ export default {
         }
     },
     computed: {
-        selected () {
-            return this.framework.getSelected().suites
-        },
         ledger () {
             // Modify ledger to consolidate running and queued states.
-            const ledger = _cloneDeep(this.framework.getLedger())
+            const ledger = _cloneDeep(this.base)
             ledger['queued'] += ledger['running']
             delete ledger['running']
             return ledger
         },
-        filters () {
-            return this.framework.getFilter('status') || []
-        }
+        statusFilters () {
+            return this.filters(this.id)['status'] || []
+        },
+        ...mapGetters({
+            base: 'ledger/ledger',
+            filters: 'filters/all'
+        })
     },
     methods: {
         isActive (status) {
-            return this.filters.indexOf(status) > -1
+            return this.statusFilters.indexOf(status) > -1
         },
         toggle (status) {
             if (this.isActive(status)) {
@@ -78,16 +84,24 @@ export default {
             this.activate(status)
         },
         activate (status) {
-            const statuses = _cloneDeep(this.filters)
-            this.framework.setFilter('status', statuses.concat([status]))
+            this.setFilter(_cloneDeep(this.statusFilters).concat([status]))
         },
         deactivate (status) {
-            const statuses = _cloneDeep(this.filters)
+            const statuses = _cloneDeep(this.statusFilters)
             const index = statuses.indexOf(status)
             if (index > -1) {
                 statuses.splice(index, 1)
-                this.framework.setFilter('status', statuses)
+                this.setFilter(statuses)
             }
+        },
+        setFilter (filter) {
+            Lode.ipc.send('framework-filter', this.id, 'status', filter)
+            this.$store.commit('filters/SET', {
+                id: this.id,
+                filters: {
+                    status: filter
+                }
+            })
         }
     }
 }

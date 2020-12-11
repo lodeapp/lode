@@ -3,36 +3,36 @@
         <div
             class="framework has-status"
             :class="[
-                `status--${framework.status}`,
-                selective ? 'selective' : ''
+                `status--${status}`,
+                selected > 0 ? 'selective' : ''
             ]"
         >
             <div class="header">
                 <div class="title">
-                    <Indicator :status="framework.status" />
+                    <Indicator :status="status" />
                     <h3 class="heading">
                         <span class="name">
-                            {{ framework.getDisplayName() }}
+                            {{ model.name }}
                         </span>
                     </h3>
                     <div class="actions">
-                        <button type="button" class="btn-link more-actions" tabindex="-1" @click.prevent="openMenu">
-                            <Icon symbol="kebab-vertical" />
+                        <button type="button" class="btn-link more-actions" tabindex="-1" @click.prevent="onContextMenu">
+                            <Icon symbol="three-bars" />
                         </button>
-                        <button class="btn btn-sm" @click="refresh" :disabled="running || refreshing" tabindex="-1">
+                        <button class="btn btn-sm" @click="refresh" :disabled="queued || running || refreshing" tabindex="-1">
                             <Icon symbol="sync" />
                         </button>
                         <button
                             class="btn btn-sm btn-primary"
-                            :disabled="running || refreshing || noResults"
+                            :disabled="queued || running || refreshing || noResults"
                             tabindex="-1"
                             @click="start"
                         >
-                            <template v-if="selective">
+                            <template v-if="selected > 0">
                                 Run selected
-                                <span class="Counter">{{ selected.suites.length }}</span>
+                                <span class="Counter">{{ selected }}</span>
                             </template>
-                            <template v-else-if="filtering && !noResults">
+                            <template v-else-if="isFiltering && !noResults">
                                 {{ 'Run match|Run matches' | plural(suites.length) }}
                                 <span class="Counter">{{ suites.length }}</span>
                             </template>
@@ -48,50 +48,64 @@
                     </div>
                 </div>
                 <div class="filters">
-                    <template v-if="!framework.empty()">
-                        <Ledger :framework="framework" />
-                    </template>
-                    <template v-else-if="queued">
-                        Queued...
-                    </template>
-                    <template v-else-if="refreshing">
-                        Refreshing...
-                    </template>
+                    <Ledger
+                        v-if="total"
+                        :id="model.id"
+                        :selected="selected"
+                        @total="updateTotal"
+                    />
                     <template v-else>
-                        No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
+                        <template v-if="queued">
+                            Queued...
+                        </template>
+                        <template v-if="refreshing">
+                            Refreshing...
+                        </template>
+                        <template v-if="!queued && !refreshing">
+                            No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
+                        </template>
                     </template>
                 </div>
-                <div v-if="framework.count()" class="filters search" :class="{ 'is-searching': keyword }">
+                <div v-if="total" class="filters search" :class="{ 'is-searching': keyword }">
                     <Icon symbol="search" />
                     <input
                         type="search"
                         class="form-control input-block input-sm"
                         placeholder="Filter items"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false"
                         v-model="keyword"
                     >
                 </div>
-                <div v-if="framework.count()" class="filters sort">
-                    <button type="button" @click.prevent="onSortClick">
+                <div v-if="total" class="filters sort">
+                    <span>
                         <template v-if="visible > 1">
                             {{ ':n item sorted by :0|:n items sorted by :0' | plural(visible) | set(displaySort) }}
-                            <Icon symbol="chevron-down" />
                         </template>
                         <template v-else>
                             {{ ':n item|:n items' | plural(visible) }}
                         </template>
-                    </button>
+                    </span>
                 </div>
             </div>
             <div class="children">
-                <Suite
+                <Nugget
                     v-for="suite in suites"
-                    :suite="suite"
+                    class="suite"
+                    :key="suite.relative"
+                    :model="suite"
                     :running="running"
-                    :key="suite.getId()"
+                    :selectable="true"
+                    @toggle="onChildToggle"
+                    @select="onChildSelect"
+                    @status="onChildStatus"
                     @activate="onChildActivation"
-                    @refresh="refresh"
-                    @filter="filterSuite"
-                />
+                    @context-menu="onChildContextMenu"
+                >
+                    <Filename :key="suite.relative" />
+                </Nugget>
                 <footer v-if="hidden" class="cutoff">
                     <div>
                         <div v-if="noResults">No results</div>
@@ -107,159 +121,186 @@
 
 <script>
 import _debounce from 'lodash/debounce'
-import { ipcRenderer } from 'electron'
-import { Menu } from '@main/menu'
+import _findIndex from 'lodash/findIndex'
+import _isEmpty from 'lodash/isEmpty'
+import { mapGetters } from 'vuex'
 import { sortDisplayName } from '@lib/frameworks/sort'
+import Filename from '@/components/Filename'
 import Indicator from '@/components/Indicator'
-import Suite from '@/components/Suite'
 import Ledger from '@/components/Ledger'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 
 export default {
     name: 'Framework',
     components: {
+        Filename,
         Indicator,
-        Ledger,
-        Suite
+        Ledger
     },
     mixins: [
         HasFrameworkMenu
     ],
     props: {
-        framework: {
+        model: {
             type: Object,
             required: true
         }
     },
+    data () {
+        return {
+            suites: [],
+            total: 0,
+            selected: 0,
+            status: this.model.status || 'idle',
+            keyword: this.$store.getters['filters/all'](this.model.id)['keyword'] || ''
+        }
+    },
     computed: {
-        suites () {
-            return this.framework.getSuites()
-        },
         running () {
-            return this.framework.status === 'running'
+            return this.status === 'running'
         },
         refreshing () {
-            return this.framework.status === 'refreshing'
+            return this.status === 'refreshing'
         },
         queued () {
-            return this.framework.status === 'queued'
+            return this.status === 'queued'
         },
-        selective () {
-            return this.framework.isSelective()
-        },
-        selected () {
-            return this.framework.getSelected()
-        },
-        filtering () {
-            return this.framework.hasFilters()
+        isFiltering () {
+            return !_isEmpty(this.filters(this.model.id))
         },
         visible () {
-            return this.framework.getSuites().length
+            return this.suites.length
         },
         hidden () {
-            return this.framework.count() - this.visible
+            return this.total - this.visible
         },
         noResults () {
-            return this.hidden === this.framework.count()
+            return this.hidden === this.total
         },
-        keyword: {
-            get () {
-                return this.framework.getFilter('keyword')
-            },
-            set: _debounce(function (value) {
-                this.framework.setFilter('keyword', value)
-            }, 150)
+        canToggleTests () {
+            return this.model.canToggleTests
         },
-        sort: {
-            get () {
-                return this.framework.getSort()
-            },
-            set (value) {
-                this.framework.setSort(value)
-            }
+        statusFilters () {
+            return this.filters(this.model.id)['status'] || []
+        },
+        sort () {
+            return this.model.sort
         },
         displaySort () {
             return sortDisplayName(this.sort)
-        }
+        },
+        ...mapGetters({
+            filters: 'filters/all'
+        })
     },
-    created () {
-        ipcRenderer.on('menu-event', this.onAppMenuEvent)
+    watch: {
+        keyword: _debounce(function (keyword) {
+            this.setKeywordFilter(keyword)
+        }, 300)
     },
-    mounted () {
-        this.$emit('mounted')
+    async mounted () {
+        Lode.ipc
+            .on(`${this.model.id}:ledger`, this.onLedgerEvent)
+            .on(`${this.model.id}:status:list`, this.statusListener)
+            .on(`${this.model.id}:refreshed`, this.onSuitesEvent)
+            .on(`${this.model.id}:selective`, this.onSelectiveEvent)
+
+        const { ledger, status } = await Lode.ipc.invoke('framework-get-ledger', this.model.id)
+        this.$store.commit('ledger/SET', ledger)
+        this.$store.commit('status/SET', status)
+
+        this.getSuites()
+        this.selected = this.model.selected
     },
     beforeDestroy () {
-        ipcRenderer.removeListener('menu-event', this.onAppMenuEvent)
+        Lode.ipc
+            .removeAllListeners(`${this.model.id}:ledger`)
+            .removeAllListeners(`${this.model.id}:status:list`)
+            .removeAllListeners(`${this.model.id}:refreshed`)
+            .removeAllListeners(`${this.model.id}:selective`)
     },
     methods: {
+        async onLedgerEvent (event, ledger, status) {
+            this.total = Object.values(ledger).reduce((a, b) => a + b, 0)
+            this.$store.commit('ledger/SET', ledger)
+            this.$store.commit('status/SET', status)
+        },
+        getSuites () {
+            Lode.ipc.send('framework-suites', this.model.id)
+        },
+        statusListener (event, to, from) {
+            this.status = to
+        },
+        onSuitesEvent (event, suites, total) {
+            this.suites = suites
+            this.total = total
+            this.$emit('mounted')
+            // If we're not filtering, update the suites' mapping key.
+            if (!this.statusFilters.length) {
+                this.$store.commit('context/SUITES', suites)
+            }
+        },
+        onSelectiveEvent (event, selected) {
+            this.selected = selected
+        },
         refresh () {
-            this.framework.refresh()
+            // Optimistically set status to "queued".
+            this.status = 'queued'
+            Lode.ipc.send('framework-refresh', this.model.id)
         },
         start () {
-            this.framework.start()
+            // Optimistically set status to "queued".
+            this.status = 'queued'
+            Lode.ipc.send('framework-start', this.model.id)
         },
-        async stop () {
-            await this.framework.stop()
+        stop () {
+            Lode.ipc.send('framework-stop', this.model.id)
+        },
+        updateTotal (total) {
+            this.total = total
+        },
+        onChildToggle (context, toggle) {
+            Lode.ipc.send('framework-toggle-child', this.model.id, context, toggle)
+        },
+        onChildSelect (context, selected) {
+            if (selected && !this.selected) {
+                // Optimistically mark the framework as running selectively.
+                // This allows us to show checkboxes on suites
+                this.selected++
+            }
+            Lode.ipc.send('framework-select', this.model.id, context, selected)
         },
         onChildActivation (context) {
             this.$emit('activate', context)
         },
-        onAppMenuEvent (event, { name, properties }) {
-            if (!this.framework) {
-                return
+        onChildStatus (to, from, file, selected) {
+            const index = _findIndex(this.suites, ['file', file])
+            if (index > -1 && this.statusFilters.length) {
+                if (
+                    this.statusFilters.indexOf(to) === -1 &&
+                    ['queued', 'running'].indexOf(to) === -1 &&
+                    (this.statusFilters.indexOf('selected') === -1 || !selected)
+                ) {
+                    this.suites.splice(index, 1)
+                }
             }
-
-            switch (name) {
-                case 'run-framework':
-                    this.framework.start()
-                    break
-                case 'refresh-framework':
-                    this.framework.refresh()
-                    break
-                case 'stop-framework':
-                    this.framework.stop()
-                    break
-                case 'filter':
-                    this.$el.querySelector('[type="search"]').focus()
-                    break
-                case 'framework-settings':
-                    this.manage()
-                    break
-                case 'remove-framework':
-                    this.remove()
-                    break
-            }
+        },
+        onChildContextMenu (context) {
+            Lode.ipc.send('nugget-context-menu', this.model.id, context)
+        },
+        setKeywordFilter (keyword) {
+            Lode.ipc.send('framework-filter', this.model.id, 'keyword', keyword)
+            this.$store.commit('filters/SET', {
+                id: this.model.id,
+                filters: {
+                    keyword
+                }
+            })
         },
         resetFilters () {
-            this.framework.resetFilters()
-        },
-        filterSuite (suite) {
-            this.keyword = `"${suite.getRelativePath()}"`
-        },
-        onSortClick () {
-            const menu = new Menu()
-            this.framework.getSupportedSorts().forEach(sort => {
-                menu.add({
-                    label: sortDisplayName(sort),
-                    type: 'checkbox',
-                    checked: sort === this.sort,
-                    click: () => {
-                        this.sort = sort
-                    }
-                })
-            })
-            menu
-                .separator()
-                .add({
-                    label: 'Reverse',
-                    type: 'checkbox',
-                    checked: this.framework.isSortReverse(),
-                    click: () => {
-                        this.framework.setSortReverse()
-                    }
-                })
-                .attachTo(this.$el.querySelector('.sort button'))
-                .open()
+            Lode.ipc.send('framework-reset-filters', this.model.id)
+            this.$store.commit('filters/RESET')
+            this.keyword = ''
         }
     }
 }

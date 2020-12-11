@@ -1,10 +1,13 @@
 <template>
     <div v-if="content" class="ansi">
-        <pre v-if="showRaw">{{ content }}</pre>
-        <pre v-else v-html="html"></pre>
+        <button type="button" title="Copy to clipboard" @click="clipboard">
+            <Icon symbol="clippy" />
+        </button>
         <button type="button" title="Show raw output" @click="showRaw = !showRaw">
             <Icon symbol="code" />
         </button>
+        <pre v-if="showRaw">{{ content }}</pre>
+        <pre v-else v-html="html"></pre>
     </div>
 </template>
 
@@ -19,20 +22,18 @@ export default {
     },
     props: {
         content: {
-            type: [String, Error],
+            type: String,
             default: ''
         }
     },
     data () {
-        const content = this.content instanceof Error ? this.content.toString() : this.content
-
         // Create a new Terminal instance with plenty of space for our output.
         // We'll trim the unsused space when rendering the html.
         const terminal = new Terminal({ columns: 20000, rows: 20000 })
-        terminal.write(this.processContent(content))
+        terminal.write(this.processContent(this.content))
         return {
             showRaw: false,
-            raw: content,
+            raw: this.content,
             html: terminal
                 .toString('html')
                 .replace(/(<div style='overflow:hidden'><br \/><\/div>)*(<div style='line-height:0;visibility:hidden;'>)(&nbsp;)*<\/div>$/gm, '')
@@ -51,6 +52,9 @@ export default {
             })
 
             return content + '\r\n'
+        },
+        clipboard () {
+            Lode.copyToClipboard(this.showRaw ? this.content : this.$el.querySelector('pre').innerText)
         }
     }
 }

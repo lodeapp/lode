@@ -4,82 +4,34 @@ process.env.BABEL_ENV = 'main'
 
 const { getReplacements } = require('./app-info')
 
+const base = require('./webpack.base.config.js')
 const _ = require('lodash')
 const path = require('path')
 const { dependencies } = require('../package.json')
 const webpack = require('webpack')
-const MinifyPlugin = require('babel-minify-webpack-plugin')
 const PreJSPlugin = require('dotprejs/src/PreJSPlugin')
 
 const mainConfig = {
+    ...base,
+    target: 'electron-main',
     entry: {
         main: path.join(__dirname, '../src/main/index.ts')
     },
     externals: [
         ...Object.keys(dependencies || {})
     ],
-    module: {
-        rules: [
-            {
-                test: /\.tsx?$/,
-                loader: 'ts-loader',
-                exclude: /node_modules/,
-                options: {
-                    appendTsSuffixTo: [/\.vue$/]
-                }
-            },
-            {
-                test: /\.(js)$/,
-                enforce: 'pre',
-                exclude: /node_modules/,
-                use: {
-                    loader: 'eslint-loader',
-                    options: {
-                        formatter: require('eslint-friendly-formatter'),
-                        quiet: true
-                    }
-                }
-            },
-            {
-                test: /\.js$/,
-                use: 'babel-loader',
-                exclude: /node_modules/
-            },
-            {
-                test: /\.node$/,
-                use: 'node-loader'
-            }
-        ]
-    },
     node: {
         __dirname: process.env.NODE_ENV !== 'production',
         __filename: process.env.NODE_ENV !== 'production'
     },
-    output: {
-        filename: '[name].js',
-        libraryTarget: 'commonjs2',
-        path: path.join(__dirname, '../dist/electron')
-    },
     plugins: [
-        new webpack.NoEmitOnErrorsPlugin()
-    ],
-    resolve: {
-        alias: {
-            '@main': path.join(__dirname, '../src/main'),
-            '@lib': path.join(__dirname, '../src/lib')
-        },
-        extensions: ['.js', '.ts', '.json', '.node']
-    },
-    target: 'electron-main'
+        new webpack.NoEmitOnErrorsPlugin(),
+        new webpack.DefinePlugin(Object.assign({}, getReplacements(), {
+            __PROCESS_KIND__: JSON.stringify('main')
+        }))
+    ]
 }
 
-mainConfig.plugins.push(
-    new webpack.DefinePlugin(Object.assign({}, getReplacements(), {
-        __PROCESS_KIND__: JSON.stringify('main')
-    }))
-)
-
-// Adjust mainConfig for development settings
 if (process.env.NODE_ENV !== 'production') {
     mainConfig.plugins.push(
         new webpack.DefinePlugin({
@@ -88,10 +40,8 @@ if (process.env.NODE_ENV !== 'production') {
     )
 }
 
-// Adjust mainConfig for production settings
 if (process.env.NODE_ENV === 'production') {
     Array.prototype.push.apply(mainConfig.plugins, _.compact([
-        new MinifyPlugin(),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': '"production"'
         }),

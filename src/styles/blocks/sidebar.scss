@@ -3,7 +3,7 @@
     border-radius: 0.0001px; // Prevent .shadow from overflowing.
     display: flex;
     flex-direction: column;
-    padding: 35px 0 0;
+    padding: 33px 0 0;
     height: 100vh;
 
     @include darwin {
@@ -165,6 +165,13 @@
 
                         & > .indicator {
                             box-shadow: 0 0 0 4px theme-color('partial', 400), 0 0 0 5px theme-color('partial', 200);
+                        }
+                    }
+
+                    &.status--queued {
+
+                        & > .indicator {
+                            box-shadow: 0 0 0 5px theme-color('idle', 100);
                         }
                     }
                 }

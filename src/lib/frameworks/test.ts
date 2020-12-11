@@ -1,39 +1,31 @@
-import _get from 'lodash/get'
+import { get, omit } from 'lodash'
+import { IFramework } from '@lib/frameworks/framework'
 import { Status } from '@lib/frameworks/status'
 import { Nugget } from '@lib/frameworks/nugget'
 
 export interface ITest extends Nugget {
-    result?: ITestResult
     selected: boolean
 
     getId (): string
     getStatus (): Status
     getName (): string
     getDisplayName (): string
-    getConsole (): Array<any>
     toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
     toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
+    render (status?: Status | false): ITestResult
     persist (status?: Status | false): ITestResult
+    getResult (): ITestResult
     resetResult (): void
-    idle (selective: boolean): void
-    queue (selective: boolean): void
-    error (selective: boolean): void
-    idleQueued (selective: boolean): void
-    errorQueued (selective: boolean): void
     debrief (result: ITestResult, cleanup: boolean): Promise<void>
     countChildren (): number
     hasChildren(): boolean
     contextMenu (): Array<Electron.MenuItemConstructorOptions>
-    getLastUpdated (): string | null
-    getLastRun (): string | null
-    getTotalDuration (): number
-    getMaxDuration (): number
 }
 
 export interface ITestResult {
     id: string
     name: string
-    displayName: string
+    displayName?: string | null
     status: Status
     feedback?: string | object
     console?: Array<any>
@@ -41,24 +33,47 @@ export interface ITestResult {
     stats?: object
     isLast?: boolean
     tests?: Array<ITestResult>
+    hasChildren?: boolean
 }
 
 export class Test extends Nugget implements ITest {
     protected status!: Status
-    public result!: ITestResult
+    protected result!: ITestResult
 
-    constructor (result: ITestResult) {
-        super()
+    constructor (framework: IFramework, result: ITestResult) {
+        super(framework)
         this.build(result, false)
+    }
+
+    /**
+     * Prepares the test for sending out to renderer process.
+     *
+     * @param status Which status to recursively set on tests. False will persist current status.
+     */
+    public render (status: Status | false = 'idle'): ITestResult {
+        return omit({
+            ...this.defaults(this.result, status),
+            hasChildren: this.hasChildren(),
+            selected: this.selected,
+            partial: this.partial
+        }, 'tests')
     }
 
     /**
      * Prepare this test for persistence.
      *
-     * @param status Which status to recursively set. False will persist current status.
+     * @param status Which status to recursively set on tests. False will persist current status.
      */
     public persist (status: Status | false = 'idle'): ITestResult {
         return this.defaults(this.result, status)
+    }
+
+    /**
+     * Get this test's result object.
+     */
+    public getResult (): ITestResult {
+        // @TODO: load from store, don't persist in memory.
+        return this.result
     }
 
     /**
@@ -79,7 +94,7 @@ export class Test extends Nugget implements ITest {
         // We allow result status to be empty from reporters, but we'll
         // amend them before building the actual test.
         result.status = this.getRecursiveStatus(result)
-        this.updateStatus(result.status || 'idle')
+        // @TODO: save actual results and stats on store, don't merge them in.
         this.result = this.mergeResults(result)
         if (result.tests && result.tests.length) {
             this.debriefTests(result.tests, cleanup)
@@ -95,7 +110,7 @@ export class Test extends Nugget implements ITest {
     protected mergeResults (result: ITestResult): ITestResult {
         // If result already has the "first seen" property, it's likely the test
         // being persisted from store, in which case we'll let that date prevail.
-        if (_get(result, 'stats.first')) {
+        if (get(result, 'stats.first')) {
             return result
         }
         // Otherwise, set the "first seen" date according to current existing
@@ -103,9 +118,10 @@ export class Test extends Nugget implements ITest {
         result.stats = {
             ...(result.stats || {}),
             ...{
-                first: _get(this.result || {}, 'stats.first', new Date().toISOString())
+                first: get(this.result || {}, 'stats.first', new Date().toISOString())
             }
         }
+
         return result
     }
 
@@ -115,7 +131,7 @@ export class Test extends Nugget implements ITest {
      * @param result The test result with which to instantiate a new test.
      */
     protected newTest (result: ITestResult): ITest {
-        return new Test(result)
+        return new Test(this.framework, result)
     }
 
     /**
@@ -140,13 +156,6 @@ export class Test extends Nugget implements ITest {
     }
 
     /**
-     * Get this nugget's console output.
-     */
-    public getConsole (): Array<any> {
-        return this.result.console!
-    }
-
-    /**
      * Debrief this test.
      *
      * @param result The result object with which to debrief this test.
@@ -157,7 +166,7 @@ export class Test extends Nugget implements ITest {
         result.stats = { ...(result.stats || {}), ...{ last: new Date().toISOString() }}
         return new Promise((resolve, reject) => {
             this.build(result, cleanup)
-            this.emit('debriefed')
+            this.updateStatus(this.result.status || 'idle')
             resolve()
         })
     }

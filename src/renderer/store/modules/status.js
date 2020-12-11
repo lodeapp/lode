@@ -1,27 +1,29 @@
+import Vue from 'vue'
+import _get from 'lodash/get'
+
 export default {
     namespaced: true,
     state: {
-        status: {
-            empty: 'Empty',
-            error: 'Error',
-            failed: 'Failed',
-            idle: 'Idle',
-            incomplete: 'Incomplete',
-            loading: 'Loading',
-            missing: 'Missing',
-            partial: 'Partial',
-            passed: 'Passed',
-            queued: 'Queued',
-            refreshing: 'Refreshing',
-            running: 'Running',
-            skipped: 'Skipped',
-            stopped: 'Stopped',
-            warning: 'Warning'
+        status: {}
+    },
+    mutations: {
+        SET (state, payload) {
+            Vue.set(state, 'status', {})
+            state.status = {
+                ...state.status,
+                ...payload
+            }
+        },
+        UPDATE (state, payload) {
+            state.status = {
+                ...state.status,
+                ...payload
+            }
         }
     },
     getters: {
-        display: (state) => status => {
-            return state.status[status]
+        nugget: state => nugget => {
+            return _get(state.status, nugget, 'idle')
         }
     }
 }

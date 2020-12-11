@@ -13,16 +13,15 @@
         .btn,
         .btn-link {
             background: var(--color-gray-000);
+            float: right;
             height: 1.8rem;
-            position: absolute;
-            right: calc(var(--spacing) - 2px);
-            top: calc(var(--spacing) - 2px);
+            margin: 0 0 0 2px;
+            position: relative;
             width: 1.8rem;
         }
 
         .btn-link {
             color: var(--color-gray-500);
-            right: calc(var(--spacing) - 2px + 30px);
 
             &:hover,
             &:focus,
@@ -33,9 +32,9 @@
 
         .btn {
             line-height: 0;
-            margin: 0;
             padding: 0;
             text-align: center;
+            top: -1px;
 
             i {
                 transform: scale(.6);
@@ -54,13 +53,6 @@
                 border: 0;
                 background-color: $white;
             }
-        }
-    }
-
-    &.has-content {
-
-        & > .header {
-            padding-right: 65px;
         }
     }
 

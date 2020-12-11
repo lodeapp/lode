@@ -2,9 +2,6 @@
 /** Is the app running in dev mode? */
 declare const __DEV__: boolean
 
-/** Should the app run state migrations? */
-declare const __MIGRATE__: boolean
-
 /** Should the app use the logger classes or just output to console? */
 declare const __LOGGER__: boolean
 
@@ -32,6 +29,11 @@ declare const __ANALYTICS_ID__: string
 declare const __PROCESS_KIND__:
   | 'main'
   | 'renderer'
+
+/**
+ * Lode's custom Electron API for the renderer process.
+ */
+declare const Lode: any
 
 interface ILogger {
   /**
@@ -117,51 +119,23 @@ interface ITracker {
 
 declare const track: ITracker
 
-declare namespace Electron {
-    interface MenuItem {
-        readonly accelerator?: Electron.Accelerator
-        readonly submenu?: Electron.Menu
-        readonly role?: string
-        readonly type: 'normal' | 'separator' | 'submenu' | 'checkbox' | 'radio'
-    }
-
-    interface RequestOptions {
-        readonly method: string
-        readonly url: string
-        readonly headers: any
-    }
-
-    type AppleActionOnDoubleClickPref = 'Maximize' | 'Minimize' | 'None'
-
-    interface SystemPreferences {
-        getUserDefault(
-            key: 'AppleActionOnDoubleClick',
-            type: 'string'
-        ): AppleActionOnDoubleClickPref
-    }
-
-    interface WebviewTag extends HTMLElement {
-        // Copied from https://github.com/electron/electron-typescript-definitions/pull/81
-        // until we can upgrade to a version of Electron which includes the fix.
-        addEventListener<K extends keyof HTMLElementEventMap>(
-            type: K,
-            listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
-            useCapture?: boolean
-        ): void
-        addEventListener(
-            type: string,
-            listener: EventListenerOrEventListenerObject,
-            useCapture?: boolean
-        ): void
-        removeEventListener<K extends keyof HTMLElementEventMap>(
-            type: K,
-        listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
-            useCapture?: boolean
-        ): void
-        removeEventListener(
-            type: string,
-            listener: EventListenerOrEventListenerObject,
-            useCapture?: boolean
-        ): void
-    }
-}
+type MenuEvent =
+  | 'crash'
+  | 'feedback'
+  | 'filter'
+  | 'framework-remove'
+  | 'log-project'
+  | 'log-renderer-state'
+  | 'log-settings'
+  | 'project-add'
+  | 'project-edit'
+  | 'project-remove'
+  | 'project-switch'
+  | 'repository-add'
+  | 'repository-manage'
+  | 'repository-remove'
+  | 'repository-scan'
+  | 'select-all'
+  | 'settings-reset'
+  | 'show-about'
+  | 'show-preferences'
