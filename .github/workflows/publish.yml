@@ -1,0 +1,15 @@
+name: Publish website
+
+on:
+  push:
+    branches:
+    - chore/refactor
+
+jobs:
+  publish:
+    name: Publish website
+    runs-on: macos-latest
+
+    steps:
+    - name: Build and publish
+      run: cd docs && ./deploy.sh

@@ -22,13 +22,13 @@ You can have unlimited projects, and inside each project unlimited repositories.
 After you give your first project a name (naming projects is required), click on the "Add Project" button.
 
 <span class="image-wrapper resize-75">
-    <img src="/documentation/light-mac--add-first-project.png" alt="Screenshot showing how to add your first project.">
+    <img :src="$withBase('/documentation/light-mac--add-first-project.png')" alt="Screenshot showing how to add your first project.">
 </span>
 
 You'll then be prompted to add repositories. You can add multiple repositories at once in this screen. Just click the "Add another repository" button to add another path input, or select multiple directories after clicking "Choose" on any existing path input row.
 
 <span class="image-wrapper resize-75">
-    <img src="/documentation/light-mac--add-repositories.png" alt="Screenshot showing how to repositories to a Lode project.">
+    <img :src="$withBase('/documentation/light-mac--add-repositories.png')" alt="Screenshot showing how to repositories to a Lode project.">
 </span>
 
 After your repositories have been added, they will show as "empty". This is because they start out without any testing frameworks. The easiest way to add frameworks to them is to check the "Scan repositories for frameworks after adding" checkbox -- this will automatically trigger a scan and show you a modal of whatever is found. Check that settings match your frameworks configurations, click the "Save changes" button and you're done!

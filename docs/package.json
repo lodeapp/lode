@@ -5,8 +5,9 @@
   "scripts": {
     "before": "node before.js",
     "dev": "yarn run before && vuepress dev pages",
-    "build": "yarn run before && vuepress build pages -d pages/.vuepress/dist && yarn run build:after",
-    "build:after": "vuepress-sitemap -H https://lode.run -d pages/.vuepress/dist && node rss"
+    "clean": "rm -rf dist",
+    "build": "yarn run before && vuepress build pages -d dist && yarn run build:after",
+    "build:after": "vuepress-sitemap -H https://lode.run -d dist && node rss"
   },
   "devDependencies": {
     "@primer/css": "^12.3.0",

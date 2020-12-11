@@ -9,9 +9,9 @@ title: Release Notes
 # Lode Releases
 
 <div class="text-center">
-    <a href="/rss.xml" title="Lode releases feed">
-        <img src="/feed.svg" alt="RSS feed icon">
-    </a>
+    <RouterLink to="/rss.xml" title="Lode releases feed">
+        <img :src="$withBase('/feed.svg')" alt="RSS feed icon">
+    </RouterLink>
 </div>
 
 <Releases />

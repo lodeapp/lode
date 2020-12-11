@@ -13,12 +13,12 @@ title: A universal GUI for unit testing
     <p class="col-md-8 mx-auto mb-4 f2-light">Supports <strong>PHPUnit</strong> and <strong>Jest</strong>, with more frameworks coming&nbsp;soon.</p>
     <Download />
     <div class="d-block width-fit mx-auto mb-8 mt-6">
-        <img src="macos-light-full.png" class="full-screenshot">
+        <img :src="$withBase('macos-light-full.png')" class="full-screenshot">
     </div>
 </div>
 
 <div class="text-center mb-7">
-    <p class="col-md-8 mx-auto mb-1 f2-light">Setup is easy, requires no additional dependencies and both local and remote environments are supported. <a href="/documentation/">See the documentation</a> to get started.</p>
+    <p class="col-md-8 mx-auto mb-1 f2-light">Setup is easy, requires no additional dependencies and both local and remote environments are supported. <RouterLink to="/documentation/">See the documentation</RouterLink> to get started.</p>
 </div>
 
 <Feature

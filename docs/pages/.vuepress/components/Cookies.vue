@@ -3,7 +3,7 @@
         <div class="cookie-container">
             <div class="cookie-notification">
                 <span>
-                    By using this website, you agree to our <a href="/cookie-policy/">cookie&nbsp;policy</a>
+                    By using this website, you agree to our <RouterLink to="/cookie-policy/">cookie&nbsp;policy</RouterLink>
                 </span>
                 <button @click="consent">Close</button>
             </div>

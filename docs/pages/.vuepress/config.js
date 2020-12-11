@@ -1,6 +1,7 @@
 module.exports = {
     title: 'Lode',
     description: 'Universal graphical interface for unit testing.',
+    base: '/lode/',
     head: [
         ['link', { rel: 'icon', href: '/favicon.png' }]
     ],

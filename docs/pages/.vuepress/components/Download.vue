@@ -7,10 +7,10 @@
                 GitHub
             </a>
             <small class="version">
-                <span>Latest version: <a :href="`/release-notes/#${version('mac')}`">{{ version('mac') }}</a></span><Badge v-if="isBeta('mac')" text="Beta" />
+                <span>Latest version: <a :href="`release-notes/#${version('mac')}`">{{ version('mac') }}</a></span><Badge v-if="isBeta('mac')" text="Beta" />
                 <span>&mdash; Download for <a :href="path('mac')" @click="download('mac')">macOS</a>. Windows and Linux coming&nbsp;soon.</span>
             </small>
-            <small class="d-block">By downloading, you agree to the <a href="/terms/">Terms&nbsp;&&nbsp;Conditions</a>.</small>
+            <small class="d-block">By downloading, you agree to the <RouterLink to="/terms/">Terms&nbsp;&&nbsp;Conditions</RouterLink>.</small>
         </template>
         <template v-else-if="os === 'win'">
             <a href="#" class="btn btn-large btn-primary f3 my-3" @click.stop.prevent="notify">Notify me on Windows release</a>
@@ -22,7 +22,7 @@
                 <span>Latest version: <a :href="`/release-notes/#${version('mac')}`">{{ version('mac') }}</a></span><Badge v-if="isBeta('mac')" text="Beta" />
                 <span>&mdash; Download for <a :href="path('mac')" @click="download('mac')">macOS</a>. Windows and Linux coming&nbsp;soon.</span>
             </small>
-            <small class="d-block">By downloading, you agree to the <a href="/terms/">Terms&nbsp;&&nbsp;Conditions</a>.</small>
+            <small class="d-block">By downloading, you agree to the <RouterLink to="/terms/">Terms&nbsp;&&nbsp;Conditions</RouterLink>.</small>
         </template>
         <template v-else>
             <a class="btn btn-large btn-primary f3 my-3" :href="path('mac')" @click="download('mac')">Download for macOS</a>
@@ -31,10 +31,10 @@
                 GitHub
             </a>
             <small class="version">
-                <span>Latest version: <a :href="`/release-notes/#${version('mac')}`">{{ version('mac') }}</a></span><Badge v-if="isBeta('mac')" text="Beta" />
+                <span>Latest version: <RouterLink :to="`release-notes/#${version('mac')}`">{{ version('mac') }}</RouterLink></span><Badge v-if="isBeta('mac')" text="Beta" />
                 <span>&mdash; Windows and Linux coming&nbsp;soon. <a href="#" @click.stop.prevent="notify">Get notified</a>.</span>
             </small>
-            <small class="d-block">By downloading, you agree to the <a href="/terms/">Terms&nbsp;&&nbsp;Conditions</a>.</small>
+            <small class="d-block">By downloading, you agree to the <RouterLink to="/terms/">Terms&nbsp;&&nbsp;Conditions</RouterLink>.</small>
         </template>
     </div>
 </template>

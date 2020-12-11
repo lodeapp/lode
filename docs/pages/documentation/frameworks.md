@@ -21,13 +21,13 @@ In order to add testing frameworks to your repositories in Lode, you will have t
 A scan can be triggered upon adding a new repository:
 
 <span class="image-wrapper resize-75">
-    <img src="/documentation/light-mac--add-repositories.png" alt="Screenshot showing how to trigger scanning for framework automatically when adding a repository.">
+    <img :src="$withBase('/documentation/light-mac--add-repositories.png')" alt="Screenshot showing how to trigger scanning for framework automatically when adding a repository.">
 </span>
 
 Alternatively, you can right-click over an existing repository in the sidebar, then select "Scan for Frameworks…"
 
 <span class="image-wrapper resize-50">
-    <img src="/documentation/light-mac--scan-frameworks-from-context-menu.png" alt="Screenshot showing how to trigger framework scan in macOS.">
+    <img :src="$withBase('/documentation/light-mac--scan-frameworks-from-context-menu.png')" alt="Screenshot showing how to trigger framework scan in macOS.">
 </span>
 
 ## Scanning strategies
@@ -48,7 +48,7 @@ It is currently not possible to add frameworks manually to your repositories in 
 Upon finding frameworks in a repository scan, or at any point when you choose to manage existing frameworks in a repository, you will see the "Manage test frameworks" screen. It will show a list of found/pending frameworks (i.e. after a scan), of existing frameworks, or even of frameworks that were added at a given point and can no longer be found by Lode (they will be flagged as "removed").
 
 <span class="image-wrapper resize-75">
-    <img src="/documentation/light-mac--single-framework-scan-result.png" alt="Screenshot showing the results of a framwork scan.">
+    <img :src="$withBase('/documentation/light-mac--single-framework-scan-result.png')" alt="Screenshot showing the results of a framwork scan.">
 </span>
 
 After you edit a framework's settings you must click on "Save changes", otherwise the changes will not take effect.

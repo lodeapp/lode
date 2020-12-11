@@ -63,5 +63,5 @@ releases.forEach(release => {
     })
 })
 
-fs.writeFileSync(path.resolve('pages/.vuepress/dist', 'rss.xml'), feed.xml({ indent: true }))
+fs.writeFileSync(path.resolve('dist', 'rss.xml'), feed.xml({ indent: true }))
 log(`created feed with ${feed.items.length} releases`)
