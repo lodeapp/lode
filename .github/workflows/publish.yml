@@ -12,5 +12,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+    - name: Go to docs directory
+      run: cd docs
+    - name: Install dependencies
+      run: yarn
     - name: Build and publish
-      run: cd docs && ./deploy.sh
+      run: ./deploy.sh
