@@ -1,5 +1,5 @@
 <template>
-    <Modal :title="singleFramework ? 'Framework Settings' : 'Manage test frameworks'" :key="repository.getId()">
+    <Modal :title="singleFramework ? 'Framework Settings' : 'Manage test frameworks'" :key="repository.id">
         <div class="fluid">
             <div class="repository-settings">
                 <h5 v-if="!singleFramework">
@@ -19,16 +19,20 @@
                     </span>
                     <button type="button" class="btn btn-sm" @click="handleScan" :disabled="scanning">Scan</button>
                 </h5>
-                <FrameworkSettings
-                    v-for="filtered in filteredFrameworks"
-                    :key="filtered.key"
-                    :repository="repository"
-                    :framework="filtered"
-                    :validator="filtered.validator"
-                    :dedicated="singleFramework"
-                    @input="handleChange(filtered, $event)"
-                    @remove="handleRemove(filtered)"
-                />
+                <template v-if="availableFrameworks">
+                    <FrameworkSettings
+                        v-for="filtered in filteredFrameworks"
+                        :key="filtered.key"
+                        :repository="repository"
+                        :framework="filtered"
+                        :validator="filtered.validator"
+                        :dedicated="singleFramework"
+                        :available-frameworks="availableFrameworks"
+                        @input="handleChange(filtered, $event)"
+                        @remove="handleRemove(filtered)"
+                        @keyup.native.enter="handleEnter"
+                    />
+                </template>
             </div>
         </div>
         <div slot="footer" class="modal-footer tertiary separated">
@@ -45,10 +49,9 @@
 <script>
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
-import { FrameworkValidator } from '@lib/frameworks/validator'
-
 import Modal from '@/components/modals/Modal'
 import FrameworkSettings from '@/components/FrameworkSettings'
+import Validator from '@/helpers/validator'
 
 export default {
     name: 'ManageFrameworks',
@@ -74,6 +77,7 @@ export default {
     },
     data () {
         return {
+            availableFrameworks: null,
             scanning: false,
             frameworks: [],
             removed: []
@@ -87,7 +91,7 @@ export default {
             if (!this.singleFramework) {
                 return this.frameworks
             }
-            return this.frameworks.filter(framework => framework.id === this.framework.getId())
+            return this.frameworks.filter(framework => framework.id === this.framework.id)
         },
         amountActive () {
             return this.frameworks.filter(framework => !framework.scanStatus).length
@@ -103,37 +107,41 @@ export default {
         }
     },
     created () {
+        Lode.ipc.invoke('framework-types').then(frameworks => {
+            this.availableFrameworks = frameworks
+        })
+
         this.parseFrameworks()
         if (this.scan) {
             this.handleScan()
         }
     },
     methods: {
-        parseFrameworks (scanned = false, pending = []) {
-            const types = pending.map(options => options.type)
-            const frameworks = this.repository.frameworks.map(framework => {
-                // If an existing framework has been removed, but user has
-                // triggered scan again, continue. This means the existing
-                // framework object will be removed, while a new, pristine
-                // object will be added.
-                if (this.removed.includes(framework.getId())) {
-                    return false
-                }
+        async parseFrameworks (scanned = false, pending = []) {
+            const types = pending.map(p => p.type)
+            const frameworks = (await Lode.ipc.invoke('repository-frameworks', this.repository.id))
+                .map(framework => {
+                    // If an existing framework has been removed, but user has
+                    // triggered scan again, continue. This means the existing
+                    // framework object will be removed, while a new, pristine
+                    // object will be added.
+                    if (this.removed.includes(framework.id)) {
+                        return false
+                    }
 
-                const options = framework.persist()
-                if (!scanned || framework.type === 'custom') {
-                    return options
-                }
-                if (!types.includes(framework.type)) {
-                    // If type is not custom and is not found in the scanned array, mark as removed.
-                    options.scanStatus = 'removed'
-                } else {
-                    // But if type exists in the scan, remove from scanned array.
-                    pending = pending.filter(options => options.type !== framework.type)
-                }
+                    if (!scanned || framework.type === 'custom') {
+                        return framework
+                    }
+                    if (!types.includes(framework.type)) {
+                        // If type is not custom and is not found in the scanned array, mark as removed.
+                        framework.scanStatus = 'removed'
+                    } else {
+                        // But if type exists in the scan, remove from scanned array.
+                        pending = pending.filter(p => p.type !== framework.type)
+                    }
 
-                return options
-            })
+                    return framework
+                })
 
             // Parsed frameworks are joined by pending ones (if any) when we're
             // processing scanned frameworks. Also, filter out falsy values from
@@ -143,18 +151,13 @@ export default {
             // Add a reactive validator instance to the mapped frameworks
             this.frameworks.forEach(framework => {
                 this.$set(framework, 'key', framework.id || this.$string.random())
-                this.$set(framework, 'validator', new FrameworkValidator({
-                    repositoryPath: this.repository.getPath()
-                }))
+                this.$set(framework, 'validator', new Validator())
             })
         },
         async handleScan () {
             this.scanning = true
-            await this.repository.scan()
-                .then(pending => {
-                    this.parseFrameworks(true, pending)
-                    this.scanning = false
-                })
+            this.parseFrameworks(true, await Lode.ipc.invoke('repository-scan', this.repository.id))
+            this.scanning = false
         },
         handleChange (framework, values) {
             const index = _findIndex(this.frameworks, { key: framework.key })
@@ -172,10 +175,18 @@ export default {
                 }
             }
         },
-        save () {
-            this.frameworks.forEach(framework => {
-                framework.validator.validate(framework)
-            })
+        handleEnter () {
+            if (this.singleFramework) {
+                this.save()
+            }
+        },
+        async save () {
+            // Validate each slot before checking for errors in the form.
+            for (let i = this.frameworks.length - 1; i >= 0; i--) {
+                this.frameworks[i].validator.refresh(
+                    await Lode.ipc.invoke('framework-validate', this.repository.id, this.frameworks[i])
+                )
+            }
 
             if (!this.hasErrors) {
                 this.frameworks
@@ -183,23 +194,13 @@ export default {
                     .forEach(framework => {
                         // If the framework has an id (i.e. exists), update it, otherwise add.
                         if (framework.id) {
-                            const index = _findIndex(this.repository.frameworks, existing => existing.getId() === framework.id)
-                            this.repository.frameworks[index].updateOptions({
-                                ...framework,
-                                ...{ repositoryPath: this.repository.getPath() }
-                            })
-                            return true
+                            Lode.ipc.send('framework-update', framework.id, framework)
+                            return
                         }
-                        this.repository.addFramework(framework)
-                            .then(framework => {
-                                setTimeout(() => {
-                                    framework.refresh()
-                                }, 50)
-                            })
+                        Lode.ipc.send('framework-add', this.repository.id, framework)
                     })
 
                 this.removeFrameworks()
-                this.repository.save()
 
                 this.$emit('hide')
             }
@@ -209,9 +210,8 @@ export default {
             this.removed = [...new Set(this.removed)]
             // Iterate through frameworks marked for removal and trigger
             // the removal action on their parent repository.
-            this.removed.forEach(frameworkId => {
-                this.$root.onModelRemove(frameworkId)
-                this.repository.removeFramework(frameworkId)
+            this.removed.forEach(framework => {
+                this.$root.handleFrameworkRemove(framework)
             })
         }
     }

@@ -12,13 +12,12 @@
             {{ 'Exception|Exceptions' | plural(trace.length) }}
             <small class="float-right">
                 <button type="button" class="btn-link more-actions" title="Reverse order" @click.prevent="reverse = !reverse">
-                    <Icon symbol="arrow-down" /><Icon symbol="arrow-up" />
+                    <Icon symbol="arrow-switch" class="rotate-90" />
                 </button>
             </small>
         </h4>
         <Trace
             v-if="trace && trace.length"
-            :context="context"
             :trace="trace"
             :key="$string.from(trace)"
         />
@@ -49,10 +48,6 @@ export default {
         Trace
     },
     props: {
-        context: {
-            type: Array,
-            required: true
-        },
         content: {
             type: Object,
             default () {

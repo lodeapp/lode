@@ -2,63 +2,113 @@
     <div
         class="sidebar-item has-status"
         :class="[
-            `status--${repository.status}`,
+            `status--${status}`,
             menuActive ? 'is-menu-active' : '',
-            repository.frameworks.length ? '' : 'is-empty'
+            frameworks.length ? '' : 'is-empty'
         ]"
     >
-        <div class="header" @contextmenu="openMenu" @click="toggle">
+        <div class="header" @contextmenu="onContextMenu" @click="toggle">
             <div class="title">
-                <Indicator :status="repository.status" />
+                <Indicator :status="status" />
                 <h4 class="heading">
                     <Icon class="toggle" :symbol="show ? 'chevron-down' : 'chevron-right'" />
-                    <span class="name" :title="repository.name">
-                        {{ repository.name }}
+                    <span class="name" :title="model.name">
+                        {{ model.name }}
                     </span>
                 </h4>
             </div>
         </div>
         <div v-if="show">
-            <slot></slot>
+            <SidebarFramework
+                v-for="framework in frameworks"
+                :key="framework.id"
+                :model="framework"
+                @activate="onFrameworkActivation"
+                @manage="onFrameworkManage"
+                @remove="onFrameworkRemove"
+            />
         </div>
     </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Indicator from '@/components/Indicator'
-import HasRepositoryMenu from '@/components/mixins/HasRepositoryMenu'
+import SidebarFramework from '@/components/SidebarFramework'
 
 export default {
     name: 'SidebarRepository',
     components: {
-        Indicator
+        Indicator,
+        SidebarFramework
     },
-    mixins: [
-        HasRepositoryMenu
-    ],
     props: {
-        repository: {
+        model: {
             type: Object,
             required: true
         }
     },
-    computed: {
-        show () {
-            return this.repository.isExpanded()
+    data () {
+        return {
+            frameworks: [],
+            status: this.model.status || 'idle',
+            show: this.model.expanded,
+            menuActive: false
         }
     },
+    computed: {
+        ...mapGetters({
+            activeFramework: 'context/framework'
+        })
+    },
+    mounted () {
+        Lode.ipc
+            .on(`${this.model.id}:status:sidebar`, this.statusListener)
+            .on(`${this.model.id}:frameworks`, this.updateFrameworks)
+
+        if (this.show) {
+            this.getFrameworks()
+        }
+    },
+    beforeDestroy () {
+        Lode.ipc
+            .removeAllListeners(`${this.model.id}:status:sidebar`)
+            .removeAllListeners(`${this.model.id}:frameworks`)
+    },
     methods: {
-        start () {
-            this.repository.start()
+        async getFrameworks () {
+            this.frameworks = await Lode.ipc.invoke('repository-frameworks', this.model.id)
         },
-        refresh () {
-            this.repository.refresh()
+        statusListener (event, to, from) {
+            this.status = to
+            this.$emit('status', to, from, this.model)
         },
-        stop () {
-            this.repository.stop()
+        updateFrameworks (event, frameworks) {
+            this.frameworks = frameworks
         },
         toggle () {
-            this.repository.toggle()
+            this.show = !this.show
+            Lode.ipc.send('repository-toggle', this.model.id, this.show)
+            if (this.show) {
+                this.getFrameworks()
+                return
+            }
+            this.frameworks = []
+        },
+        onContextMenu () {
+            this.menuActive = true
+            Lode.ipc.invoke('repository-context-menu', this.model.id).finally(() => {
+                this.menuActive = false
+            })
+        },
+        onFrameworkActivation (frameworkId) {
+            this.$emit('framework-activate', frameworkId, this.model)
+        },
+        onFrameworkManage (framework) {
+            this.$emit('framework-manage', framework)
+        },
+        onFrameworkRemove (frameworkId) {
+            this.$emit('framework-remove', frameworkId)
         }
     }
 }

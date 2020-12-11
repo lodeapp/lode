@@ -5,12 +5,12 @@
     >
         <Collapsible
             :show="!isLarge"
-            :copy="$code.asString(output.content)"
+            :copy="relativePath(output.file)"
             :class="{ 'has-context-menu': hasContextMenu(0) }"
-            @contextmenu.native.stop.prevent="onContextMenu(output, 0, $event)"
+            @contextmenu.native.stop.prevent="onContextMenu(output.file, 0)"
         >
-            <template v-slot:header>
-                <Filename :key="toRelative(output.file)" :truncate="true" @dblclick.native.stop />
+            <template #header>
+                <Filename :key="relativePath(output.file)" :truncate="true" @dblclick.native.stop />
                 <span v-if="output.line" class="Label Label--outline Label--idle">{{ 'Line :0' | set(output.line) }}</span>
                 <span class="Label Label--outline Label--normal"><code>{{ output.type }}</code></span>
             </template>

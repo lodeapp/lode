@@ -47,13 +47,11 @@
 </template>
 
 <script>
-import { remote } from 'electron'
 import _find from 'lodash/find'
 import _uniqBy from 'lodash/uniqBy'
-import { RepositoryValidator } from '@lib/frameworks/validator'
-
 import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
+import Validator from '@/helpers/validator'
 
 export default {
     name: 'AddRepositories',
@@ -90,28 +88,37 @@ export default {
     },
     methods: {
         async choose (index) {
-            remote.dialog.showOpenDialog({
-                properties: ['openDirectory', 'multiSelections']
-            }).then(({ filePaths }) => {
-                if (!filePaths || !filePaths.length) {
-                    return
-                }
+            const filePaths = await Lode.ipc.invoke('project-add-repositories-menu')
+            if (!filePaths || !filePaths.length) {
+                return
+            }
 
-                this.populate(filePaths)
-            })
+            this.populate(filePaths, index)
         },
-        populate (filePaths) {
+        populate (filePaths, offset) {
             filePaths.forEach((path, index) => {
                 if (!_find(this.slots, { path })) {
-                    index === 0 ? this.slots[index].path = path : this.addRow(path)
-                    this.slots[index].validator.reset('path')
+                    // If this is the first chosen file path, replace at given offset.
+                    if (index === 0) {
+                        this.slots[offset].path = path
+                    // Otherwise, check subsequent slots to see if they're
+                    // empty and populate, or add row if not.
+                    } else if (this.slots[index + offset] && !this.slots[index + offset].path) {
+                        this.slots[index + offset].path = path
+                    } else {
+                        this.addRow(path)
+                    }
+                    // Reset path validation errors at given offset
+                    this.$nextTick(() => {
+                        this.slots[index + offset].validator.reset('path')
+                    })
                 }
             })
         },
         addRow (path = '') {
             this.slots.push({
                 key: this.$string.random(),
-                validator: new RepositoryValidator(this.$root.project.repositories.map(repository => repository.getPath())),
+                validator: new Validator(),
                 path
             })
             if (!path) {
@@ -139,21 +146,23 @@ export default {
             }
             this.add()
         },
-        add () {
-            this.slots.forEach((slot, index) => {
-                slot.validator.validate({ path: slot.path })
-            })
+        async add () {
+            // Validate each slot before checking for errors in the form.
+            for (let i = this.slots.length - 1; i >= 0; i--) {
+                this.slots[i].validator.refresh(
+                    await Lode.ipc.invoke('repository-validate', { path: this.slots[i].path })
+                )
+            }
 
             if (!this.hasErrors) {
                 this.loading = true
-                Promise.all(_uniqBy(this.slots, 'path').map((slot, index) => {
-                    return this.$root.project.addRepository({ path: slot.path })
-                })).then(repositories => {
-                    this.$root.project.save()
-                    this.confirm({
-                        repositories,
-                        autoScan: this.autoScan
-                    })
+                const repositories = await Lode.ipc.invoke(
+                    'repository-add',
+                    _uniqBy(this.slots, 'path').map(slot => slot.path)
+                )
+                this.confirm({
+                    repositories,
+                    autoScan: this.autoScan
                 })
             }
         }

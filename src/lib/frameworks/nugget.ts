@@ -1,5 +1,7 @@
-import { debounce, find, get, isArray, max, maxBy, pickBy, sum } from 'lodash'
-import { EventEmitter } from 'events'
+import { debounce, find, flatten, isArray, pickBy } from 'lodash'
+import { ProjectEventEmitter } from '@lib/frameworks/emitter'
+import { IFramework } from '@lib/frameworks/framework'
+import { ISuiteResult } from '@lib/frameworks/suite'
 import { ITest, ITestResult } from '@lib/frameworks/test'
 import { Status, parseStatus } from '@lib/frameworks/status'
 
@@ -7,23 +9,36 @@ import { Status, parseStatus } from '@lib/frameworks/status'
  * Nuggets are the testable elements inside a repository
  * (i.e. either a suite or a test).
  */
-export abstract class Nugget extends EventEmitter {
-    protected status: Status = 'idle'
+export abstract class Nugget extends ProjectEventEmitter {
     public tests: Array<ITest> = []
     public selected: boolean = false
     public expanded: boolean = false
     public partial: boolean = false
-    public updateCountsListener: any
-    public result?: any
 
+    protected framework: IFramework
+    protected result?: any
     protected fresh: boolean = false
     protected bloomed: boolean = false
-    protected active: boolean = false
 
-    constructor () {
-        super()
-        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 100)
+    protected updateCountsListener: _.DebouncedFunc<(nugget: Nugget, toggle: boolean) => Promise<void>>
+
+    constructor (framework: IFramework) {
+        super(framework.getApplicationWindow())
+        this.framework = framework
+        this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 50)
     }
+
+    /**
+     * Get the nugget's id.
+     */
+    public abstract getId (): string
+
+    /**
+     * Prepares the test for sending out to renderer process.
+     *
+     * @param status Which status to recursively set on tests. False will persist current status.
+     */
+    public abstract render (status?: Status | false): ISuiteResult | ITestResult;
 
     /**
      * Instantiate a new test.
@@ -43,7 +58,9 @@ export abstract class Nugget extends EventEmitter {
      * Count this nugget's children.
      */
     public countChildren (): number {
-        return this.getTestResults().length
+        return this.bloomed
+            ? this.tests.length
+            : this.getTestResults().length
     }
 
     /**
@@ -57,7 +74,7 @@ export abstract class Nugget extends EventEmitter {
      * Returns a given test result object to default values.
      *
      * @param result The result object that will be persisted.
-     * @param status Which status to recursively set. False will persist current status.
+     * @param status Which status to recursively set on tests. False will persist current status.
      */
     protected defaults (result: ITestResult, status: Status | false = 'idle'): ITestResult {
         return (pickBy({
@@ -65,10 +82,12 @@ export abstract class Nugget extends EventEmitter {
             name: result.name,
             displayName: result.displayName !== result.name ? result.displayName : null,
             status: status ? status : result.status,
+            // @TODO: Offload to separate store
             feedback: result.feedback,
             console: result.console,
             params: result.params,
             stats: result.stats,
+            // ...
             tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
         }, property => {
             return isArray(property) ? property.length : !!property
@@ -80,7 +99,7 @@ export abstract class Nugget extends EventEmitter {
      *
      * @param id The identifier of the test to try to find.
      */
-    protected findTest (id: string): ITest | undefined {
+    public findTest (id: string): ITest | undefined {
         return find(this.tests, test => test.getId() === id)
     }
 
@@ -90,14 +109,11 @@ export abstract class Nugget extends EventEmitter {
      * @param result The test result with which to instantiate a new test.
      * @param force Whether to bypass looking for the test in the nugget's current children.
      */
-    protected makeTest (
-        result: ITestResult,
-        force: boolean = false
-    ): ITest {
+    protected makeTest (result: ITestResult, force: boolean = false): ITest {
         let test: ITest | undefined | boolean = force ? false : this.findTest(result.id)
         if (!test) {
             test = this.newTest(result)
-            test.on('selective', this.updateCountsListener)
+            test.on('selected', this.updateCountsListener)
             // If nugget is selected, newly created test should be, too.
             test.selected = this.selected
             this.tests.push(test)
@@ -108,15 +124,24 @@ export abstract class Nugget extends EventEmitter {
     /**
      * Trigger an update of this nugget's selected count.
      */
-    protected updateSelectedCounts (): void {
+    protected async updateSelectedCounts (): Promise<void> {
         const total = this.tests.length
-        const filtered = this.tests.filter(test => test.selected).length
-        if (filtered && !this.selected) {
+        const selectedChildren = this.tests.filter(test => test.selected).length
+        const partial = selectedChildren > 0 && total > 0 && total > selectedChildren
+
+        // Update partial status
+        if (this.partial !== partial) {
+            this.partial = partial
+            this.emit('selective', this)
+            this.emitToRenderer(`${this.getId()}:selective`, this.render())
+        }
+
+        // Update whether this nugget should be selected or not, based on children
+        if (selectedChildren && !this.selected) {
             this.toggleSelected(true, false)
-        } else if (!filtered && this.selected) {
+        } else if (!selectedChildren && this.selected) {
             this.toggleSelected(false, false)
         }
-        this.partial = filtered > 0 && total > 0 && total > filtered
     }
 
     /**
@@ -125,7 +150,7 @@ export abstract class Nugget extends EventEmitter {
      * @param tests An array of test results.
      * @param cleanup Whether to clean obsolete tests after debriefing. Can be overridden by the method's logic.
      */
-    protected debriefTests (tests: Array<ITestResult>, cleanup: boolean) {
+    protected async debriefTests (tests: Array<ITestResult>, cleanup: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
 
             // Attempt to find out if this is the last test to run.
@@ -178,7 +203,9 @@ export abstract class Nugget extends EventEmitter {
             }
         }
         this.updateStatus()
-        return Promise.resolve()
+        if (this.expanded) {
+            this.emitTestsToRenderer()
+        }
     }
 
     /**
@@ -188,7 +215,7 @@ export abstract class Nugget extends EventEmitter {
      */
     protected cleanTestsByStatus (status: Status): void {
         this.tests = this.tests.filter(test => {
-            return test.status !== status
+            return test.getStatus() !== status
         })
     }
 
@@ -215,89 +242,20 @@ export abstract class Nugget extends EventEmitter {
         if (typeof to === 'undefined') {
             const statuses = this.bloomed
                 ? this.tests.map((test: ITest) => test.getStatus())
-                : this.getTestResults().map((test: ITestResult) => test.status)
+                : this.getTestResults().map((test: ITestResult) => this.framework.getNuggetStatus(test.id))
             to = parseStatus(statuses)
         }
         const from = this.getStatus()
-        this.status = to
-
-        // Update the status on the result object, too, if applicable.
-        if (this.result && this.result.status) {
-            this.result.status = to
+        if (to !== from) {
+            this.framework.setNuggetStatus(this.getId(), to, from, false)
         }
-
-        this.emit('status', to, from)
     }
 
     /**
      * Get this nugget's status.
      */
     public getStatus (): Status {
-        return this.status
-    }
-
-    /**
-     * Get this nugget's last updated date as a string.
-     */
-    public getLastUpdated (): string | null {
-        if (this.hasChildren()) {
-            const dates = this.bloomed
-                ? this.tests.map((test: ITest) => test.getLastUpdated())
-                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.first', null))
-            return maxBy(dates, date => {
-                return date ? Date.parse(date).valueOf() : null
-            })
-        }
-
-        // If no children exist, just return this nugget's own information.
-        return get(this.result, 'stats.first', null)
-    }
-
-    /**
-     * Get this nugget's last run date as a string.
-     */
-    public getLastRun (): string | null {
-        if (this.hasChildren()) {
-            const dates = this.bloomed
-                ? this.tests.map((test: ITest) => test.getLastRun())
-                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.last', null))
-            return maxBy(dates, date => {
-                return date ? Date.parse(date).valueOf() : null
-            })
-        }
-
-        // If no children exist, just return this nugget's own information.
-        return get(this.result, 'stats.last', null)
-    }
-
-    /**
-     * Get this nugget's maximum duration in milliseconds.
-     */
-    public getTotalDuration (): number {
-        if (this.hasChildren()) {
-            const durations = this.bloomed
-                ? this.tests.map((test: ITest) => test.getMaxDuration())
-                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.duration', 0))
-            return sum(durations) || 0
-        }
-
-        // If no children exist, just return this nugget's own information.
-        return get(this.result, 'stats.duration', 0)
-    }
-
-    /**
-     * Get this nugget's maximum duration in milliseconds.
-     */
-    public getMaxDuration (): number {
-        if (this.hasChildren()) {
-            const durations = this.bloomed
-                ? this.tests.map((test: ITest) => test.getMaxDuration())
-                : this.getTestResults().map((test: ITestResult) => get(test, 'stats.duration', 0))
-            return max(durations) || 0
-        }
-
-        // If no children exist, just return this nugget's own information.
-        return get(this.result, 'stats.duration', 0)
+        return this.framework.getNuggetStatus(this.getId())
     }
 
     /**
@@ -323,13 +281,14 @@ export abstract class Nugget extends EventEmitter {
             await this.wither()
         }
 
-        this.emit('selective', this)
         if (this.canToggleTests() && cascade !== false) {
             this.tests.forEach(test => {
-                test.toggleSelected(this.selected)
+                test.toggleSelected(this.selected, true)
             })
         }
-        return Promise.resolve()
+
+        this.emit('selected', this, toggle)
+        this.emitToRenderer(`${this.getId()}:selected`, this.render(), toggle)
     }
 
     /**
@@ -352,9 +311,11 @@ export abstract class Nugget extends EventEmitter {
                 test.toggleExpanded(this.expanded)
             })
         }
-        return Promise.resolve()
     }
 
+    /**
+     * Make the test objects nested to this nugget.
+     */
     protected async bloom (): Promise<void> {
         if (this.bloomed) {
             return
@@ -368,31 +329,21 @@ export abstract class Nugget extends EventEmitter {
         })
     }
 
+    /**
+     * Destroy the test objects nested to this nugget, leaving only the static
+     * JSON structure with which to build them again.
+     */
     protected async wither (): Promise<void> {
-        // Never wither a selected nugget or a nugget with an active test inside.
-        if (this.selected || this.tests.some((test: ITest) => test.isActive())) {
+        if (!this.bloomed) {
+            return
+        }
+        // Never wither a selected nugget.
+        if (this.selected) {
             return
         }
         this.result.tests = this.tests.map((test: ITest) => test.persist(false))
         this.tests = []
         this.bloomed = false
-        return Promise.resolve()
-    }
-
-    /**
-     * Set the active state of a nugget.
-     *
-     * @param active The active state to set.
-     */
-    public setActive (active: boolean): void {
-        this.active = active
-    }
-
-    /**
-     * Get the active state of a nugget.
-     */
-    public isActive (): boolean {
-        return this.active
     }
 
     /**
@@ -412,120 +363,29 @@ export abstract class Nugget extends EventEmitter {
     }
 
     /**
-     * Mark this nugget as idle.
-     *
-     * @param selective Whether we're currently in selective mode or not.
+     * Send all tests to renderer process.
      */
-    public idle (selective: boolean): void {
-        this.setFresh(false)
-        this.updateStatus('idle')
-        this.tests
-            .filter(test => selective && this.canToggleTests() ? test.selected : true)
-            .forEach(test => {
-                test.resetResult()
-                test.idle(selective)
-            })
-
+    public async emitTestsToRenderer (): Promise<void> {
         if (!this.bloomed) {
-            // If not bloomed, then granular selecting is not possible, so we
-            // can go ahead and update all the nugget's children's status.
-            this.result!.tests = this.getTestResults().map((test: ITestResult) => {
-                return this.defaults(test, 'idle')
-            })
+            await this.bloom()
         }
+
+        this.emitToRenderer(
+            `${this.getId()}:framework-tests`,
+            this.tests.map((test: ITest) => test.render(false))
+        )
     }
 
     /**
-     * Mark this nugget as queued for running.
-     *
-     * @param selective Whether we're currently in selective mode or not.
+     * Get the ids of this nuggets and its children.
      */
-    public queue (selective: boolean): void {
-        this.setFresh(false)
-        this.updateStatus('queued')
-        this.tests
-            .filter(test => selective && this.canToggleTests() ? test.selected : true)
-            .forEach(test => {
-                test.resetResult()
-                test.queue(selective)
+    protected getRecursiveNuggetIds (result: ITestResult): Array<string> {
+        return flatten([
+            result.id,
+            ...(result.tests || []).map((test: ITestResult) => {
+                return this.getRecursiveNuggetIds(test)
             })
-
-        if (!this.bloomed) {
-            // If not bloomed, then granular selecting is not possible, so we
-            // can go ahead and update all the nugget's children's status.
-            this.result!.tests = this.getTestResults().map((test: ITestResult) => {
-                return this.defaults(test, 'queued')
-            })
-        }
-    }
-
-    /**
-     * Mark this nugget as having an error.
-     *
-     * @param selective Whether we're currently in selective mode or not.
-     */
-    public error (selective: boolean): void {
-        this.setFresh(false)
-        this.updateStatus('error')
-        this.tests
-            .filter(test => selective && this.canToggleTests() ? test.selected : true)
-            .forEach(test => {
-                test.resetResult()
-                test.error(selective)
-            })
-
-        if (!this.bloomed) {
-            // If not bloomed, then granular selecting is not possible, so we
-            // can go ahead and update all the nugget's children's status.
-            this.result!.tests = this.getTestResults().map((test: ITestResult) => {
-                return this.defaults(test, 'error')
-            })
-        }
-    }
-
-    /**
-     * Set the status of this nugget or any of its children if
-     * they are on a queued status (i.e. from an interrupted run).
-     *
-     * @param status The status to set the nugget and children to.
-     * @param selective Whether we're currently in selective mode or not.
-     */
-    protected setQueuedStatus (status: 'idle' | 'error', selective: boolean): void {
-        if (['queued', 'running'].indexOf(this.getStatus()) > -1) {
-            this.tests.forEach(test => {
-                if (['queued', 'running'].indexOf(test.getStatus()) > -1) {
-                    test[status](selective)
-                }
-            })
-            this.result!.tests = this.getTestResults().map((test: ITestResult) => {
-                // Static results can never be "running", so check for "queued" only.
-                if (test.status === 'queued') {
-                    return this.defaults(test, status)
-                }
-                return test
-            })
-            this.updateStatus()
-        }
-    }
-
-    /**
-     * Reset this nugget or any of its children if they are
-     * on a queued status (i.e. from an interrupted run).
-     *
-     * @param selective Whether we're currently in selective mode or not.
-     */
-    public idleQueued (selective: boolean): void {
-        this.setQueuedStatus('idle', selective)
-    }
-
-    /**
-     * Mark this nugget or any of its children if they are on a queued status
-     * as having errored out (i.e. if they were expected to run and didn't)
-     *
-     * @param selective Whether we're currently in selective mode or not.
-     */
-    public errorQueued (selective: boolean): void {
-        this.setQueuedStatus('error', selective)
+        ])
     }
 
     /**

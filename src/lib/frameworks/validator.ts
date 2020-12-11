@@ -32,18 +32,11 @@ export type PotentialFrameworkOptions = FrameworkOptions & {
 }
 
 /**
- * Available options to instantiate a framework validator.
- */
-export type FrameworkValidatorOptions = {
-    repositoryPath: string
-}
-
-/**
  * A generic validation class.
  */
 export class Validator {
 
-    public errors: ValidationErrors = {}
+    protected errors: ValidationErrors = {}
 
     /**
      * Validate the current instance with given data.
@@ -128,12 +121,16 @@ export class Validator {
      *
      * @param key The key to get errors from.
      */
-    public getErrors (key: string): string {
-        if (!this.hasErrors(key)) {
-            return ''
+    public getErrors (key?: string): ValidationErrors|Array<string>|null {
+        if (!key) {
+            return this.errors
         }
 
-        return this.errors[key].join('; ')
+        if (!this.hasErrors(key)) {
+            return null
+        }
+
+        return this.errors[key]
     }
 
     /**
@@ -194,7 +191,7 @@ export class RepositoryValidator extends Validator {
 export class FrameworkValidator extends Validator {
     public readonly repositoryPath: string
 
-    constructor (options: FrameworkValidatorOptions) {
+    constructor (repositoryPath: string) {
         super()
         this.errors = {
             name: [],
@@ -206,7 +203,7 @@ export class FrameworkValidator extends Validator {
             sshPort: [],
             sshIdentity: []
         }
-        this.repositoryPath = options.repositoryPath
+        this.repositoryPath = repositoryPath
     }
 
     /**

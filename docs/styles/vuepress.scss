@@ -1,0 +1,147 @@
+#app {
+    height: 100%;
+
+    .theme-container {
+        height: 100%;
+    }
+
+    a.header-anchor {
+        visibility: hidden;
+    }
+
+    .legal,
+    .documentation {
+
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+
+            a.header-anchor {
+                visibility: visible;
+            }
+        }
+    }
+
+    .navbar {
+        background-color: darken($brand-contrast-color, 3%);
+        border-color: $blue-300;
+
+        .site-name {
+            color: $brand-contrast-text-color;
+
+            &.can-hide {
+                display: none;
+            }
+        }
+
+        .links {
+            background-color: darken($brand-contrast-color, 3%);
+
+            .search-box {
+
+                input {
+                    border-color: $blue-300;
+                }
+            }
+
+            a {
+                border: 0;
+                color: $brand-color;
+
+                &.router-link-active {
+                    color: $brand-contrast-text-color;
+                }
+
+                &.external {
+
+                    svg {
+                        position: relative;
+                        top: 2px;
+                    }
+                }
+            }
+        }
+    }
+
+    .sidebar {
+        background-color: $brand-contrast-color;
+        border-right: 3px solid transparentize($blue-200, .85);
+        outline: 1px solid $blue-200;
+
+        .nav-links {
+            border-color: $blue-200;
+
+            a {
+                color: $brand-color;
+
+                &.router-link-active {
+                    color: $brand-contrast-text-color;
+                }
+
+                &.external {
+
+                    svg {
+                        position: relative;
+                        top: 2px;
+                    }
+                }
+            }
+        }
+
+        .sidebar-links {
+
+            .sidebar-link {
+                color: $brand-contrast-text-color;
+
+                &.active {
+                    color: $brand-color;
+                    border-left-color: $brand-color;
+                }
+            }
+
+            ul,
+            ol {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    .last-updated {
+
+        .time {
+            color: $blue-400;
+        }
+    }
+
+    .badge {
+        height: 22px;
+        line-height: 22px;
+    }
+
+    .custom-block {
+        font-weight: 400;
+
+        .custom-block-title {
+            margin-top: 1em;
+            margin-bottom: .4em;
+        }
+
+        &.tip {
+            background-color: $green-100;
+            border-color: $green-300;
+            color: $brand-contrast-text-color;
+        }
+
+        &.warning {
+            background-color: $yellow-100;
+            border-color: $yellow-500;
+            color: $brand-contrast-text-color;
+
+            .custom-block-title {
+                color: $brand-contrast-text-color;
+            }
+        }
+    }
+}

@@ -10,7 +10,7 @@ import { FrameworkValidator } from '@lib/frameworks/validator'
 import { FrameworkSort } from '@lib/frameworks/sort'
 
 export class PHPUnit extends Framework {
-    public canToggleTests: boolean = true
+    public readonly canToggleTests: boolean = true
 
     static readonly defaults: FrameworkDefaults = {
         all: {
@@ -48,28 +48,30 @@ export class PHPUnit extends Framework {
      *
      * @param repository The parsed repository to test.
      */
-    public static spawnForDirectory (repository: ParsedRepository): FrameworkOptions | false {
-        // Cheapest way to check is the PHPUnit XML config file.
-        if (repository.files.includes('phpunit.xml') || repository.files.includes('phpunit.xml.dist')) {
-            return this.hydrate()
-        }
-        // If no config file exists, check for binary inside dependencies.
-        if (Fs.existsSync(Path.join(repository.path, 'vendor/bin/phpunit'))) {
-            return this.hydrate()
-        }
-        return false
+    public static async spawnForDirectory (repository: ParsedRepository): Promise<FrameworkOptions | false> {
+        return new Promise((resolve, reject) => {
+            // Cheapest way to check is the PHPUnit XML config file.
+            if (repository.files.includes('phpunit.xml') || repository.files.includes('phpunit.xml.dist')) {
+                resolve(this.hydrate())
+                return
+            }
+            // If no config file exists, check for binary inside dependencies.
+            Fs.access(Path.join(repository.path, 'vendor/bin/phpunit'), error => {
+                resolve(error ? false : this.hydrate())
+            })
+        })
     }
 
     /**
      * Prepare this framework for running.
      */
-    protected assemble (): void {
+    protected async assemble (): Promise<void> {
         super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
                 ? Path.resolve(__dirname, loc('../../reporters/phpunit'))
                 : unpacked(Path.join(__static, loc('./reporters/phpunit')))
-            Fs.copySync(reporter, this.injectPath())
+            await Fs.copy(reporter, this.injectPath())
         }
     }
 
@@ -195,7 +197,7 @@ export class PHPUnit extends Framework {
     }
 
     /**
-     * Provide setup instructions for using Lode with Jest.
+     * Provide setup instructions for using Lode with PHPUnit.
      */
     public static instructions (): string {
         return ''

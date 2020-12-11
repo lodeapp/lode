@@ -1,0 +1,6 @@
+{
+  "version": "0.28.4",
+  "path": "https://github.com/lodeapp/lode/releases/download/v0.28.4/Lode-0.28.4.dmg",
+  "releaseDate": "2020-01-07T09:36:32.447Z",
+  "releaseNotes": "Changed:\n    - Updated Electron to 6.1.7\n"
+}

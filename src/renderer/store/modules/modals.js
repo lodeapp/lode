@@ -40,13 +40,13 @@ export default {
         }
     },
     getters: {
-        isOpen: (state) => name => {
+        isOpen: state => name => {
             return _last(state.modals) === name
         },
-        hasModals: (state) => {
+        hasModals: state => {
             return state.modals.length > 0
         },
-        modals: (state) => {
+        modals: state => {
             return state.modals
         }
     }

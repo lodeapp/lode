@@ -28,10 +28,10 @@ beforeAll(() => {
         warn () {},
         error () {}
     }
-    global.console = { log () {} }
+    global.console = { debug () {} }
 })
 
-describe('main/lib/process/DefaultProcess', () => {
+describe('lib/process/DefaultProcess', () => {
     it('spawns processes', () => {
         const spawned = new DefaultProcess({
             path: 'pantry',
@@ -53,7 +53,7 @@ describe('main/lib/process/DefaultProcess', () => {
         expect(options.windowsHide).toBe(true)
         expect(options.env).toEqual(expect.objectContaining({
             NODE_ENV: 'test', // Includes running environment.
-            FORCE_COLOR: 1    // Adds process overrides.
+            FORCE_COLOR: 3    // Adds process overrides.
         }))
 
         expect(spawned.process.stdout.setEncoding).toHaveBeenCalledTimes(1)

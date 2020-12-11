@@ -1,65 +1,29 @@
 import { uniq } from 'lodash'
 
-declare type STATUSMAP = {
-    EMPTY: 'empty'
-    ERROR: 'error'
-    FAILED: 'failed'
-    IDLE: 'idle'
-    INCOMPLETE: 'incomplete'
-    LOADING: 'loading'
-    MISSING: 'missing'
-    PARTIAL: 'partial'
-    PASSED: 'passed'
-    QUEUED: 'queued'
-    REFRESHING: 'refreshing'
-    RUNNING: 'running'
-    SKIPPED: 'skipped'
-    STOPPED: 'stopped'
-    WARNING: 'warning'
-}
-
-export const STATUS: STATUSMAP = {
-    EMPTY: 'empty',
-    ERROR: 'error',
-    FAILED: 'failed',
-    IDLE: 'idle',
-    INCOMPLETE: 'incomplete',
-    LOADING: 'loading',
-    MISSING: 'missing',
-    PARTIAL: 'partial',
-    PASSED: 'passed',
-    QUEUED: 'queued',
-    REFRESHING: 'refreshing',
-    RUNNING: 'running',
-    SKIPPED: 'skipped',
-    STOPPED: 'stopped',
-    WARNING: 'warning'
-}
-
 /**
  * Possible statuses for tests.
  */
 export type Status =
-    | STATUSMAP['QUEUED']
-    | STATUSMAP['RUNNING']
-    | STATUSMAP['PASSED']
-    | STATUSMAP['FAILED']
-    | STATUSMAP['INCOMPLETE']
-    | STATUSMAP['SKIPPED']
-    | STATUSMAP['WARNING']
-    | STATUSMAP['PARTIAL']
-    | STATUSMAP['EMPTY']
-    | STATUSMAP['IDLE']
-    | STATUSMAP['ERROR']
+    | 'queued'
+    | 'running'
+    | 'passed'
+    | 'failed'
+    | 'incomplete'
+    | 'skipped'
+    | 'warning'
+    | 'partial'
+    | 'empty'
+    | 'idle'
+    | 'error'
 
 /**
  * Possible statuses for frameworks.
  */
 export type FrameworkStatus =
     | Status
-    | STATUSMAP['REFRESHING']
-    | STATUSMAP['LOADING']
-    | STATUSMAP['MISSING']
+    | 'refreshing'
+    | 'loading'
+    | 'missing'
 
 /**
  * A ledger of statuses.
@@ -69,24 +33,31 @@ export type StatusLedger = {
 }
 
 /**
+ * A map of ids and their statuses.
+ */
+export type StatusMap = {
+    [key: string]: Status
+}
+
+/**
  * Labels for each status
  */
 export const labels = {
-    [STATUS.EMPTY]: 'Empty',
-    [STATUS.ERROR]: 'Error',
-    [STATUS.FAILED]: 'Failed',
-    [STATUS.IDLE]: 'Idle',
-    [STATUS.INCOMPLETE]: 'Incomplete',
-    [STATUS.LOADING]: 'Loading',
-    [STATUS.MISSING]: 'Missing',
-    [STATUS.PARTIAL]: 'Partial',
-    [STATUS.PASSED]: 'Passed',
-    [STATUS.QUEUED]: 'Queued',
-    [STATUS.REFRESHING]: 'Refreshing',
-    [STATUS.RUNNING]: 'Running',
-    [STATUS.SKIPPED]: 'Skipped',
-    [STATUS.STOPPED]: 'Stopped',
-    [STATUS.WARNING]: 'Warning'
+    empty: 'Empty',
+    error: 'Error',
+    failed: 'Failed',
+    idle: 'Idle',
+    incomplete: 'Incomplete',
+    loading: 'Loading',
+    missing: 'Missing',
+    partial: 'Partial',
+    passed: 'Passed',
+    queued: 'Queued',
+    refreshing: 'Refreshing',
+    running: 'Running',
+    skipped: 'Skipped',
+    stopped: 'Stopped',
+    warning: 'Warning'
 }
 
 /**
@@ -97,15 +68,15 @@ export const labels = {
 export function parseStatus (components: Array<Status>): Status {
     // If no components were found, or every component is of status 'empty',
     // parent should be marked and 'empty', too.
-    if (!components.length || components.every(component => component === STATUS.EMPTY)) {
-        return STATUS.EMPTY
+    if (!components.length || components.every(component => component === 'empty')) {
+        return 'empty'
     }
 
     // Exclude stray empty status before parsing all parts (e.g. all idle parts
     // with the occasional empty part should result in idle status, not partial).
     // We assume, therefore, than an empty part has no effect on the total
     // result. This goes against assuming empty parts should trigger a warning.
-    components = components.filter(component => component !== STATUS.EMPTY)
+    components = components.filter(component => component !== 'empty')
 
     components = uniq(components)
     if (components.length === 1) {
@@ -116,24 +87,24 @@ export function parseStatus (components: Array<Status>): Status {
     // final status as running, assuming this is transient because the status
     // will update again until queued components are run or process is stopped,
     // in which case we'll manually change from running to something else.
-    if (components.includes(STATUS.QUEUED)) {
-        return STATUS.RUNNING
+    if (components.includes('queued') || components.includes('running')) {
+        return 'running'
     }
 
-    if (components.includes(STATUS.ERROR)) {
-        return STATUS.ERROR
+    if (components.includes('error')) {
+        return 'error'
     }
 
-    if (components.includes(STATUS.FAILED)) {
-        return STATUS.FAILED
+    if (components.includes('failed')) {
+        return 'failed'
     }
 
-    if (components.includes(STATUS.WARNING)) {
-        return STATUS.WARNING
+    if (components.includes('warning')) {
+        return 'warning'
     }
 
-    if (components.includes(STATUS.INCOMPLETE)) {
-        return STATUS.INCOMPLETE
+    if (components.includes('incomplete') && !components.includes('idle')) {
+        return 'incomplete'
     }
 
     // If components include a skipped test, we'll consider its parent as
@@ -143,11 +114,11 @@ export function parseStatus (components: Array<Status>): Status {
     // activated by the user itself rather than activated and skipped by the
     // framework itself. Not 100% sure this is the right way to go, so we can
     // revisit this in the future with more experience and feedback.
-    if (components.includes(STATUS.SKIPPED)) {
-        return STATUS.INCOMPLETE
+    if (components.includes('skipped') && !components.includes('idle')) {
+        return 'incomplete'
     }
 
-    return STATUS.PARTIAL
+    return 'partial'
 }
 
 /**
@@ -158,8 +129,8 @@ export function parseStatus (components: Array<Status>): Status {
  * @param components An array of statuses with which to compute the final one.
  */
 export function parseFrameworkStatus (components: Array<FrameworkStatus>): FrameworkStatus {
-    if (!components.length || components.every(component => component === STATUS.EMPTY)) {
-        return STATUS.EMPTY
+    if (!components.length || components.every(component => component === 'empty')) {
+        return 'empty'
     }
 
     components = uniq(components)
@@ -167,16 +138,16 @@ export function parseFrameworkStatus (components: Array<FrameworkStatus>): Frame
         return components[0]
     }
 
-    if (components.includes(STATUS.LOADING)) {
-        return STATUS.LOADING
+    if (components.includes('loading')) {
+        return 'loading'
     }
 
-    if (components.includes(STATUS.RUNNING)) {
-        return STATUS.RUNNING
+    if (components.includes('refreshing')) {
+        return 'refreshing'
     }
 
-    if (components.includes(STATUS.REFRESHING)) {
-        return STATUS.REFRESHING
+    if (components.includes('missing')) {
+        return 'error'
     }
 
     return parseStatus(components as Array<Status>)

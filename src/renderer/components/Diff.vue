@@ -5,19 +5,20 @@
                 <Collapsible
                     v-for="(part, key) in parts"
                     :show="key === 'diff' || !hasDiff"
-                    :copy="part"
                     :key="key"
                 >
-                    <template v-slot:header>
+                    <template #header>
                         <span v-html="partName(key)"></span>
                     </template>
-                    <template>
-                        <Snippet :code="part" :language="key === 'diff' ? 'diff' : ''" />
-                    </template>
+                    <Snippet
+                        :code="part"
+                        :language="key === 'diff' ? 'diff' : ''"
+                        :copy="part"
+                    />
                 </Collapsible>
             </div>
         </template>
-        <Snippet v-else :code="diff" language="diff" />
+        <Snippet v-else :code="diff" language="diff" :copy="diff" />
     </div>
 </template>
 

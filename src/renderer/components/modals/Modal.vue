@@ -84,13 +84,15 @@ export default {
         document.addEventListener('keydown', this.escapeHandler)
 
         const selectors = ['.autofocus', 'input, select']
-        selectors.some(selector => {
-            const elements = this.$el.querySelectorAll(selector)
-            if (elements.length) {
-                elements[0].focus()
-                return true
-            }
-        })
+        setTimeout(() => {
+            selectors.some(selector => {
+                const elements = this.$el.querySelectorAll(selector)
+                if (elements.length) {
+                    elements[0].focus()
+                    return true
+                }
+            })
+        }, 10)
     },
     destroyed () {
         document.removeEventListener('keydown', this.escapeHandler)

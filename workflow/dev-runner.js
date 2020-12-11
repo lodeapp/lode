@@ -10,6 +10,7 @@ const webpackHotMiddleware = require('webpack-hot-middleware')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 const mainConfig = require('./webpack.main.config')
+const preloadConfig = require('./webpack.preload.config')
 const rendererConfig = require('./webpack.renderer.config')
 
 let electronProcess = null
@@ -19,6 +20,7 @@ let hotMiddleware
 function logStats (proc, data) {
     let log = ''
 
+    log += '\n'
     log += chalk.yellow.bold(`┏ ${proc} Process ${new Array((19 - proc.length) + 1).join('-')}`)
     log += '\n\n'
 
@@ -33,7 +35,7 @@ function logStats (proc, data) {
         log += `  ${data}\n`
     }
 
-    log += '\n' + chalk.yellow.bold(`┗ ${new Array(28 + 1).join('-')}`) + '\n'
+    log += '\n' + chalk.yellow.bold(`┗ ${new Array(28 + 1).join('-')}`)
 
     console.log(log)
 }
@@ -77,14 +79,13 @@ function startRenderer () {
     })
 }
 
-function startMain () {
+function start (name, config) {
     return new Promise((resolve, reject) => {
-        mainConfig.entry.main = [Path.join(__dirname, '../src/main/index.dev.ts')].concat(mainConfig.entry.main)
-        mainConfig.mode = 'development'
-        const compiler = webpack(mainConfig)
+        config.mode = 'development'
+        const compiler = webpack(config)
 
         compiler.hooks.watchRun.tapAsync('watch-run', (compilation, done) => {
-            logStats('Main', chalk.white.bold('compiling...'))
+            logStats(name, chalk.white.bold('compiling...'))
             hotMiddleware.publish({ action: 'compiling' })
             done()
         })
@@ -95,7 +96,7 @@ function startMain () {
                 return
             }
 
-            logStats('Main', stats)
+            logStats(name, stats)
 
             if (electronProcess && electronProcess.kill) {
                 manualRestart = true
@@ -113,16 +114,25 @@ function startMain () {
     })
 }
 
+function startPreload () {
+    return start('Preload', preloadConfig)
+}
+
+function startMain () {
+    mainConfig.entry.main = [Path.join(__dirname, '../src/main/index.dev.ts')].concat(mainConfig.entry.main)
+    return start('Main', mainConfig)
+}
+
 function startElectron () {
     if (process.argv[2] === 'migrate') {
         electronProcess = spawn(electron, [
             '--inspect=5858',
-            Path.join(__dirname, '../dist/electron/main.js'),
+            Path.join(__dirname, '../dist/main.js'),
             'migrate',
             process.argv[3] || 'up'
         ])
     } else {
-        electronProcess = spawn(electron, ['--inspect=5858', Path.join(__dirname, '../dist/electron/main.js')])
+        electronProcess = spawn(electron, ['--inspect=5858', Path.join(__dirname, '../dist/main.js')])
     }
 
     electronProcess.stdout.on('data', data => {
@@ -158,7 +168,7 @@ function init () {
         return
     }
 
-    Promise.all([startRenderer(), startMain()])
+    Promise.all([startRenderer(), startPreload(), startMain()])
         .then(() => {
             startElectron()
         })

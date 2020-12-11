@@ -1,35 +1,41 @@
 <template>
-    <div class="results" :class="{ blankslate: !testActive || loading }">
-        <h3 v-if="!testActive">No test selected</h3>
+    <div class="results" :class="{ blankslate: !activeTest || loading }">
+        <h3 v-if="!activeTest">No test selected</h3>
         <div v-if="loading" class="loading">
             <div class="loading-group">
                 <div class="spinner"></div>
             </div>
         </div>
-        <div v-if="test && !loading" class="has-status" :class="[`status--${test.getStatus()}`]">
+        <div v-if="activeTest && !loading" class="has-status" :class="[`status--${status}`]">
             <div class="header">
                 <div class="title">
-                    <Indicator :status="test.getStatus()" />
-                    <h2 class="heading">{{ test.getDisplayName() }}</h2>
+                    <Indicator :status="status" />
+                    <h2 class="heading">{{ displayName }}</h2>
                 </div>
                 <nav class="breadcrumbs" aria-label="Breadcrumb">
                     <ol>
                         <li
                             v-for="breadcrumb in breadcrumbs"
-                            :key="breadcrumb.getId()"
+                            :key="$string.from(breadcrumb)"
                             class="breadcrumb-item text-small"
-                        >{{ breadcrumb.getDisplayName() }}</li>
+                        >{{ breadcrumb.relative || breadcrumb.name }}</li>
                     </ol>
                 </nav>
             </div>
-            <TestResult :context="context" :key="$string.from(test)" />
+            <TestResult
+                :key="$string.from([test, results])"
+                :framework="framework"
+                :results="results"
+                :status="status"
+            />
         </div>
     </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import _clone from 'lodash/clone'
 import _last from 'lodash/last'
+import { mapGetters } from 'vuex'
 import Indicator from '@/components/Indicator'
 import TestResult from '@/components/TestResult'
 
@@ -47,35 +53,60 @@ export default {
     },
     data () {
         return {
-            loading: false
+            loading: false,
+            breadcrumbs: [],
+            framework: {},
+            test: {},
+            results: {}
         }
     },
     computed: {
-        test () {
-            if (this.context.length > 2) {
-                return _last(this.context)
-            }
-            return null
+        identifier () {
+            return _last(this.context)
         },
-        breadcrumbs () {
-            // Remove repository and framework from breadcrumbs, as it feels
-            // like an unnecessary repetition. We want both in the complete
-            // context for other purposes, just not necessarily here.
-            return this.context.slice(2, (this.context.length - 1))
+        status () {
+            return this.getStatus(this.identifier)
+        },
+        displayName () {
+            return this.test.displayName || this.test.name
         },
         ...mapGetters({
-            testActive: 'context/test'
+            activeTest: 'context/test',
+            suitesKey: 'context/suitesKey',
+            getStatus: 'status/nugget'
         })
     },
     watch: {
-        testActive (test) {
-            if (!test) {
-                this.$emit('reset')
+        status () {
+            this.load()
+        },
+        suitesKey () {
+            this.load()
+        }
+    },
+    mounted () {
+        this.load()
+    },
+    methods: {
+        async load () {
+            if (this.context.length < 3) {
                 return
             }
             this.loading = true
-        },
-        context () {
+            const context = _clone(this.context)
+            const frameworkId = context.shift()
+            const { framework, nuggets, results } = await Lode.ipc.invoke('test-get', frameworkId, context)
+            if (!framework) {
+                // If an error occurs when trying to get a test, assume it's
+                // been removed and force user to select another.
+                this.$store.commit('context/CLEAR_NUGGETS')
+                this.loading = false
+                return
+            }
+            this.breadcrumbs = nuggets
+            this.framework = framework
+            this.test = nuggets.pop()
+            this.results = results
             this.loading = false
         }
     }

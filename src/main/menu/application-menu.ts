@@ -1,19 +1,18 @@
 import { ensureDir } from 'fs-extra'
-import { app, Menu, ipcMain, shell } from 'electron'
-import { MenuEvent } from './menu-event'
+import { app, ipcMain, Menu, shell } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
-import { ProjectIdentifier } from '@lib/frameworks/project'
-import { autoUpdater } from 'electron-updater'
-
-// We seem to be unable to simple declare menu items as "radio" without TS
-// raising an alert, so we need to forcibly cast types when defining them.
-type MenuItemType = ('normal' | 'separator' | 'submenu' | 'checkbox' | 'radio')
+import { ProjectMenu, FrameworkMenu } from '@main/menu'
+import { ApplicationWindow } from '@main/application-window'
+import { ProjectIdentifier, IProject } from '@lib/frameworks/project'
+import { IRepository } from '@lib/frameworks/repository'
+import { IFramework } from '@lib/frameworks/framework'
 
 type ClickHandler = (
     menuItem: Electron.MenuItem,
-    browserWindow: Electron.BrowserWindow,
-    event: Electron.Event
+    browserWindow: Electron.BrowserWindow | undefined,
+    event: Electron.KeyboardEvent
 ) => void
 
 enum ZoomDirection {
@@ -26,8 +25,19 @@ class ApplicationMenu {
 
     protected template: Array<Electron.MenuItemConstructorOptions> = []
 
-    protected options: { [index: string]: any } = {
-        hasFramework: false,
+    protected window: ApplicationWindow | null = null
+
+    protected options: {
+        project: IProject | null,
+        repository: IRepository | null
+        framework: IFramework | null,
+        isCheckingForUpdate: boolean,
+        isDownloadingUpdate: boolean,
+        hasDownloadedUpdate: boolean
+    } = {
+        project: null,
+        repository: null,
+        framework: null,
         isCheckingForUpdate: false,
         isDownloadingUpdate: false,
         hasDownloadedUpdate: false
@@ -37,10 +47,9 @@ class ApplicationMenu {
         const template = new Array<Electron.MenuItemConstructorOptions>()
         const separator: Electron.MenuItemConstructorOptions = { type: 'separator' }
 
-        const currentProject: string | null = state.getCurrentProject()
+        const currentProject: ProjectIdentifier | null = state.getCurrentProject()
         const projects: Array<ProjectIdentifier> = state.getAvailableProjects()
 
-        const hasFramework = this.options.hasFramework
         const isCheckingForUpdate = this.options.isCheckingForUpdate
         const isDownloadingUpdate = this.options.isDownloadingUpdate
         const hasDownloadedUpdate = this.options.hasDownloadedUpdate
@@ -94,7 +103,7 @@ class ApplicationMenu {
                 {
                     label: __DARWIN__ ? 'New Project' : 'New project',
                     accelerator: 'CmdOrCtrl+N',
-                    click: emit('new-project')
+                    click: emit('project-add')
                 },
                 {
                     label: __DARWIN__ ? 'Switch Project' : 'Switch project',
@@ -102,13 +111,13 @@ class ApplicationMenu {
                     submenu: projects && projects.length > 1 ? projects.map(project => {
                         return {
                             label: project.name,
-                            type: <MenuItemType>'checkbox',
-                            checked: currentProject === project.id,
-                            click: emit('switch-project', project.id, (menuItem: Electron.MenuItem) => {
+                            type: 'checkbox',
+                            checked: !!currentProject && currentProject.id === project.id,
+                            click: emit('project-switch', project.id, (menuItem: Electron.MenuItem) => {
                                 // Don't toggle the item, unless it's the current project,
                                 // as the switch might still be cancelled by the user. If
                                 // switch project is confirmed, menu will be rebuilt anyway.
-                                menuItem.checked = currentProject === project.id
+                                menuItem.checked = !!currentProject && currentProject.id === project.id
                             })
                         }
                     }) : undefined
@@ -175,105 +184,36 @@ class ApplicationMenu {
                 },
                 separator,
                 {
-                        label: __DARWIN__
-                            ? 'Toggle Developer Tools'
-                            : 'Toggle developer tools',
-                        accelerator: (() => {
-                            return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
-                        })(),
-                        click(item: any, focusedWindow: Electron.BrowserWindow) {
-                            if (focusedWindow) {
-                                focusedWindow.webContents.toggleDevTools()
-                            }
-                        },
-                    }
+                    label: __DARWIN__
+                        ? 'Toggle Developer Tools'
+                        : 'Toggle developer tools',
+                    accelerator: (() => {
+                        return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
+                    })(),
+                    click (item: any, focusedWindow: Electron.BrowserWindow | undefined) {
+                        if (focusedWindow) {
+                            focusedWindow.webContents.toggleDevTools()
+                        }
+                    },
+                }
             ]
         })
 
         template.push({
             label: __DARWIN__ ? 'Project' : '&Project',
-            submenu: [
-                {
-                    label: __DARWIN__ ? 'Refresh All' : 'Refresh all',
-                    accelerator: 'CmdOrCtrl+Alt+Shift+R',
-                    click: emit('refresh-all')
-                },
-                {
-                    label: __DARWIN__ ? 'Run All' : 'Run all',
-                    accelerator: 'CmdOrCtrl+Alt+R',
-                    click: emit('run-all')
-                },
-                {
-                    label: __DARWIN__ ? 'Stop All' : 'Stop all',
-                    accelerator: 'Alt+Esc',
-                    click: emit('stop-all')
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Rename Project' : 'Rename project',
-                    accelerator: 'CmdOrCtrl+Alt+E',
-                    click: emit('rename-project')
-                },
-                {
-                    label: __DARWIN__ ? 'Remove Project' : 'Remove project',
-                    accelerator: 'CmdOrCtrl+Alt+Backspace',
-                    click: emit('remove-project')
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Add Repositories… ' : 'Add repositories…',
-                    accelerator: 'CmdOrCtrl+Alt+O',
-                    click: emit('add-repositories')
-                }
-            ]
+            submenu: new ProjectMenu(
+                this.options.project,
+                this.window!.getWebContents()
+            ).getTemplate()
         })
 
         template.push({
             label: __DARWIN__ ? 'Framework' : 'F&ramework',
-            submenu: [
-                {
-                    label: __DARWIN__ ? 'Refresh Framework' : 'Refresh framework',
-                    click: emit('refresh-framework'),
-                    accelerator: 'CmdOrCtrl+Shift+R',
-                    enabled: hasFramework
-                },
-                {
-                    label: __DARWIN__ ? 'Run Framework' : 'Run framework',
-                    click: emit('run-framework'),
-                    accelerator: 'CmdOrCtrl+R',
-                    enabled: hasFramework
-                },
-                {
-                    label: __DARWIN__ ? 'Stop Framework' : 'Stop framework',
-                    click: emit('stop-framework'),
-                    accelerator: (() => {
-                        return __DARWIN__ ? 'Command+Esc' : 'Ctrl+Esc'
-                    })(),
-                    enabled: hasFramework
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Filter Items' : 'Filter items',
-                    click: emit('filter'),
-                    accelerator: (() => {
-                        return __DARWIN__ ? 'Command+F' : 'Ctrl+F'
-                    })(),
-                    enabled: hasFramework
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Framework Settings…' : 'Framework settings…',
-                    click: emit('framework-settings'),
-                    enabled: hasFramework
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Remove Framework' : 'Remove framework',
-                    click: emit('remove-framework'),
-                    accelerator: 'CmdOrCtrl+Backspace',
-                    enabled: hasFramework
-                }
-            ]
+            submenu: new FrameworkMenu(
+                this.options.repository,
+                this.options.framework,
+                this.window!.getWebContents()
+            ).getTemplate()
         })
 
         if (__DEV__) {
@@ -283,7 +223,7 @@ class ApplicationMenu {
                     {
                         label: '&Reload',
                         accelerator: 'CmdOrCtrl+Shift+0',
-                        click(item: any, focusedWindow: Electron.BrowserWindow) {
+                        click(item: any, focusedWindow: Electron.BrowserWindow | undefined) {
                             if (focusedWindow) {
                                 focusedWindow.reload()
                             }
@@ -299,6 +239,10 @@ class ApplicationMenu {
                         label: __DARWIN__ ? 'Log Settings' : 'Log settings',
                         click: emit('log-settings')
                     },
+                    {
+                        label: __DARWIN__ ? 'Log Renderer State' : 'Log renderer state',
+                        click: emit('log-renderer-state')
+                    },
                     separator,
                     {
                         label: __DARWIN__
@@ -310,7 +254,7 @@ class ApplicationMenu {
                             const path = app.getPath('userData')
                             ensureDir(path)
                                 .then(() => {
-                                    shell.openItem(path)
+                                    shell.openPath(path)
                                 })
                                 .catch(error => {
                                     log.error('Failed to opened logs directory from menu.', error)
@@ -380,7 +324,7 @@ class ApplicationMenu {
                             const path = getLogDirectoryPath()
                             ensureDir(path)
                                 .then(() => {
-                                    shell.openItem(path)
+                                    shell.openPath(path)
                                 })
                                 .catch(error => {
                                     log.error('Failed to opened logs directory from menu.', error)
@@ -389,7 +333,7 @@ class ApplicationMenu {
                     },
                     {
                         label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
-                        click: emit('reset-settings')
+                        click: emit('settings-reset')
                     }
                 ]
             }
@@ -421,11 +365,16 @@ class ApplicationMenu {
         this.template = template
     }
 
-    public build (): Promise<Array<Electron.MenuItemConstructorOptions>> {
-        return new Promise((resolve, reject) => {
-            this.render()
-            resolve(this.template)
+    public build (window: ApplicationWindow | null): Promise<Array<Electron.MenuItemConstructorOptions>> {
+        this.setWindow(window)
+        return this.setOptions({
+            ...this.options,
+            project: window ? window.getProject() : null
         })
+    }
+
+    public setWindow (window: ApplicationWindow | null): void {
+        this.window = window
     }
 
     public setOptions (options: any): Promise<Array<Electron.MenuItemConstructorOptions>> {
@@ -449,7 +398,7 @@ class ApplicationMenu {
  * Utility function returning a Click event handler which, when invoked, emits
  * the provided menu event over IPC.
  */
-function emit(name: MenuEvent, properties?: any, callback?: Function): ClickHandler {
+function emit (name: MenuEvent, properties?: any, callback?: Function): ClickHandler {
     return (menuItem, window, event) => {
         if (window) {
             window.webContents.send('menu-event', { name, properties })
@@ -471,7 +420,7 @@ const ZoomOutFactors = ZoomInFactors.slice().reverse()
  * Returns the element in the array that's closest to the value parameter. Note
  * that this function will throw if passed an empty array.
  */
-function findClosestValue(arr: Array<number>, value: number) {
+function findClosestValue (arr: Array<number>, value: number) {
     return arr.reduce((previous, current) => {
         return Math.abs(current - value) < Math.abs(previous - value)
             ? current
@@ -483,7 +432,7 @@ function findClosestValue(arr: Array<number>, value: number) {
  * Figure out the next zoom level for the given direction and alert the renderer
  * about a change in zoom factor if necessary.
  */
-function zoom(direction: ZoomDirection): ClickHandler {
+function zoom (direction: ZoomDirection): ClickHandler {
     return (menuItem, window) => {
         if (!window) {
             return

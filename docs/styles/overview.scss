@@ -1,0 +1,71 @@
+.overview {
+
+    .download {
+
+        .version {
+            display: block;
+
+            .badge {
+                background-color: transparent;
+                border: 1px solid currentColor;
+                color: inherit;
+                font-size: .8rem;
+                margin: 0 0 0 5px;
+                padding: 0 4px;
+                position: relative;
+                top: -3px;
+            }
+        }
+
+        .github {
+
+            i {
+                display: inline-block;
+                width: 27px;
+
+                svg {
+                    left: 16px;
+                    position: absolute;
+                    top: 9px;
+                }
+            }
+        }
+    }
+
+    .full-screenshot {
+        border-radius: 5px;
+        border: 1px solid rgb(200, 200, 200);
+        box-shadow: 0 10px 20px transparentize($brand-contrast-text-color, .75);
+        max-width: 960px !important;
+        width: 100%;
+    }
+
+    .feature {
+        margin: 0 auto;
+        max-width: 960px;
+        text-align: center;
+        width: auto;
+
+        img {
+            display: block;
+            margin: 0 auto;
+            max-width: 490px;
+            width: 100%;
+        }
+
+        h3 {
+            margin-top: -25px;
+
+            @media (min-width: 1012px) {
+                margin-top: 0;
+            }
+        }
+
+        &.feature--right {
+
+            img {
+                order: 2;
+            }
+        }
+    }
+}

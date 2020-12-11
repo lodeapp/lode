@@ -9,7 +9,7 @@
             <Icon v-if="status === 'error'" symbol="issue-opened" />
             <Icon v-if="status === 'empty'" symbol="circle-slash" />
             <Icon v-if="status === 'missing'" symbol="question" />
-            <span v-if="['loading', 'refreshing', 'running'].indexOf(status) > -1" class="spinner"></span>
+            <span v-if="['queued', 'loading', 'refreshing', 'running'].indexOf(status) > -1" class="spinner"></span>
         </span>
     </div>
 </template>
@@ -25,9 +25,9 @@ export default {
             required: true
         }
     },
-    data () {
-        return {
-            label: labels[this.status]
+    computed: {
+        label () {
+            return labels[this.status]
         }
     }
 }

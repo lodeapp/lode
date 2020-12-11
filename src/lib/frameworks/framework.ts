@@ -1,19 +1,29 @@
 import * as Path from 'path'
 import * as Fs from 'fs-extra'
-import { chunk, find, findIndex, get, orderBy, trim, trimStart } from 'lodash'
+import { chunk, debounce, find, findIndex, get, omit, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import * as fuzzy from 'fuzzysearch'
-import { EventEmitter } from 'events'
+import { ApplicationWindow } from '@main/application-window'
 import { ProcessId, IProcess } from '@lib/process/process'
-import { ProcessBridge } from '@lib/process/bridge'
+import { ProcessFactory } from '@lib/process/factory'
 import { queue } from '@lib/process/queue'
-import { ParsedRepository } from '@lib/frameworks/repository'
+import { ProjectEventEmitter } from '@lib/frameworks/emitter'
+import { IRepository, ParsedRepository } from '@lib/frameworks/repository'
 import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
-import { FrameworkStatus, Status, StatusLedger, parseStatus } from '@lib/frameworks/status'
+import { FrameworkStatus, Status, StatusLedger, StatusMap, parseStatus } from '@lib/frameworks/status'
 import { ProgressLedger } from '@lib/frameworks/progress'
-import { FrameworkSort, sortOptions, sortDirection } from '@lib/frameworks/sort'
+import { FrameworkSort, sortDirection } from '@lib/frameworks/sort'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 import { SSHOptions } from '@lib/process/ssh'
+import pool from '@lib/process/pool'
+
+/**
+ * Framework object with repository context
+ */
+export type FrameworkWithContext = {
+    repository: IRepository
+    framework: IFramework
+}
 
 /**
  * A list of test suites.
@@ -49,40 +59,34 @@ export type FrameworkOptions = {
     scanStatus?: 'pending' | 'removed'
     proprietary: any
     sort?: FrameworkSort
-    sortReverse?: boolean
+    selected?: number
+    canToggleTests?: boolean
+    status?: FrameworkStatus
 }
 
 /**
  * An object to declare default framework options.
  */
 export type FrameworkDefaults = {
-    all: FrameworkOptions,
-    darwin?: object,
-    win32?: object,
+    all: FrameworkOptions
+    darwin?: object
+    win32?: object
     linux?: object
 }
 
 /**
  * The Framework interface.
  */
-export interface IFramework extends EventEmitter {
+export interface IFramework extends ProjectEventEmitter {
     name: string
     type: string
-    command: string
     path: string
     repositoryPath: string
     fullPath: string
     runsInRemote: boolean,
     remotePath: string | null
-    sshHost: string
-    sshUser: string | null
-    sshPort: number | null
-    sshIdentity: string | null
-    runner: string | null
-    process?: ProcessId
     status: FrameworkStatus
-    queue: { [index: string]: Function }
-    canToggleTests: boolean
+    readonly canToggleTests: boolean
 
     getId (): string
     getDisplayName (): string
@@ -90,30 +94,33 @@ export interface IFramework extends EventEmitter {
     getFullRemotePath (): string
     start (): void
     refresh (): void
-    stop (): Promise<void>
+    stop (): Promise<any>
+    reset (): Promise<any>
     isRunning (): boolean
-    isRrefreshing (): boolean
+    isRefreshing (): boolean
     isBusy (): boolean
     empty (): boolean
     count (): number
+    render (): FrameworkOptions
     persist (): FrameworkOptions
     save (): void
-    updateOptions (options: FrameworkOptions): void
+    updateOptions (options: FrameworkOptions): Promise<void>
     setActive (active: boolean): void
     isActive (): boolean
     isSelective (): boolean
+    getAllSuites (): Array<ISuite>
     getSuites (): Array<ISuite>
+    getSuiteById (id: string): ISuite | undefined
     getSelected (): SuiteList
+    emitSuitesToRenderer (): void
     setFilter (filter: FrameworkFilter, value: Array<string> | string | null): void
     getFilter (filter: FrameworkFilter): Array<string> | string | null
     hasFilters (): boolean
     resetFilters (): void
-    setSort (sort: FrameworkSort): void
-    getSort (): FrameworkSort
-    getSupportedSorts (): Array<FrameworkSort>
-    setSortReverse (reverse?: boolean): void
-    isSortReverse (): boolean
     getLedger (): StatusLedger
+    getStatusMap (): StatusMap
+    getNuggetStatus (id: string): Status
+    setNuggetStatus (id: string, to: Status, from: Status, updateLedger: boolean): void
     getProgressLedger (): ProgressLedger
     resetProgressLedger (): void
 }
@@ -122,30 +129,30 @@ export interface IFramework extends EventEmitter {
  * The Framework class represents a testing framework (e.g. Jest, PHPUnit)
  * and contains a set of test suites (files).
  */
-export abstract class Framework extends EventEmitter implements IFramework {
+export abstract class Framework extends ProjectEventEmitter implements IFramework {
     public name!: string
     public type!: string
-    public command!: string
     public path!: string
     public repositoryPath!: string
     public fullPath!: string
-    public runner!: string | null
     public remotePath!: string
     public runsInRemote!: boolean
-    public sshHost!: string
-    public sshUser!: string | null
-    public sshPort!: number | null
-    public sshIdentity!: string | null
-    public process?: ProcessId
-    public running: Array<Promise<void>> = []
-    public killed: boolean = false
     public status: FrameworkStatus = 'loading'
-    public queue: { [index: string]: Function } = {}
-    public canToggleTests: boolean = false
+    public readonly canToggleTests: boolean = false
 
     protected id!: string
 
-    protected parsed: boolean = false
+    protected command!: string
+    protected sshHost!: string
+    protected sshUser!: string | null
+    protected sshPort!: number | null
+    protected sshIdentity!: string | null
+    protected runner!: string | null
+    protected process?: ProcessId
+    protected running: Array<Promise<void>> = []
+    protected killed: boolean = false
+    protected queue: { [index: string]: Function } = {}
+
     protected ready: boolean = false
     protected suites: Array<ISuite> = []
     protected selective: boolean = false
@@ -164,8 +171,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
         group: null
     }
     protected sort!: FrameworkSort
-    protected sortReverse!: boolean
-    protected supportedSorts?: Array<FrameworkSort>
     protected ledger: StatusLedger = {
         queued: 0,
         running: 0,
@@ -179,17 +184,28 @@ export abstract class Framework extends EventEmitter implements IFramework {
         idle: 0,
         error: 0
     }
+    protected statuses: { [key: string]: Status } = {}
     protected progressLedger: ProgressLedger = {
         run: 0,
         total: 0
     }
+    protected emitLedgerToRenderer: _.DebouncedFunc<() => Promise<void>>
 
     static readonly defaults?: FrameworkDefaults
     static readonly sortDefault: FrameworkSort = 'name'
 
-    constructor (options: FrameworkOptions) {
-        super()
-        this.build(options)
+    constructor (window: ApplicationWindow, options: FrameworkOptions) {
+        super(window)
+
+        // Debounce sending ledger and status to renderer
+        this.emitLedgerToRenderer = debounce(() => {
+            this.emitToRenderer(`${this.id}:ledger`, this.ledger, this.statuses)
+        }, 30)
+
+        this.build(options).then(() => {
+            // If options include suites already (i.e. persisted state), add them.
+            this.loadSuites(options.suites || [])
+        })
     }
 
     /**
@@ -199,7 +215,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param options The options to build the framework with.
      */
-    protected build (options: FrameworkOptions) {
+    protected async build (options: FrameworkOptions): Promise<void> {
         this.id = options.id || uuid()
         this.name = options.name
         this.type = options.type
@@ -222,22 +238,18 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
         this.active = options.active || false
         this.sort = options.sort || (this.constructor as typeof Framework).sortDefault
-        this.sortReverse = options.sortReverse || false
 
         this.initialSuiteCount = (options.suites || []).length
         this.hasSuites = this.initialSuiteCount > 0
-
-        // If options include suites already (i.e. persisted state), add them.
-        this.loadSuites(options.suites || [])
     }
 
     /**
      * Prepare this framework for running.
      */
-    protected assemble (): void {
+    protected async assemble (): Promise<void> {
         this.emit('state')
         this.emit('assembled')
-        log.info(`Assembled ${this.name}`)
+        log.debug(`Assembled ${this.name}`)
     }
 
     /**
@@ -250,24 +262,22 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Clean-up after running a process for this framework.
      */
-    protected disassemble (): void {
-        setTimeout(() => {
-            if (this.runsInRemote) {
-                try {
-                    Fs.removeSync(this.injectPath())
-                    const files = Fs.readdirSync(Path.join(this.repositoryPath, '.lode'))
-                    if (!files.length) {
-                        Fs.removeSync(Path.join(this.repositoryPath, '.lode'));
-                    }
-                } catch (error) {
-                    // Fail silently if folder is not found
-                    // or can't be removed.
+    protected async disassemble (): Promise<void> {
+        if (this.runsInRemote) {
+            try {
+                await Fs.remove(this.injectPath())
+                const files = await Fs.readdir(Path.join(this.repositoryPath, '.lode'))
+                if (!files.length) {
+                    await Fs.remove(Path.join(this.repositoryPath, '.lode'));
                 }
+            } catch (error) {
+                // Fail silently if folder is not found
+                // or can't be removed.
             }
-            this.emit('state')
-            this.emit('disassembled')
-            log.info(`Disassembled ${this.name}`)
-        })
+        }
+        this.emit('state')
+        this.emit('disassembled')
+        log.debug(`Disassembled ${this.name}`)
     }
 
     /**
@@ -297,7 +307,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param repository The parsed repository to test.
      */
-    public static spawnForDirectory (repository: ParsedRepository): FrameworkOptions | false {
+    public static async spawnForDirectory (repository: ParsedRepository): Promise<FrameworkOptions | false> {
         return false
     }
 
@@ -341,9 +351,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
-     * Prepares the framework for persistence.
+     * Prepares the framework for sending out to renderer process.
      */
-    public persist (): FrameworkOptions {
+    public render (): FrameworkOptions {
         return {
             id: this.id,
             name: this.name,
@@ -357,11 +367,22 @@ export abstract class Framework extends EventEmitter implements IFramework {
             sshPort: this.sshPort,
             sshIdentity: this.sshIdentity,
             active: this.active,
+            status: this.status,
             proprietary: this.proprietary,
-            sort: this.sort,
-            sortReverse: this.sortReverse,
-            suites: this.suites.map((suite: ISuite) => suite.persist())
+            sort: this.getSort(),
+            selected: this.getSelected().suites.length,
+            canToggleTests: this.canToggleTests
         }
+    }
+
+    /**
+     * Prepares the framework for persistence.
+     */
+    public persist (): FrameworkOptions {
+        return omit({
+            ...this.render(),
+            suites: this.suites.map((suite: ISuite) => suite.persist())
+        }, 'status', 'selective')
     }
 
     /**
@@ -376,7 +397,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      *
      * @param options The new set of options to build the framework with.
      */
-    public updateOptions (options: FrameworkOptions): void {
+    public async updateOptions (options: FrameworkOptions): Promise<void> {
         const initChanged = options.command !== this.command
             || this.runsInRemote !== options.runsInRemote
             || this.sshHost !== options.sshHost
@@ -392,16 +413,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         // Rebuild the options, except id (if not enforced) and suites.
-        this.build({
+        await this.build({
             ...options,
-            ...{ id: options.id || this.id || uuid() },
-            ...{ suites: [] }
+            ...{ id: options.id || this.id || uuid() }
         })
 
         if (initChanged) {
             // If framework initialization has changed, we need to remove the
             // existing suites and add them again, because their unique identifier
             // will potentially have changed (i.e. their absolute file path)
+            this.resetFilters()
             this.resetSuites()
             this.refresh()
         }
@@ -451,15 +472,19 @@ export abstract class Framework extends EventEmitter implements IFramework {
             to = parseStatus(this.suites.map(suite => suite.getStatus()))
         }
         const from = this.status
-        this.status = to
-        this.emit('status', to, from)
+        if (to !== from) {
+            this.status = to
+            this.emit('status', to, from)
+            this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
+            this.emitToRenderer(`${this.id}:status:list`, to, from);
+        }
     }
 
     /**
      * Run this framework's test suites, either fully or selectively.
      */
     protected async handleRun (): Promise<void> {
-        this.assemble()
+        await this.assemble()
         if (this.selective || this.hasFilters()) {
             return this.runSelective()
                 .then(() => {
@@ -483,7 +508,9 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * running, refreshing or cancelling any queued jobs.
      */
     public async stop (): Promise<void> {
-        return new Promise((resolve, reject) => {
+        // Returned promise is being chained and will always fulfill,
+        // so we need to instantiate it with <void> on Typescript 4.1+
+        return new Promise<void>((resolve, reject) => {
             // Before checking the actual process, clear the queue
             this.queue = {}
 
@@ -494,24 +521,40 @@ export abstract class Framework extends EventEmitter implements IFramework {
             // If process exists, kill it, otherwise resolve directly
             if (!this.process) {
                 resolve()
-            } else {
-                // Get the running process from the active process pool
-                ProcessBridge.stop(this.process!).then(() => {
+                return
+            }
+
+            // Get the running process from the active process pool
+            const running = pool.findProcess(this.process!)
+            if (!running) {
+                resolve()
+                return
+            }
+
+            running!
+                .on('killed', () => {
                     resolve()
                 })
-            }
+                .stop()
         })
         .then(() => {
             this.killed = false
             this.idleQueued()
             this.updateStatus()
             this.emit('change', this)
-            log.info(`Stopping ${this.name}`)
+            log.debug(`Stopping ${this.name}`)
         })
         .catch(error => {
             this.killed = false
             this.onError(error)
         })
+    }
+
+    /**
+     * Reset this framework's state.
+     */
+    public async reset (): Promise<any> {
+        this.resetFilters()
     }
 
     /**
@@ -524,7 +567,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
     /**
      * Whether this framework is refreshing.
      */
-    public isRrefreshing (): boolean {
+    public isRefreshing (): boolean {
         return this.status === 'refreshing'
     }
 
@@ -532,7 +575,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Whether this framework is busy.
      */
     public isBusy (): boolean {
-        return this.isRunning() || this.isRrefreshing() || this.status === 'queued'
+        return this.isRunning() || this.isRefreshing() || this.status === 'queued'
     }
 
     /**
@@ -544,8 +587,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
 
     /**
      * Whether this framework has any suites.
-     * This is used for layout purposes. Renderer can't rely on the value
-     * returned by `getSuites` because it might be modified by filters.
      */
     public empty (): boolean {
         return this.count() === 0
@@ -555,46 +596,43 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Run all suites inside this framework.
      */
     protected async run (): Promise<void> {
-        this.suites.forEach(suite => {
-            suite.queue(false)
-        })
+        this.rebuildStatusMap('queued')
+        this.rebuildLedger()
 
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
-            // Only start the actual running process on next tick. This allows
-            // the renderer to redraw the app state, thus appearing snappier.
-            process.nextTick(() => {
-                this.reload()
-                    .then((outcome: string) => {
-                        // Killed processes resolve the promise, so if user
-                        // interrupted the run while reloading, make sure the
-                        // run does not go ahead.
-                        if (outcome === 'killed' || this.killed) {
-                            log.debug(`Process was killed while reloading before run.`)
-                            resolve()
-                            return
-                        }
+            this.reload()
+                .then((outcome: string) => {
+                    // Killed processes resolve the promise, so if user
+                    // interrupted the run while reloading, make sure the
+                    // run does not go ahead.
+                    if (outcome === 'killed' || this.killed) {
+                        log.debug(`Process was killed while reloading before run.`)
+                        resolve()
+                        return
+                    }
 
-                        this.cleanStaleSuites()
-                        this.suites.forEach(suite => {
-                            suite.queue(false)
+                    // Re-queue suites and tests freshly added by the reload
+                    // command. Note that Ledger will be rebuilt as part of
+                    // the `afterRefresh` routine.
+                    this.rebuildStatusMap('queued')
+                    this.afterRefresh()
+
+                    this.report(this.runArgs())
+                        .then((outcome: string) => {
+                            if (outcome !== 'killed') {
+                                this.afterRun()
+                            }
+                            resolve()
+                        }).catch(error => {
+                            reject(error)
                         })
-                        this.report(this.runArgs())
-                            .then((outcome: string) => {
-                                if (outcome !== 'killed') {
-                                    this.afterRun()
-                                }
-                                resolve()
-                            }).catch(error => {
-                                reject(error)
-                            })
-                    })
-                    .catch(error => {
-                        // Rejecting the Promise is enough to bubble the error
-                        // up the chain, as we're already catching it on @handleRun
-                        reject(error)
-                    })
-            })
+                })
+                .catch(error => {
+                    // Rejecting the Promise is enough to bubble the error
+                    // up the chain, as we're already catching it on @handleRun
+                    reject(error)
+                })
         })
     }
 
@@ -612,34 +650,35 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         suites.forEach(suite => {
-            suite.queue(this.selective)
+            suite.getNuggetIds(this.selective).forEach(id => {
+                this.statuses[id] = 'queued'
+            })
         })
+
+        this.rebuildLedger()
 
         return new Promise((resolve, reject) => {
             this.updateStatus('running')
-            // See @run for reasoning behind `nextTick`
-            process.nextTick(() => {
-                // Chunk the selected suites so we can ensure we're never filtering
-                // too many at a time (some frameworks will break if filtering
-                // arguments are too long, like PHPUnit's, which passes them
-                // straight into a `preg_match` call).
-                chunk(this.sortSuites(suites), this.maxSelective).reduce((step, chunk) => {
-                    return step.then((outcome: string) => {
-                        if (outcome === 'success') {
-                            return this.report(this.runSelectiveArgs(chunk, this.selective))
-                        }
-                        return ''
-                    })
-                }, Promise.resolve('success'))
-                    .then((outcome: string) => {
-                        if (outcome !== 'killed') {
-                            this.afterRun()
-                        }
-                        resolve()
-                    }).catch(error => {
-                        reject(error)
-                    })
-            })
+            // Chunk the selected suites so we can ensure we're never filtering
+            // too many at a time (some frameworks will break if filtering
+            // arguments are too long, like PHPUnit's, which passes them
+            // straight into a `preg_match` call).
+            chunk(this.sortSuites(suites), this.maxSelective).reduce((step, chunk) => {
+                return step.then((outcome: string) => {
+                    if (outcome === 'success') {
+                        return this.report(this.runSelectiveArgs(chunk, this.selective))
+                    }
+                    return ''
+                })
+            }, Promise.resolve('success'))
+                .then((outcome: string) => {
+                    if (outcome !== 'killed') {
+                        this.afterRun()
+                    }
+                    resolve()
+                }).catch(error => {
+                    reject(error)
+                })
         })
     }
 
@@ -647,7 +686,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Refresh the list of suites inside this framework.
      */
     protected async handleRefresh (): Promise<void> {
-        this.assemble()
+        await this.assemble()
         this.updateStatus('refreshing')
         this.suites.forEach(suite => {
             suite.setFresh(false)
@@ -655,7 +694,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return this.reload()
             .then(outcome => {
                 if (outcome !== 'killed') {
-                    this.cleanStaleSuites()
+                    this.afterRefresh()
                     this.updateStatus()
                     this.emit('change', this)
                 }
@@ -689,6 +728,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
                         this.running.push(this.debriefSuite(report))
                     } catch (error) {
                         this.emit('error', error)
+                        this.emitToRenderer(`${this.id}:error`, error.toString(), this.troubleshoot(error))
                         log.error('Failed to debrief suite results.', error)
                     }
                 })
@@ -707,6 +747,23 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * A function that runs after a framework has been refreshed.
+     */
+    protected afterRefresh () {
+        this.cleanStaleSuites()
+        // After a full refresh, emit tests from expanded nuggets recursively
+        // to the renderer process.
+        this.suites.filter(suite => suite.expanded)
+            .forEach(suite => {
+                suite.emitTestsToRenderer()
+                suite.tests.filter(test => test.expanded)
+                    .forEach(test => {
+                        test.emitTestsToRenderer()
+                    })
+            })
+    }
+
+    /**
      * A function that runs after a framework has been run, either fully or
      * selectively.
      */
@@ -714,10 +771,15 @@ export abstract class Framework extends EventEmitter implements IFramework {
         // If a selected suite didn't run, mark their status as "error".
         if (this.selective) {
             this.selected.suites.forEach(suite => {
-                if (['queued', 'running'].indexOf(suite.getStatus()) > -1) {
-                    suite.errorQueued(true)
-                }
+                suite.getNuggetIds(true).forEach(id => {
+                    if (['queued', 'running'].indexOf(this.statuses[id]) > -1) {
+                        this.statuses[id] = 'error'
+                    }
+                })
             })
+            this.updateStatus()
+            this.emit('change', this)
+            return
         }
 
         // Suites which remain queued after a run are stale
@@ -733,26 +795,50 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param status The status by which to clean the suites.
      */
     protected cleanSuitesByStatus (status: Status): void {
+        let nuggets: Array<string> = []
         this.suites = this.suites.filter((suite: ISuite) => {
             if (suite.getStatus() === status) {
                 this.onSuiteRemove(suite)
                 return false
             }
+            nuggets = nuggets.concat(suite.getNuggetIds(false))
             return true
         })
+
+        // Reset status when removing nuggets
+        Object.keys(this.statuses)
+            .filter(id => !nuggets.includes(id))
+            .forEach(id => {
+                delete this.statuses[id]
+            })
+
+        this.emitSuitesToRenderer()
+        this.rebuildLedger()
     }
 
     /**
      * Clean currently loaded suites that are not marked as "fresh".
      */
     protected cleanStaleSuites (): void {
+        let nuggets: Array<string> = []
         this.suites = this.suites.filter((suite: ISuite) => {
             if (!suite.isFresh()) {
                 this.onSuiteRemove(suite)
                 return false
             }
+            nuggets = nuggets.concat(suite.getNuggetIds(false))
             return true
         })
+
+        // Reset status when removing nuggets
+        Object.keys(this.statuses)
+            .filter(id => !nuggets.includes(id))
+            .forEach(id => {
+                delete this.statuses[id]
+            })
+
+        this.emitSuitesToRenderer()
+        this.rebuildLedger()
     }
 
     /**
@@ -762,20 +848,19 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected onSuiteRemove (suite: ISuite): void {
         suite.removeAllListeners()
-        this.updateLedger(null, suite.getStatus())
         this.updateSelected(suite)
-        this.emit('suiteRemoved', suite.getId())
     }
 
     /**
      * Handle errors in processing of framework.
      *
-     * @param message The error message
+     * @param error The error to be handled
      */
-    protected onError (message: string): void {
+    protected onError (error: Error): void {
         this.idleQueued()
         this.updateStatus('error')
-        this.emit('error', message)
+        this.emit('error', error)
+        this.emitToRenderer(`${this.id}:error`, error.toString(), this.troubleshoot(error))
         this.emit('change', this)
         this.disassemble()
     }
@@ -784,16 +869,19 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * Reset all previously queued suites.
      */
     protected idleQueued (): void {
-        if (this.selective) {
-            this.selected.suites.forEach(suite => {
-                suite.idleQueued(true)
+        const suites = this.selective ? this.selected.suites : this.suites
+        suites.forEach(suite => {
+            const nuggets = suite.getNuggetIds(this.selective)
+            nuggets.shift()
+            nuggets.forEach(id => {
+                if (['queued', 'running'].indexOf(this.getNuggetStatus(id)) > -1) {
+                    this.statuses[id] = 'idle'
+                }
             })
-            return
-        }
-
-        this.suites.forEach(suite => {
-            suite.idleQueued(false)
+            this.statuses[suite.getId()] = parseStatus(nuggets.map(id => this.getNuggetStatus(id)))
         })
+
+        this.rebuildLedger()
     }
 
     /**
@@ -804,7 +892,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param args The arguments to spawn the process with.
      */
     protected spawn (args: Array<string>): IProcess {
-        const process = ProcessBridge.make({
+        const process = ProcessFactory.make({
             command: this.command,
             args,
             path: this.repositoryPath,
@@ -869,22 +957,16 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param result An object representing a suite's test results.
      * @param rebuild Whether to rebuild the tests inside the suite, regardless of them being built already.
      */
-    protected async makeSuite (
-        result: ISuiteResult,
-        rebuild: boolean = false
-    ): Promise<ISuite> {
-        return new Promise((resolve, reject) => {
+    protected async makeSuite (result: ISuiteResult, rebuild: boolean = false): Promise<ISuite> {
+        return new Promise(async (resolve, reject) => {
             let suite: ISuite | undefined = this.findSuite(result.file)
 
             if (!suite) {
                 suite = this.newSuite(result)
-                suite
-                    .on('selective', this.updateSelected.bind(this))
-                    .on('status', this.updateLedger.bind(this))
-                this.updateLedger(suite.getStatus())
+                suite.on('selected', this.updateSelected.bind(this))
                 this.suites.push(suite)
             } else if (rebuild) {
-                suite.rebuildTests(result)
+                await suite.rebuildTests(result)
             }
 
             // Mark suite as freshly made before returning,
@@ -905,7 +987,8 @@ export abstract class Framework extends EventEmitter implements IFramework {
             suites: []
         }
         this.selective = false
-        this.resetLedger()
+        this.rebuildStatusMap()
+        this.rebuildLedger()
     }
 
     /**
@@ -936,14 +1019,14 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     protected async loadSuites (suites: Array<ISuiteResult>): Promise<void> {
         return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                Promise.all(suites.map((result: ISuiteResult) => {
-                    // Hydrate results in case schema has changed from previously saved state
-                    return this.makeSuite(this.hydrateSuiteResult(result), true)
-                })).then(() => {
-                    this.onReady()
-                    resolve()
-                })
+            Promise.all(suites.map((result: ISuiteResult) => {
+                // Hydrate results in case schema has changed from previously saved state
+                return this.makeSuite(this.hydrateSuiteResult(result), true)
+            })).then(() => {
+                this.rebuildStatusMap()
+                this.rebuildLedger()
+                this.onReady()
+                resolve()
             })
         })
     }
@@ -987,6 +1070,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         }
 
         this.selective = this.selected.suites.length > 0
+        this.emitToRenderer(`${this.id}:selective`, this.selected.suites.length)
     }
 
     /**
@@ -995,22 +1079,29 @@ export abstract class Framework extends EventEmitter implements IFramework {
      * @param to The new status of a suite inside this framework.
      * @param from The old status of a suite inside this framework, if any.
      */
-    protected updateLedger (to: Status | null, from?: Status): void {
+    protected updateLedger (to: Status | null, from: Status): void {
         if (to) {
             this.ledger[to]!++
         }
-        if (from) {
-            this.ledger[from]!--
-        }
+        this.ledger[from]!--
+
+        this.emitLedgerToRenderer()
     }
 
     /**
-     * Reset the framework's ledger to its initial value.
+     * Rebuild the status ledger
      */
-    protected resetLedger (): void {
+    protected rebuildLedger (): void {
+        // Reset ledger before starting
         for (let key of Object.keys(this.ledger)) {
             this.ledger[<Status>key] = 0
         }
+
+        // Iterate through suites and update each ledger status
+        this.suites.forEach(suite => {
+            this.ledger[suite.getStatus()]++
+        })
+        this.emitLedgerToRenderer()
     }
 
     /**
@@ -1018,6 +1109,44 @@ export abstract class Framework extends EventEmitter implements IFramework {
      */
     public getLedger (): StatusLedger {
         return this.ledger
+    }
+
+    /**
+     * Rebuild the status map.
+     */
+    protected rebuildStatusMap (status: Status = 'idle'): void {
+        this.statuses = {}
+        this.suites.forEach((suite: ISuite) => {
+            suite.getNuggetIds(false).forEach(id => {
+                this.statuses[id] = status
+            })
+        })
+    }
+
+    /**
+     * Return the framework's status map.
+     */
+    public getStatusMap (): StatusMap {
+        return this.statuses
+    }
+
+    /**
+     * Return the status of a nugget from this framework.
+     */
+    public getNuggetStatus (id: string): Status {
+        return get(this.statuses, id, 'idle')
+    }
+
+    /**
+     * Set the status of a nugget from this framework.
+     */
+    public setNuggetStatus (id: string, to: Status, from: Status, updateLedger: boolean): void {
+        this.statuses[id] = to
+        if (updateLedger) {
+            this.updateLedger(to, from)
+            return
+        }
+        this.emitLedgerToRenderer()
     }
 
     /**
@@ -1188,13 +1317,19 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
-     * Get the framework's suites.
+     * Get all the framework's suites in active sort order.
+     */
+    public getAllSuites (): Array<ISuite> {
+        return this.sortSuites(this.suites)
+    }
+
+    /**
+     * Get the framework's suites, considering active filters
+     * and sort order.
      */
     public getSuites (): Array<ISuite> {
         if (!this.hasFilters()) {
-            return this.sortSuites(this.suites.map(suite => {
-                return suite
-            }))
+            return this.getAllSuites()
         }
 
         const exact = this.filters.keyword && (this.filters.keyword as string).match(/^[\'\"].+[\'\"]$/g)
@@ -1227,15 +1362,25 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 if (suite.selected) {
                     suite.toggleSelected(false, true)
                 }
-                if (suite.expanded) {
-                    suite.toggleExpanded(false, true)
-                }
 
                 return false
             }
 
             return true
         }))
+    }
+
+    /**
+     * Get a suite from this framework by it's id (i.e. filename)
+     *
+     * @param id The unique id of the suite to get.
+     */
+    public getSuiteById (id: string): ISuite | undefined {
+        const index = findIndex(this.suites, suite => suite.getId() === id)
+        if (index > -1) {
+            return this.suites[index]
+        }
+        return undefined
     }
 
     /**
@@ -1246,6 +1391,17 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
+     * Send current suites to renderer process.
+     */
+    public emitSuitesToRenderer (): void {
+        this.emitToRenderer(
+            `${this.id}:refreshed`,
+            this.getSuites().map((suite: ISuite) => suite.render(false)),
+            this.count()
+        )
+    }
+
+    /**
      * Set a filter for this framework.
      */
     public setFilter (
@@ -1253,6 +1409,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         value: Array<string> | string | null
     ): void {
         this.filters[filter] = Array.isArray(value) ? (value.length ? value : null) : value
+        this.emitSuitesToRenderer()
     }
 
     /**
@@ -1278,6 +1435,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
             status: null,
             group: null
         }
+        this.emitSuitesToRenderer()
     }
 
     /**
@@ -1307,47 +1465,14 @@ export abstract class Framework extends EventEmitter implements IFramework {
     }
 
     /**
-     * Set the sort order property for this framework.
-     *
-     * @param sort Which option to use for sorting this framework.
-     */
-    public setSort (sort: FrameworkSort): void {
-        this.sort = sort
-        this.emit('change', this)
-    }
-
-    /**
      * Get the current sort option for this framework.
      */
-    public getSort (): FrameworkSort {
-        return this.sort || (this.constructor as typeof Framework).sortDefault
+    protected getSort (): FrameworkSort {
+        return (this.constructor as typeof Framework).sortDefault
     }
 
     /**
-     * Get all sort options supported by this framework.
-     */
-    public getSupportedSorts (): Array<FrameworkSort> {
-        // If framework has not defined its supported sorts, assume all.
-        return this.supportedSorts || (Object.keys(sortOptions) as Array<FrameworkSort>)
-    }
-
-    /**
-     * Set the reverse sort order property.
-     */
-    public setSortReverse (reverse?: boolean): void {
-        this.sortReverse = typeof reverse !== 'undefined' ? reverse : !this.sortReverse
-        this.emit('change', this)
-    }
-
-    /**
-     * Whether the current sort order is reversed.
-     */
-    public isSortReverse (): boolean {
-        return this.sortReverse
-    }
-
-    /**
-     * Sort suites by the framework's currently selected sorting option.
+     * Sort suites by the framework's sorting option.
      *
      * @param suites The suites to sort
      */
@@ -1355,7 +1480,7 @@ export abstract class Framework extends EventEmitter implements IFramework {
         return orderBy(
             suites,
             (suite: ISuite) => this.sortProperty(suite, this.sort),
-            sortDirection(this.sort, this.sortReverse)
+            sortDirection(this.sort, false)
         )
     }
 
@@ -1371,14 +1496,6 @@ export abstract class Framework extends EventEmitter implements IFramework {
                 return suite.getRunningOrder()
             case 'name':
                 return suite.getDisplayName()
-            case 'updated':
-                return suite.getLastUpdated()
-            case 'run':
-                return suite.getLastRun()
-            case 'duration':
-                return suite.getTotalDuration()
-            case 'maxduration':
-                return suite.getMaxDuration()
             default:
                 return null
         }

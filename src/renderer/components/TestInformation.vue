@@ -35,7 +35,8 @@
 </template>
 
 <script>
-import moment from 'moment'
+import format from 'date-fns/format'
+import formatDistanceToNow from 'date-fns/formatDistanceToNow'
 import _isEmpty from 'lodash/isEmpty'
 import { labels } from '@lib/frameworks/status'
 import Duration from '@/components/Duration'
@@ -67,10 +68,10 @@ export default {
             return _isEmpty(this.stats)
         },
         lastRun () {
-            return moment(this.stats.last).format('MMMM Do YYYY, HH:mm:ss')
+            return format(new Date(this.stats.last), 'MMMM do yyyy, HH:mm:ss')
         },
         firstSeen () {
-            return moment(this.stats.first).format('MMMM Do YYYY, HH:mm:ss')
+            return format(new Date(this.stats.first), 'MMMM do yyyy, HH:mm:ss')
         }
     },
     mounted () {
@@ -83,10 +84,10 @@ export default {
     },
     methods: {
         displayLastRun () {
-            return moment(this.stats.last).fromNow()
+            return formatDistanceToNow(new Date(this.stats.last), { addSuffix: true })
         },
         displayFirstSeen () {
-            return moment(this.stats.first).fromNow()
+            return formatDistanceToNow(new Date(this.stats.first), { addSuffix: true })
         }
     }
 }

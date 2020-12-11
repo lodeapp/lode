@@ -5,11 +5,35 @@ input {
         color: var(--input-placeholder-text-color);
     }
 
+    &[type=checkbox],
+    &[type=radio] {
+        position: relative;
+        top: 2px;
+    }
+
     &[type=search]::-webkit-search-cancel-button {
         -webkit-appearance: searchfield-cancel-button;
         position: relative;
         right: -2px;
         visibility: visible !important;
+    }
+
+    // Override native checkbox partial state
+    &[type=checkbox]:indeterminate {
+        appearance: none;
+        background: rgb(42, 119, 246);
+        border-radius: 2px;
+        height: 13px;
+        width: 13px;
+
+        &:after {
+            color: $text-white;
+            content: '\02043';
+            left: -0.2px;
+            position: relative;
+            top: -7.5px;
+            zoom: 2.7;
+        }
     }
 }
 
@@ -20,7 +44,6 @@ select {
     }
 
     &.form-select {
-        background: none;
         box-shadow: 0 1px 1px $gray-100;
     }
 }
@@ -33,6 +56,7 @@ select {
 
     .form-control {
         background-color: transparent;
+        border-radius: 2px;
         order: 0;
         width: auto;
 
@@ -84,7 +108,7 @@ select {
             }
 
             & > label {
-                line-height: 26px;
+                line-height: 27px;
                 margin-right: var(--spacing);
 
                 & > input[type=radio] {

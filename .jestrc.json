@@ -1,4 +1,5 @@
 {
+  "globalSetup": "./tests/setup.js",
   "moduleFileExtensions": [
     "js",
     "ts",
@@ -19,7 +20,7 @@
   ],
   "transform": {
     ".*\\.(vue)$": "vue-jest",
-    "^.+\\.(ts|tsx)$": "ts-jest",
+    "^.+\\.(ts)$": "ts-jest",
     "^.+\\.js$": "babel-jest"
   },
   "globals": {
@@ -27,7 +28,7 @@
     "__SILENT__": true,
     "ts-jest": {
       "babelConfig": true,
-      "tsConfig": "tsconfig.json"
+      "tsconfig": "tsconfig.json"
     }
   },
   "clearMocks": true,
