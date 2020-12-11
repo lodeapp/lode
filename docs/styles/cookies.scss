@@ -1,0 +1,81 @@
+.cookie-container {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center;
+    z-index: 1100;
+
+    @media (min-width: 420px) {
+        bottom: 12px;
+    }
+
+    .cookie-notification {
+        align-items: center;
+        backdrop-filter: blur(20px);
+        background-color: rgba(246, 249, 252, .95);
+        border: 1px solid $gray-300;
+        box-shadow: 0 6px 12px -2px rgba(50,50,93,.25), 0 3px 7px -3px rgba(0,0,0,.3);
+        display: inline-flex;
+        font-size: 15px;
+        margin: 0 auto;
+
+        @media (min-width: 420px) {
+            border-radius: 4px;
+        }
+
+        span {
+            padding: 8px 5px 8px 15px;
+
+            a {
+                font-weight: 500;
+                -webkit-transition: color .1s ease;
+                transition: color .1s ease;
+                cursor: pointer;
+            }
+        }
+
+        button {
+            appearance: none;
+            background: transparent;
+            border: none;
+            color: $gray-500;
+            cursor: pointer;
+            height: 40px;
+            outline: none;
+            overflow: hidden;
+            position: relative;
+            text-indent: -9999px;
+            transition: color .15s;
+            user-select: none;
+            width: 40px;
+
+            &:hover {
+                color: $black;
+            }
+
+            &:before,
+            &:after {
+                background: currentColor;
+                border-radius: 2px;
+                content: "";
+                height: 2px;
+                left: 50%;
+                position: absolute;
+                top: 50%;
+                transform: translate(-50%,-50%) rotate(45deg);
+                width: 40%;
+            }
+
+            &:after {
+                transform: translate(-50%,-50%) rotate(-45deg);
+            }
+        }
+    }
+
+    // Don't show cookie notice in cookie policy page
+    .cookie-policy & {
+        display: none;
+    }
+}

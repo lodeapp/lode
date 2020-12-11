@@ -247,7 +247,7 @@ describe('lib/frameworks/framework', () => {
         expect(framework.getLedger().queued).toBe(1)
     })
 
-    it('can refresh framework', async () => {
+    it.only('can refresh framework', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
@@ -262,6 +262,16 @@ describe('lib/frameworks/framework', () => {
         expect(Object.values(framework.queue)[0]).toBeInstanceOf(Function)
         expect(framework.isBusy()).toBe(true)
 
+        // Mock framework assembly, with granular control over when
+        // assemble method is resolved.
+        let assemble
+        framework.assemble = jest.fn(() => {
+            return new Promise(resolve => {
+                assemble = resolve
+            })
+        })
+        framework.disassemble = jest.fn()
+
         // Mock the reload method, which will only exist on framework implementations (e.g. Jest)
         framework.reload = jest.fn(() => {
             // Only mark one suite as fresh, so second should be considered stale and removed
@@ -274,9 +284,15 @@ describe('lib/frameworks/framework', () => {
 
         // Run queued refresh
         Object.values(framework.queue)[0]()
+
+        await assemble()
+        expect(framework.status).toBe('refreshing')
+
         await flushPromises()
 
         expect(framework.reload).toHaveBeenCalledTimes(1)
+        expect(framework.assemble).toHaveBeenCalledTimes(1)
+        expect(framework.disassemble).toHaveBeenCalledTimes(1)
         expect(framework.isBusy()).toBe(false)
         expect(framework.getAllSuites().length).toBe(1)
         expect(framework.getAllSuites()[0].getId()).toBe('isTasty.js')

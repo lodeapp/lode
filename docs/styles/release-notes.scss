@@ -1,0 +1,152 @@
+.release-notes {
+
+    h1 {
+        margin-bottom: 40px !important;
+    }
+
+    .release {
+        margin-bottom: 70px;
+        position: relative;
+
+        h3 {
+            position: relative;
+            z-index: 3;
+
+            .version {
+                background-color: #ff6e87;
+                border: 1px solid #ff6e87;
+                border-radius: 5px;
+                color: $white;
+                margin-right: 10px;
+                min-height: 35px;
+                line-height: 1.5rem;
+                padding: 5px 10px;
+            }
+
+            &.is-beta {
+
+                .version {
+                    border-top-right-radius: 0;
+                    border-bottom-right-radius: 0;
+                    margin-right: 0;
+                }
+
+                .beta-marker {
+                    border: 1px solid #ff6e87;
+                    border-top-right-radius: 5px;
+                    border-bottom-right-radius: 5px;
+                    color: $brand-color;
+                    font-size: 80%;
+                    font-weight: 400;
+                    margin-right: 10px;
+                    min-height: 35px;
+                    line-height: 1.5rem;
+                    padding: 5px 10px;
+                }
+            }
+
+            .release-anchor {
+                color: transparentize($brand-color, .6);
+                margin-left: 6px;
+                visibility: hidden;
+            }
+
+            &:hover {
+
+                .release-anchor {
+                    text-decoration: none;
+                    visibility: visible;
+
+                    &:hover {
+                        color: $brand-color;
+                    }
+                }
+            }
+        }
+
+        .notes {
+            margin-top: 1.5rem;
+
+            ul {
+                list-style: none;
+                padding: 0;
+
+                @media (min-width: 1012px) {
+                    margin-left: 50px;
+                }
+
+                li {
+                    margin: .5rem 0;
+
+                    & > .badge {
+                        font-size: 78%;
+                        font-weight: 600;
+                        margin-right: 8px;
+                        margin-top: 1px;
+                        min-width: 70px;
+                        position: relative;
+                        text-align: center;
+                        text-transform: uppercase;
+                        z-index: 3;
+                    }
+
+                    &.added > .badge,
+                    &.new > .badge {
+                        background-color: $green-300;
+                        color: $brand-contrast-text-color;
+                    }
+
+                    &.changed > .badge {
+                        background-color: $blue-200;
+                        color: $brand-contrast-text-color;
+                    }
+
+                    &.fixed > .badge {
+                        background-color: $yellow-400;
+                        color: $brand-contrast-text-color;
+                    }
+
+                    p {
+                        display: inline-block;
+                        margin: 0;
+                    }
+                }
+            }
+        }
+
+        & > .seam {
+            height: 100%;
+            left: 0;
+            position: absolute;
+            top: 0;
+            width: 20px;
+            z-index: 2;
+
+            &::before {
+                border-color: $blue-200;
+                border-right-width: 2px;
+                border-right-style: solid;
+                content: '';
+                height: calc(100% + 20px);
+                position: absolute;
+                left: 35px;
+                top: 0;
+                width: 0;
+            }
+
+            &::after {
+                background-color: $brand-contrast-color;
+                border-color: $blue-200;
+                border-radius: 100%;
+                border-style: double;
+                border-width: 4px;
+                bottom: -30px;
+                content: '';
+                height: 2px;
+                position: absolute;
+                left: (35px - 4px);
+                width: 2px;
+            }
+        }
+    }
+}
