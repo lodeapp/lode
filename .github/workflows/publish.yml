@@ -9,6 +9,8 @@ jobs:
   publish:
     name: Publish website
     runs-on: ubuntu-latest
+    env:
+      working-directory: ./docs
 
     steps:
     - uses: actions/checkout@v1
@@ -16,9 +18,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-    - name: Go to docs directory
-      run: cd docs
     - name: Install dependencies
       run: yarn install
     - name: Build and publish
-      run: ./deploy.sh
+      run: ls -la && ./deploy.sh
