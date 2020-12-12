@@ -1,6 +1,0 @@
-{
-  "version": "0.29.0",
-  "path": "https://github.com/lodeapp/lode/releases/download/v0.29.0/Lode-0.29.0.dmg",
-  "releaseDate": "2020-12-12T12:56:24.152Z",
-  "releaseNotes": "New:\n  - Filter and run action from suite context menu\n  - One-click content copy from snippets in test results and alerts\nChanged:\n  - Updated to Electron 11\n  - Enforce context isolation in renderer process for added security\n  - Improved memory footprint in renderer process\n  - Interface and icons refinements, from updated Primer versions\n  - Various stability improvements\nFixed:\n  - Console file paths in Jest 25+\n  - Updater failures could cause the app to freeze\n  - Jitter when switching frameworks on a sidebar with overflowing content\nRemoved:\n  - Dynamic sorting\nAn extensive refactor of Lode's codebase to ensure it adheres to Electron's latest security best-practices (#45). It also updates dependencies to much newer versions (including underlying Node and Chrome versions) for a faster and more stable foundation, which will soon allow for additional improvements and Apple Silicon builds, too.\n"
-}
