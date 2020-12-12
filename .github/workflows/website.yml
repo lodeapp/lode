@@ -1,0 +1,37 @@
+name: Publish website
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    name: Publish website
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: master
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+    - name: Install dependencies
+      run: yarn install
+    - name: Build
+      run: yarn run clean && yarn run build
+    - name: Publish
+      working-directory: docs/dist
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --global user.name github-actions
+        git config --global user.email github-actions@github.com
+        git init
+        git add -A
+        git commit -m 'Deploy Lode website'
+        git push -f https://github-actions:$GITHUB_TOKEN@github.com/lodeapp/lode master:gh-pages
