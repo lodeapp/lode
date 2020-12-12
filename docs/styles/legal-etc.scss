@@ -25,7 +25,7 @@
     ul,
     ol {
 
-        &:not(.list-style-none) {
+        &:not(.list-style-none,.sidebar-sub-headers) {
             padding-left: 30px;
             margin-bottom: 20px;
         }

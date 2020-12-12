@@ -1,31 +1,32 @@
 .simple {
+    margin: 0 auto;
+    max-width: 960px;
+    width: auto;
 
-    &.container {
+    @media (min-width: 1280px) {
+        max-width: 1280px;
+    }
+
+    .logo {
+
+        img {
+            height: 140px;
+            width: 140px;
+        }
+    }
+
+    .content__default {
         margin-left: auto;
         margin-right: auto;
-        max-width: 960px;
         padding: 0 16px;
-        width: auto;
 
-        @media (min-width: 1280px) {
-            max-width: 1280px;
-        }
-
-        .logo {
-
-            img {
-                height: 140px;
-                width: 140px;
-            }
-        }
-
-        .legal &,
-        .release-notes & {
+        &.legal,
+        &.release-notes {
             max-width: 800px;
         }
+    }
 
-        footer {
-            margin-bottom: 10px;
-        }
+    footer {
+        margin-bottom: 10px;
     }
 }

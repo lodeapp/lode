@@ -1,17 +1,12 @@
 @import '../src/styles/definitions';
 @import '@primer/css/index.scss';
 
-html {
-    height: 100%;
-}
-
 body {
     background-color: $brand-contrast-color;
     background-image: url(/lode/background.svg), linear-gradient(#d4ecff, $brand-contrast-color 400px);
     background-image: url(/lode/background.svg), linear-gradient(darken($brand-contrast-color, 5.5%), $brand-contrast-color 400px);
     background-repeat: repeat-x;
     background-position: center -20px, 0 0, 0 0;
-    color: $brand-contrast-text-color;
     height: 100%;
     overflow-x: hidden;
 
@@ -31,6 +26,10 @@ body {
     hr,
     .rule {
         border-color: $blue-200;
+    }
+
+    .list-style-none {
+        padding-left: 0;
     }
 
     .btn-primary {

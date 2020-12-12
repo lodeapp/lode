@@ -20,7 +20,7 @@
     "rss": "^1.2.2",
     "sass-loader": "^7.1.0",
     "serve-static": "^1.13.2",
-    "vuepress": "^0.14.11",
+    "vuepress": "^1.7.1",
     "vuepress-plugin-sitemap": "^2.1.2"
   },
   "dependencies": {

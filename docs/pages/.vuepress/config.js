@@ -7,7 +7,7 @@ module.exports = {
     ],
     ga: 'UA-103701546-2',
     markdown: {
-        config: md => {
+        extendMarkdown: md => {
             md.set({ typographer: true })
         }
     },

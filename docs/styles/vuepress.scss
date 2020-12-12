@@ -1,4 +1,7 @@
 #app {
+    color: $brand-contrast-text-color;
+    font-size: 14px;
+    line-height: 1.5;
     height: 100%;
 
     .theme-container {
@@ -53,14 +56,6 @@
                 &.router-link-active {
                     color: $brand-contrast-text-color;
                 }
-
-                &.external {
-
-                    svg {
-                        position: relative;
-                        top: 2px;
-                    }
-                }
             }
         }
     }
@@ -79,21 +74,16 @@
                 &.router-link-active {
                     color: $brand-contrast-text-color;
                 }
-
-                &.external {
-
-                    svg {
-                        position: relative;
-                        top: 2px;
-                    }
-                }
             }
         }
 
         .sidebar-links {
+            padding-left: 0;
+            margin-bottom: 0;
 
             .sidebar-link {
                 color: $brand-contrast-text-color;
+                font-size: 1em;
 
                 &.active {
                     color: $brand-color;
@@ -101,9 +91,8 @@
                 }
             }
 
-            ul,
-            ol {
-                margin-bottom: 0;
+            & > li {
+                margin-top: 0;
             }
         }
     }
