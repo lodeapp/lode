@@ -46,6 +46,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish:
+    needs: release
     name: Publish website
     runs-on: ubuntu-latest
     defaults:
