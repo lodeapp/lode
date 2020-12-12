@@ -12,4 +12,4 @@ Fixed:
     - Console file paths in Jest 25+
     - Updater failures could cause the app to freeze
     - Jitter when switching frameworks on a sidebar with overflowing content
-An extensive refactor of Lode's codebase to ensure it adheres to Electron's latest security best-practices. It also updates dependencies to much newer versions (including underlying Node and Chrome versions) for a faster and more stable foundation, which will soon allow for additional improvements and Apple Silicon builds, too.
+An extensive refactor of Lode's codebase to ensure it adheres to Electron's latest security best-practices (#45). It also updates dependencies to much newer versions (including underlying Node and Chrome versions) for a faster and more stable foundation, which will soon allow for additional improvements and Apple Silicon builds, too.
