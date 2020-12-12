@@ -52,18 +52,21 @@ const remotePath = (file) => {
 
 const updateReleases = (release) => {
     if (!_.find(releases, ['version', release.version])) {
+        const regex = /^(New:|Changed:|Fixed:|Removed:|\s{1,4}-.+)$/gm
+        // Replace hash symbols with a custom signifier, otherwise our issue
+        // links will be interpreted as YAML comments and stripped out.
+        const escape = (string) => {
+            return string
+                .replace(/\#(\d+)/gm, ':HASH$1')
+                .replace(/\`/gm, ':BACKTICK')
+        }
+        const notes = yaml.safeLoad(release.releaseNotes.match(regex).map(escape).join('\n'), 'utf8')
+        notes.Notes = [escape(release.releaseNotes.replace(regex, '').trim())]
+
         releases.unshift({
             version: release.version,
             date: release.releaseDate || new Date(),
-            // Replace hash symbols with a custom signifier, otherwise our issue
-            // links will be interpreted as YAML comments and stripped out.
-            notes: yaml.safeLoad(
-                release.releaseNotes
-                    .replace(/\#(\d+)/gm, ':HASH$1')
-                    .replace(/\`/gm, ':BACKTICK')
-                    || '',
-                'utf8'
-            )
+            notes
         })
     }
     // Write the updated releases file, truncating after 30 entries. If you ever

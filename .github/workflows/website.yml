@@ -3,6 +3,7 @@ name: Publish website
 on:
   release:
     types: [released, edited, deleted, published, unpublished]
+  workflow_dispatch:
 
 jobs:
   publish:

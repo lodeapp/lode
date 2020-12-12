@@ -106,6 +106,16 @@
                         color: $brand-contrast-text-color;
                     }
 
+                    &.removed > .badge {
+                        background-color: $red-700;
+                        color: $white;
+                    }
+
+                    &.notes > .badge {
+                        background-color: $blue-500;
+                        color: $white;
+                    }
+
                     p {
                         display: inline-block;
                         margin: 0;
