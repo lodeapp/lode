@@ -32,11 +32,17 @@ context('Welcome screen', () => {
             })
             .get('body')
             .should('have.class', 'is-focused')
+
+        cy.screenshot()
+
+        cy
             .get('.contents > div')
             .should('have.class', 'no-projects')
             .and('contain', 'Welcome to Lode')
             .get('.no-projects .btn.btn-primary')
             .should('have.text', 'Add your first project')
-            .click()
+            .click({ scrollBehavior: false })
+
+        cy.screenshot({ capture: 'viewport' })
     })
 })
