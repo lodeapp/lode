@@ -9,15 +9,11 @@ const WebpackDevServer = require('webpack-dev-server')
 const webpackHotMiddleware = require('webpack-hot-middleware')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
-const mainConfig = require('./webpack.main.config')
-const preloadConfig = require('./webpack.preload.config')
-const rendererConfig = require('./webpack.renderer.config')
-
 let electronProcess = null
 let manualRestart = false
 let hotMiddleware
 
-function logStats (proc, data) {
+const logStats = function (proc, data) {
     let log = ''
 
     log += '\n'
@@ -40,8 +36,9 @@ function logStats (proc, data) {
     console.log(log)
 }
 
-function startRenderer () {
+const startRenderer = function () {
     return new Promise((resolve, reject) => {
+        const rendererConfig = require('./webpack.renderer.config')
         rendererConfig.entry.renderer = [Path.join(__dirname, 'dev-client')].concat(rendererConfig.entry.renderer)
         rendererConfig.mode = 'development'
         const compiler = webpack(rendererConfig)
@@ -79,7 +76,7 @@ function startRenderer () {
     })
 }
 
-function start (name, config) {
+const start = function (name, config) {
     return new Promise((resolve, reject) => {
         config.mode = 'development'
         const compiler = webpack(config)
@@ -114,16 +111,17 @@ function start (name, config) {
     })
 }
 
-function startPreload () {
-    return start('Preload', preloadConfig)
+const startPreload = function () {
+    return start('Preload', require('./webpack.preload.config'))
 }
 
-function startMain () {
+const startMain = function () {
+    const mainConfig = require('./webpack.main.config')
     mainConfig.entry.main = [Path.join(__dirname, '../src/main/index.dev.ts')].concat(mainConfig.entry.main)
     return start('Main', mainConfig)
 }
 
-function startElectron () {
+const startElectron = function () {
     if (process.argv[2] === 'migrate') {
         electronProcess = spawn(electron, [
             '--inspect=5858',
@@ -149,14 +147,16 @@ function startElectron () {
     })
 }
 
-function electronLog (data, color) {
+const electronLog = function (data, color) {
     console.log(color ? chalk[color](data.toString()) : data.toString())
 }
 
-function init () {
+const init = function () {
     // Analyze bundle (i.e. yarn size / yarn size:main)
     if (process.env.SIZE) {
-        const config = process.env.PROCESS === 'main' ? mainConfig : rendererConfig
+        const config = process.env.PROCESS === 'main'
+            ? require('./webpack.main.config')
+            : require('./webpack.renderer.config')
         config.plugins.push(new BundleAnalyzerPlugin())
         config.mode = 'production'
         webpack(config, (err, stats) => {
@@ -177,4 +177,13 @@ function init () {
         })
 }
 
-init()
+module.exports = {
+    logStats,
+    startRenderer,
+    start,
+    startPreload,
+    startMain,
+    startElectron,
+    electronLog,
+    init
+}

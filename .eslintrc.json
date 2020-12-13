@@ -152,6 +152,8 @@
         "beforeAll": false,
         "beforeEach": false,
         "Buffer": false,
+        "context": false,
+        "cy": false,
         "describe": false,
         "expect": false,
         "global": false,

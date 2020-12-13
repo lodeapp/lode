@@ -11,4 +11,6 @@ src/lib/reporters/phpunit/bootstrap
 support/icons/512x512.png
 support/icons/gem.svg
 tests/coverage
+tests/cypress/videos
+tests/cypress/screenshots
 yarn-error.log

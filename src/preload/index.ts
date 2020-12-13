@@ -1,16 +1,6 @@
 import '@lib/logger/preload'
 
-import { clipboard, contextBridge, shell } from 'electron'
-import { Ipc } from './ipc'
+import { contextBridge } from 'electron'
+import { Lode } from './lode'
 
-contextBridge.exposeInMainWorld('Lode', {
-    ipc: new Ipc(),
-
-    copyToClipboard (string: string) {
-        clipboard.writeText(string)
-    },
-
-    openExternal (link: string) {
-        shell.openExternal(link)
-    }
-})
+contextBridge.exposeInMainWorld('Lode', Lode)

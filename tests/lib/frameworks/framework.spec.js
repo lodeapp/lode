@@ -247,7 +247,7 @@ describe('lib/frameworks/framework', () => {
         expect(framework.getLedger().queued).toBe(1)
     })
 
-    it.only('can refresh framework', async () => {
+    it('can refresh framework', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
@@ -300,5 +300,69 @@ describe('lib/frameworks/framework', () => {
         // Framework now only has one suite, and if its previoys status was kept, it should
         // be passed. Therefore, the framework's status after a refresh is now "passed".
         expect(framework.status).toBe('passed')
+    })
+
+    it('disassembles framework when refresh is interrupted', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        // Set an arbitrary status to ensure they are kept after refresh
+        framework.setNuggetStatus('isTasty.js', 'passed', 'idle', true)
+
+        // Refreshing should queue the job before running
+        framework.refresh()
+        framework.assemble = jest.fn()
+        framework.disassemble = jest.fn()
+
+        // Mock reload as returning 'killed' string (i.e. interrupted child process).
+        framework.reload = jest.fn(() => Promise.resolve('killed'))
+
+        // Run queued refresh
+        Object.values(framework.queue)[0]()
+        await flushPromises()
+
+        expect(framework.reload).toHaveBeenCalledTimes(1)
+        expect(framework.assemble).toHaveBeenCalledTimes(1)
+        expect(framework.disassemble).toHaveBeenCalledTimes(1)
+        expect(framework.getAllSuites().length).toBe(2)
+        expect(framework.getNuggetStatus('isTasty.js')).toBe('passed')
+    })
+
+    it('disassembles framework when refresh errors', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        // Set an arbitrary status to ensure they are kept after refresh
+        // We'll need to set a consistent status for parent and children,
+        // because on error the status of the parent will be parsed again.
+        framework.setNuggetStatus('isTasty.js', 'passed', 'idle', true)
+        framework.setNuggetStatus('111', 'passed', 'idle', false)
+        framework.setNuggetStatus('222', 'passed', 'idle', false)
+        framework.setNuggetStatus('333', 'passed', 'idle', false)
+        framework.setNuggetStatus('444', 'passed', 'idle', false)
+
+        framework.refresh()
+        framework.assemble = jest.fn()
+        framework.disassemble = jest.fn()
+        framework.emit = jest.fn()
+        framework.emitToRenderer = jest.fn()
+
+        // Mock reload as returning a rejected promise
+        const error = new Error('Boomtown!')
+        framework.reload = jest.fn(() => Promise.reject(error))
+
+        // Run queued refresh
+        Object.values(framework.queue)[0]()
+        await flushPromises()
+
+        expect(framework.reload).toHaveBeenCalledTimes(1)
+        expect(framework.assemble).toHaveBeenCalledTimes(1)
+        expect(framework.disassemble).toHaveBeenCalledTimes(1)
+        expect(framework.getAllSuites().length).toBe(2)
+        expect(framework.getNuggetStatus('isTasty.js')).toBe('passed')
+        expect(framework.status).toBe('error')
+
+        expect(framework.emit).toHaveBeenCalledWith('error', error)
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(`${framework.id}:error`, 'Error: Boomtown!', '')
     })
 })
