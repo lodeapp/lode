@@ -11,7 +11,6 @@ context('Project management', () => {
                 onLoad (win) {
                     cy.spy(ipcRenderer, 'send')
                     ipcRenderer.listeners.on['did-finish-load'](null, {
-                        platform: 'darwin',
                         version: '0.0.0',
                         focus: true
                     })
@@ -19,7 +18,6 @@ context('Project management', () => {
             })
             .get('body')
             .should('have.class', 'light')
-            .should('have.class', 'platform-darwin')
             .should('have.class', 'is-focused')
             .then(() => {
                 cy.log('Blur application')
