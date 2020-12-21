@@ -50,3 +50,11 @@ jobs:
       run: yarn test:e2e
       env:
         CI: true
+    - name: Save Cypress results
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: cypress
+        path: |
+          tests/cypress/screenshots
+          tests/cypress/videos

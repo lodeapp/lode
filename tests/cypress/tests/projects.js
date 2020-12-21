@@ -66,6 +66,7 @@ context('Project management', () => {
                 ipcRenderer.listeners.on['project-ready']({}, { id: '42', name: 'Biscuit' })
                 ipcRenderer.listeners.once['project-ready']()
             })
+            .wait(1)
             .should(() => {
                 expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
                 ipcRenderer.listeners.on['42:repositories']({}, [])
