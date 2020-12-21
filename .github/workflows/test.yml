@@ -3,8 +3,8 @@ name: Test
 on: [push, pull_request]
 
 jobs:
-  test:
-    name: ${{ matrix.os }}
+  unit:
+    name: Jest on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
