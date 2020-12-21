@@ -105,6 +105,11 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             ) || []
         )
 
+        if (!this.args.length) {
+            log.debug(['Failed to determine process to run', JSON.stringify(options)].join(' '))
+            throw new Error('Failed to determine process to run')
+        }
+
         if (options.ssh) {
             this.binary = 'ssh'
             this.args = (new SSH(options.sshOptions)).commandArgs(this.args)
@@ -302,7 +307,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                         this.emit('report', { report })
 
                         if (__DEV__) {
-                            console.debug(report)
+                            log.debug(report)
                         }
 
                         // If reporting succeeded, remove it from buffer.

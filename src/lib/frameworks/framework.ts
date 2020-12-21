@@ -779,6 +779,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             })
             this.updateStatus()
             this.emit('change', this)
+            this.emitLedgerToRenderer()
             return
         }
 

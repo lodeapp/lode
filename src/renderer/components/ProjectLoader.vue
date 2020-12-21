@@ -1,9 +1,9 @@
 <template>
-    <div class="loading">
+    <main class="loading">
         <div class="loading-group">
             <div class="spinner"></div>
         </div>
-    </div>
+    </main>
 </template>
 
 <script>

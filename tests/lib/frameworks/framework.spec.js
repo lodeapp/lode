@@ -8,20 +8,6 @@ jest.mock('electron-store')
 jest.mock('@main/application-window')
 jest.mock('@lib/process/queue')
 
-beforeAll(() => {
-    // Capture calls to the global logger and suppress console logs.
-    global.log = {
-        debug () {},
-        info () {},
-        warn () {},
-        error () {}
-    }
-
-    global.__WIN32__ = process.platform === 'win32'
-    global.__DARWIN__ = process.platform === 'darwin'
-    global.__LINUX__ = process.platform === 'linux'
-})
-
 describe('lib/frameworks/framework', () => {
     const options = {
         name: 'Hobnobs',

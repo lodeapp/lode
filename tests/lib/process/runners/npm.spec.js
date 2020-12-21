@@ -1,3 +1,6 @@
+import { spawn } from 'child_process'
+import { NpmProcess } from '@lib/process/runners/npm'
+
 jest.mock('child_process', () => ({
     spawn: jest.fn().mockReturnValue({
         on: jest.fn(),
@@ -12,19 +15,6 @@ jest.mock('child_process', () => ({
     })
 }))
 
-import { spawn } from 'child_process'
-import { NpmProcess } from '@lib/process/runners/npm'
-
-beforeAll(() => {
-    // Capture calls to the global logger and suppress console logs.
-    global.log = {
-        debug () {},
-        info () {},
-        warn () {},
-        error () {}
-    }
-})
-
 describe('main/lib/process/runners/NpmProcess', () => {
     it('owns relevant commands', () => {
         expect(NpmProcess.owns('npm run tests')).toBe(true)
@@ -38,6 +28,28 @@ describe('main/lib/process/runners/NpmProcess', () => {
         expect(NpmProcess.owns('inpm.cmd tests')).toBe(false)
         expect(NpmProcess.owns('yarn.cmd tests')).toBe(false)
         expect(NpmProcess.owns('yarn.js tests')).toBe(false)
+    })
+
+    it('fails when called with empty command', () => {
+        expect(() => {
+            new NpmProcess({
+                command: ''
+            })
+        }).toThrow('Failed to determine process to run')
+        expect(spawn).not.toHaveBeenCalled()
+    })
+
+    it('spawns with no arguments', () => {
+        new NpmProcess({
+            command: 'npm run biscuit',
+            platform: 'darwin' // Force macOS to ensure binary is left intact.
+        })
+        expect(spawn).toHaveBeenCalledTimes(1)
+        expect(spawn).toHaveBeenCalledWith(
+            'npm',
+            ['run', 'biscuit'],
+            expect.any(Object)
+        )
     })
 
     it('spawns with proper arguments', () => {

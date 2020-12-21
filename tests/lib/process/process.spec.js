@@ -20,17 +20,6 @@ jest.mock('child_process', () => ({
 const fixtures = Path.join(__dirname, '../../fixtures/process')
 const decoded = fs.readJsonSync(Path.join(__dirname, '../../fixtures/process/decoded.json'))
 
-beforeAll(() => {
-    // Capture calls to the global logger and suppress console logs.
-    global.log = {
-        debug () {},
-        info () {},
-        warn () {},
-        error () {}
-    }
-    global.console = { debug () {} }
-})
-
 describe('lib/process/DefaultProcess', () => {
     it('spawns processes', () => {
         const spawned = new DefaultProcess({

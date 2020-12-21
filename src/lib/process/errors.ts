@@ -11,7 +11,7 @@ export interface ErrorWithCode extends Error {
  * An error thrown by our standard process.
  */
 export class ProcessError extends Error implements ErrorWithCode {
-    process?: IProcess
+    process?: string
     code?: string | number | undefined
 
     constructor (...args: Array<string>) {
@@ -24,8 +24,18 @@ export class ProcessError extends Error implements ErrorWithCode {
      * @param process The process to set to.
      */
     public setProcess (process: IProcess): this {
-        this.process = process
+        this.process = process.toString()
         return this
+    }
+
+    /**
+     * Get the process that originated the error as a plain
+     * object, parsed from its string representation.
+     *
+     * @param process The process to set to.
+     */
+    public getProcess (): object | undefined {
+        return this.process ? JSON.parse(this.process) : undefined
     }
 
     /**

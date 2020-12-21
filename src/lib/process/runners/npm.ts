@@ -36,7 +36,7 @@ export class NpmProcess extends DefaultProcess implements IProcess {
         const script = args.shift()
 
         // Recreate the arguments by prefixing remaining ones with '--'.
-        return compact(concat(binary!, 'run', (script || ''), '--', args))
+        return compact(concat(binary!, 'run', (script || ''), args.length ? '--' : '', args))
     }
 
     /**

@@ -4,6 +4,12 @@ import { getFrameworkByType } from '@lib/frameworks'
 
 export class FrameworkFactory {
 
+    /**
+     * Make a new framework instance.
+     *
+     * @param window The application window which will own the framework
+     * @param options The options to make the framework with
+     */
     public static make (
         window: ApplicationWindow,
         options: FrameworkOptions

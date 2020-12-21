@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "Lode",
-  "version": "0.29.0",
+  "version": "0.29.1",
   "author": "Tomas Buteler <info@lode.run>",
   "description": "A universal GUI for unit testing",
   "license": "MIT",
@@ -32,7 +32,7 @@
     "release:before": "node workflow/release-before.js && yarn run build:before",
     "release:after": "node workflow/release-after.js && yarn run build:after",
     "release": "yarn run release:before && yarn run pack:lode && electron-builder --publish always && yarn run release: after",
-    "test": "jest --config .jestrc.json",
+    "test": "jest",
     "coverage": "yarn run test --coverage && open tests/coverage/index.html",
     "test:e2e": "start-server-and-test 'yarn renderer' 9080 'cypress run'",
     "cypress": "start-server-and-test 'yarn renderer' 9080 'cypress open'",
