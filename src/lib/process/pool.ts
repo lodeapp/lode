@@ -29,9 +29,7 @@ class ProcessPool {
 
         // Once the process closes, remove it from the pool.
         process.on('close', () => {
-            if (typeof this.processes[id!] !== 'undefined') {
-                delete this.processes[id!]
-            }
+            this.remove(id!)
         })
     }
 
@@ -40,8 +38,26 @@ class ProcessPool {
      *
      * @param id The id of the process trying to be found.
      */
-    public findProcess(id: ProcessId): IProcess | undefined {
+    public findProcess (id: ProcessId): IProcess | undefined {
         return this.processes[id]
+    }
+
+    /**
+     * Remove a process from the pool by its id.
+     */
+    public remove (id: ProcessId): void {
+        if (typeof this.processes[id] !== 'undefined') {
+            delete this.processes[id]
+        }
+    }
+
+    /**
+     * Clear the process pool.
+     */
+    public clear (): void {
+        Object.keys(this.processes).forEach(id => {
+            this.remove(id)
+        })
     }
 }
 

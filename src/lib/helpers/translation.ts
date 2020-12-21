@@ -14,7 +14,7 @@ export default class Translation {
      *
      * @param string The string in which to check intervals
      */
-    hasIntervals (string: string): boolean {
+    protected hasIntervals (string: string): boolean {
         return Boolean(string.match(this.intervalRegExp))
     }
 
@@ -25,13 +25,9 @@ export default class Translation {
      * @param string The string from which to extract interval text
      * @param amount The amount to match in the string
      */
-    getIntervalString (string: string, amount: number): string {
+    protected getIntervalString (string: string, amount: number): string {
         const strings: Array<string> = string.split('|')
-        // If string has no pipe sentence division,
-        // return it without further manipulation
-        if (!strings.length) {
-            return string
-        }
+
         const index = this.getIntervalIndex(strings.map((partial: string) => {
             return _get(partial.match(this.intervalRegExp), 1, '')
         }), amount)
@@ -51,7 +47,7 @@ export default class Translation {
      * @param intervals The available interval strings to match
      * @param amount The amount to match for intervals
      */
-    getIntervalIndex (intervals: Array<string>, amount: number): number | false {
+    protected getIntervalIndex (intervals: Array<string>, amount: number): number | false {
         // Clear whitespace and delimiters before starting
         // so we can be more lenient with how translators
         // or developers define their intervals
@@ -86,13 +82,17 @@ export default class Translation {
      * @param strings The pipe-separated list of strings representing plural forms
      * @param amount The amount for which to render a pluralized string
      */
-    getPlural (string: string, amount: number): string {
+    public getPlural (string: string, amount: string | number): string {
+        if (typeof amount === 'string') {
+            amount = Number(amount)
+        }
+
         if (!this.hasIntervals(string)) {
             // If string doesn't have explicit intervals, use sensible
             // default or singular vs. plural. Complex pluralisation
             // rules should be defined in the translated string itself
             const strings: Array<string> = string.split('|')
-            return strings[amount === 1 ? 0 : 1]
+            return strings[amount === 1 ? 0 : 1] || string
         }
 
         return this.getIntervalString(string, amount)

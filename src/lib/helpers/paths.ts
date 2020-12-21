@@ -16,7 +16,7 @@ export function getResourceDirectory (): string {
  */
 export function unpacked (loc: string): string {
     const s = Path.sep
-    return loc.replace(/[\\\/]app.asar[\\\/]/, `${s}app.asar.unpacked${s}`)
+    return loc.replace(/[\\\/]?\bapp\.asar\b[\\\/]?/, `${s}app.asar.unpacked${s}`)
 }
 
 /**

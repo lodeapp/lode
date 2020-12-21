@@ -16,7 +16,7 @@ export default class Strings {
     /**
      * Generates a random string of 15 characters
      */
-    random (): string {
+    public random (): string {
         var text = ''
         var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
         for (var i = 0; i < 15; i++) {
@@ -30,28 +30,28 @@ export default class Strings {
      *
      * @param string The string to convert to ASCII
      */
-    ascii (string: string): string {
+    public ascii (string: string): string {
         return latinize(string)
-    }
-
-    /**
-     * Turn a markdown string into HTML
-     *
-     * @param string The string to convert to Markdown
-     */
-    markdown (string: string): string {
-        return markdown({
-            typographer: true
-        }).renderInline(string)
     }
 
     /**
      * Turn a markdown string into inline HTML
      *
      * @param string The string to convert to Markdown
+     */
+    public markdown (string: string): string {
+        return markdown({
+            typographer: true
+        }).renderInline(string)
+    }
+
+    /**
+     * Turn a markdown string into block HTML
+     *
+     * @param string The string to convert to Markdown
      * @param breaks Whether to convert line breaks into br
      */
-    markdownBlock (string: string, breaks: boolean = true): string {
+    public markdownBlock (string: string, breaks: boolean = true): string {
         return markdown({
             breaks,
             typographer: true
@@ -67,7 +67,7 @@ export default class Strings {
      * @param length Maximum length of the resulting string
      * @param options Additional truncation options
      */
-    truncate (string: string, length: number = 140, options: any): string {
+    public truncate (string: string, length: number = 140, options: any): string {
         return _truncate(string, {
             ...{
                 length,
@@ -84,7 +84,7 @@ export default class Strings {
      * @param string The string to compose
      * @param replacements The replacements to use when composing the string
      */
-    set (string: string, ...replacements: Array<any>): string {
+    public set (string: string, ...replacements: Array<any>): string {
         const replace = typeof replacements[0] === 'object' ? replacements[0] : replacements
         return string.replace(/:(\d+|[a-z]+)/gi, function (match, index) {
             return typeof replace[index] !== 'undefined' ? replace[index] : match
@@ -100,7 +100,7 @@ export default class Strings {
      * @param strings The pipe-separated list of strings representing plural forms
      * @param amount The amount for which to render a pluralized string
      */
-    plural (strings: string, amount: number): string {
+    public plural (strings: string, amount: number): string {
         return this.set(this.translator.getPlural(strings, amount), { n: amount })
     }
 
@@ -110,7 +110,7 @@ export default class Strings {
      *
      * @param object The object to convert to a string, if applicable
      */
-    from (object: string | object): string {
+    public from (object: string | object): string {
         if (typeof object === 'string') {
             return object
         }
