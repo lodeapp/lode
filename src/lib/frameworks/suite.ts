@@ -8,8 +8,6 @@ import { Nugget } from '@lib/frameworks/nugget'
 
 export interface ISuite extends Nugget {
     readonly file: string
-    tests: Array<ITest>
-    selected: boolean
 
     getId (): string
     getFile (): string

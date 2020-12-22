@@ -61,9 +61,10 @@ context('Project management', () => {
             .should('be.visible')
             .get('.spinner')
             .should('be.visible')
-            .window().then(win => {
+            .fixture('framework/project.empty.json')
+            .then(project => {
                 // Trigger project ready listners to simulate switch being completed.
-                ipcRenderer.listeners.on['project-ready']({}, { id: '42', name: 'Biscuit' })
+                ipcRenderer.listeners.on['project-ready']({}, project)
                 ipcRenderer.listeners.once['project-ready']()
             })
             .wait(1)
@@ -79,6 +80,68 @@ context('Project management', () => {
             .should('have.text', 'Add repositories to Biscuit')
             .get('.modal-footer .btn:first')
             .click()
+            .get('.modal-header')
+            .should('not.exist')
+            .get('.contents > main')
+            .should('not.have.class', 'no-projects')
+            .should('have.class', 'project')
+            .get('.split')
+            .should('have.class', 'empty')
+            .get('.pane:first')
+            .should('have.class', 'sidebar')
+            .get('.sidebar header .sidebar-header')
+            .should('have.text', 'Project')
+            .get('.sidebar header .sidebar-item')
+            .should('contain.text', 'Biscuit')
+            .should('have.class', 'status--idle')
+            .get('#list')
+            .should('have.class', 'pane')
+            .get('#list h2')
+            .should('have.text', 'Add repositories to Biscuit')
+            .get('#list .cta .btn-primary')
+            .should('have.text', 'Add repositories')
+            .click()
+            .get('.modal-header')
+            .should('have.text', 'Add repositories to Biscuit')
+            .get('.modal-footer .btn-primary').as('save')
+            .should('contain.text', 'Add repositories')
+            .should('have.prop', 'disabled')
+    })
+
+    it('can resume existing projects', () => {
+        cy
+            .visit('/', {
+                onBeforeLoad (win) {
+                    win.Lode = Lode
+                },
+                onLoad (win) {
+                    cy.spy(ipcRenderer, 'send')
+                    ipcRenderer.listeners.on['did-finish-load'](null, {
+                        projectId: '42',
+                        version: '0.0.0',
+                        focus: true
+                    })
+                }
+            })
+            // Having a project ID should make the renderer enter loading
+            // state instead of showing the Welcome screen.
+            .get('.loading')
+            .should('be.visible')
+            .get('.spinner')
+            .should('be.visible')
+            .fixture('framework/project.empty.json')
+            .then(project => {
+                ipcRenderer.listeners.on['project-ready']({}, project)
+            })
+            .wait(1)
+            .should(() => {
+                expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
+                ipcRenderer.listeners.on['42:repositories']({}, [])
+            })
+            .get('.loading')
+            .should('not.exist')
+            .get('.spinner')
+            .should('not.exist')
             .get('.modal-header')
             .should('not.exist')
             .get('.contents > main')

@@ -147,3 +147,151 @@ exports[`components/TestInformation.vue matches snapshot for stats: "with long d
   </table>
 </div>"
 `;
+
+exports[`matches snapshot for stats: "dates only" 1`] = `
+"<div class=\\"test-information markdown-body\\">
+  <table>
+    <colgroup>
+      <col width=\\"1%\\">
+      <col width=\\"99%\\">
+    </colgroup>
+    <tbody>
+      <tr>
+        <td class=\\"heading\\">Status</td>
+        <td>Idle</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">First seen</td>
+        <td title=\\"October 21st 1985, 09:00:00\\">about 35 years ago</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">Last run</td>
+        <td title=\\"October 21st 2015, 13:00:00\\">about 5 years ago</td>
+      </tr>
+      <!---->
+      <!---->
+    </tbody>
+  </table>
+</div>"
+`;
+
+exports[`matches snapshot for stats: "never run" 1`] = `
+"<div class=\\"test-information markdown-body\\">
+  <table>
+    <colgroup>
+      <col width=\\"1%\\">
+      <col width=\\"99%\\">
+    </colgroup>
+    <tbody>
+      <tr>
+        <td class=\\"heading\\">Status</td>
+        <td>Idle</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">First seen</td>
+        <td title=\\"October 21st 1985, 09:00:00\\">about 35 years ago</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">Last run</td>
+        <td>Never</td>
+      </tr>
+      <!---->
+      <!---->
+    </tbody>
+  </table>
+</div>"
+`;
+
+exports[`matches snapshot for stats: "with assertions" 1`] = `
+"<div class=\\"test-information markdown-body\\">
+  <table>
+    <colgroup>
+      <col width=\\"1%\\">
+      <col width=\\"99%\\">
+    </colgroup>
+    <tbody>
+      <tr>
+        <td class=\\"heading\\">Status</td>
+        <td>Idle</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">First seen</td>
+        <td title=\\"November 21st 2020, 13:00:00\\">10 days ago</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">Last run</td>
+        <td title=\\"December 1st 2020, 14:48:33\\">less than a minute ago</td>
+      </tr>
+      <!---->
+      <tr>
+        <td class=\\"heading\\">Assertions</td>
+        <td>42</td>
+      </tr>
+    </tbody>
+  </table>
+</div>"
+`;
+
+exports[`matches snapshot for stats: "with duration" 1`] = `
+"<div class=\\"test-information markdown-body\\">
+  <table>
+    <colgroup>
+      <col width=\\"1%\\">
+      <col width=\\"99%\\">
+    </colgroup>
+    <tbody>
+      <tr>
+        <td class=\\"heading\\">Status</td>
+        <td>Idle</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">First seen</td>
+        <td title=\\"September 10th 2020, 13:00:00\\">3 months ago</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">Last run</td>
+        <td title=\\"November 21st 2020, 13:00:00\\">10 days ago</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">Duration</td>
+        <td>
+          <duration-stub ms=\\"1000\\"></duration-stub>
+        </td>
+      </tr>
+      <!---->
+    </tbody>
+  </table>
+</div>"
+`;
+
+exports[`matches snapshot for stats: "with long duration" 1`] = `
+"<div class=\\"test-information markdown-body\\">
+  <table>
+    <colgroup>
+      <col width=\\"1%\\">
+      <col width=\\"99%\\">
+    </colgroup>
+    <tbody>
+      <tr>
+        <td class=\\"heading\\">Status</td>
+        <td>Idle</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">First seen</td>
+        <td title=\\"December 1st 2020, 10:20:00\\">about 4 hours ago</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">Last run</td>
+        <td title=\\"December 1st 2020, 14:47:00\\">2 minutes ago</td>
+      </tr>
+      <tr>
+        <td class=\\"heading\\">Duration</td>
+        <td>
+          <duration-stub ms=\\"32198\\"></duration-stub>
+        </td>
+      </tr>
+      <!---->
+    </tbody>
+  </table>
+</div>"
+`;

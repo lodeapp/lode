@@ -228,7 +228,7 @@ export default {
             this.$emit('activate', context)
         },
         onSelect (event) {
-            if (this.running) {
+            if (this.running || !this.selectable) {
                 return
             }
             this.selected = !this.selected

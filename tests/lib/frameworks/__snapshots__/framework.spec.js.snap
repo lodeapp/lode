@@ -1,5 +1,91 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Framework manipulation can format a framework to use in the renderer process 1`] = `
+Object {
+  "active": false,
+  "canToggleTests": false,
+  "command": "./bake",
+  "id": StringMatching /\\^\\[0-9a-f\\]\\{8\\}-\\[0-9a-f\\]\\{4\\}-\\[0-5\\]\\[0-9a-f\\]\\{3\\}-\\[089ab\\]\\[0-9a-f\\]\\{3\\}-\\[0-9a-f\\]\\{12\\}\\$/i,
+  "name": "Hobnobs",
+  "path": "tests",
+  "proprietary": Object {},
+  "remotePath": "",
+  "runsInRemote": false,
+  "selected": 0,
+  "sort": "name",
+  "sshHost": "",
+  "sshIdentity": null,
+  "sshPort": null,
+  "sshUser": null,
+  "status": "idle",
+  "type": "biscuit",
+}
+`;
+
+exports[`Framework manipulation can persist a framework in a store 1`] = `
+Object {
+  "active": false,
+  "canToggleTests": false,
+  "command": "./bake",
+  "id": StringMatching /\\^\\[0-9a-f\\]\\{8\\}-\\[0-9a-f\\]\\{4\\}-\\[0-5\\]\\[0-9a-f\\]\\{3\\}-\\[089ab\\]\\[0-9a-f\\]\\{3\\}-\\[0-9a-f\\]\\{12\\}\\$/i,
+  "name": "Hobnobs",
+  "path": "tests",
+  "proprietary": Object {},
+  "remotePath": "",
+  "runsInRemote": false,
+  "selected": 0,
+  "sort": "name",
+  "sshHost": "",
+  "sshIdentity": null,
+  "sshPort": null,
+  "sshUser": null,
+  "suites": Array [
+    Object {
+      "file": "isTasty.js",
+      "meta": Object {},
+      "tests": Array [
+        Object {
+          "id": "111",
+          "name": "tastes sweet",
+          "status": "idle",
+        },
+        Object {
+          "id": "222",
+          "name": "tastes oaty",
+          "status": "idle",
+          "tests": Array [
+            Object {
+              "id": "333",
+              "name": "has many oats",
+              "status": "idle",
+            },
+            Object {
+              "id": "444",
+              "name": "has jumbo oats",
+              "status": "idle",
+            },
+          ],
+        },
+      ],
+      "testsLoaded": true,
+    },
+    Object {
+      "file": "isNobbly.js",
+      "meta": Object {},
+      "tests": Array [
+        Object {
+          "id": "555",
+          "name": "has lumps",
+          "status": "idle",
+        },
+      ],
+      "testsLoaded": false,
+    },
+  ],
+  "type": "biscuit",
+}
+`;
+
 exports[`lib/frameworks/framework can format a framework to use in the renderer process 1`] = `
 Object {
   "active": false,
@@ -72,7 +158,13 @@ Object {
     Object {
       "file": "isNobbly.js",
       "meta": Object {},
-      "tests": Array [],
+      "tests": Array [
+        Object {
+          "id": "555",
+          "name": "has lumps",
+          "status": "idle",
+        },
+      ],
       "testsLoaded": false,
     },
   ],

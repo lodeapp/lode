@@ -8,46 +8,53 @@ jest.mock('electron-store')
 jest.mock('@main/application-window')
 jest.mock('@lib/process/queue')
 
-describe('lib/frameworks/framework', () => {
-    const options = {
-        name: 'Hobnobs',
-        type: 'biscuit',
-        command: '  ./bake   ',
-        path: '/tests',
-        repositoryPath: '/mcvities/hobnobs/',
-        suites: [
-            {
-                file: 'isTasty.js',
-                testsLoaded: true,
-                tests: [
-                    {
-                        id: '111',
-                        name: 'tastes sweet'
-                    },
-                    {
-                        id: '222',
-                        name: 'tastes oaty',
-                        tests: [
-                            {
-                                id: '333',
-                                name: 'has many oats'
-                            },
-                            {
-                                id: '444',
-                                name: 'has jumbo oats'
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                file: 'isNobbly.js',
-                testsLoaded: false,
-                tests: []
-            }
-        ]
-    }
+jest.useFakeTimers()
 
+const options = {
+    name: 'Hobnobs',
+    type: 'biscuit',
+    command: '  ./bake   ',
+    path: '/tests',
+    repositoryPath: '/mcvities/hobnobs/',
+    suites: [
+        {
+            file: 'isTasty.js',
+            testsLoaded: true,
+            tests: [
+                {
+                    id: '111',
+                    name: 'tastes sweet'
+                },
+                {
+                    id: '222',
+                    name: 'tastes oaty',
+                    tests: [
+                        {
+                            id: '333',
+                            name: 'has many oats'
+                        },
+                        {
+                            id: '444',
+                            name: 'has jumbo oats'
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            file: 'isNobbly.js',
+            testsLoaded: false,
+            tests: [
+                {
+                    id: '555',
+                    name: 'has lumps'
+                }
+            ]
+        }
+    ]
+}
+
+describe('Framework manipulation', () => {
     it('can instantiate a new generic framework', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
 
@@ -155,6 +162,126 @@ describe('lib/frameworks/framework', () => {
         })
     })
 
+    it('can update framework options', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        framework.emit = jest.fn()
+        framework.reset = jest.fn()
+        framework.resetSuites = jest.fn()
+        framework.refresh = jest.fn()
+
+        await framework.updateOptions({
+            command: './bake',
+            name: 'Digestives',
+            runsInRemote: false,
+            sshHost: '',
+            repositoryPath: '/mcvities/hobnobs/'
+        })
+
+        expect(framework.name).toBe('Digestives')
+        expect(framework.emit).toHaveBeenLastCalledWith('change', framework)
+        expect(framework.reset).not.toHaveBeenCalled()
+        expect(framework.resetSuites).not.toHaveBeenCalled()
+        expect(framework.refresh).not.toHaveBeenCalled()
+    })
+
+    it('rebuilds framework when command changes', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        framework.emit = jest.fn()
+        framework.reset = jest.fn()
+        framework.resetSuites = jest.fn()
+        framework.refresh = jest.fn()
+
+        await framework.updateOptions({
+            command: './eat',
+            runsInRemote: false,
+            sshHost: '',
+            repositoryPath: '/mcvities/hobnobs/'
+        })
+
+        expect(framework.emit).toHaveBeenLastCalledWith('change', framework)
+        expect(framework.reset).toHaveBeenCalledTimes(1)
+        expect(framework.resetSuites).toHaveBeenCalledTimes(1)
+        expect(framework.refresh).toHaveBeenCalledTimes(1)
+    })
+
+    it('rebuilds framework when remote flag changes', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        framework.emit = jest.fn()
+        framework.reset = jest.fn()
+        framework.resetSuites = jest.fn()
+        framework.refresh = jest.fn()
+
+        await framework.updateOptions({
+            command: './bake',
+            runsInRemote: true,
+            sshHost: '',
+            repositoryPath: '/mcvities/hobnobs/'
+        })
+
+        expect(framework.emit).toHaveBeenLastCalledWith('change', framework)
+        expect(framework.reset).toHaveBeenCalledTimes(1)
+        expect(framework.resetSuites).toHaveBeenCalledTimes(1)
+        expect(framework.refresh).toHaveBeenCalledTimes(1)
+    })
+
+    it('rebuilds framework when ssh host changes', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        framework.emit = jest.fn()
+        framework.reset = jest.fn()
+        framework.resetSuites = jest.fn()
+        framework.refresh = jest.fn()
+
+        await framework.updateOptions({
+            command: './bake',
+            runsInRemote: false,
+            sshHost: 'mcvities',
+            repositoryPath: '/mcvities/hobnobs/'
+        })
+
+        expect(framework.emit).toHaveBeenLastCalledWith('change', framework)
+        expect(framework.reset).toHaveBeenCalledTimes(1)
+        expect(framework.resetSuites).toHaveBeenCalledTimes(1)
+        expect(framework.refresh).toHaveBeenCalledTimes(1)
+    })
+
+    it('rebuilds framework when repository path changes', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        framework.emit = jest.fn()
+        framework.reset = jest.fn()
+        framework.resetSuites = jest.fn()
+        framework.refresh = jest.fn()
+
+        await framework.updateOptions({
+            command: './bake',
+            runsInRemote: false,
+            sshHost: '',
+            repositoryPath: '/mcvities/digestives/'
+        })
+
+        expect(framework.emit).toHaveBeenLastCalledWith('change', framework)
+        expect(framework.reset).toHaveBeenCalledTimes(1)
+        expect(framework.resetSuites).toHaveBeenCalledTimes(1)
+        expect(framework.refresh).toHaveBeenCalledTimes(1)
+    })
+
+    it('can get a suite by its id', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        expect(framework.getSuiteById('isTasty.js')).toBe(framework.suites[0])
+        expect(framework.getSuiteById('isMinty.js')).toBe(undefined)
+    })
+
     it('stores statuses centrally', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
@@ -163,6 +290,7 @@ describe('lib/frameworks/framework', () => {
             '222': 'idle',
             '333': 'idle',
             '444': 'idle',
+            '555': 'idle',
             'isTasty.js': 'idle',
             'isNobbly.js': 'idle'
         })
@@ -190,7 +318,7 @@ describe('lib/frameworks/framework', () => {
         })
     })
 
-    it('can determine framework business', async () => {
+    it('can determine framework busyness', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
         expect(framework.isBusy()).toBe(false)
@@ -232,7 +360,9 @@ describe('lib/frameworks/framework', () => {
         expect(framework.getLedger().idle).toBe(1)
         expect(framework.getLedger().queued).toBe(1)
     })
+})
 
+describe('Framework refreshing', () => {
     it('can refresh framework', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
@@ -288,7 +418,7 @@ describe('lib/frameworks/framework', () => {
         expect(framework.status).toBe('passed')
     })
 
-    it('disassembles framework when refresh is interrupted', async () => {
+    it('handles framework interruption when refreshing', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
@@ -314,7 +444,7 @@ describe('lib/frameworks/framework', () => {
         expect(framework.getNuggetStatus('isTasty.js')).toBe('passed')
     })
 
-    it('disassembles framework when refresh errors', async () => {
+    it('handles framework errors when refreshing', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
@@ -337,7 +467,7 @@ describe('lib/frameworks/framework', () => {
         const error = new Error('Boomtown!')
         framework.reload = jest.fn(() => Promise.reject(error))
 
-        // Run queued refresh
+        // Trigger queued refresh
         Object.values(framework.queue)[0]()
         await flushPromises()
 
@@ -350,5 +480,410 @@ describe('lib/frameworks/framework', () => {
 
         expect(framework.emit).toHaveBeenCalledWith('error', error)
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(`${framework.id}:error`, 'Error: Boomtown!', '')
+
+        jest.runAllTimers()
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
+            `${framework.id}:ledger`,
+            {
+                queued: 0,
+                running: 0,
+                passed: 1,
+                failed: 0,
+                incomplete: 0,
+                skipped: 0,
+                warning: 0,
+                partial: 0,
+                empty: 0,
+                idle: 1,
+                error: 0
+            },
+            {
+                '111': 'passed',
+                '222': 'passed',
+                '333': 'passed',
+                '444': 'passed',
+                '555': 'idle',
+                'isTasty.js': 'passed',
+                'isNobbly.js': 'idle'
+            }
+        )
+    })
+})
+
+describe('Framework running', () => {
+    it('can run a framework', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        // Running should queue the job before running
+        framework.start()
+        expect(framework.status).toBe('queued')
+        expect(Object.values(framework.queue).length).toBe(1)
+        expect(Object.values(framework.queue)[0]).toBeInstanceOf(Function)
+        expect(framework.isBusy()).toBe(true)
+
+        let assemble
+        framework.assemble = jest.fn(() => {
+            return new Promise(resolve => {
+                assemble = resolve
+            })
+        })
+        framework.disassemble = jest.fn()
+        framework.emit = jest.fn()
+        framework.emitToRenderer = jest.fn()
+        framework.reload = jest.fn(() => {
+            framework.getAllSuites().forEach(suite => suite.setFresh(true))
+            return Promise.resolve()
+        })
+        framework.runArgs = jest.fn(() => ['hobnobs', 'digestives'])
+        framework.runSelectiveArgs = jest.fn()
+        framework.report = jest.fn(() => {
+            // Simulate nuggets having passed when run
+            framework.setNuggetStatus('isTasty.js', 'passed', 'queued', true)
+            framework.setNuggetStatus('111', 'passed', 'queued', false)
+            framework.setNuggetStatus('222', 'passed', 'queued', false)
+            framework.setNuggetStatus('333', 'passed', 'queued', false)
+            framework.setNuggetStatus('444', 'passed', 'queued', false)
+
+            return Promise.resolve()
+        })
+
+        // Trigger queued run
+        Object.values(framework.queue)[0]()
+
+        await assemble()
+        expect(framework.status).toBe('running')
+        expect(Object.values(framework.getStatusMap()).every(status => status === 'queued')).toBe(true)
+
+        await flushPromises()
+
+        expect(framework.assemble).toHaveBeenCalledTimes(1)
+        expect(framework.reload).toHaveBeenCalledTimes(1)
+        expect(framework.runArgs).toHaveBeenCalledTimes(1)
+        expect(framework.runSelectiveArgs).not.toHaveBeenCalled()
+        expect(framework.report).toHaveBeenCalledTimes(1)
+        expect(framework.report).toHaveBeenCalledWith(['hobnobs', 'digestives'])
+        expect(framework.disassemble).toHaveBeenCalledTimes(1)
+        expect(framework.isBusy()).toBe(false)
+        expect(framework.getAllSuites().length).toBe(1)
+        expect(framework.getAllSuites()[0].getId()).toBe('isTasty.js')
+        expect(framework.getNuggetStatus('isTasty.js')).toBe('passed')
+        expect(framework.getSuiteById('isNobbly.js')).toBe(undefined)
+        expect(framework.status).toBe('passed')
+
+        jest.runAllTimers()
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
+            `${framework.id}:ledger`,
+            {
+                queued: 0,
+                running: 0,
+                passed: 1,
+                failed: 0,
+                incomplete: 0,
+                skipped: 0,
+                warning: 0,
+                partial: 0,
+                empty: 0,
+                idle: 0,
+                error: 0
+            },
+            {
+                '111': 'passed',
+                '222': 'passed',
+                '333': 'passed',
+                '444': 'passed',
+                'isTasty.js': 'passed'
+            }
+        )
+    })
+
+    it('handles framework errors when running', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        // Set an arbitrary status to ensure they are kept after refresh
+        framework.setNuggetStatus('isTasty.js', 'passed', 'idle', true)
+
+        framework.start()
+        framework.assemble = jest.fn()
+        framework.disassemble = jest.fn()
+        framework.emit = jest.fn()
+        framework.emitToRenderer = jest.fn()
+        framework.reload = jest.fn(() => {
+            framework.getAllSuites().forEach(suite => suite.setFresh(true))
+            return Promise.resolve()
+        })
+        framework.runArgs = jest.fn()
+        framework.runSelectiveArgs = jest.fn()
+        const error = new Error('Boomtown!')
+        framework.report = jest.fn(() => Promise.reject(error))
+
+        // Run queued refresh
+        Object.values(framework.queue)[0]()
+
+        await flushPromises()
+
+        expect(framework.assemble).toHaveBeenCalledTimes(1)
+        expect(framework.reload).toHaveBeenCalledTimes(1)
+        expect(framework.runArgs).toHaveBeenCalledTimes(1)
+        expect(framework.runSelectiveArgs).not.toHaveBeenCalled()
+        expect(framework.report).toHaveBeenCalledTimes(1)
+        expect(framework.disassemble).toHaveBeenCalledTimes(1)
+        expect(framework.isBusy()).toBe(false)
+        expect(framework.getAllSuites().length).toBe(2)
+        expect(Object.entries(framework.getStatusMap()).every(([id, status]) => status === 'idle')).toBe(true)
+        expect(framework.status).toBe('error')
+
+        expect(framework.emit).toHaveBeenCalledWith('error', error)
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(`${framework.id}:error`, 'Error: Boomtown!', '')
+
+        jest.runAllTimers()
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
+            `${framework.id}:ledger`,
+            {
+                queued: 0,
+                running: 0,
+                passed: 0,
+                failed: 0,
+                incomplete: 0,
+                skipped: 0,
+                warning: 0,
+                partial: 0,
+                empty: 0,
+                idle: 2,
+                error: 0
+            },
+            {
+                '111': 'idle',
+                '222': 'idle',
+                '333': 'idle',
+                '444': 'idle',
+                '555': 'idle',
+                'isTasty.js': 'idle',
+                'isNobbly.js': 'idle'
+            }
+        )
+    })
+})
+
+describe('Framework selective running', () => {
+    it('can run a framework selectively', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        const suite = framework.getSuiteById('isTasty.js')
+        await suite.toggleSelected()
+
+        // Running should queue the job before running
+        framework.start()
+        expect(framework.status).toBe('queued')
+        expect(Object.values(framework.queue).length).toBe(1)
+        expect(Object.values(framework.queue)[0]).toBeInstanceOf(Function)
+        expect(framework.isBusy()).toBe(true)
+
+        let assemble
+        framework.assemble = jest.fn(() => {
+            return new Promise(resolve => {
+                assemble = resolve
+            })
+        })
+        framework.disassemble = jest.fn()
+        framework.emit = jest.fn()
+        framework.emitToRenderer = jest.fn()
+        framework.reload = jest.fn()
+        framework.runArgs = jest.fn()
+        framework.runSelectiveArgs = jest.fn(() => ['hobnobs', 'digestives'])
+        framework.report = jest.fn(() => {
+            // Simulate nuggets having passed when run
+            framework.setNuggetStatus('isTasty.js', 'passed', 'queued', true)
+            framework.setNuggetStatus('111', 'passed', 'queued', false)
+            framework.setNuggetStatus('222', 'passed', 'queued', false)
+            framework.setNuggetStatus('333', 'passed', 'queued', false)
+            framework.setNuggetStatus('444', 'passed', 'queued', false)
+
+            return Promise.resolve()
+        })
+
+        // Trigger queued run
+        Object.values(framework.queue)[0]()
+
+        await assemble()
+        // Framework is running, but only selected suites have been queued.
+        expect(framework.status).toBe('running')
+        expect(
+            Object.entries(framework.getStatusMap())
+                .filter(([id]) => ['isNobbly.js', '555'].indexOf(id) === -1)
+                .every(([id, status]) => status === 'queued')
+        ).toBe(true)
+        expect(framework.getNuggetStatus('isNobbly.js')).toBe('idle')
+        expect(framework.getNuggetStatus('555')).toBe('idle')
+
+        await flushPromises()
+
+        expect(framework.assemble).toHaveBeenCalledTimes(1)
+        expect(framework.reload).not.toHaveBeenCalled()
+        expect(framework.runArgs).not.toHaveBeenCalled()
+        expect(framework.runSelectiveArgs).toHaveBeenCalledTimes(1)
+        expect(framework.report).toHaveBeenCalledTimes(1)
+        expect(framework.report).toHaveBeenCalledWith(['hobnobs', 'digestives'])
+        expect(framework.disassemble).toHaveBeenCalledTimes(1)
+        expect(framework.isBusy()).toBe(false)
+        expect(framework.getAllSuites().length).toBe(2)
+        expect(framework.getNuggetStatus('isTasty.js')).toBe('passed')
+        expect(framework.getNuggetStatus('isNobbly.js')).toBe('idle')
+        expect(framework.status).toBe('partial')
+
+        jest.runAllTimers()
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
+            `${framework.id}:ledger`,
+            {
+                queued: 0,
+                running: 0,
+                passed: 1,
+                failed: 0,
+                incomplete: 0,
+                skipped: 0,
+                warning: 0,
+                partial: 0,
+                empty: 0,
+                idle: 1,
+                error: 0
+            },
+            {
+                '111': 'passed',
+                '222': 'passed',
+                '333': 'passed',
+                '444': 'passed',
+                '555': 'idle',
+                'isTasty.js': 'passed',
+                'isNobbly.js': 'idle'
+            }
+        )
+    })
+
+    it('marks suites as having errored if not run when selected', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        const suite = framework.getSuiteById('isTasty.js')
+        await suite.toggleSelected()
+
+        // Running should queue the job before running
+        framework.start()
+        expect(framework.status).toBe('queued')
+        expect(Object.values(framework.queue).length).toBe(1)
+        expect(Object.values(framework.queue)[0]).toBeInstanceOf(Function)
+        expect(framework.isBusy()).toBe(true)
+
+        framework.assemble = jest.fn()
+        framework.disassemble = jest.fn()
+        framework.emit = jest.fn()
+        framework.emitToRenderer = jest.fn()
+        framework.runSelectiveArgs = jest.fn()
+        // Report doesn't do anything, to simulate selected suite not being
+        // affected by the reporting process.
+        framework.report = jest.fn(() => Promise.resolve())
+
+        // Trigger queued run
+        Object.values(framework.queue)[0]()
+        await flushPromises()
+
+        expect(framework.assemble).toHaveBeenCalledTimes(1)
+        expect(framework.runSelectiveArgs).toHaveBeenCalledTimes(1)
+        expect(framework.report).toHaveBeenCalledTimes(1)
+        expect(framework.disassemble).toHaveBeenCalledTimes(1)
+        expect(framework.isBusy()).toBe(false)
+        expect(framework.getAllSuites().length).toBe(2)
+        expect(framework.getNuggetStatus('isTasty.js')).toBe('error')
+        expect(framework.getNuggetStatus('isNobbly.js')).toBe('idle')
+        expect(framework.status).toBe('error')
+
+        jest.runAllTimers()
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
+            `${framework.id}:ledger`,
+            {
+                queued: 0,
+                running: 0,
+                passed: 0,
+                failed: 0,
+                incomplete: 0,
+                skipped: 0,
+                warning: 0,
+                partial: 0,
+                empty: 0,
+                idle: 1,
+                error: 1
+            },
+            {
+                '111': 'error',
+                '222': 'error',
+                '333': 'error',
+                '444': 'error',
+                '555': 'idle',
+                'isTasty.js': 'error',
+                'isNobbly.js': 'idle'
+            }
+        )
+    })
+
+    it('handles framework errors when running selectively', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        const suite = framework.getSuiteById('isTasty.js')
+        await suite.toggleSelected()
+
+        framework.start()
+        framework.assemble = jest.fn()
+        framework.disassemble = jest.fn()
+        framework.emit = jest.fn()
+        framework.emitToRenderer = jest.fn()
+        framework.runSelectiveArgs = jest.fn()
+        const error = new Error('Boomtown!')
+        framework.report = jest.fn(() => Promise.reject(error))
+
+        // Run queued refresh
+        Object.values(framework.queue)[0]()
+
+        await flushPromises()
+
+        expect(framework.assemble).toHaveBeenCalledTimes(1)
+        expect(framework.runSelectiveArgs).toHaveBeenCalledTimes(1)
+        expect(framework.report).toHaveBeenCalledTimes(1)
+        expect(framework.disassemble).toHaveBeenCalledTimes(1)
+        expect(framework.isBusy()).toBe(false)
+        expect(framework.getAllSuites().length).toBe(2)
+        expect(Object.entries(framework.getStatusMap()).every(([id, status]) => status === 'idle')).toBe(true)
+        expect(framework.status).toBe('error')
+
+        expect(framework.emit).toHaveBeenCalledWith('error', error)
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(`${framework.id}:error`, 'Error: Boomtown!', '')
+
+        jest.runAllTimers()
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
+            `${framework.id}:ledger`,
+            {
+                queued: 0,
+                running: 0,
+                passed: 0,
+                failed: 0,
+                incomplete: 0,
+                skipped: 0,
+                warning: 0,
+                partial: 0,
+                empty: 0,
+                idle: 2,
+                error: 0
+            },
+            {
+                '111': 'idle',
+                '222': 'idle',
+                '333': 'idle',
+                '444': 'idle',
+                '555': 'idle',
+                'isTasty.js': 'idle',
+                'isNobbly.js': 'idle'
+            }
+        )
     })
 })

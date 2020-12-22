@@ -422,7 +422,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             // If framework initialization has changed, we need to remove the
             // existing suites and add them again, because their unique identifier
             // will potentially have changed (i.e. their absolute file path)
-            this.resetFilters()
+            this.reset()
             this.resetSuites()
             this.refresh()
         }
@@ -777,44 +777,32 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                     }
                 })
             })
-            this.updateStatus()
-            this.emit('change', this)
-            this.emitLedgerToRenderer()
-            return
-        }
-
-        // Suites which remain queued after a run are stale
-        // and should be removed.
-        this.cleanSuitesByStatus('queued')
-        this.updateStatus()
-        this.emit('change', this)
-    }
-
-    /**
-     * Clean currently loaded suites by a given status.
-     *
-     * @param status The status by which to clean the suites.
-     */
-    protected cleanSuitesByStatus (status: Status): void {
-        let nuggets: Array<string> = []
-        this.suites = this.suites.filter((suite: ISuite) => {
-            if (suite.getStatus() === status) {
-                this.onSuiteRemove(suite)
-                return false
-            }
-            nuggets = nuggets.concat(suite.getNuggetIds(false))
-            return true
-        })
-
-        // Reset status when removing nuggets
-        Object.keys(this.statuses)
-            .filter(id => !nuggets.includes(id))
-            .forEach(id => {
-                delete this.statuses[id]
+        } else {
+            // Suites which remain queued after a run are stale
+            // and should be removed.
+            let nuggets: Array<string> = []
+            this.suites = this.suites.filter((suite: ISuite) => {
+                if (suite.getStatus() === 'queued') {
+                    this.onSuiteRemove(suite)
+                    return false
+                }
+                nuggets = nuggets.concat(suite.getNuggetIds(false))
+                return true
             })
 
-        this.emitSuitesToRenderer()
+            // Reset status when removing nuggets
+            Object.keys(this.statuses)
+                .filter(id => !nuggets.includes(id))
+                .forEach(id => {
+                    delete this.statuses[id]
+                })
+
+            this.emitSuitesToRenderer()
+        }
+
         this.rebuildLedger()
+        this.updateStatus()
+        this.emit('change', this)
     }
 
     /**
