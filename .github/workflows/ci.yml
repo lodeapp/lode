@@ -15,7 +15,7 @@ env:
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }}
+    name: Test and build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -33,17 +33,8 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Get yarn cache directory
-      id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
-    - uses: actions/cache@v2
-      id: yarn-cache
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
     - name: Install dependencies
+      if: steps.yarn-cache.outputs.cache-hit != 'true'
       run: yarn
     - name: Lint
       run: yarn lint
@@ -51,29 +42,29 @@ jobs:
       run: yarn tsc
     - name: Unit test
       run: yarn test
-
-  build:
-    name: Build for ${{ matrix.os }}
-    needs: test
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        node-version: [12.x]
-        os: [macOS-latest, windows-latest]
-    steps:
-      - name: Build
-        run: yarn build:dev
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{ matrix.os }}
-          path: build
+    - name: Cypress test
+      run: yarn test:e2e
+    - name: Save Cypress results
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: cypress-${{ matrix.os }}
+        path: |
+          tests/cypress/screenshots
+          tests/cypress/videos
+    - name: Build
+      run: yarn build:dev
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: ${{ matrix.os }}
+        path: build
 
   release:
     name: Release for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     if: github.ref == 'refs/heads/master'
-    needs: build
+    needs: test
     strategy:
       matrix:
         node-version: [12.x]

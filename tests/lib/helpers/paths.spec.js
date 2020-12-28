@@ -4,7 +4,7 @@ import {
     posix
 } from '@lib/helpers/paths'
 
-it('can handled unpacking paths that are not in packed path', () => {
+it('can handle unpacking paths that are not in packed path', () => {
     expect(unpacked('biscuit')).toBe('biscuit')
     expect(unpacked('/biscuit/mcvities/hobnobs/')).toBe('/biscuit/mcvities/hobnobs/')
     expect(unpacked('/appasar/mcvities/hobnobs/')).toBe('/appasar/mcvities/hobnobs/')
@@ -14,10 +14,26 @@ it('can handled unpacking paths that are not in packed path', () => {
 })
 
 it('can point paths to unpacked directory', () => {
-    expect(unpacked('/app.asar/mcvities/hobnobs/')).toBe('/app.asar.unpacked/mcvities/hobnobs/')
-    expect(unpacked('/biscuit/app.asar/hobnobs/')).toBe('/biscuit/app.asar.unpacked/hobnobs/')
-    expect(unpacked('/biscuit/mcvities/app.asar/')).toBe('/biscuit/mcvities/app.asar.unpacked/')
-    expect(unpacked('/biscuit/mcvities/app.asar')).toBe('/biscuit/mcvities/app.asar.unpacked/')
+    expect(unpacked('/app.asar/mcvities/hobnobs/')).toBe(
+        __WIN32__
+            ? '\\app.asar.unpacked\\mcvities/hobnobs/'
+            : '/app.asar.unpacked/mcvities/hobnobs/'
+    )
+    expect(unpacked('/biscuit/app.asar/hobnobs/')).toBe(
+        __WIN32__
+            ? '/biscuit\\app.asar.unpacked\\hobnobs/'
+            : '/biscuit/app.asar.unpacked/hobnobs/'
+    )
+    expect(unpacked('/biscuit/mcvities/app.asar/')).toBe(
+        __WIN32__
+            ? '/biscuit/mcvities\\app.asar.unpacked\\'
+            : '/biscuit/mcvities/app.asar.unpacked/'
+    )
+    expect(unpacked('/biscuit/mcvities/app.asar')).toBe(
+        __WIN32__
+            ? '/biscuit/mcvities\\app.asar.unpacked\\'
+            : '/biscuit/mcvities/app.asar.unpacked/'
+    )
 })
 
 it('can standardise separators', () => {
