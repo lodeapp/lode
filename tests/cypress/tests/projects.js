@@ -10,7 +10,7 @@ context('Project management', () => {
                 },
                 onLoad (win) {
                     cy.spy(ipcRenderer, 'send')
-                    ipcRenderer.listeners.on['did-finish-load'](null, {
+                    ipcRenderer.trigger('did-finish-load', {
                         version: '0.0.0',
                         focus: true
                     })
@@ -21,13 +21,13 @@ context('Project management', () => {
             .should('have.class', 'is-focused')
             .then(() => {
                 cy.log('Blur application')
-                ipcRenderer.listeners.on['blur']()
+                ipcRenderer.trigger('blur')
             })
             .get('body')
             .should('not.have.class', 'is-focused')
             .then(() => {
                 cy.log('Focus application')
-                ipcRenderer.listeners.on['focus']()
+                ipcRenderer.trigger('focus')
             })
             .get('body')
             .should('have.class', 'is-focused')
@@ -61,16 +61,14 @@ context('Project management', () => {
             .should('be.visible')
             .get('.spinner')
             .should('be.visible')
-            .fixture('framework/project.empty.json')
+            .fixture('framework/project.json')
             .then(project => {
-                // Trigger project ready listners to simulate switch being completed.
-                ipcRenderer.listeners.on['project-ready']({}, project)
-                ipcRenderer.listeners.once['project-ready']()
+                ipcRenderer.trigger('project-ready', project)
             })
             .wait(1)
             .should(() => {
                 expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
-                ipcRenderer.listeners.on['42:repositories']({}, [])
+                ipcRenderer.trigger('42:repositories', [])
             })
             .get('.loading')
             .should('not.exist')
@@ -116,7 +114,7 @@ context('Project management', () => {
                 },
                 onLoad (win) {
                     cy.spy(ipcRenderer, 'send')
-                    ipcRenderer.listeners.on['did-finish-load'](null, {
+                    ipcRenderer.trigger('did-finish-load', {
                         projectId: '42',
                         version: '0.0.0',
                         focus: true
@@ -129,14 +127,14 @@ context('Project management', () => {
             .should('be.visible')
             .get('.spinner')
             .should('be.visible')
-            .fixture('framework/project.empty.json')
+            .fixture('framework/project.json')
             .then(project => {
-                ipcRenderer.listeners.on['project-ready']({}, project)
+                ipcRenderer.trigger('project-ready', project)
             })
             .wait(1)
             .should(() => {
                 expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
-                ipcRenderer.listeners.on['42:repositories']({}, [])
+                ipcRenderer.trigger('42:repositories', [])
             })
             .get('.loading')
             .should('not.exist')
