@@ -12,7 +12,7 @@ export class File {
      *
      * @param extension The extension to check
      */
-    public static isExtensionSafe (extension: string): boolean {
+    public static isExtensionSafe (extension: object): boolean {
         if (__WIN32__) {
             return this.restricted.indexOf(extension.toLowerCase()) === -1
         }
