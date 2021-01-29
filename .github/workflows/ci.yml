@@ -9,9 +9,6 @@ env:
   FORCE_COLOR: 3
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  WIN_CSC_IDENTITY_AUTO_DISCOVERY: false
-  WIN_CSC_KEY_PASSWORD: ${{ secrets.CODESIGNINGCERTIFICATE_PASSWORD }}
-  WIN_CSC_LINK: ${{ secrets.CODESIGNINGCERTIFICATE_BASE64 }}
 
 jobs:
   test:
@@ -79,7 +76,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
         run: yarn install
-      - name: Test
-        run: yarn test
       - name: Release
         run: yarn release
