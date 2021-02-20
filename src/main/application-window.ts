@@ -56,6 +56,7 @@ export class ApplicationWindow {
                 contextIsolation: true,
                 worldSafeExecuteJavaScript: true,
                 enableRemoteModule: false,
+                safeDialogs: true,
                 preload: Path.resolve(getResourceDirectory(), 'preload.js')
             },
             acceptFirstMouse: true,

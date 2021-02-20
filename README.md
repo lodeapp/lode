@@ -1,13 +1,23 @@
 # [Lode](https://lode.run)
 
-Lode is an open source [Electron](https://electronjs.org/)-based
-universal test runner graphical user interface. It is written in [TypeScript](http://www.typescriptlang.org) and [Vue](https://vuejs.org/).
+Lode is an open source [Electron](https://electronjs.org/)-based universal test runner graphical user interface. It is written in [TypeScript](http://www.typescriptlang.org) and [Vue](https://vuejs.org/).
 
 ![Lode screenshot - macOS](https://lode.run/github-screenshot.png)
 
 ## Getting started
 
 You can download the latest pre-packaged version [here](https://lode.run/) or choose a version from the [releases](https://github.com/lodeapp/lode/releases) page.
+
+See [lode.run](https://lode.run/documentation/) for instructions on how to use the software.
+
+Lode currently supports the following testing frameworks:
+
+- [PHPUnit](https://lode.run/documentation/frameworks.html#phpunit)
+- [Jest](https://lode.run/documentation/frameworks.html#jest)
+
+For more information, see each specific framework's section in [this page](https://lode.run/documentation/frameworks.html).
+
+## Development
 
 To run it locally, you must first clone this repository and run the following commands:
 
@@ -22,26 +32,17 @@ Afterwards, to build the application for the current platform, run the following
 yarn build
 ```
 
-Alternative, you can build the application in development mode to include the Development menu and Chrome's dev tools, which makes it a bit slower:
+The Lode codebase has two sets of tests: [Jest](https://jestjs.io/) for the main process and [Cypress](https://www.cypress.io/) for the renderer process.
 
 ```sh
-yarn build:dev
+yarn test       # Jest tests
+yarn test:e2e   # Cypress tests
+yarn cypress    # Open the Cypress application
 ```
 
-For other building options, refer to the [package.json](/package.json) scripts.
+Because the Lode application enforces [context isolation](https://www.electronjs.org/docs/tutorial/context-isolation#context-isolation), we are able to run renderer process without the need for Node.js APIs, and since Electron's API is access through the preload scripts using a centralized `Lode` object, we can easily mock their behavior for testing with Cypress.
 
-## Supported Frameworks
-
-Lode currently supports the following testing frameworks:
-
-- [PHPUnit](https://lode.run/documentation/frameworks.html#phpunit)
-- [Jest](https://lode.run/documentation/frameworks.html#jest)
-
-For more information, see each specific framework's section in [this page](https://lode.run/documentation/frameworks.html).
-
-## Documentation
-
-See [lode.run](https://lode.run/documentation/) for instructions on how to use the software.
+If you're just getting started with Electron development, I would strongly recommend adhering to context isolation. Not only it's essential for a secure application, it also gives you a clear boundary for testing the main and renderer processes separately, as Lode does.
 
 ## License
 
