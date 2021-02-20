@@ -36,8 +36,6 @@
                     </h5>
                 </header>
                 <Scrollable>
-                    <div class="shadow"></div>
-                    <div class="shadow-overlay"></div>
                     <SidebarRepository
                         v-for="repository in repositories"
                         :model="repository"

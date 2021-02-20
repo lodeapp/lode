@@ -1,5 +1,5 @@
 <template>
-    <section>
+    <section class="scrollable" :class="{ scrolling }">
         <slot></slot>
     </section>
 </template>
@@ -13,7 +13,8 @@ export default {
     data () {
         return {
             scrollbars: null,
-            position: 0
+            position: 0,
+            scrolling: false
         }
     },
     mounted () {
@@ -23,6 +24,7 @@ export default {
         this.position = _get(this.scrollbars.scroll(), 'position.y')
         this.scrollbars.destroy()
         this.overlayScrollbars()
+        this.scrolling = this.position > 0
     },
     beforeDestroy () {
         this.scrollbars.destroy()
@@ -35,6 +37,11 @@ export default {
                     autoHide: 'leave',
                     autoHideDelay: 5,
                     clickScrolling: true
+                },
+                callbacks: {
+                    onScroll: (event, test) => {
+                        this.scrolling = event.target.scrollTop > 0
+                    }
                 }
             })
             this.scrollbars.scroll(this.position)

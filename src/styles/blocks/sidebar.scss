@@ -1,5 +1,4 @@
 .sidebar {
-    background-color: var(--sidebar-color);
     border-radius: 0.0001px; // Prevent .shadow from overflowing.
     display: flex;
     flex-direction: column;
@@ -22,23 +21,6 @@
 
     header {
         position: sticky;
-    }
-
-    .shadow {
-        height: 1px;
-        position: fixed;
-        width: 100%;
-        border-bottom: 1px solid var(--color-gray-500);
-        box-shadow: 0 2px 0 0 transparentize($black, .9);
-        z-index: 1;
-    }
-
-    .shadow-overlay {
-        background-color: var(--sidebar-color);
-        height: 3px;
-        position: relative;
-        width: 100%;
-        z-index: 2;
     }
 
     section {
@@ -126,7 +108,9 @@
                     &.status--passed {
 
                         & > .indicator {
-                            box-shadow: 0 0 0 4px theme-color('passed', 200), 0 0 0 5px theme-color('passed', 100);
+                            box-shadow:
+                                0 0 0 4px theme-color('passed', 200),
+                                0 0 0 5px rgba($color: theme-color('passed', 100), $alpha: .75);
                         }
                     }
 
@@ -134,7 +118,9 @@
                     &.status--empty {
 
                         & > .indicator {
-                            box-shadow: 0 0 0 4px theme-color('idle', 400), 0 0 0 5px theme-color('idle', 200);
+                            box-shadow:
+                                0 0 0 4px theme-color('idle', 400),
+                                0 0 0 5px rgba($color: theme-color('idle', 200), $alpha: .75);
                         }
                     }
 
@@ -142,7 +128,9 @@
                     &.status--error {
 
                         & > .indicator {
-                            box-shadow: 0 0 0 4px theme-color('failed', 200), 0 0 0 5px theme-color('failed', 100);
+                            box-shadow:
+                                0 0 0 4px theme-color('failed', 200),
+                                0 0 0 5px rgba($color: theme-color('failed', 100), $alpha: .75);
                         }
                     }
 
@@ -150,28 +138,34 @@
                     &.status--missing {
 
                         & > .indicator {
-                            box-shadow: 0 0 0 4px theme-color('warning', 200), 0 0 0 5px theme-color('warning', 100);
+                            box-shadow:
+                                0 0 0 4px theme-color('warning', 200),
+                                0 0 0 5px rgba($color: theme-color('warning', 100), $alpha: .75);
                         }
                     }
 
                     &.status--incomplete {
 
                         & > .indicator {
-                            box-shadow: 0 0 0 4px theme-color('incomplete', 200), 0 0 0 5px theme-color('incomplete', 100);
+                            box-shadow:
+                                0 0 0 4px theme-color('incomplete', 200),
+                                0 0 0 5px rgba($color: theme-color('incomplete', 100), $alpha: .75);
                         }
                     }
 
                     &.status--partial {
 
                         & > .indicator {
-                            box-shadow: 0 0 0 4px theme-color('partial', 400), 0 0 0 5px theme-color('partial', 200);
+                            box-shadow:
+                                0 0 0 4px theme-color('partial', 400),
+                                0 0 0 5px rgba($color: theme-color('partial', 200), $alpha: .75);
                         }
                     }
 
                     &.status--queued {
 
                         & > .indicator {
-                            box-shadow: 0 0 0 5px theme-color('idle', 100);
+                            box-shadow: 0 0 0 5px rgba($color: theme-color('idle', 100), $alpha: .75);
                         }
                     }
                 }

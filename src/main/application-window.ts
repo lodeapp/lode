@@ -45,7 +45,7 @@ export class ApplicationWindow {
             minWidth: this.minWidth,
             minHeight: this.minHeight,
             useContentSize: true,
-            backgroundColor: '#fff',
+            backgroundColor: '#00FFFFFF',
             webPreferences: {
                 // Disable auxclick event
                 // See https://developers.google.com/web/updates/2016/10/auxclick
@@ -58,7 +58,9 @@ export class ApplicationWindow {
                 enableRemoteModule: false,
                 preload: Path.resolve(getResourceDirectory(), 'preload.js')
             },
-            acceptFirstMouse: true
+            acceptFirstMouse: true,
+            vibrancy: 'under-window',
+            transparent: true
         }
 
         if (__DARWIN__) {

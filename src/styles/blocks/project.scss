@@ -58,6 +58,7 @@
             & > :last-child {
                 border-left: 0;
                 z-index: 1 !important;
+                margin-left: -1px;
             }
         }
     }
