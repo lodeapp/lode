@@ -10,6 +10,7 @@
     }
 
     @include win32 {
+        background-color: var(--sidebar-color);
         padding: 0;
         // Discount titlebar height to prevent overflow.
         height: calc(100vh - 30px);
