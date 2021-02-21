@@ -6,16 +6,12 @@ Lode is an open source [Electron](https://electronjs.org/)-based universal test 
 
 ## Getting started
 
-You can download the latest pre-packaged version [here](https://lode.run/) or choose a version from the [releases](https://github.com/lodeapp/lode/releases) page.
-
-See [lode.run](https://lode.run/documentation/) for instructions on how to use the software.
+You can download the latest pre-packaged version [here](https://lode.run/) or choose a version from the [releases](https://github.com/lodeapp/lode/releases) page. For instructions on how to use the software, see [the documentation](https://lode.run/documentation/).
 
 Lode currently supports the following testing frameworks:
 
 - [PHPUnit](https://lode.run/documentation/frameworks.html#phpunit)
 - [Jest](https://lode.run/documentation/frameworks.html#jest)
-
-For more information, see each specific framework's section in [this page](https://lode.run/documentation/frameworks.html).
 
 ## Development
 
