@@ -3,6 +3,7 @@
         class="sidebar-item has-status"
         :class="[
             `status--${status}`,
+            show ? 'is-expanded' : '',
             menuActive ? 'is-menu-active' : '',
             frameworks.length ? '' : 'is-empty'
         ]"

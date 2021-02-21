@@ -103,7 +103,7 @@
     "copy-webpack-plugin": "^5.0.4",
     "cross-env": "^5.2.0",
     "css-loader": "^3.2.0",
-    "cypress": "6.3.0",
+    "cypress": "6.5.0",
     "del": "^3.0.0",
     "dotprejs": "^0.0.2",
     "electron": "^11.1.0",

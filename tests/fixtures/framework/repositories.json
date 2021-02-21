@@ -1,0 +1,14 @@
+[
+    {
+        "id": "repository-1",
+        "name": "hobnobs",
+        "path": "/lodeapp/lode/hobnobs",
+        "expanded": true
+    },
+    {
+        "id": "repository-2",
+        "name": "digestives",
+        "path": "/lodeapp/lode/digestives",
+        "expanded": false
+    }
+]

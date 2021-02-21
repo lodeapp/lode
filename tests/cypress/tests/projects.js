@@ -106,7 +106,7 @@ context('Project management', () => {
             .should('have.prop', 'disabled')
     })
 
-    it('can resume existing projects', () => {
+    it('resumes existing projects', () => {
         cy
             .visit('/', {
                 onBeforeLoad (win) {
@@ -149,7 +149,7 @@ context('Project management', () => {
             .should('have.class', 'empty')
             .get('.pane:first')
             .should('have.class', 'sidebar')
-            .get('.sidebar header .sidebar-header')
+            .get('.sidebar header .sidebar-header:last')
             .should('have.text', 'Project')
             .get('.sidebar header .sidebar-item')
             .should('contain.text', 'Biscuit')
@@ -166,5 +166,37 @@ context('Project management', () => {
             .get('.modal-footer .btn-primary').as('save')
             .should('contain.text', 'Add repositories')
             .should('have.prop', 'disabled')
+    })
+
+    it('triggers project context menu', () => {
+        cy
+            .visit('/', {
+                onBeforeLoad (win) {
+                    win.Lode = Lode
+                },
+                onLoad (win) {
+                    cy.spy(ipcRenderer, 'send')
+                    cy.stub(ipcRenderer, 'invoke').resolves(true)
+                    ipcRenderer.trigger('did-finish-load', {
+                        projectId: '42',
+                        version: '0.0.0',
+                        focus: true
+                    })
+                }
+            })
+            .fixture('framework/project.json')
+            .then(project => {
+                ipcRenderer.trigger('project-ready', project)
+            })
+            .wait(1)
+            .should(() => {
+                ipcRenderer.trigger('42:repositories', [])
+            })
+            .get('.sidebar header .sidebar-item')
+            .should('contain.text', 'Biscuit')
+            .rightclick()
+            .should(() => {
+                expect(ipcRenderer.invoke).to.be.calledOnceWith('project-context-menu')
+            })
     })
 })
