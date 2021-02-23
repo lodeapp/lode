@@ -8,11 +8,10 @@ use PHPUnit\Framework\TestResult;
 use PHPUnit\Framework\TestSuite;
 use PHPUnit\Framework\TestSuiteIterator;
 use PHPUnit\Framework\Warning;
-use PHPUnit\TextUI\ResultPrinter;
 use RecursiveIteratorIterator;
 use Throwable;
 
-class LodeReporter extends ResultPrinter
+class LodeReporter extends Printer
 {
     /**
      * If true, flush output after every write.

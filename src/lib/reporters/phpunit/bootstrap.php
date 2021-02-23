@@ -30,6 +30,16 @@ spl_autoload_register(function ($class) {
             if ($class === 'LodeApp\PHPUnit\LodeReporter') {
                 $folder = DIRECTORY_SEPARATOR . '60-65';
             }
+        } else if (
+            class_exists('PHPUnit\Runner\Version')
+            && (
+                stripos(\PHPUnit\Runner\Version::id(), '7.') === 0
+                || stripos(\PHPUnit\Runner\Version::id(), '8.') === 0
+            )
+        ) {
+            if ($class === 'LodeApp\PHPUnit\Printer') {
+                $folder = DIRECTORY_SEPARATOR . '70-80';
+            }
         }
 
         include_once __DIR__ . DIRECTORY_SEPARATOR . 'src' . $folder . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen('LodeApp\PHPUnit')) . '.php');
