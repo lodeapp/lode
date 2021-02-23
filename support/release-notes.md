@@ -1,7 +1,3 @@
-Changed:
-  - Don't override indeterminate checkbox style
-  - Improvements in path manipulation
-Fixed:
-  - Tests could linger as "queued" if they threw an error when being run selectively
-  - Potential parsing error when a Lode processed errored in the middle of reporting
-  - Jest tests that should not be selectable could still be selected using keyboard
+New:
+  - Added support for PHPUnit 9+
+  - Vibrancy for sidebar in macOS
