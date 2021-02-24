@@ -198,4 +198,15 @@ body {
             opacity: 1;
         }
     }
+
+    &:not(.is-focused) {
+
+        .sidebar {
+            background-color: var(--sidebar-color);
+        }
+    }
+
+    &.theme-dark {
+        background-color: var(--sidebar-color);
+    }
 }

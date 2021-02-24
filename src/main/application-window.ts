@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import { get } from 'lodash'
-import { app, ipcMain, BrowserWindow } from 'electron'
+import { app, ipcMain, BrowserWindow, nativeTheme } from 'electron'
 import { getResourceDirectory } from '@lib/helpers/paths'
 import { state } from '@lib/state'
 import { ProjectIdentifier, ProjectOptions, Project } from '@lib/frameworks/project'
@@ -87,6 +87,10 @@ export class ApplicationWindow {
         }
 
         this.load()
+
+        nativeTheme.on('updated', () => {
+            this.window.webContents.send('theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
+        })
     }
 
     public static init (identifier: ProjectIdentifier | null): ApplicationWindow {
@@ -129,6 +133,7 @@ export class ApplicationWindow {
         this.window.webContents.on('did-finish-load', () => {
             this.onReady()
             this.window.webContents.send('did-finish-load', {
+                theme: nativeTheme.shouldUseDarkColors ? 'dark' : 'light',
                 projectId: get(this.getProject(), 'id', null),
                 focus: this.window.isFocused(),
                 version: app.getVersion()

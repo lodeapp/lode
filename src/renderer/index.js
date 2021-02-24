@@ -59,6 +59,7 @@ export default new Vue({
     created () {
         Lode.ipc
             .on('did-finish-load', (event, properties) => {
+                document.body.classList.add(`theme-${properties.theme}`)
                 document.body.classList.add(`platform-${process.platform}`)
                 if (properties.focus) {
                     document.body.classList.add('is-focused')
@@ -74,6 +75,11 @@ export default new Vue({
             })
             .on('focus', () => {
                 document.body.classList.add('is-focused')
+            })
+            .on('theme-updated', (event, newTheme) => {
+                document.body.classList.remove('theme-light')
+                document.body.classList.remove('theme-dark')
+                document.body.classList.add(`theme-${newTheme}`)
             })
             .on('project-ready', (event, project) => {
                 this.loadProject(project)
