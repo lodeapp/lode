@@ -1,3 +1,2 @@
-New:
-  - Added support for PHPUnit 9+
-  - Vibrancy for sidebar in macOS
+Changed:
+  - Remove vibrancy from sidebar in macOS when using dark mode
