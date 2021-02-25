@@ -5,6 +5,8 @@
     padding: 33px 0 0;
     height: 100vh;
 
+    // Fade contents on macOS when window is not focused. This will
+    // be overridden to 1 when body.is-focused
     @include darwin {
         opacity: .7;
     }
@@ -14,6 +16,10 @@
         padding: 0;
         // Discount titlebar height to prevent overflow.
         height: calc(100vh - 30px);
+    }
+
+    @include dark {
+        background-color: var(--sidebar-color);
     }
 
     & > .draggable {
@@ -204,9 +210,5 @@ body {
         .sidebar {
             background-color: var(--sidebar-color);
         }
-    }
-
-    &.theme-dark {
-        background-color: var(--sidebar-color);
     }
 }

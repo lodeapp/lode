@@ -151,7 +151,7 @@
 }
 
 // Overrides
-.platform-win32 {
+@include win32-context {
 
     &.theme-light {
         --sidebar-color: #fff;
