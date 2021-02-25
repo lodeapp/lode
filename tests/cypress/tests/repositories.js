@@ -35,6 +35,7 @@ context('Repository management', () => {
                         })
 
                         ipcRenderer.trigger('did-finish-load', {
+                            theme: 'light',
                             projectId: '42',
                             version: '0.0.0',
                             focus: true

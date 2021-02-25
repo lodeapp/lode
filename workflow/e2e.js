@@ -3,7 +3,7 @@
 const { exec } = require('child_process')
 let callbackId = null
 
-const teardown = () => {
+const teardown = (code = 0) => {
     if (callbackId) {
         try {
             // Try to kill child process, but don't
@@ -11,7 +11,7 @@ const teardown = () => {
             process.kill(-callbackId)
         } catch (_) {}
     }
-    process.exit()
+    process.exit(code)
 }
 
 if (process.platform === 'win32') {
@@ -40,6 +40,10 @@ startRenderer().then(() => {
     callback.stderr.setEncoding('utf8')
     callback.stdout.pipe(process.stdout)
     callback.stderr.pipe(process.stderr)
-    callback.on('error', teardown)
-    callback.on('close', teardown)
+    callback.on('error', (...args) => {
+        teardown(...args)
+    })
+    callback.on('close', (...args) => {
+        teardown(...args)
+    })
 })

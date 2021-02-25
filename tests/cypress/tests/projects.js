@@ -11,13 +11,13 @@ context('Project management', () => {
                 onLoad (win) {
                     cy.spy(ipcRenderer, 'send')
                     ipcRenderer.trigger('did-finish-load', {
+                        theme: 'light',
                         version: '0.0.0',
                         focus: true
                     })
                 }
             })
             .get('body')
-            .should('have.class', 'light')
             .should('have.class', 'is-focused')
             .then(() => {
                 cy.log('Blur application')
