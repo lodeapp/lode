@@ -1,0 +1,21 @@
+{
+    "id": "phpunit-1",
+    "name": "PHPUnit",
+    "type": "phpunit",
+    "command": "./vendor/bin/phpunit",
+    "path": "",
+    "runsInRemote": false,
+    "remotePath": "",
+    "sshHost": "",
+    "sshUser": null,
+    "sshPort": null,
+    "sshIdentity": null,
+    "active": false,
+    "status": "idle",
+    "proprietary": {
+        "autoloadPath": ""
+    },
+    "sort": "framework",
+    "selected": 0,
+    "canToggleTests": true
+}

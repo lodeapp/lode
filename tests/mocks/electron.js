@@ -12,6 +12,7 @@ const electron = {
         },
         send (channel, ...args) {},
         invoke (channel, ...args) {},
+        removeAllListeners (channel) {},
 
         /**
          * Mimick a channel event coming from the main process.

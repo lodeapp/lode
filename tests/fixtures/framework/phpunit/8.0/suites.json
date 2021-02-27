@@ -1,0 +1,198 @@
+[
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php",
+        "meta": {
+            "n": 1,
+            "class": "Tests\\Unit\\ConsoleTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/ConsoleTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php",
+        "meta": {
+            "n": 2,
+            "class": "Tests\\Unit\\DataProviderTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/DataProviderTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/EmptyTest.php",
+        "meta": {
+            "n": 3,
+            "class": "Tests\\Unit\\EmptyTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": false,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/EmptyTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/FailureTest.php",
+        "meta": {
+            "n": 4,
+            "class": "Tests\\Unit\\FailureTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/FailureTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/IncompleteTest.php",
+        "meta": {
+            "n": 5,
+            "class": "Tests\\Unit\\IncompleteTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/IncompleteTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/IsolationFailureTest.php",
+        "meta": {
+            "n": 6,
+            "class": "Tests\\Unit\\IsolationFailureTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/IsolationFailureTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/IsolationNoAssertionsTest.php",
+        "meta": {
+            "n": 7,
+            "class": "Tests\\Unit\\IsolationNoAssertionsTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/IsolationNoAssertionsTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/IsolationSuccessTest.php",
+        "meta": {
+            "n": 8,
+            "class": "Tests\\Unit\\IsolationSuccessTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/IsolationSuccessTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/LaravelTest.php",
+        "meta": {
+            "n": 9,
+            "class": "Tests\\Unit\\LaravelTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/LaravelTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/LongTest.php",
+        "meta": {
+            "n": 10,
+            "class": "Tests\\Unit\\LongTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/LongTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/NoAssertionsTest.php",
+        "meta": {
+            "n": 11,
+            "class": "Tests\\Unit\\NoAssertionsTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/NoAssertionsTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/SkippedTest.php",
+        "meta": {
+            "n": 12,
+            "class": "Tests\\Unit\\SkippedTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/SkippedTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/SuccessTest.php",
+        "meta": {
+            "n": 13,
+            "class": "Tests\\Unit\\SuccessTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/SuccessTest.php"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/tests/Unit/WarningProtectedMethodTest.php",
+        "meta": {
+            "n": 14,
+            "class": "Tests\\Unit\\WarningProtectedMethodTest",
+            "groups": [
+                "default"
+            ]
+        },
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "tests/Unit/WarningProtectedMethodTest.php"
+    }
+]

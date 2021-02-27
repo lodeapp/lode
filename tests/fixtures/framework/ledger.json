@@ -1,0 +1,13 @@
+{
+    "queued": 0,
+    "running": 0,
+    "passed": 0,
+    "failed": 0,
+    "incomplete": 0,
+    "skipped": 0,
+    "warning": 0,
+    "partial": 0,
+    "empty": 0,
+    "idle": 0,
+    "error": 0
+}

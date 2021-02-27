@@ -1,0 +1,19 @@
+{
+    "id": "jest-1",
+    "name": "Jest",
+    "type": "jest",
+    "command": "yarn test",
+    "path": "",
+    "runsInRemote": false,
+    "remotePath": "",
+    "sshHost": "",
+    "sshUser": null,
+    "sshPort": null,
+    "sshIdentity": null,
+    "active": false,
+    "status": "idle",
+    "proprietary": {},
+    "sort": "name",
+    "selected": 0,
+    "canToggleTests": false
+  }

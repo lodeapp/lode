@@ -52,9 +52,6 @@ describe('Repository management', () => {
                 ipcRenderer.trigger('project-ready', project)
             })
             .wait(1)
-            .should(() => {
-                expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
-            })
             .then(() => {
                 ipcRenderer.trigger('42:repositories', this.repositories)
             })
@@ -189,9 +186,6 @@ describe('Repository management', () => {
                 ipcRenderer.trigger('project-ready', project)
             })
             .wait(1)
-            .should(() => {
-                expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
-            })
             .then(() => {
                 ipcRenderer.trigger('42:repositories', this.repositories)
             })
@@ -284,6 +278,7 @@ describe('Repository management', () => {
                 // Simulate project receiving the added repository
                 ipcRenderer.trigger('42:repositories', this.repositories.concat(this.anotherRepository))
             })
+            .wait(1)
             .get('.sidebar section.scrollable .sidebar-item')
             .should('have.length', 3)
             .get('.sidebar section.scrollable .sidebar-item:last')
@@ -308,9 +303,6 @@ describe('Repository management', () => {
             })
     })
 
-    it.skip('can handle missing repositories', function () {
-    })
-
     it('triggers repository context menu', function () {
         cy
             .visit('/', {
@@ -332,9 +324,6 @@ describe('Repository management', () => {
                 ipcRenderer.trigger('project-ready', project)
             })
             .wait(1)
-            .should(() => {
-                expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
-            })
             .then(() => {
                 // Collapse all repositories to avoid calling for frameworks.
                 ipcRenderer.trigger('42:repositories', this.repositories.map(repository => {

@@ -1,0 +1,122 @@
+[
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/BadlyNested.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/BadlyNested.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/Console.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/Console.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/DeclarationException.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/DeclarationException.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/Empty.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/Empty.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/EmptyDescribe.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/EmptyDescribe.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/Failure.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/Failure.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/LongNames.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/LongNames.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/Malformed.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/Malformed.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/Nested.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/Nested.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/NoDescribe.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/NoDescribe.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/Skip.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/Skip.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/SkipDescribe.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/SkipDescribe.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/Snapshot.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/Snapshot.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/Success.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/Success.spec.js"
+    },
+    {
+        "file": "/lodeapp/lode/hobnobs/__tests__/UnexistingDependency.spec.js",
+        "meta": {},
+        "hasChildren": true,
+        "selected": false,
+        "partial": false,
+        "relative": "__tests__/UnexistingDependency.spec.js"
+    }
+]
