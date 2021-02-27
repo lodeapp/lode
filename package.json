@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "Lode",
-  "version": "0.30.1",
+  "version": "0.30.2",
   "author": "Tomas Buteler <info@lode.run>",
   "description": "A universal GUI for unit testing",
   "license": "MIT",
@@ -106,7 +106,7 @@
     "cypress": "6.5.0",
     "del": "^3.0.0",
     "dotprejs": "^0.0.2",
-    "electron": "^11.1.0",
+    "electron": "^11.3.0",
     "electron-builder": "^22.9.1",
     "electron-devtools-installer": "^3.1.1",
     "electron-notarize": "^1.0.0",

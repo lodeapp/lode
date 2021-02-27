@@ -1,2 +1,2 @@
 Changed:
-  - Remove vibrancy from sidebar in macOS when using dark mode
+  - Updated Electron to 11.3.0
