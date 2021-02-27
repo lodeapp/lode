@@ -10,5 +10,11 @@
         "name": "digestives",
         "path": "/lodeapp/lode/digestives",
         "expanded": false
+    },
+    {
+        "id": "repository-3",
+        "name": "rich-tea",
+        "path": "/lodeapp/lode/rich-tea",
+        "expanded": false
     }
 ]

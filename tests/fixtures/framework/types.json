@@ -1,0 +1,9 @@
+[
+    {
+        "name": "Jest",
+        "type": "jest",
+        "command": "yarn test",
+        "path": "",
+        "proprietary": {}
+    }
+]

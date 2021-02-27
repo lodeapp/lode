@@ -24,7 +24,7 @@
                 <dd v-if="slot.validator.hasErrors('path')" class="form-error">{{ slot.validator.getErrors('path') }}</dd>
             </dl>
             <dl class="form-group">
-                <button type="button" class="btn btn-sm" @click="addRow()">
+                <button type="button" class="btn btn-sm add-row" @click="addRow()">
                     Add another repository
                 </button>
             </dl>
@@ -47,6 +47,7 @@
 </template>
 
 <script>
+import _compact from 'lodash/compact'
 import _find from 'lodash/find'
 import _uniqBy from 'lodash/uniqBy'
 import Modal from '@/components/modals/Modal'
@@ -158,7 +159,7 @@ export default {
                 this.loading = true
                 const repositories = await Lode.ipc.invoke(
                     'repository-add',
-                    _uniqBy(this.slots, 'path').map(slot => slot.path)
+                    _compact(_uniqBy(this.slots, 'path').map(slot => slot.path))
                 )
                 this.confirm({
                     repositories,
