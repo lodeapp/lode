@@ -278,7 +278,6 @@ describe('Repository management', () => {
                 // Simulate project receiving the added repository
                 ipcRenderer.trigger('42:repositories', this.repositories.concat(this.anotherRepository))
             })
-            .wait(1)
             .get('.sidebar section.scrollable .sidebar-item')
             .should('have.length', 3)
             .get('.sidebar section.scrollable .sidebar-item:last')
@@ -293,7 +292,9 @@ describe('Repository management', () => {
             .type('rich-tea')
             .get('.auto-scan input[type="checkbox"]')
             .uncheck()
-            .get('.modal-footer .btn-primary')
+            // This is a bit flaky in CI, as its seems two modals can
+            // occasionally co-exist, so force "last" button, just in case.
+            .get('.modal-footer .btn-primary:last')
             .click()
             .should(() => {
                 expect(ipcRenderer.invoke).to.have.callCount(2)
