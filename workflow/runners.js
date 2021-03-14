@@ -6,12 +6,10 @@ const chalk = require('chalk')
 const electron = require('electron')
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
-const webpackHotMiddleware = require('webpack-hot-middleware')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 let electronProcess = null
 let manualRestart = false
-let hotMiddleware
 
 const logStats = function (proc, data) {
     let log = ''
@@ -39,20 +37,8 @@ const logStats = function (proc, data) {
 const startRenderer = function () {
     return new Promise((resolve, reject) => {
         const rendererConfig = require('./webpack.renderer.config')
-        rendererConfig.entry.renderer = [Path.join(__dirname, 'dev-client')].concat(rendererConfig.entry.renderer)
         rendererConfig.mode = 'development'
         const compiler = webpack(rendererConfig)
-        hotMiddleware = webpackHotMiddleware(compiler, {
-            log: false,
-            heartbeat: 2500
-        })
-
-        compiler.hooks.compilation.tap('compilation', compilation => {
-            compilation.hooks.htmlWebpackPluginAfterEmit.tapAsync('html-webpack-plugin-after-emit', (data, cb) => {
-                hotMiddleware.publish({ action: 'reload' })
-                cb()
-            })
-        })
 
         compiler.hooks.done.tap('done', stats => {
             logStats('Renderer', stats)
@@ -64,7 +50,6 @@ const startRenderer = function () {
                 contentBase: Path.join(__dirname, '../'),
                 quiet: true,
                 before (app, ctx) {
-                    app.use(hotMiddleware)
                     ctx.middleware.waitUntilValid(() => {
                         resolve()
                     })
@@ -83,7 +68,6 @@ const start = function (name, config) {
 
         compiler.hooks.watchRun.tapAsync('watch-run', (compilation, done) => {
             logStats(name, chalk.white.bold('compiling...'))
-            hotMiddleware.publish({ action: 'compiling' })
             done()
         })
 

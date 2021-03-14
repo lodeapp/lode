@@ -5,25 +5,23 @@ process.env.BABEL_ENV = 'renderer'
 const path = require('path')
 const webpack = require('webpack')
 const base = require('./webpack.base.config.js')
+const { merge } = require('webpack-merge')
 const { getReplacements } = require('./app-info')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CircularDependencyPlugin = require('circular-dependency-plugin')
 const { VueLoaderPlugin } = require('vue-loader')
 
-const rendererConfig = {
-    ...base,
+const rendererConfig = merge(base, {
     target: 'web',
     entry: {
         renderer: path.join(__dirname, '../src/renderer/index.js')
     },
     output: {
-        ...base.output,
         libraryTarget: 'umd'
     },
     module: {
         rules: [
-            ...base.module.rules,
             {
                 test: /\.scss$/,
                 use: [
@@ -66,20 +64,19 @@ const rendererConfig = {
                         }
                     }
                 }
-            },
-            {
-                test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-                use: {
-                    loader: 'url-loader',
-                    query: {
-                        limit: 10000,
-                        name: 'imgs/[name]--[folder].[ext]'
-                    }
-                }
             }
         ]
     },
+    resolve: {
+        fallback: {
+            'path': require.resolve('path-browserify'),
+            'stream': require.resolve('stream-browserify')
+        }
+    },
     plugins: [
+        new webpack.ProvidePlugin({
+            process: 'process/browser'
+        }),
         new webpack.DefinePlugin(Object.assign({}, getReplacements(), {
             __PROCESS_KIND__: JSON.stringify('renderer')
         })),
@@ -94,7 +91,6 @@ const rendererConfig = {
             },
             nodeModules: false
         }),
-        new webpack.HotModuleReplacementPlugin(),
         new webpack.NoEmitOnErrorsPlugin(),
         new CircularDependencyPlugin({
             exclude: /node_modules/,
@@ -103,12 +99,13 @@ const rendererConfig = {
             cwd: process.cwd()
         })
     ]
-}
+})
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' || process.env.IS_DEV) {
     rendererConfig.plugins.push(
         new webpack.DefinePlugin({
-            '__static': `"${path.join(__dirname, '../static').replace(/\\/g, '\\\\')}"`
+            '__static': `"${path.join(__dirname, '../static').replace(/\\/g, '\\\\')}"`,
+            'process.env': '{}'
         })
     )
 }

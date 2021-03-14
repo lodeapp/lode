@@ -4,7 +4,7 @@ import { IProcess } from '@lib/process/process'
  * An error with a code number property.
  */
 export interface ErrorWithCode extends Error {
-    code?: string | number
+    code?: string | number | null
 }
 
 /**
@@ -12,7 +12,7 @@ export interface ErrorWithCode extends Error {
  */
 export class ProcessError extends Error implements ErrorWithCode {
     process?: string
-    code?: string | number | undefined
+    code?: string | number | null | undefined
 
     constructor (...args: Array<string>) {
         super(...args)
@@ -43,7 +43,7 @@ export class ProcessError extends Error implements ErrorWithCode {
      *
      * @param code The error code we're setting.
      */
-    public setCode (code?: string | number): this {
+    public setCode (code?: string | number | null): this {
         this.code = code
         return this
     }

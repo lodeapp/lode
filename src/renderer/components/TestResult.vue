@@ -158,10 +158,10 @@ export default {
             return Object.keys(_pickBy({
                 error: this.error,
                 feedback: this.feedback && !this.isTransient,
+                parameters: this.parameters && !this.isTransient,
                 console: this.console && !this.isTransient,
                 suiteConsole: this.suiteConsole && !this.isTransient,
-                stats: this.stats,
-                parameters: this.parameter && !this.isTransients
+                stats: this.stats
             }, _identity))
         },
         error () {
@@ -199,21 +199,21 @@ export default {
     },
     mounted () {
         let index
-        this.cycleHandler = (e) => {
+        this.cycleHandler = event => {
             if (this.availableTabs.length > 1) {
-                if (this.$input.isNumeral(e) && this.$input.hasCmdOrCtrl(e)) {
+                if (this.$input.isNumeral(event) && this.$input.hasCmdOrCtrl(event)) {
                     index = event.key - 1 // Tab order starts at 1, not zero.
                     const seek = this.availableTabs[index]
                     if (seek) {
                         this.setTab(seek)
                     }
-                } else if (this.$input.isCycleForward(e)) {
+                } else if (this.$input.isCycleForward(event)) {
                     index = _indexOf(this.availableTabs, this.tab) + 1
                     const forward = this.availableTabs[index >= this.availableTabs.length ? 0 : index]
                     if (forward) {
                         this.setTab(forward)
                     }
-                } else if (this.$input.isCycleBackward(e)) {
+                } else if (this.$input.isCycleBackward(event)) {
                     index = _indexOf(this.availableTabs, this.tab) - 1
                     const backward = this.availableTabs[index < 0 ? (this.availableTabs.length - 1) : index]
                     if (backward) {
