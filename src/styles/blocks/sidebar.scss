@@ -1,4 +1,5 @@
 .sidebar {
+    background-color: var(--sidebar-color);
     border-radius: 0.0001px; // Prevent .shadow from overflowing.
     display: flex;
     flex-direction: column;
@@ -12,7 +13,6 @@
     }
 
     @include win32 {
-        background-color: var(--sidebar-color);
         padding: 0;
         // Discount titlebar height to prevent overflow.
         height: calc(100vh - 30px);
@@ -202,13 +202,6 @@ body {
 
         .sidebar {
             opacity: 1;
-        }
-    }
-
-    &:not(.is-focused) {
-
-        .sidebar {
-            background-color: var(--sidebar-color);
         }
     }
 }

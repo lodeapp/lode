@@ -45,7 +45,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     protected error: string = ''
     protected killed: boolean = false
     protected closed: boolean = false
-    protected exitCode?: number
+    protected exitCode?: number | null
     protected exitSignal: string | null = null
     protected reports: boolean = false
     protected reportBuffer: string = ''
@@ -208,7 +208,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * @param code The exit code that triggered the process closing.
      * @param signal The signal string that triggered the process closing.
      */
-    protected onClose(code: number, signal: string | null) {
+    protected onClose(code: number | null, signal: string | null) {
 
         log.debug(['Process closing.', JSON.stringify({ code, signal })].join(' '))
 

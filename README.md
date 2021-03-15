@@ -22,10 +22,16 @@ yarn install
 yarn dev
 ```
 
-Afterwards, to build the application for the current platform, run the following:
+Afterwards, to build an application package for the current platform, run the following:
 
 ```sh
 yarn build
+```
+
+Alternatively, you can pack and execute the application directly, which is useful to debug issues that might not occur in development mode. Note that because production state is encrypted, the existing development state will not work:
+
+```sh
+yarn simulate
 ```
 
 The Lode codebase has two sets of tests: [Jest](https://jestjs.io/) for the main process and [Cypress](https://www.cypress.io/) for the renderer process.

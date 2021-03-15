@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [12.x]
+        node-version: [14.x]
         os: [macOS-latest, windows-latest]
     steps:
     - uses: actions/checkout@v1
@@ -33,7 +33,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       if: steps.yarn-cache.outputs.cache-hit != 'true'
-      run: yarn
+      run: yarn --network-timeout 100000
     - name: Lint
       run: yarn lint
     - name: Check Typescript
@@ -65,7 +65,7 @@ jobs:
     needs: test
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [14.x]
         os: [macOS-latest]
 
     steps:
