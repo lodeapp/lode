@@ -33,7 +33,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       if: steps.yarn-cache.outputs.cache-hit != 'true'
-      run: yarn
+      run: yarn --network-timeout 100000
     - name: Lint
       run: yarn lint
     - name: Check Typescript
