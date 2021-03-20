@@ -9,7 +9,6 @@ const _ = require('lodash')
 const path = require('path')
 const { dependencies } = require('../package.json')
 const webpack = require('webpack')
-const PreJSPlugin = require('dotprejs/src/PreJSPlugin')
 
 const mainConfig = {
     ...base,
@@ -44,13 +43,7 @@ if (process.env.NODE_ENV === 'production') {
     Array.prototype.push.apply(mainConfig.plugins, _.compact([
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': '"production"'
-        }),
-        ['darwin', 'win32'].indexOf(process.platform) > -1
-            ? new PreJSPlugin({
-                assets: ['main.js'],
-                runtime: require('electron')
-            })
-            : null
+        })
     ]))
 }
 
