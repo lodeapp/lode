@@ -3,7 +3,7 @@ import * as Fs from 'fs-extra'
 import { get } from 'lodash'
 import { unpacked, loc, posix } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
-import { FrameworkOptions, FrameworkDefaults, Framework } from '@lib/frameworks/framework'
+import { FrameworkOptions, FrameworkDefaults, Framework, FrameworkReloadOutcome } from '@lib/frameworks/framework'
 import { ISuite } from '@lib/frameworks/suite'
 
 export class Jest extends Framework {
@@ -70,7 +70,7 @@ export class Jest extends Framework {
     /**
      * Reload this framework's suites and tests.
      */
-    protected reload (): Promise<string> {
+    protected reload (): Promise<FrameworkReloadOutcome> {
         return new Promise((resolve, reject) => {
             this.spawn(['--listTests', '--forceExit'])
                 .on('success', ({ lines }) => {

@@ -618,7 +618,7 @@ describe('Framework running', () => {
         const error = new Error('Boomtown!')
         framework.report = jest.fn(() => Promise.reject(error))
 
-        // Run queued refresh
+        // Trigger queued run
         Object.values(framework.queue)[0]()
 
         await flushPromises()
@@ -664,9 +664,155 @@ describe('Framework running', () => {
             }
         )
     })
+
+    it('interrupts framework run if reload is stopped', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        // Set an arbitrary status to ensure they are kept after refresh
+        framework.setNuggetStatus('isTasty.js', 'passed', 'idle', true)
+
+        framework.start()
+        framework.assemble = jest.fn()
+        framework.disassemble = jest.fn()
+        framework.emit = jest.fn()
+        framework.emitToRenderer = jest.fn()
+        framework.reload = jest.fn(() => {
+            framework.getAllSuites().forEach(suite => suite.setFresh(true))
+            // Simulate reload process being killed
+            return Promise.resolve('killed')
+        })
+        framework.runArgs = jest.fn()
+        framework.runSelectiveArgs = jest.fn()
+        framework.report = jest.fn()
+
+        // Trigger queued run
+        Object.values(framework.queue)[0]()
+
+        framework.stop()
+        await flushPromises()
+
+        expect(framework.assemble).toHaveBeenCalledTimes(1)
+        expect(framework.reload).toHaveBeenCalledTimes(1)
+        expect(framework.runArgs).not.toHaveBeenCalled()
+        expect(framework.runSelectiveArgs).not.toHaveBeenCalled()
+        expect(framework.report).not.toHaveBeenCalled()
+        expect(framework.disassemble).toHaveBeenCalledTimes(1)
+        expect(framework.isBusy()).toBe(false)
+        expect(framework.getAllSuites().length).toBe(2)
+
+        // Despite interruption, since run was triggered, all nuggets are now idle.
+        expect(Object.entries(framework.getStatusMap()).every(([id, status]) => status === 'idle')).toBe(true)
+        expect(framework.status).toBe('idle')
+
+        jest.runAllTimers()
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
+            `${framework.id}:ledger`,
+            {
+                queued: 0,
+                running: 0,
+                passed: 0,
+                failed: 0,
+                incomplete: 0,
+                skipped: 0,
+                warning: 0,
+                partial: 0,
+                empty: 0,
+                idle: 2,
+                error: 0
+            },
+            {
+                '111': 'idle',
+                '222': 'idle',
+                '333': 'idle',
+                '444': 'idle',
+                '555': 'idle',
+                'isTasty.js': 'idle',
+                'isNobbly.js': 'idle'
+            }
+        )
+    })
+
+
+    it('interrupts framework run if reload errors', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        // Set an arbitrary status to ensure they are kept after refresh
+        framework.setNuggetStatus('isTasty.js', 'passed', 'idle', true)
+
+        framework.start()
+        framework.assemble = jest.fn()
+        framework.disassemble = jest.fn()
+        framework.emit = jest.fn()
+        framework.emitToRenderer = jest.fn()
+        framework.reload = jest.fn(() => {
+            framework.getAllSuites().forEach(suite => suite.setFresh(true))
+            const error = new Error('Boomtown!')
+            return Promise.reject(error)
+        })
+        framework.runArgs = jest.fn()
+        framework.runSelectiveArgs = jest.fn()
+        framework.report = jest.fn()
+
+        // Trigger queued run
+        Object.values(framework.queue)[0]()
+
+        await flushPromises()
+
+        expect(framework.assemble).toHaveBeenCalledTimes(1)
+        expect(framework.reload).toHaveBeenCalledTimes(1)
+        expect(framework.runArgs).not.toHaveBeenCalled()
+        expect(framework.runSelectiveArgs).not.toHaveBeenCalled()
+        expect(framework.report).not.toHaveBeenCalled()
+        expect(framework.disassemble).toHaveBeenCalledTimes(1)
+        expect(framework.isBusy()).toBe(false)
+        expect(framework.getAllSuites().length).toBe(2)
+
+        // Despite error, since run was triggered, all nuggets are now idle.
+        expect(Object.entries(framework.getStatusMap()).every(([id, status]) => status === 'idle')).toBe(true)
+        expect(framework.status).toBe('error')
+
+        jest.runAllTimers()
+        expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
+            `${framework.id}:ledger`,
+            {
+                queued: 0,
+                running: 0,
+                passed: 0,
+                failed: 0,
+                incomplete: 0,
+                skipped: 0,
+                warning: 0,
+                partial: 0,
+                empty: 0,
+                idle: 2,
+                error: 0
+            },
+            {
+                '111': 'idle',
+                '222': 'idle',
+                '333': 'idle',
+                '444': 'idle',
+                '555': 'idle',
+                'isTasty.js': 'idle',
+                'isNobbly.js': 'idle'
+            }
+        )
+    })
 })
 
 describe('Framework selective running', () => {
+    it('ignores selectively running if nothing is selected', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        framework.run = jest.fn().mockReturnValue('biscuit')
+
+        expect(framework.runSelective()).resolves.toBe('biscuit')
+        expect(framework.run).toHaveBeenCalledTimes(1)
+    })
+
     it('can run a framework selectively', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
