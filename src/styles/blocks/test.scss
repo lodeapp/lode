@@ -1,8 +1,15 @@
 .test {
 
     .test-name {
+        height: 100%;
+        left: calc(var(--status-block-width) + 9px);
+        line-height: 2.5em;
         overflow: hidden;
+        position: absolute;
         text-overflow: ellipsis;
+        top: 0;
         white-space: nowrap;
+        // 100% - left positioning - padding
+        width: calc(100% - (var(--status-block-width) + 9px) - var(--status-block-width));
     }
 }

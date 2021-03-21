@@ -76,8 +76,9 @@
         .header-inner {
             display: flex;
             padding: 5px;
-            padding-right: 25px;
+            padding-right: var(--status-block-width);
             background-color: var(--primary-background-color);
+            height: 28px;
         }
 
         .toggle {
