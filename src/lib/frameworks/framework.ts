@@ -26,6 +26,11 @@ export type FrameworkWithContext = {
 }
 
 /**
+ * Possible outcomes for a framework reload process
+ */
+ export type FrameworkReloadOutcome = 'success' | 'killed' | 'empty'
+
+/**
  * A list of test suites.
  */
 export type SuiteList = {
@@ -296,7 +301,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Reload this framework's suites and tests.
      */
-    protected abstract reload (): Promise<string>
+    protected abstract reload (): Promise<FrameworkReloadOutcome>
 
     /**
      * Test the given files for framework existence and return appropriate

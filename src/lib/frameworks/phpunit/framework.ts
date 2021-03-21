@@ -2,7 +2,7 @@ import * as Path from 'path'
 import * as Fs from 'fs-extra'
 import { unpacked, loc } from '@lib/helpers/paths'
 import { ParsedRepository } from '@lib/frameworks/repository'
-import { FrameworkOptions, FrameworkDefaults, Framework } from '@lib/frameworks/framework'
+import { FrameworkOptions, FrameworkDefaults, Framework, FrameworkReloadOutcome } from '@lib/frameworks/framework'
 import { ISuiteResult, ISuite, Suite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
 import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
@@ -78,7 +78,7 @@ export class PHPUnit extends Framework {
     /**
      * Reload this framework's suites and tests.
      */
-    protected reload (): Promise<string> {
+    protected reload (): Promise<FrameworkReloadOutcome> {
         return new Promise((resolve, reject) => {
             this.spawn(['--columns=42'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
