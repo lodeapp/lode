@@ -51,7 +51,7 @@ jobs:
           tests/cypress/screenshots
           tests/cypress/videos
     - name: Build
-      run: yarn build:dev
+      run: yarn build
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:

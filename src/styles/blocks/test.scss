@@ -12,4 +12,8 @@
         // 100% - left positioning - padding
         width: calc(100% - (var(--status-block-width) + 9px) - var(--status-block-width));
     }
+
+    .selective-toggle + .test-name {
+        margin-left: 24px;
+    }
 }

@@ -74,11 +74,11 @@
         }
 
         .header-inner {
-            display: flex;
-            padding: 5px;
-            padding-right: var(--status-block-width);
             background-color: var(--primary-background-color);
-            height: 28px;
+            display: flex;
+            min-height: 28px;
+            padding-right: var(--status-block-width);
+            padding: 5px;
         }
 
         .toggle {
