@@ -28,9 +28,10 @@
     ]
   },
   "dmg": {
+    "background": "./support/assets/dmg-bg.tiff",
     "contents": [
       {
-        "x": 410,
+        "x": 400,
         "y": 150,
         "type": "link",
         "path": "/Applications"
@@ -40,7 +41,13 @@
         "y": 150,
         "type": "file"
       }
-    ]
+    ],
+    "window": {
+      "x": 400,
+      "y": 200,
+      "width": 488,
+      "height": 356
+    }
   },
   "win": {
     "publisherName": ["Tomas Buteler"],
