@@ -17,13 +17,11 @@
 </template>
 
 <script>
-import Modal from '@/components/modals/Modal'
+import Modal from '@/components/modals/mixins/modal'
 
 export default {
     name: 'About',
-    components: {
-        Modal
-    },
+    mixins: [Modal],
     data () {
         return {
             logo: 'static/icons/512x512.png'
@@ -39,11 +37,11 @@ export default {
             this.$root.openExternal(`https://lode.run/release-notes/#${this.version}`)
         },
         showTerms () {
-            this.$emit('hide')
+            this.close()
             this.$modal.open('Terms')
         },
         showLicenses () {
-            this.$emit('hide')
+            this.close()
             this.$modal.open('Licenses')
         }
     }

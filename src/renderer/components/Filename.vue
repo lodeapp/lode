@@ -17,6 +17,10 @@ import _escape from 'lodash/escape'
 export default {
     name: 'Filename',
     props: {
+        path: {
+            type: String,
+            required: true
+        },
         root: {
             type: String,
             default: ''
@@ -33,16 +37,15 @@ export default {
         }
     },
     computed: {
-        path () {
-            const path = this.$vnode.key
-            if (!this.root || !path.startsWith('/')) {
-                return path
+        parsedPath () {
+            if (!this.root || !this.path.startsWith('/')) {
+                return this.path
             }
-            return Path.relative(this.root, path)
+            return Path.relative(this.root, this.path)
         }
     },
     created () {
-        const dir = this.path.split(Path.sep)
+        const dir = this.parsedPath.split(Path.sep)
         this.name = this.renderChunk(dir.pop() || '')
         this.dir = this.renderChunk(dir.length ? dir.join(Path.sep) + (this.name ? Path.sep : '') : '')
     },

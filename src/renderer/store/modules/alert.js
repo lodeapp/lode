@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import app from '@'
 
 export default {
     namespaced: true,
@@ -20,7 +20,7 @@ export default {
         show: ({ state, commit }, payload) => {
             commit('ADD', payload)
             if (state.alerts.length === 1) {
-                Vue.prototype.$modal.open('AlertStack', {}, () => {
+                app.config.globalProperties.$modal.open('AlertStack', {}, () => {
                     commit('CLEAR')
                 })
             }

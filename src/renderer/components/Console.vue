@@ -7,11 +7,11 @@
             :show="!isLarge"
             :copy="relativePath(output.file)"
             :class="{ 'has-context-menu': hasContextMenu(0) }"
-            @contextmenu.native.stop.prevent="onContextMenu(output.file, 0)"
+            @contextmenu.stop.prevent="onContextMenu(output.file, 0)"
         >
             <template #header>
-                <Filename :key="relativePath(output.file)" :truncate="true" @dblclick.native.stop />
-                <span v-if="output.line" class="Label Label--outline Label--idle">{{ 'Line :0' | set(output.line) }}</span>
+                <Filename :path="relativePath(output.file)" :truncate="true" @dblclick.stop />
+                <span v-if="output.line" class="Label Label--outline Label--idle">{{ $string.set('Line :0', output.line) }}</span>
                 <span class="Label Label--outline Label--normal"><code>{{ output.type }}</code></span>
             </template>
             <Ansi v-if="output.render === 'ansi'" :content="output.content" />

@@ -25,7 +25,7 @@ export default {
         this.scrollbars.destroy()
         this.overlayScrollbars()
     },
-    beforeDestroy () {
+    beforeUnmount () {
         this.scrollbars.destroy()
     },
     methods: {

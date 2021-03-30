@@ -77,6 +77,13 @@ export default {
             default: false
         }
     },
+    emits: [
+        'activate',
+        'context-menu',
+        'select',
+        'status',
+        'toggle'
+    ],
     data () {
         return {
             tests: [],
@@ -132,7 +139,7 @@ export default {
             this.expand()
         }
     },
-    beforeDestroy () {
+    beforeUnmount () {
         Lode.ipc
             .removeAllListeners(`${this.identifier}:children`)
             .removeAllListeners(`${this.identifier}:framework-tests`)

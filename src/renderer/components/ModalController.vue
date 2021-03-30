@@ -1,12 +1,12 @@
 <template>
-    <transition-group name="modal" tag="div">
+    <transition-group name="modal">
         <template v-if="hasModals">
             <component
+                v-for="(modal, index) in modals"
                 :key="`modal-${index}`"
                 :is="modal"
                 v-bind="$modal.getProperties(index)"
                 :class="{ 'is-last': index + 1 === modals.length }"
-                v-for="(modal, index) in modals"
                 @hide="hide"
             />
         </template>

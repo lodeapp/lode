@@ -1,6 +1,6 @@
 <template>
     <Modal>
-        <template slot="header">
+        <template #header>
             <Icon symbol="stop" class="type--error" />
             <h3 class="modal-title">Remove Repository</h3>
         </template>
@@ -13,26 +13,24 @@
                 </div>
             </div>
         </div>
-        <div slot="footer" class="modal-footer tertiary separated">
-            <button type="button" class="btn btn-sm autofocus" @click="cancel">
-                Cancel
-            </button>
-            <button type="button" class="btn btn-sm btn-danger" @click="confirm">
-                Remove
-            </button>
-        </div>
+        <template #footer>
+            <div class="modal-footer tertiary separated">
+                <button type="button" class="btn btn-sm autofocus" @click="cancel">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" @click="confirm">
+                    Remove
+                </button>
+            </div>
+        </template>
     </Modal>
 </template>
 
 <script>
-import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
 
 export default {
     name: 'RemoveRepository',
-    components: {
-        Modal
-    },
     mixins: [Confirm],
     props: {
         repository: {

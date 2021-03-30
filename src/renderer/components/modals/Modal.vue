@@ -1,5 +1,11 @@
 <template>
-    <div class="modal" :class="{ 'is-last': isLast }" tabindex="-1" role="dialog" @click.self="handleClick">
+    <div
+        role="dialog"
+        tabindex="-1"
+        class="modal"
+        :class="{ 'is-last': isLast }"
+        @click.self="handleClick"
+    >
         <div class="modal-dialog" :class="[sizeClass]">
             <div class="modal-content">
                 <div class="modal-header">
@@ -62,6 +68,7 @@ export default {
             default: 'md'
         }
     },
+    emits: ['hide'],
     data () {
         return {
             escapeHandler: null
@@ -94,7 +101,7 @@ export default {
             })
         }, 10)
     },
-    destroyed () {
+    unmounted () {
         document.removeEventListener('keydown', this.escapeHandler)
     },
     methods: {

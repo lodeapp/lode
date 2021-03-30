@@ -33,7 +33,7 @@
                                 <span class="Counter">{{ selected }}</span>
                             </template>
                             <template v-else-if="isFiltering && !noResults">
-                                {{ 'Run match|Run matches' | plural(suites.length) }}
+                                {{ $string.plural('Run match|Run matches', suites.length) }}
                                 <span class="Counter">{{ suites.length }}</span>
                             </template>
                             <template v-else>Run</template>
@@ -82,10 +82,10 @@
                 <div v-if="total" class="filters sort">
                     <span>
                         <template v-if="visible > 1">
-                            {{ ':n item sorted by :0|:n items sorted by :0' | plural(visible) | set(displaySort) }}
+                            {{ $string.set($string.plural(':n item sorted by :0|:n items sorted by :0', visible), displaySort) }}
                         </template>
                         <template v-else>
-                            {{ ':n item|:n items' | plural(visible) }}
+                            {{ $string.plural(':n item|:n items', visible) }}
                         </template>
                     </span>
                 </div>
@@ -104,12 +104,12 @@
                     @activate="onChildActivation"
                     @context-menu="onChildContextMenu"
                 >
-                    <Filename :key="suite.relative" />
+                    <Filename :path="suite.relative" />
                 </Nugget>
                 <footer v-if="hidden" class="cutoff">
                     <div>
                         <div v-if="noResults">No results</div>
-                        <div v-else>{{ ':n hidden item|:n hidden items' | plural(hidden) }}</div>
+                        <div v-else>{{ $string.plural(':n hidden item|:n hidden items', hidden) }}</div>
                         <button class="btn-link" @click="resetFilters"><strong>Clear filters</strong></button>
                     </div>
                     <span class="zigzag"></span>
@@ -146,6 +146,10 @@ export default {
             required: true
         }
     },
+    emits: [
+        'activate',
+        'mounted'
+    ],
     data () {
         return {
             suites: [],
@@ -212,7 +216,7 @@ export default {
         this.getSuites()
         this.selected = this.model.selected
     },
-    beforeDestroy () {
+    beforeUnmount () {
         Lode.ipc
             .removeAllListeners(`${this.model.id}:ledger`)
             .removeAllListeners(`${this.model.id}:status:list`)

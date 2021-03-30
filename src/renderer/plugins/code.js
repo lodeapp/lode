@@ -17,8 +17,8 @@ export default class Code {
         this.code = null
     }
 
-    install (Vue, options) {
-        Vue.prototype.$code = this
+    install (app) {
+        app.config.globalProperties.$code = this
     }
 
     removeIndent (code) {

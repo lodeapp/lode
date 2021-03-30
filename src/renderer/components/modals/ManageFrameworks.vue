@@ -11,10 +11,10 @@
                             {{ frameworks.length === 0 ? 'No frameworks' : $string.plural('1 framework|:n frameworks', amountActive) }}
                         </span>
                         <span v-if="amountPending" class="Label Label--outline Label--pending">
-                            {{ '1 pending|:n pending' | plural(amountPending) }}
+                            {{ $string.plural('1 pending|:n pending', amountPending) }}
                         </span>
                         <span v-if="amountRemoved" class="Label Label--outline Label--removed">
-                            {{ '1 removed|:n removed' | plural(amountRemoved) }}
+                            {{ $string.plural('1 removed|:n removed', amountRemoved) }}
                         </span>
                     </span>
                     <button type="button" class="btn btn-sm" @click="handleScan" :disabled="scanning">Scan</button>
@@ -30,35 +30,37 @@
                         :available-frameworks="availableFrameworks"
                         @input="handleChange(filtered, $event)"
                         @remove="handleRemove(filtered)"
-                        @keyup.native.enter="handleEnter"
+                        @keyup.enter="handleEnter"
                     />
                 </template>
             </div>
         </div>
-        <div slot="footer" class="modal-footer tertiary separated">
-            <button type="button" class="btn btn-sm" @click="$emit('hide')">
-                Cancel
-            </button>
-            <button type="button" class="btn btn-sm btn-primary" @click="save">
-                Save changes
-            </button>
-        </div>
+        <template #footer>
+            <div class="modal-footer tertiary separated">
+                <button type="button" class="btn btn-sm" @click="close">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" @click="save">
+                    Save changes
+                </button>
+            </div>
+        </template>
     </Modal>
 </template>
 
 <script>
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
-import Modal from '@/components/modals/Modal'
+import Modal from '@/components/modals/mixins/modal'
 import FrameworkSettings from '@/components/FrameworkSettings'
 import Validator from '@/helpers/validator'
 
 export default {
     name: 'ManageFrameworks',
     components: {
-        Modal,
         FrameworkSettings
     },
+    mixins: [Modal],
     props: {
         repository: {
             type: Object,
@@ -150,8 +152,8 @@ export default {
 
             // Add a reactive validator instance to the mapped frameworks
             this.frameworks.forEach(framework => {
-                this.$set(framework, 'key', framework.id || this.$string.random())
-                this.$set(framework, 'validator', new Validator())
+                framework.key = framework.id || this.$string.random()
+                framework.validator = new Validator()
             })
         },
         async handleScan () {
@@ -184,7 +186,7 @@ export default {
             // Validate each slot before checking for errors in the form.
             for (let i = this.frameworks.length - 1; i >= 0; i--) {
                 this.frameworks[i].validator.refresh(
-                    await Lode.ipc.invoke('framework-validate', this.repository.id, this.frameworks[i])
+                    await Lode.ipc.invoke('framework-validate', this.repository.id, this.$unproxy(this.frameworks[i]))
                 )
             }
 
@@ -194,15 +196,14 @@ export default {
                     .forEach(framework => {
                         // If the framework has an id (i.e. exists), update it, otherwise add.
                         if (framework.id) {
-                            Lode.ipc.send('framework-update', framework.id, framework)
+                            Lode.ipc.send('framework-update', framework.id, this.$unproxy(framework))
                             return
                         }
-                        Lode.ipc.send('framework-add', this.repository.id, framework)
+                        Lode.ipc.send('framework-add', this.repository.id, this.$unproxy(framework))
                     })
 
                 this.removeFrameworks()
-
-                this.$emit('hide')
+                this.close()
             }
         },
         removeFrameworks () {

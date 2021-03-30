@@ -1,4 +1,5 @@
 <script>
+import { h } from 'vue'
 import octicons from '@primer/octicons'
 
 export default {
@@ -9,11 +10,9 @@ export default {
             required: true
         }
     },
-    render (createElement) {
-        return createElement('i', {
-            domProps: {
-                innerHTML: octicons[this.symbol].toSVG()
-            }
+    render () {
+        return h('i', {
+            innerHTML: octicons[this.symbol].toSVG()
         })
     }
 }

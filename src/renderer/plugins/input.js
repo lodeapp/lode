@@ -1,6 +1,6 @@
 export default class Input {
-    install (Vue, options) {
-        Vue.prototype.$input = this
+    install (app) {
+        app.config.globalProperties.$input = this
     }
     auxiliaryKeyCodes () {
         return [

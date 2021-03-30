@@ -1,6 +1,7 @@
 .filename {
     @include clearfix;
     font-size: 0;
+    user-select: text;
 
     & > span {
         font-size: 1rem;

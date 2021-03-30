@@ -5,7 +5,7 @@ export default class Durations {
         this.locale = locale
     }
 
-    install (Vue, options) {
-        Vue.prototype.$duration = new BaseDurations(this.locale)
+    install (app) {
+        app.config.globalProperties.$duration = new BaseDurations(this.locale)
     }
 }

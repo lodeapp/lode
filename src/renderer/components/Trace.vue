@@ -17,13 +17,13 @@
                     :show="!index"
                     :copy="relativePath(item.file)"
                     :class="{ 'has-context-menu': hasContextMenu(index) }"
-                    @contextmenu.native.stop.prevent="onContextMenu(item.file, index)"
+                    @contextmenu.stop.prevent="onContextMenu(item.file, index)"
                 >
                     <template #header>
                         <template v-if="typeof item === 'object'">
-                            <Filename :key="relativePath(item.file)" :truncate="true" />
+                            <Filename :path="relativePath(item.file)" :truncate="true" @dblclick.stop />
                             <span v-if="item.function" class="Label Label--outline Label--normal"><code>{{ item.function }}</code></span>
-                            <span v-if="item.line" class="Label Label--outline Label--idle">{{ 'Line :0' | set(item.line) }}</span>
+                            <span v-if="item.line" class="Label Label--outline Label--idle">{{ $string.set('Line :0', item.line) }}</span>
                         </template>
                         <template v-else>
                             {{ item }}

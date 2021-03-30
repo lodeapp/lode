@@ -3,8 +3,8 @@ export default class Alerts {
         this.store = store
     }
 
-    install (Vue) {
-        Vue.prototype.$alert = this
+    install (app) {
+        app.config.globalProperties.$alert = this
     }
 
     show (alert) {

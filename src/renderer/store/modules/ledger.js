@@ -1,5 +1,3 @@
-import Vue from 'vue'
-
 export default {
     namespaced: true,
     state: {
@@ -7,7 +5,7 @@ export default {
     },
     mutations: {
         SET (state, payload) {
-            Vue.set(state, 'ledger', {})
+            state.ledger = {}
             state.ledger = {
                 ...state.ledger,
                 ...payload
