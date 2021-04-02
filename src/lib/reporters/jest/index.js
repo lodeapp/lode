@@ -124,7 +124,7 @@ class Base64TestReporter {
     }
 
     async transform (result, file) {
-        if (['skipped', 'pending'].includes(result.status)) {
+        if (['skipped', 'pending', 'todo'].includes(result.status)) {
             result.status = 'incomplete'
         }
 

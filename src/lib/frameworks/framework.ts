@@ -273,7 +273,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 await Fs.remove(this.injectPath())
                 const files = await Fs.readdir(Path.join(this.repositoryPath, '.lode'))
                 if (!files.length) {
-                    await Fs.remove(Path.join(this.repositoryPath, '.lode'));
+                    await Fs.remove(Path.join(this.repositoryPath, '.lode'))
                 }
             } catch (error) {
                 // Fail silently if folder is not found
@@ -481,7 +481,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             this.status = to
             this.emit('status', to, from)
             this.emitToRenderer(`${this.id}:status:sidebar`, to, from)
-            this.emitToRenderer(`${this.id}:status:list`, to, from);
+            this.emitToRenderer(`${this.id}:status:list`, to, from)
         }
     }
 
@@ -542,17 +542,17 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 })
                 .stop()
         })
-        .then(() => {
-            this.killed = false
-            this.idleQueued()
-            this.updateStatus()
-            this.emit('change', this)
-            log.debug(`Stopping ${this.name}`)
-        })
-        .catch(error => {
-            this.killed = false
-            this.onError(error)
-        })
+            .then(() => {
+                this.killed = false
+                this.idleQueued()
+                this.updateStatus()
+                this.emit('change', this)
+                log.debug(`Stopping ${this.name}`)
+            })
+            .catch(error => {
+                this.killed = false
+                this.onError(error)
+            })
     }
 
     /**
@@ -920,7 +920,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * The class of suite we use for this framework.
      */
-    protected suiteClass(): typeof Suite {
+    protected suiteClass (): typeof Suite {
         return Suite
     }
 
@@ -1146,7 +1146,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Progress the ledger by one unit.
      */
-    protected progress(): void {
+    protected progress (): void {
         this.progressLedger.run++
         this.emit('progress')
     }
@@ -1156,7 +1156,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param suites The suites whose progress we're setting up to measure.
      */
-    protected measureProgressForSuites(suites: Array<ISuite>): void {
+    protected measureProgressForSuites (suites: Array<ISuite>): void {
         this.updateProgressLedger(0, this.calculateProgressTotalForSuites(suites))
         this.emit('measuring', this.progressLedger)
     }
@@ -1168,7 +1168,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param suites The suites whose progress we're setting up to measure.
      */
-    protected calculateProgressTotalForSuites(suites: Array<ISuite>): number {
+    protected calculateProgressTotalForSuites (suites: Array<ISuite>): number {
         return suites.length
     }
 
@@ -1221,7 +1221,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param suite The test suite being checked for needing clean-up.
      */
-    protected shouldCleanup(suite: ISuite): boolean {
+    protected shouldCleanup (suite: ISuite): boolean {
         if (!this.selective) {
             return true
         }
