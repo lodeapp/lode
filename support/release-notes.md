@@ -1,9 +1,4 @@
-Changed:
-  - Updated Electron to 12.0.0
-  - Updated to Webpack 5
 Fixed:
-  - Parameters tab in test results not cycling or persisting as expected
-  - Very long test names would cause test result pane to crop
-  - Occasional misalignment of suite or test checkboxes
-Removed:
-  - Window and sidebar vibrancy on macOS
+  - Jest tests marked as "todo" not always being recognised as "incomplete"
+  - Suite selection persisting even when not in view
+  - Suite sometimes persisting after being deselected when using a combination status filters

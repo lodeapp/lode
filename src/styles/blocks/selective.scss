@@ -24,6 +24,7 @@
         top: 2px;
         transition: transform 240ms cubic-bezier(.18, 1.4, .4, 1);
         width: 12px;
+        z-index: 1;
 
         &:hover,
         &:focus,

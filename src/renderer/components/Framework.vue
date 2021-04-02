@@ -122,6 +122,7 @@
 <script>
 import _debounce from 'lodash/debounce'
 import _findIndex from 'lodash/findIndex'
+import _head from 'lodash/head'
 import _isEmpty from 'lodash/isEmpty'
 import { mapGetters } from 'vuex'
 import { sortDisplayName } from '@lib/frameworks/sort'
@@ -194,7 +195,8 @@ export default {
             return sortDisplayName(this.sort)
         },
         ...mapGetters({
-            filters: 'filters/all'
+            filters: 'filters/all',
+            getStatus: 'status/nugget'
         })
     },
     watch: {
@@ -273,24 +275,40 @@ export default {
                 this.selected++
             }
             Lode.ipc.send('framework-select', this.model.id, context, selected)
+            // If a suite has been deselected, it's possible we'll need to
+            // remove it, in case we're filtering by selected status.
+            if (this.statusFilters.length && !selected) {
+                const file = _head(context)
+                this.updateSuitePresence(this.getStatus(file), file, false)
+            }
         },
         onChildActivation (context) {
             this.$emit('activate', context)
         },
         onChildStatus (to, from, file, selected) {
-            const index = _findIndex(this.suites, ['file', file])
-            if (index > -1 && this.statusFilters.length) {
-                if (
-                    this.statusFilters.indexOf(to) === -1 &&
-                    ['queued', 'running'].indexOf(to) === -1 &&
-                    (this.statusFilters.indexOf('selected') === -1 || !selected)
-                ) {
-                    this.suites.splice(index, 1)
-                }
+            // If a suite's status no longer fits the current filters, we'll
+            // have to manually exclude it from the list.
+            if (this.statusFilters.length) {
+                this.updateSuitePresence(to, file, selected)
             }
         },
         onChildContextMenu (context) {
             Lode.ipc.send('nugget-context-menu', this.model.id, context)
+        },
+        updateSuitePresence (status, file, selected) {
+            const index = _findIndex(this.suites, ['file', file])
+            if (index > -1) {
+                if (
+                    this.statusFilters.indexOf(status) === -1 &&
+                    ['queued', 'running'].indexOf(status) === -1 &&
+                    (this.statusFilters.indexOf('selected') === -1 || !selected)
+                ) {
+                    this.suites.splice(index, 1)
+                    if (selected) {
+                        this.onChildSelect([file], false)
+                    }
+                }
+            }
         },
         setKeywordFilter (keyword) {
             Lode.ipc.send('framework-filter', this.model.id, 'keyword', keyword)
