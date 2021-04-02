@@ -19,12 +19,10 @@ describe('Repository management', () => {
                 ...this.ledgerStub,
                 idle: suites.length
             }
-            this.statusMap[framework.id] = suites.reduce((obj, item) => {
-                return {
-                    ...obj,
-                    [item.file]: 'idle'
-                }
-            }, {})
+            this.statusMap[framework.id] = suites.reduce((obj, item) => ({
+                ...obj,
+                [item.file]: 'idle'
+            }), {})
 
             this.frameworks.push(framework)
         }
@@ -156,13 +154,13 @@ describe('Repository management', () => {
             .should('exist')
             .get('.sort')
             .should('contain.text', '15 items sorted by Name')
-            .get('.framework .children .nugget')
+            .get('.framework > .children > .nugget').as('nuggets')
             .should('have.length', 15)
-            .get('.framework .children .nugget.is-collapsed.has-children')
+            .get('@nuggets').filter('.is-collapsed.has-children')
             .should('have.length', 15)
-            .get('.framework .children .nugget:first .filename > .dir')
+            .get('@nuggets').eq(0).find('.filename > .dir')
             .should('have.text', '__tests__/')
-            .get('.framework .children .nugget:first .filename > .name')
+            .get('@nuggets').eq(0).find('.filename > .name')
             .should('have.text', 'BadlyNested.spec.js')
             // Switch framework
             .get('.sidebar section.scrollable .sidebar-item--framework:last')
@@ -203,17 +201,17 @@ describe('Repository management', () => {
             .should('exist')
             .get('.sort')
             .should('contain.text', '14 items sorted by Running order')
-            .get('.framework .children .nugget')
+            .get('@nuggets')
             .should('have.length', 14)
-            .get('.framework .children .nugget.is-collapsed')
+            .get('@nuggets').filter('.is-collapsed')
             .should('have.length', 14)
-            .get('.framework .children .nugget.has-children')
+            .get('@nuggets').filter('.has-children')
             .should('have.length', 13)
-            .get('.framework .children .nugget:not(.has-children) .filename > .name')
+            .get('@nuggets').not('.has-children').find('.filename > .name')
             .should('have.text', 'EmptyTest.php')
-            .get('.framework .children .nugget:first .filename > .dir')
+            .get('@nuggets').eq(0).find(' .filename > .dir')
             .should('have.text', 'tests/Unit/')
-            .get('.framework .children .nugget:first .filename > .name')
+            .get('@nuggets').eq(0).find(' .filename > .name')
             .should('have.text', 'ConsoleTest.php')
             .click()
             .should(() => {
@@ -232,7 +230,7 @@ describe('Repository management', () => {
                     this.tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php']
                 )
             })
-            .get('.framework .children .nugget:eq(1) .filename > .name')
+            .get('@nuggets').eq(1).find('.filename > .name')
             .should('have.text', 'DataProviderTest.php')
             .click()
             .should(() => {
@@ -251,27 +249,28 @@ describe('Repository management', () => {
                     this.tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php']
                 )
             })
-            .get('.framework .children > .nugget:first')
+            .wait(1)
+            .get('@nuggets').eq(0)
             .should('have.class', 'is-expanded')
             .find('.nugget-items > .nugget')
             .should('have.length', 8)
             .should('have.class', 'test')
             .should('have.class', 'status--idle')
             .should('have.class', 'is-collapsed')
-            .get('.framework .children > .nugget:first .nugget-items > .nugget:first')
+            .get('@nuggets').eq(0).find('.nugget-items > .nugget:first')
             .find('.test-name')
             .should('have.text', 'Console log null')
-            .get('.framework .children > .nugget:eq(1)')
+            .get('@nuggets').eq(1)
             .should('have.class', 'is-expanded')
             .find('.nugget-items > .nugget')
             .should('have.length', 9)
             .should('have.class', 'test')
             .should('have.class', 'status--idle')
             .should('have.class', 'is-collapsed')
-            .get('.framework .children > .nugget:eq(1) .nugget-items > .nugget:first')
+            .get('@nuggets').eq(1).find('.nugget-items > .nugget:first')
             .find('.test-name')
             .should('have.text', 'Data provider success with data set # 0')
-            .get('.framework .children > .nugget:eq(1) > .header')
+            .get('@nuggets').eq(1).find('> .header')
             .click()
             .should(() => {
                 expect(ipcRenderer.send).to.be.calledOnceWith(
@@ -284,7 +283,262 @@ describe('Repository management', () => {
             })
             .parent()
             .should('have.class', 'is-collapsed')
-            .get('.framework .children .nugget.is-expanded')
+            .get('@nuggets').filter('.is-expanded')
             .should('have.length', 1)
+    })
+
+    it.only('can filter suites', function () {
+        cy
+            .visit('/', {
+                onBeforeLoad (win) {
+                    win.Lode = Lode
+                },
+                onLoad (win) {
+                    cy.spy(ipcRenderer, 'send')
+
+                    // Modify the Jest framework's statuses
+                    this.ledger['jest-1'] = _.mapValues(this.ledger['jest-1'], (value, key) => {
+                        if (key === 'idle') {
+                            return 0
+                        } else if (key === 'passed') {
+                            return this.suites['jest-1'].length
+                        }
+                        return value
+                    })
+                    this.statusMap['jest-1'] = _.mapValues(this.statusMap['jest-1'], () => {
+                        return 'passed'
+                    })
+
+                    // Stub invocations for this test
+                    cy.stub(ipcRenderer, 'invoke', (method, ...args) => {
+                        switch (method) {
+                            case 'repository-frameworks':
+                                return this.frameworks
+                            case 'repository-exists':
+                                return true
+                            case 'framework-get':
+                                return Promise.resolve(_.find(this.frameworks, { id: args[0] }))
+
+                            case 'framework-get-ledger':
+                                return {
+                                    ledger: this.ledger[args[0]],
+                                    status: this.statusMap[args[0]]
+                                }
+                        }
+                    })
+
+                    ipcRenderer.trigger('did-finish-load', {
+                        theme: 'light',
+                        projectId: '42',
+                        version: '0.0.0',
+                        focus: true
+                    })
+                }
+            })
+            .fixture('framework/project.json')
+            .then(project => {
+                ipcRenderer.trigger('project-ready', project)
+            })
+            .wait(1)
+            .then(() => {
+                ipcRenderer.trigger('42:repositories', this.repositories)
+                ipcRenderer.trigger('framework-active', 'jest-1', this.repositories[0])
+            })
+            .wait(1)
+            .then(() => {
+                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
+                ipcRenderer.send.resetHistory()
+            })
+            .wait(1)
+            .get('.cutoff')
+            .should('not.exist')
+            .get('.actions .btn-primary').as('run')
+            .should('have.text', 'Run')
+            .get('.framework')
+            .should('not.have.class', 'selective')
+            .get('.framework > .children > .nugget').as('nuggets')
+            .should('have.length', 15)
+            .should('have.class', 'status--passed')
+            .get('.filters .progress-breakdown > .Label')
+            .should('have.length', 1)
+            .should('have.class', 'Label--passed')
+            .should('not.have.class', 'is-active')
+            .click()
+            .then(() => {
+                expect(ipcRenderer.send).to.be.calledOnceWith(
+                    'framework-filter',
+                    'jest-1',
+                    'status',
+                    ['passed']
+                )
+                ipcRenderer.send.resetHistory()
+            })
+            .should('have.class', 'is-active')
+            .get('@run')
+            .should(el => {
+                expect(el.get(0).innerText).to.eq('Run matches 15')
+            })
+            .get('@nuggets').eq(0).find(' > .header input')
+            .should('not.be.visible')
+            .get('@nuggets').eq(0).find(' > .header button')
+            .click()
+            .get('@nuggets').eq(0).find(' > .header input')
+            .should('be.visible')
+            .get('@nuggets').eq(0).find(' > .header button')
+            .should('not.be.visible')
+            .get('.framework')
+            .should('have.class', 'selective')
+            .get('@nuggets').eq(1).find(' > .header button')
+            .click()
+            .then(() => {
+                expect(ipcRenderer.send.getCall(0).args).to.deep.equal([
+                    'framework-select',
+                    'jest-1',
+                    ['/lodeapp/lode/hobnobs/__tests__/BadlyNested.spec.js'],
+                    true
+                ])
+                expect(ipcRenderer.send.getCall(1).args).to.deep.equal([
+                    'framework-select',
+                    'jest-1',
+                    ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'],
+                    true
+                ])
+                ipcRenderer.send.resetHistory()
+
+                ipcRenderer.trigger('jest-1:selective', 2)
+            })
+            .get('.filters .progress-breakdown > .Label')
+            .should('have.length', 2)
+            .get('.filters .progress-breakdown > .Label:first')
+            .should('have.class', 'Label--selected')
+            .should('not.have.class', 'is-active')
+            .click()
+            .then(() => {
+                expect(ipcRenderer.send).to.be.calledOnceWith(
+                    'framework-filter',
+                    'jest-1',
+                    'status',
+                    ['passed', 'selected']
+                )
+                ipcRenderer.send.resetHistory()
+
+                // Return only a subset of suites: the selected ones
+                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'].slice(0, 2), 2)
+            })
+            .get('@nuggets')
+            .should('have.length', 2)
+            .should('have.class', 'status--passed')
+            .get('@nuggets').find('input')
+            .should('be.checked')
+            .get('.filters .progress-breakdown > .Label--passed')
+            .click()
+            .should('not.have.class', 'is-active')
+            .get('@nuggets')
+            .should('have.length', 2)
+            .get('@nuggets').eq(1).find('> .header button')
+            .click()
+            .get('@nuggets')
+            .should('have.length', 1)
+            .then(() => {
+                expect(ipcRenderer.send.getCall(1).args).to.deep.equal([
+                    'framework-select',
+                    'jest-1',
+                    ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'],
+                    false
+                ])
+                ipcRenderer.send.resetHistory()
+            })
+            .get('@nuggets').eq(0).find(' > .header button')
+            .click()
+            .get('.filters .progress-breakdown > .Label--selected')
+            .click()
+            .then(() => {
+                expect(ipcRenderer.send.getCall(1).args).to.deep.equal([
+                    'framework-filter',
+                    'jest-1',
+                    'status',
+                    []
+                ])
+                ipcRenderer.send.resetHistory()
+
+                ipcRenderer.trigger('jest-1:selective', 0)
+                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
+            })
+            .get('.framework')
+            .should('not.have.class', 'selective')
+            .get('@nuggets')
+            .should('have.length', 15)
+            .should('have.class', 'status--passed')
+            .get('.filters .progress-breakdown > .Label')
+            .should('have.length', 1)
+            .should('have.class', 'Label--passed')
+            .should('not.have.class', 'is-active')
+            .then(() => {
+                // Simulate a suite failing. It should remain in the list,
+                // as we're not filtering for status.
+                const ledger = _.clone(this.ledger['jest-1'])
+                const statusMap = _.clone(this.statusMap['jest-1'])
+                ledger.passed -= 1
+                ledger.failed += 1
+                statusMap['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'] = 'failed'
+
+                ipcRenderer.trigger('jest-1:ledger', ledger, statusMap)
+            })
+            .get('@nuggets')
+            .should('have.length', 15)
+            .get('@nuggets').filter('.status--passed')
+            .should('have.length', 14)
+            .get('@nuggets').filter('.status--failed')
+            .should('have.length', 1)
+            .get('@nuggets').filter('.status--failed').find('.filename > .name')
+            .should('have.text', 'Console.spec.js')
+            .then(() => {
+                ipcRenderer.trigger('jest-1:ledger', this.ledger['jest-1'], this.statusMap['jest-1'])
+            })
+            .get('.filters .progress-breakdown > .Label--passed')
+            .click()
+            .then(() => {
+                ipcRenderer.send.resetHistory()
+
+                // Simulate a suite failing again. This time it should be
+                // removed from view, as we're filtering by a different status.
+                const ledger = _.clone(this.ledger['jest-1'])
+                const statusMap = _.clone(this.statusMap['jest-1'])
+                ledger.passed -= 1
+                ledger.failed += 1
+                statusMap['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'] = 'failed'
+
+                ipcRenderer.trigger('jest-1:ledger', ledger, statusMap)
+            })
+            .get('@nuggets')
+            .should('have.length', 14)
+            .should('have.class', 'status--passed')
+            .get('.filters .progress-breakdown > .Label--failed')
+            .should('not.have.class', 'is-active')
+            .should(el => {
+                expect(el.get(0).innerText).to.eq('1 failed')
+            })
+            .get('@run')
+            .should(el => {
+                expect(el.get(0).innerText).to.eq('Run matches 14')
+            })
+            .get('.cutoff')
+            .should('exist')
+            .should(el => {
+                expect(el.get(0).innerText).to.eq('1 hidden item\nClear filters')
+            })
+            .get('.cutoff button')
+            .click()
+            .then(() => {
+                expect(ipcRenderer.send).to.be.calledOnceWith('framework-reset-filters', 'jest-1')
+                ipcRenderer.send.resetHistory()
+
+                ipcRenderer.trigger('jest-1:ledger', this.ledger['jest-1'], this.statusMap['jest-1'])
+                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
+            })
+            .get('@run')
+            .should('have.text', 'Run')
+            .get('.cutoff')
+            .should('not.exist')
     })
 })

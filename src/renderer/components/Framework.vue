@@ -122,6 +122,7 @@
 <script>
 import _debounce from 'lodash/debounce'
 import _findIndex from 'lodash/findIndex'
+import _head from 'lodash/head'
 import _isEmpty from 'lodash/isEmpty'
 import { mapGetters } from 'vuex'
 import { sortDisplayName } from '@lib/frameworks/sort'
@@ -273,7 +274,7 @@ export default {
             // If a suite has been deselected, it's possible we'll need to
             // remove it, in case we're filtering by selected status.
             if (this.statusFilters.length && !selected) {
-                const file = context.shift()
+                const file = _head(context)
                 this.updateSuitePresence(this.getStatus(file), file, false)
             }
         },
