@@ -58,12 +58,12 @@ describe('Repository management', () => {
             // different elements.
             .click()
             .nextTick()
-            .assertSentOnce('repository-toggle', 'repository-2', true)
+            .assertEmittedOnce('repository-toggle', 'repository-2', true)
             .assertInvokedOnce('repository-frameworks', 'repository-2')
             .get('.sidebar section.scrollable .sidebar-item:last').as('last')
             .should('have.class', 'is-expanded')
             .click()
-            .assertSent('repository-toggle', 'repository-2', false)
+            .assertEmitted('repository-toggle', 'repository-2', false)
             .assertInvokedCount(1)
             .ipcResetMockHistory()
             .get('@last')
@@ -76,12 +76,12 @@ describe('Repository management', () => {
             .should('have.text', 'Scan for frameworks')
             .click()
             .then(() => {
-                expect(ipcRenderer.invoke.getCall(0).args[0]).to.equal('project-empty-repositories')
-                expect(ipcRenderer.invoke.getCall(1).args).to.deep.equal(['repository-exists', 'repository-1'])
-                expect(ipcRenderer.invoke.getCall(2).args[0]).to.equal('framework-types')
-                expect(ipcRenderer.invoke.getCall(3).args).to.deep.equal(['repository-frameworks', 'repository-1'])
-                expect(ipcRenderer.invoke.getCall(4).args[0]).to.equal('repository-scan')
             })
+            .ipcInvocation(0).assertChannel('project-empty-repositories')
+            .ipcInvocation(1).assertArgs('repository-exists', 'repository-1')
+            .ipcInvocation(2).assertChannel('framework-types')
+            .ipcInvocation(3).assertArgs('repository-frameworks', 'repository-1')
+            .ipcInvocation(4).assertChannel('repository-scan')
             .ipcResetMockHistory()
             .get('.modal-header')
             .should('have.text', 'Manage test frameworks')
@@ -94,14 +94,12 @@ describe('Repository management', () => {
             .get('.modal-footer .btn:first')
             .should('contain.text', 'Cancel')
             .click()
-            .then(() => {
-                // After cancelling the previous scan, it should trigger
-                // another set of invocations for the second repository.
-                expect(ipcRenderer.invoke.getCall(0).args).to.deep.equal(['repository-exists', 'repository-2'])
-                expect(ipcRenderer.invoke.getCall(1).args[0]).to.equal('framework-types')
-                expect(ipcRenderer.invoke.getCall(2).args).to.deep.equal(['repository-frameworks', 'repository-2'])
-                expect(ipcRenderer.invoke.getCall(3).args[0]).to.equal('repository-scan')
-            })
+            // After cancelling the previous scan, it should trigger
+            // another set of invocations for the second repository.
+            .ipcInvocation(0).assertArgs('repository-exists', 'repository-2')
+            .ipcInvocation(1).assertChannel('framework-types')
+            .ipcInvocation(2).assertArgs('repository-frameworks', 'repository-2')
+            .ipcInvocation(3).assertChannel('repository-scan')
             .ipcResetMockHistory()
             .get('.modal .repository-settings .repository-name')
             .should('contain.text', 'digestives')
@@ -202,17 +200,15 @@ describe('Repository management', () => {
             // By default it should add and scan, unless we explicitly
             // disable the auto-scan feature.
             .click()
-            .then(() => {
-                expect(ipcRenderer.invoke.getCall(0).args).to.deep.equal(['repository-validate', { path: '' }])
-                expect(ipcRenderer.invoke.getCall(1).args).to.deep.equal(['repository-validate', { path: 'rich-tea' }])
-                expect(ipcRenderer.invoke.getCall(2).args).to.deep.equal(['repository-validate', { path: 'rich-tea' }])
-                // After validating, the only repository to be added is the first unique path.
-                expect(ipcRenderer.invoke.getCall(3).args).to.deep.equal(['repository-add', ['rich-tea']])
-                expect(ipcRenderer.invoke.getCall(4).args).to.deep.equal(['repository-exists', 'repository-3'])
-                expect(ipcRenderer.invoke.getCall(5).args[0]).to.equal('framework-types')
-                expect(ipcRenderer.invoke.getCall(6).args).to.deep.equal(['repository-frameworks', 'repository-3'])
-                expect(ipcRenderer.invoke.getCall(7).args[0]).to.equal('repository-scan')
-            })
+            .ipcInvocation(0).assertArgs('repository-validate', { path: '' })
+            .ipcInvocation(1).assertArgs('repository-validate', { path: 'rich-tea' })
+            .ipcInvocation(2).assertArgs('repository-validate', { path: 'rich-tea' })
+            // After validating, the only repository to be added is the first unique path.
+            .ipcInvocation(3).assertArgs('repository-add', ['rich-tea'])
+            .ipcInvocation(4).assertArgs('repository-exists', 'repository-3')
+            .ipcInvocation(5).assertChannel('framework-types')
+            .ipcInvocation(6).assertArgs('repository-frameworks', 'repository-3')
+            .ipcInvocation(7).assertChannel('repository-scan')
             .ipcResetMockHistory()
             .get('.modal-header')
             .should('have.text', 'Manage test frameworks')
@@ -244,10 +240,8 @@ describe('Repository management', () => {
             .get('.modal-footer .btn-primary:last')
             .click()
             .assertInvokedCount(2)
-            .then(() => {
-                expect(ipcRenderer.invoke.getCall(0).args).to.deep.equal(['repository-validate', { path: 'rich-tea' }])
-                expect(ipcRenderer.invoke.getCall(1).args).to.deep.equal(['repository-add', ['rich-tea']])
-            })
+            .ipcInvocation(0).assertArgs('repository-validate', { path: 'rich-tea' })
+            .ipcInvocation(1).assertArgs('repository-add', ['rich-tea'])
     })
 
     it('triggers repository context menu', function () {
