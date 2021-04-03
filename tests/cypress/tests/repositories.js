@@ -32,13 +32,11 @@ describe('Repository management', () => {
                             return Promise.resolve(this.frameworkTypes)
                     }
                 })
-
-                ipcRenderer.trigger('42:repositories', this.repositories)
             })
-            .nextTick(() => {
-                expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-frameworks', 'repository-1')
-                ipcRenderer.invoke.resetHistory()
-            })
+            .ipcEvent('42:repositories', this.repositories)
+            .nextTick()
+            .assertInvokedOnce('repository-frameworks', 'repository-1')
+            .ipcResetMockHistory()
             .get('.contents > main')
             .should('not.have.class', 'no-projects')
             .should('have.class', 'project')
@@ -59,18 +57,15 @@ describe('Repository management', () => {
             // Toggle repository expansion from a couple of
             // different elements.
             .click()
-            .nextTick(() => {
-                expect(ipcRenderer.send).to.be.calledWith('repository-toggle', 'repository-2', true)
-                expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-frameworks', 'repository-2')
-            })
+            .nextTick()
+            .assertSentOnce('repository-toggle', 'repository-2', true)
+            .assertInvokedOnce('repository-frameworks', 'repository-2')
             .get('.sidebar section.scrollable .sidebar-item:last').as('last')
             .should('have.class', 'is-expanded')
             .click()
-            .nextTick(() => {
-                expect(ipcRenderer.send).to.be.calledWith('repository-toggle', 'repository-2', false)
-                expect(ipcRenderer.invoke).to.be.callCount(1)
-                ipcRenderer.invoke.resetHistory()
-            })
+            .assertSent('repository-toggle', 'repository-2', false)
+            .assertInvokedCount(1)
+            .ipcResetMockHistory()
             .get('@last')
             .should('not.have.class', 'is-expanded')
             .get('#list')
@@ -86,8 +81,8 @@ describe('Repository management', () => {
                 expect(ipcRenderer.invoke.getCall(2).args[0]).to.equal('framework-types')
                 expect(ipcRenderer.invoke.getCall(3).args).to.deep.equal(['repository-frameworks', 'repository-1'])
                 expect(ipcRenderer.invoke.getCall(4).args[0]).to.equal('repository-scan')
-                ipcRenderer.invoke.resetHistory()
             })
+            .ipcResetMockHistory()
             .get('.modal-header')
             .should('have.text', 'Manage test frameworks')
             .get('.modal .repository-settings .repository-name')
@@ -106,8 +101,8 @@ describe('Repository management', () => {
                 expect(ipcRenderer.invoke.getCall(1).args[0]).to.equal('framework-types')
                 expect(ipcRenderer.invoke.getCall(2).args).to.deep.equal(['repository-frameworks', 'repository-2'])
                 expect(ipcRenderer.invoke.getCall(3).args[0]).to.equal('repository-scan')
-                ipcRenderer.invoke.resetHistory()
             })
+            .ipcResetMockHistory()
             .get('.modal .repository-settings .repository-name')
             .should('contain.text', 'digestives')
             .get('.modal .repository-settings .counters')
@@ -117,8 +112,8 @@ describe('Repository management', () => {
             .click()
             .then(() => {
                 expect(ipcRenderer.invoke.getCall(0).args[0]).to.equal('repository-scan')
-                ipcRenderer.invoke.resetHistory()
             })
+            .ipcResetMockHistory()
             .get('.modal-footer .btn-primary')
             .should('contain.text', 'Save changes')
             .click()
@@ -145,13 +140,11 @@ describe('Repository management', () => {
                             return Promise.resolve(this.frameworkTypes)
                     }
                 })
-
-                ipcRenderer.trigger('42:repositories', this.repositories)
             })
-            .nextTick(() => {
-                expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-frameworks', 'repository-1')
-                ipcRenderer.invoke.resetHistory()
-            })
+            .ipcEvent('42:repositories', this.repositories)
+            .nextTick()
+            .assertInvokedOnce('repository-frameworks', 'repository-1')
+            .ipcResetMockHistory()
             .get('.sidebar section.scrollable .sidebar-item')
             .should('have.length', 2)
             .get('.sidebar header .sidebar-header:last')
@@ -184,10 +177,8 @@ describe('Repository management', () => {
             .should('have.value', 'rich-tea')
             .next()
             .click()
-            .then(() => {
-                expect(ipcRenderer.invoke).to.be.calledOnceWith('project-add-repositories-menu')
-                ipcRenderer.invoke.resetHistory()
-            })
+            .assertInvokedOnce('project-add-repositories-menu')
+            .ipcResetMockHistory()
             .get('form.add-repositories input[type="text"]')
             .should('have.length', 1)
             .eq(0)
@@ -221,8 +212,8 @@ describe('Repository management', () => {
                 expect(ipcRenderer.invoke.getCall(5).args[0]).to.equal('framework-types')
                 expect(ipcRenderer.invoke.getCall(6).args).to.deep.equal(['repository-frameworks', 'repository-3'])
                 expect(ipcRenderer.invoke.getCall(7).args[0]).to.equal('repository-scan')
-                ipcRenderer.invoke.resetHistory()
             })
+            .ipcResetMockHistory()
             .get('.modal-header')
             .should('have.text', 'Manage test frameworks')
             .get('.modal .repository-settings .repository-name')
@@ -232,10 +223,8 @@ describe('Repository management', () => {
             .get('.modal-footer .btn-primary')
             .should('contain.text', 'Save changes')
             .click()
-            .then(() => {
-                // Simulate project receiving the added repository
-                ipcRenderer.trigger('42:repositories', this.repositories.concat(this.anotherRepository))
-            })
+            // Simulate project receiving the added repository
+            .ipcEvent('42:repositories', this.repositories.concat(this.anotherRepository))
             .get('.sidebar section.scrollable .sidebar-item')
             .should('have.length', 3)
             .get('.sidebar section.scrollable .sidebar-item:last')
@@ -254,11 +243,10 @@ describe('Repository management', () => {
             // occasionally co-exist, so force "last" button, just in case.
             .get('.modal-footer .btn-primary:last')
             .click()
+            .assertInvokedCount(2)
             .then(() => {
-                expect(ipcRenderer.invoke).to.have.callCount(2)
                 expect(ipcRenderer.invoke.getCall(0).args).to.deep.equal(['repository-validate', { path: 'rich-tea' }])
                 expect(ipcRenderer.invoke.getCall(1).args).to.deep.equal(['repository-add', ['rich-tea']])
-                ipcRenderer.invoke.resetHistory()
             })
     })
 
@@ -267,25 +255,20 @@ describe('Repository management', () => {
             .startWithProject()
             .nextTick(() => {
                 cy.stub(ipcRenderer, 'invoke').resolves(true)
-
-                // Collapse all repositories to avoid calling for frameworks.
-                ipcRenderer.trigger('42:repositories', this.repositories.map(repository => {
-                    repository.expanded = false
-                    return repository
-                }))
             })
+            // Collapse all repositories to avoid calling for frameworks.
+            .ipcEvent('42:repositories', this.repositories.map(repository => {
+                repository.expanded = false
+                return repository
+            }))
             .get('.sidebar section.scrollable .sidebar-item:first .name')
             .should('contain.text', 'hobnobs')
             .rightclick()
-            .then(() => {
-                expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-context-menu', 'repository-1')
-                ipcRenderer.invoke.resetHistory()
-            })
+            .assertInvokedOnce('repository-context-menu', 'repository-1')
+            .ipcResetMockHistory()
             .get('.sidebar section.scrollable .sidebar-item:last .name')
             .should('contain.text', 'digestives')
             .rightclick()
-            .then(() => {
-                expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-context-menu', 'repository-2')
-            })
+            .assertInvokedOnce('repository-context-menu', 'repository-2')
     })
 })

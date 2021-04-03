@@ -33,14 +33,65 @@ Cypress.Commands.add('startWithProject', (options = {}) => {
         .wait(1)
 })
 
-Cypress.Commands.add('nextTick', callback => {
-    cy
-        .wait(1)
-        .then(callback)
-        .wait(1)
+Cypress.Commands.add('ipcEvent', (...args) => {
+    // Allow functions that resolve into arguments
+    if (args.length === 1 && typeof args[0] === 'function') {
+        args = args[0]()
+    }
+
+    cy.then(() => {
+        electron.ipcRenderer.trigger(...args)
+    })
 })
 
-Cypress.Commands.add('innerTextIs', { prevSubject: true }, (subject, string) => {
+Cypress.Commands.add('ipcResetMockHistory', () => {
+    cy.then(() => {
+        if (electron.ipcRenderer.send.resetHistory) {
+            electron.ipcRenderer.send.resetHistory()
+        }
+        if (electron.ipcRenderer.invoke.resetHistory) {
+            electron.ipcRenderer.invoke.resetHistory()
+        }
+    })
+})
+
+Cypress.Commands.add('nextTick', callback => {
+    if (callback) {
+        cy
+            .wait(1)
+            .then(callback)
+            .wait(1)
+    } else {
+        cy
+            .wait(1)
+    }
+})
+
+Cypress.Commands.add('assertInvoked', (...args) => {
+    expect(electron.ipcRenderer.invoke).to.be.calledWith(...args)
+})
+
+Cypress.Commands.add('assertInvokedOnce', (...args) => {
+    expect(electron.ipcRenderer.invoke).to.be.calledOnceWith(...args)
+})
+
+Cypress.Commands.add('assertInvokedCount', times => {
+    expect(electron.ipcRenderer.invoke).to.be.callCount(times)
+})
+
+Cypress.Commands.add('assertSent', (...args) => {
+    expect(electron.ipcRenderer.send).to.be.calledWith(...args)
+})
+
+Cypress.Commands.add('assertSentOnce', (...args) => {
+    expect(electron.ipcRenderer.send).to.be.calledOnceWith(...args)
+})
+
+Cypress.Commands.add('assertSentCount', times => {
+    expect(electron.ipcRenderer.send).to.be.calledOnceWith(times)
+})
+
+Cypress.Commands.add('assertText', { prevSubject: true }, (subject, string) => {
     cy
         .wrap(subject)
         .should(el => {
