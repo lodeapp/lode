@@ -73,26 +73,21 @@ describe('Framework management', () => {
             .startWithProject()
             .nextTick(() => {
                 cy.stub(ipcRenderer, 'invoke', this.defaultResolver)
-                ipcRenderer.trigger('42:repositories', this.repositories)
             })
-            .nextTick(() => {
-                ipcRenderer.send.resetHistory()
-                expect(ipcRenderer.invoke).to.be.calledWith('repository-frameworks', 'repository-1')
-                ipcRenderer.invoke.resetHistory()
-
-                ipcRenderer.trigger('framework-active', 'jest-1', this.repositories[0])
-            })
+            .ipcEvent('42:repositories', this.repositories)
+            .nextTick()
+            .assertInvokedOnce('repository-frameworks', 'repository-1')
+            .ipcResetMockHistory()
+            .ipcEvent('framework-active', 'jest-1', this.repositories[0])
             .nextTick(() => {
                 expect(ipcRenderer.send.getCall(0).args).to.deep.equal(['project-active-framework', 'jest-1'])
                 expect(ipcRenderer.send.getCall(1).args).to.deep.equal(['framework-suites', 'jest-1'])
-                ipcRenderer.send.resetHistory()
                 expect(ipcRenderer.invoke.getCall(0).args).to.deep.equal(['repository-exists', 'repository-1'])
                 expect(ipcRenderer.invoke.getCall(1).args).to.deep.equal(['framework-get', 'jest-1'])
                 expect(ipcRenderer.invoke.getCall(2).args).to.deep.equal(['framework-get-ledger', 'jest-1'])
-                ipcRenderer.invoke.resetHistory()
-
-                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
             })
+            .ipcResetMockHistory()
+            .ipcEvent('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
             .get('.sidebar section.scrollable .sidebar-item--framework:first')
             .should('contain.text', 'Jest')
             .should('have.class', 'status--idle')
@@ -124,7 +119,7 @@ describe('Framework management', () => {
             .get('.filters .progress-breakdown .Label')
             .should('have.length', 1)
             .get('.filters .progress-breakdown .Label--idle')
-            .innerTextIs('15 idle')
+            .assertText('15 idle')
             .get('.search')
             .should('exist')
             .get('.sort')
@@ -143,14 +138,12 @@ describe('Framework management', () => {
             .then(() => {
                 expect(ipcRenderer.send.getCall(0).args).to.deep.equal(['project-active-framework', 'phpunit-1'])
                 expect(ipcRenderer.send.getCall(1).args).to.deep.equal(['framework-suites', 'phpunit-1'])
-                ipcRenderer.send.resetHistory()
                 expect(ipcRenderer.invoke.getCall(0).args).to.deep.equal(['repository-exists', 'repository-1'])
                 expect(ipcRenderer.invoke.getCall(1).args).to.deep.equal(['framework-get', 'phpunit-1'])
                 expect(ipcRenderer.invoke.getCall(2).args).to.deep.equal(['framework-get-ledger', 'phpunit-1'])
-                ipcRenderer.invoke.resetHistory()
-
-                ipcRenderer.trigger('phpunit-1:refreshed', this.suites['phpunit-1'], this.suites['phpunit-1'].length)
             })
+            .ipcResetMockHistory()
+            .ipcEvent('phpunit-1:refreshed', this.suites['phpunit-1'], this.suites['phpunit-1'].length)
             .get('#list .framework')
             .should('have.class', 'status--idle')
             .find('.heading .name')
@@ -169,7 +162,7 @@ describe('Framework management', () => {
             .get('.filters .progress-breakdown .Label')
             .should('have.length', 1)
             .get('.filters .progress-breakdown .Label--idle')
-            .innerTextIs('14 idle')
+            .assertText('14 idle')
             .get('.search')
             .should('exist')
             .get('.sort')
@@ -187,39 +180,31 @@ describe('Framework management', () => {
             .get('@nuggets').eq(0).find(' .filename > .name')
             .should('have.text', 'ConsoleTest.php')
             .click()
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledOnceWith(
-                    'framework-toggle-child',
-                    'phpunit-1',
-                    ['/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php'],
-                    true
-                )
-                ipcRenderer.send.resetHistory()
-            })
-            .nextTick(() => {
-                ipcRenderer.trigger(
-                    '/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php:framework-tests',
-                    this.tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php']
-                )
-            })
+            .assertSentOnce(
+                'framework-toggle-child',
+                'phpunit-1',
+                ['/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php'],
+                true
+            )
+            .ipcResetMockHistory()
+            .ipcEvent(
+                '/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php:framework-tests',
+                this.tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php']
+            )
             .get('@nuggets').eq(1).find('.filename > .name')
             .should('have.text', 'DataProviderTest.php')
             .click()
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledOnceWith(
-                    'framework-toggle-child',
-                    'phpunit-1',
-                    ['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php'],
-                    true
-                )
-                ipcRenderer.send.resetHistory()
-            })
-            .nextTick(() => {
-                ipcRenderer.trigger(
-                    '/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php:framework-tests',
-                    this.tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php']
-                )
-            })
+            .assertSentOnce(
+                'framework-toggle-child',
+                'phpunit-1',
+                ['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php'],
+                true
+            )
+            .ipcResetMockHistory()
+            .ipcEvent(
+                '/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php:framework-tests',
+                this.tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php']
+            )
             .get('@nuggets').eq(0)
             .should('have.class', 'is-expanded')
             .find('.nugget-items > .nugget')
@@ -240,18 +225,16 @@ describe('Framework management', () => {
             .get('@nuggets').eq(1).find('.nugget-items > .nugget:first')
             .find('.test-name')
             .should('have.text', 'Data provider success with data set # 0')
-            .get('@nuggets').eq(1).find('> .header')
+            .get('@nuggets').eq(1).find('> .header').as('header')
             .click()
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledOnceWith(
-                    'framework-toggle-child',
-                    'phpunit-1',
-                    ['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php'],
-                    false
-                )
-                ipcRenderer.send.resetHistory()
-            })
-            .parent()
+            .assertSentOnce(
+                'framework-toggle-child',
+                'phpunit-1',
+                ['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php'],
+                false
+            )
+            .ipcResetMockHistory()
+            .get('@header').parent()
             .should('have.class', 'is-collapsed')
             .get('@nuggets').filter('.is-expanded')
             .should('have.length', 1)
@@ -276,14 +259,13 @@ describe('Framework management', () => {
 
                 // Stub invocations for this test
                 cy.stub(ipcRenderer, 'invoke', this.defaultResolver)
-
-                ipcRenderer.trigger('42:repositories', this.repositories)
-                ipcRenderer.trigger('framework-active', 'jest-1', this.repositories[0])
             })
-            .nextTick(() => {
-                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
-                ipcRenderer.send.resetHistory()
-            })
+            .ipcEvent('42:repositories', this.repositories)
+            .ipcEvent('framework-active', 'jest-1', this.repositories[0])
+            .nextTick()
+            .ipcEvent('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
+            .nextTick()
+            .ipcResetMockHistory()
             .get('.cutoff')
             .should('not.exist')
             .get('.actions .btn-primary').as('run')
@@ -298,18 +280,11 @@ describe('Framework management', () => {
             .should('have.class', 'Label--passed')
             .should('not.have.class', 'is-active')
             .click()
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledOnceWith(
-                    'framework-filter',
-                    'jest-1',
-                    'status',
-                    ['passed']
-                )
-                ipcRenderer.send.resetHistory()
-            })
             .should('have.class', 'is-active')
+            .assertSentOnce('framework-filter', 'jest-1', 'status', ['passed'])
+            .ipcResetMockHistory()
             .get('@run')
-            .innerTextIs('Run matches 15')
+            .assertText('Run matches 15')
             .get('@nuggets').eq(0).find(' > .header input')
             .should('not.be.visible')
             .get('@nuggets').eq(0).find(' > .header button')
@@ -335,28 +310,24 @@ describe('Framework management', () => {
                     ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'],
                     true
                 ])
-                ipcRenderer.send.resetHistory()
-
-                ipcRenderer.trigger('jest-1:selective', 2)
             })
+            .ipcResetMockHistory()
+            .ipcEvent('jest-1:selective', 2)
             .get('.filters .progress-breakdown > .Label')
             .should('have.length', 2)
             .get('.filters .progress-breakdown > .Label:first')
             .should('have.class', 'Label--selected')
             .should('not.have.class', 'is-active')
             .click()
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledOnceWith(
-                    'framework-filter',
-                    'jest-1',
-                    'status',
-                    ['passed', 'selected']
-                )
-                ipcRenderer.send.resetHistory()
-
-                // Return only a subset of suites: the selected ones
-                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'].slice(0, 2), 2)
-            })
+            .assertSentOnce(
+                'framework-filter',
+                'jest-1',
+                'status',
+                ['passed', 'selected']
+            )
+            .ipcResetMockHistory()
+            // Return only a subset of suites: the selected ones
+            .ipcEvent('jest-1:refreshed', this.suites['jest-1'].slice(0, 2), 2)
             .get('@nuggets')
             .should('have.length', 2)
             .should('have.class', 'status--passed')
@@ -378,8 +349,8 @@ describe('Framework management', () => {
                     ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'],
                     false
                 ])
-                ipcRenderer.send.resetHistory()
             })
+            .ipcResetMockHistory()
             .get('@nuggets').eq(0).find(' > .header button')
             .click()
             .get('.filters .progress-breakdown > .Label--selected')
@@ -391,17 +362,16 @@ describe('Framework management', () => {
                     'status',
                     []
                 ])
-                ipcRenderer.send.resetHistory()
-
-                ipcRenderer.trigger('jest-1:selective', 0)
-                ipcRenderer.trigger(
-                    'jest-1:refreshed',
-                    // Clone the suites object, because it'll be spliced during
-                    // assertions and we want to reference the original afterwards.
-                    _.clone(this.suites['jest-1']),
-                    this.suites['jest-1'].length
-                )
             })
+            .ipcResetMockHistory()
+            .ipcEvent('jest-1:selective', 0)
+            .ipcEvent(
+                'jest-1:refreshed',
+                // Clone the suites object, because it'll be spliced during
+                // assertions and we want to reference the original afterwards.
+                _.clone(this.suites['jest-1']),
+                this.suites['jest-1'].length
+            )
             .get('.framework')
             .should('not.have.class', 'selective')
             .get('@nuggets')
@@ -411,7 +381,7 @@ describe('Framework management', () => {
             .should('have.length', 1)
             .should('have.class', 'Label--passed')
             .should('not.have.class', 'is-active')
-            .then(() => {
+            .ipcEvent(() => {
                 // Simulate a suite failing. It should remain in the list,
                 // as we're not filtering for status.
                 const ledger = _.clone(this.ledger['jest-1'])
@@ -420,7 +390,7 @@ describe('Framework management', () => {
                 ledger.failed += 1
                 statusMap['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'] = 'failed'
 
-                ipcRenderer.trigger('jest-1:ledger', ledger, statusMap)
+                return ['jest-1:ledger', ledger, statusMap]
             })
             .get('@nuggets')
             .should('have.length', 15)
@@ -430,14 +400,15 @@ describe('Framework management', () => {
             .should('have.length', 1)
             .get('@nuggets').filter('.status--failed').find('.filename > .name')
             .should('have.text', 'Console.spec.js')
-            .then(() => {
-                ipcRenderer.trigger('jest-1:ledger', this.ledger['jest-1'], this.statusMap['jest-1'])
+            .ipcEvent(() => {
+                // Defer computation of ledger and status map, as we're
+                // overriding the Cypress test suite's default.
+                return ['jest-1:ledger', this.ledger['jest-1'], this.statusMap['jest-1']]
             })
             .get('.filters .progress-breakdown > .Label--passed')
             .click()
-            .then(() => {
-                ipcRenderer.send.resetHistory()
-
+            .ipcResetMockHistory()
+            .ipcEvent(() => {
                 // Simulate a suite failing again. This time it should be
                 // removed from view, as we're filtering by a different status.
                 const ledger = _.clone(this.ledger['jest-1'])
@@ -446,28 +417,25 @@ describe('Framework management', () => {
                 ledger.failed += 1
                 statusMap['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'] = 'failed'
 
-                ipcRenderer.trigger('jest-1:ledger', ledger, statusMap)
+                return ['jest-1:ledger', ledger, statusMap]
             })
             .get('@nuggets')
             .should('have.length', 14)
             .should('have.class', 'status--passed')
             .get('.filters .progress-breakdown > .Label--failed')
             .should('not.have.class', 'is-active')
-            .innerTextIs('1 failed')
+            .assertText('1 failed')
             .get('@run')
-            .innerTextIs('Run matches 14')
+            .assertText('Run matches 14')
             .get('.cutoff')
             .should('exist')
-            .innerTextIs('1 hidden item\nClear filters')
+            .assertText('1 hidden item\nClear filters')
             .get('.cutoff button')
             .click()
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledOnceWith('framework-reset-filters', 'jest-1')
-                ipcRenderer.send.resetHistory()
-
-                ipcRenderer.trigger('jest-1:ledger', this.ledger['jest-1'], this.statusMap['jest-1'])
-                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
-            })
+            .assertSentOnce('framework-reset-filters', 'jest-1')
+            .ipcResetMockHistory()
+            .ipcEvent('jest-1:ledger', this.ledger['jest-1'], this.statusMap['jest-1'])
+            .ipcEvent('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
             .get('@run')
             .should('have.text', 'Run')
             .get('.cutoff')
@@ -481,20 +449,19 @@ describe('Framework management', () => {
             .startWithProject()
             .nextTick(() => {
                 cy.stub(ipcRenderer, 'invoke', this.defaultResolver)
-                ipcRenderer.trigger('42:repositories', this.repositories)
-                ipcRenderer.trigger('framework-active', 'jest-1', this.repositories[0])
             })
-            .nextTick(() => {
-                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
-            })
-            .nextTick(() => {
+            .ipcEvent('42:repositories', this.repositories)
+            .ipcEvent('framework-active', 'jest-1', this.repositories[0])
+            .nextTick()
+            .ipcEvent('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
+            .ipcEvent(() => {
                 const ledger = _.clone(this.ledger['jest-1'])
                 const statusMap = _.clone(this.statusMap['jest-1'])
                 ledger.idle -= 1
                 ledger.failed += 1
                 statusMap['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'] = 'failed'
 
-                ipcRenderer.trigger('jest-1:ledger', ledger, statusMap)
+                return ['jest-1:ledger', ledger, statusMap]
             })
             .get('.filters .progress-breakdown > .Label')
             .each(el => {
@@ -505,24 +472,22 @@ describe('Framework management', () => {
             .click()
             .get('@nuggets').eq(1).find('> .header button')
             .click()
-            .nextTick(() => {
-                ipcRenderer.send.resetHistory()
-
+            .ipcResetMockHistory()
+            .ipcEvent(() => {
                 const ledger = _.clone(this.ledger['jest-1'])
                 const statusMap = _.clone(this.statusMap['jest-1'])
                 ledger.idle -= 1
                 ledger.passed += 1
                 statusMap['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'] = 'passed'
 
-                ipcRenderer.trigger('jest-1:ledger', ledger, statusMap)
+                return ['jest-1:ledger', ledger, statusMap]
             })
-            .nextTick(() => {
-                expect(ipcRenderer.send).to.be.calledOnceWith(
-                    'framework-select',
-                    'jest-1',
-                    ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'],
-                    false
-                )
-            })
+            .nextTick()
+            .assertSentOnce(
+                'framework-select',
+                'jest-1',
+                ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'],
+                false
+            )
     })
 })
