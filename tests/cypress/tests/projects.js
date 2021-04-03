@@ -148,7 +148,7 @@ context('Project management', () => {
     it('triggers project context menu', () => {
         cy
             .startWithProject()
-            .then(() => {
+            .nextTick(() => {
                 cy.stub(ipcRenderer, 'invoke').resolves(true)
 
                 ipcRenderer.trigger('42:repositories', [])

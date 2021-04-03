@@ -10,9 +10,6 @@ Cypress.Commands.add('start', (options = {}) => {
                 win.Lode = Lode
             },
             onLoad (win) {
-                if (options.onLoad) {
-                    options.onLoad()
-                }
                 cy.spy(electron.ipcRenderer, 'send')
                 electron.ipcRenderer.trigger('did-finish-load', {
                     ...{
@@ -33,6 +30,13 @@ Cypress.Commands.add('startWithProject', (options = {}) => {
         .then(project => {
             electron.ipcRenderer.trigger('project-ready', project)
         })
+        .wait(1)
+})
+
+Cypress.Commands.add('nextTick', callback => {
+    cy
+        .wait(1)
+        .then(callback)
         .wait(1)
 })
 
