@@ -1,8 +1,7 @@
 import _ from 'lodash'
-import { ipcRenderer } from 'electron'
-import { Lode } from '@preload/lode'
+const { ipcRenderer } = window.electron
 
-describe('Repository management', () => {
+describe('Framework management', () => {
     beforeEach(function () {
         this.suites = {}
         this.tests = {}
@@ -54,45 +53,25 @@ describe('Repository management', () => {
 
     it('manages existing frameworks', function () {
         cy
-            .visit('/', {
-                onBeforeLoad (win) {
-                    win.Lode = Lode
-                },
-                onLoad (win) {
-                    cy.spy(ipcRenderer, 'send')
-
-                    // Stub invocations for this test
-                    cy.stub(ipcRenderer, 'invoke', (method, ...args) => {
-                        switch (method) {
-                            case 'repository-frameworks':
-                                return this.frameworks
-                            case 'repository-exists':
-                                return true
-                            case 'framework-get':
-                                return Promise.resolve(_.find(this.frameworks, { id: args[0] }))
-
-                            case 'framework-get-ledger':
-                                return {
-                                    ledger: this.ledger[args[0]],
-                                    status: this.statusMap[args[0]]
-                                }
-                        }
-                    })
-
-                    ipcRenderer.trigger('did-finish-load', {
-                        theme: 'light',
-                        projectId: '42',
-                        version: '0.0.0',
-                        focus: true
-                    })
-                }
-            })
-            .fixture('framework/project.json')
-            .then(project => {
-                ipcRenderer.trigger('project-ready', project)
-            })
-            .wait(1)
+            .startWithProject()
             .then(() => {
+                cy.stub(ipcRenderer, 'invoke', (method, ...args) => {
+                    switch (method) {
+                        case 'repository-frameworks':
+                            return this.frameworks
+                        case 'repository-exists':
+                            return true
+                        case 'framework-get':
+                            return Promise.resolve(_.find(this.frameworks, { id: args[0] }))
+
+                        case 'framework-get-ledger':
+                            return {
+                                ledger: this.ledger[args[0]],
+                                status: this.statusMap[args[0]]
+                            }
+                    }
+                })
+
                 ipcRenderer.trigger('42:repositories', this.repositories)
             })
             .wait(1)
@@ -147,9 +126,7 @@ describe('Repository management', () => {
             .get('.filters .progress-breakdown .Label')
             .should('have.length', 1)
             .get('.filters .progress-breakdown .Label--idle')
-            .should(el => {
-                expect(el.get(0).innerText).to.eq('15 idle')
-            })
+            .innerTextIs('15 idle')
             .get('.search')
             .should('exist')
             .get('.sort')
@@ -194,9 +171,7 @@ describe('Repository management', () => {
             .get('.filters .progress-breakdown .Label')
             .should('have.length', 1)
             .get('.filters .progress-breakdown .Label--idle')
-            .should(el => {
-                expect(el.get(0).innerText).to.eq('14 idle')
-            })
+            .innerTextIs('14 idle')
             .get('.search')
             .should('exist')
             .get('.sort')
@@ -214,7 +189,7 @@ describe('Repository management', () => {
             .get('@nuggets').eq(0).find(' .filename > .name')
             .should('have.text', 'ConsoleTest.php')
             .click()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.send).to.be.calledOnceWith(
                     'framework-toggle-child',
                     'phpunit-1',
@@ -233,7 +208,7 @@ describe('Repository management', () => {
             .get('@nuggets').eq(1).find('.filename > .name')
             .should('have.text', 'DataProviderTest.php')
             .click()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.send).to.be.calledOnceWith(
                     'framework-toggle-child',
                     'phpunit-1',
@@ -272,7 +247,7 @@ describe('Repository management', () => {
             .should('have.text', 'Data provider success with data set # 0')
             .get('@nuggets').eq(1).find('> .header')
             .click()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.send).to.be.calledOnceWith(
                     'framework-toggle-child',
                     'phpunit-1',
@@ -287,60 +262,41 @@ describe('Repository management', () => {
             .should('have.length', 1)
     })
 
-    it.only('can filter suites', function () {
+    it('can filter suites', function () {
         cy
-            .visit('/', {
-                onBeforeLoad (win) {
-                    win.Lode = Lode
-                },
-                onLoad (win) {
-                    cy.spy(ipcRenderer, 'send')
-
-                    // Modify the Jest framework's statuses
-                    this.ledger['jest-1'] = _.mapValues(this.ledger['jest-1'], (value, key) => {
-                        if (key === 'idle') {
-                            return 0
-                        } else if (key === 'passed') {
-                            return this.suites['jest-1'].length
-                        }
-                        return value
-                    })
-                    this.statusMap['jest-1'] = _.mapValues(this.statusMap['jest-1'], () => {
-                        return 'passed'
-                    })
-
-                    // Stub invocations for this test
-                    cy.stub(ipcRenderer, 'invoke', (method, ...args) => {
-                        switch (method) {
-                            case 'repository-frameworks':
-                                return this.frameworks
-                            case 'repository-exists':
-                                return true
-                            case 'framework-get':
-                                return Promise.resolve(_.find(this.frameworks, { id: args[0] }))
-
-                            case 'framework-get-ledger':
-                                return {
-                                    ledger: this.ledger[args[0]],
-                                    status: this.statusMap[args[0]]
-                                }
-                        }
-                    })
-
-                    ipcRenderer.trigger('did-finish-load', {
-                        theme: 'light',
-                        projectId: '42',
-                        version: '0.0.0',
-                        focus: true
-                    })
-                }
-            })
-            .fixture('framework/project.json')
-            .then(project => {
-                ipcRenderer.trigger('project-ready', project)
-            })
-            .wait(1)
+            .startWithProject()
             .then(() => {
+                // Modify the Jest framework's statuses
+                this.ledger['jest-1'] = _.mapValues(this.ledger['jest-1'], (value, key) => {
+                    if (key === 'idle') {
+                        return 0
+                    } else if (key === 'passed') {
+                        return this.suites['jest-1'].length
+                    }
+                    return value
+                })
+                this.statusMap['jest-1'] = _.mapValues(this.statusMap['jest-1'], () => {
+                    return 'passed'
+                })
+
+                // Stub invocations for this test
+                cy.stub(ipcRenderer, 'invoke', (method, ...args) => {
+                    switch (method) {
+                        case 'repository-frameworks':
+                            return this.frameworks
+                        case 'repository-exists':
+                            return true
+                        case 'framework-get':
+                            return Promise.resolve(_.find(this.frameworks, { id: args[0] }))
+
+                        case 'framework-get-ledger':
+                            return {
+                                ledger: this.ledger[args[0]],
+                                status: this.statusMap[args[0]]
+                            }
+                    }
+                })
+
                 ipcRenderer.trigger('42:repositories', this.repositories)
                 ipcRenderer.trigger('framework-active', 'jest-1', this.repositories[0])
             })
@@ -375,9 +331,7 @@ describe('Repository management', () => {
             })
             .should('have.class', 'is-active')
             .get('@run')
-            .should(el => {
-                expect(el.get(0).innerText).to.eq('Run matches 15')
-            })
+            .innerTextIs('Run matches 15')
             .get('@nuggets').eq(0).find(' > .header input')
             .should('not.be.visible')
             .get('@nuggets').eq(0).find(' > .header button')
@@ -515,18 +469,12 @@ describe('Repository management', () => {
             .should('have.class', 'status--passed')
             .get('.filters .progress-breakdown > .Label--failed')
             .should('not.have.class', 'is-active')
-            .should(el => {
-                expect(el.get(0).innerText).to.eq('1 failed')
-            })
+            .innerTextIs('1 failed')
             .get('@run')
-            .should(el => {
-                expect(el.get(0).innerText).to.eq('Run matches 14')
-            })
+            .innerTextIs('Run matches 14')
             .get('.cutoff')
             .should('exist')
-            .should(el => {
-                expect(el.get(0).innerText).to.eq('1 hidden item\nClear filters')
-            })
+            .innerTextIs('1 hidden item\nClear filters')
             .get('.cutoff button')
             .click()
             .then(() => {

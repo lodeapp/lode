@@ -1,5 +1,4 @@
-import { ipcRenderer } from 'electron'
-import { Lode } from '@preload/lode'
+const { ipcRenderer } = window.electron
 
 describe('Repository management', () => {
     beforeEach(function () {
@@ -18,45 +17,26 @@ describe('Repository management', () => {
 
     it('manages existing repositories', function () {
         cy
-            .visit('/', {
-                onBeforeLoad (win) {
-                    win.Lode = Lode
-                },
-                onLoad (win) {
-                    cy.spy(ipcRenderer, 'send')
-
-                    // Stub invocations for this test
-                    cy.stub(ipcRenderer, 'invoke', method => {
-                        switch (method) {
-                            case 'repository-frameworks':
-                                return []
-                            case 'project-empty-repositories':
-                                return this.repositories
-                            case 'repository-exists':
-                                return true
-                            case 'framework-types':
-                                return Promise.resolve(this.frameworkTypes)
-                        }
-                    })
-
-                    ipcRenderer.trigger('did-finish-load', {
-                        theme: 'light',
-                        projectId: '42',
-                        version: '0.0.0',
-                        focus: true
-                    })
-                }
-            })
-            .fixture('framework/project.json')
-            .then(project => {
-                ipcRenderer.trigger('project-ready', project)
-            })
-            .wait(1)
+            .startWithProject()
             .then(() => {
+                // Stub invocations for this test
+                cy.stub(ipcRenderer, 'invoke', method => {
+                    switch (method) {
+                        case 'repository-frameworks':
+                            return []
+                        case 'project-empty-repositories':
+                            return this.repositories
+                        case 'repository-exists':
+                            return true
+                        case 'framework-types':
+                            return Promise.resolve(this.frameworkTypes)
+                    }
+                })
+
                 ipcRenderer.trigger('42:repositories', this.repositories)
             })
             .wait(1)
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-frameworks', 'repository-1')
                 ipcRenderer.invoke.resetHistory()
             })
@@ -81,7 +61,7 @@ describe('Repository management', () => {
             // different elements.
             .click()
             .wait(1)
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.send).to.be.calledWith('repository-toggle', 'repository-2', true)
                 expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-frameworks', 'repository-2')
             })
@@ -89,7 +69,7 @@ describe('Repository management', () => {
             .should('have.class', 'is-expanded')
             .click()
             .wait(1)
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.send).to.be.calledWith('repository-toggle', 'repository-2', false)
                 expect(ipcRenderer.invoke).to.be.callCount(1)
                 ipcRenderer.invoke.resetHistory()
@@ -102,7 +82,7 @@ describe('Repository management', () => {
             .get('#list .cta .btn-primary')
             .should('have.text', 'Scan for frameworks')
             .click()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.invoke.getCall(0).args[0]).to.equal('project-empty-repositories')
                 expect(ipcRenderer.invoke.getCall(1).args).to.deep.equal(['repository-exists', 'repository-1'])
                 expect(ipcRenderer.invoke.getCall(2).args[0]).to.equal('framework-types')
@@ -121,7 +101,7 @@ describe('Repository management', () => {
             .get('.modal-footer .btn:first')
             .should('contain.text', 'Cancel')
             .click()
-            .should(() => {
+            .then(() => {
                 // After cancelling the previous scan, it should trigger
                 // another set of invocations for the second repository.
                 expect(ipcRenderer.invoke.getCall(0).args).to.deep.equal(['repository-exists', 'repository-2'])
@@ -137,7 +117,7 @@ describe('Repository management', () => {
             .get('.modal .repository-settings .btn')
             .should('contain.text', 'Scan')
             .click()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.invoke.getCall(0).args[0]).to.equal('repository-scan')
                 ipcRenderer.invoke.resetHistory()
             })
@@ -150,47 +130,28 @@ describe('Repository management', () => {
 
     it('can add repositories through the sidebar', function () {
         cy
-            .visit('/', {
-                onBeforeLoad (win) {
-                    win.Lode = Lode
-                },
-                onLoad (win) {
-                    cy.spy(ipcRenderer, 'send')
-
-                    // Stub invocations for this test
-                    cy.stub(ipcRenderer, 'invoke', method => {
-                        switch (method) {
-                            case 'repository-frameworks':
-                                return []
-                            case 'repository-validate':
-                                return null
-                            case 'repository-add':
-                                return [this.anotherRepository]
-                            case 'repository-exists':
-                                return true
-                            case 'framework-types':
-                                return Promise.resolve(this.frameworkTypes)
-                        }
-                    })
-
-                    ipcRenderer.trigger('did-finish-load', {
-                        theme: 'light',
-                        projectId: '42',
-                        version: '0.0.0',
-                        focus: true
-                    })
-                }
-            })
-            .fixture('framework/project.json')
-            .then(project => {
-                ipcRenderer.trigger('project-ready', project)
-            })
-            .wait(1)
+            .startWithProject()
             .then(() => {
+                // Stub invocations for this test
+                cy.stub(ipcRenderer, 'invoke', method => {
+                    switch (method) {
+                        case 'repository-frameworks':
+                            return []
+                        case 'repository-validate':
+                            return null
+                        case 'repository-add':
+                            return [this.anotherRepository]
+                        case 'repository-exists':
+                            return true
+                        case 'framework-types':
+                            return Promise.resolve(this.frameworkTypes)
+                    }
+                })
+
                 ipcRenderer.trigger('42:repositories', this.repositories)
             })
             .wait(1)
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-frameworks', 'repository-1')
                 ipcRenderer.invoke.resetHistory()
             })
@@ -226,7 +187,7 @@ describe('Repository management', () => {
             .should('have.value', 'rich-tea')
             .next()
             .click()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.invoke).to.be.calledOnceWith('project-add-repositories-menu')
                 ipcRenderer.invoke.resetHistory()
             })
@@ -253,7 +214,7 @@ describe('Repository management', () => {
             // By default it should add and scan, unless we explicitly
             // disable the auto-scan feature.
             .click()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.invoke.getCall(0).args).to.deep.equal(['repository-validate', { path: '' }])
                 expect(ipcRenderer.invoke.getCall(1).args).to.deep.equal(['repository-validate', { path: 'rich-tea' }])
                 expect(ipcRenderer.invoke.getCall(2).args).to.deep.equal(['repository-validate', { path: 'rich-tea' }])
@@ -296,7 +257,7 @@ describe('Repository management', () => {
             // occasionally co-exist, so force "last" button, just in case.
             .get('.modal-footer .btn-primary:last')
             .click()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.invoke).to.have.callCount(2)
                 expect(ipcRenderer.invoke.getCall(0).args).to.deep.equal(['repository-validate', { path: 'rich-tea' }])
                 expect(ipcRenderer.invoke.getCall(1).args).to.deep.equal(['repository-add', ['rich-tea']])
@@ -306,26 +267,10 @@ describe('Repository management', () => {
 
     it('triggers repository context menu', function () {
         cy
-            .visit('/', {
-                onBeforeLoad (win) {
-                    win.Lode = Lode
-                },
-                onLoad (win) {
-                    cy.spy(ipcRenderer, 'send')
-                    cy.stub(ipcRenderer, 'invoke').resolves(true)
-                    ipcRenderer.trigger('did-finish-load', {
-                        projectId: '42',
-                        version: '0.0.0',
-                        focus: true
-                    })
-                }
-            })
-            .fixture('framework/project.json')
-            .then(project => {
-                ipcRenderer.trigger('project-ready', project)
-            })
-            .wait(1)
+            .startWithProject()
             .then(() => {
+                cy.stub(ipcRenderer, 'invoke').resolves(true)
+
                 // Collapse all repositories to avoid calling for frameworks.
                 ipcRenderer.trigger('42:repositories', this.repositories.map(repository => {
                     repository.expanded = false
@@ -336,14 +281,14 @@ describe('Repository management', () => {
             .get('.sidebar section.scrollable .sidebar-item:first .name')
             .should('contain.text', 'hobnobs')
             .rightclick()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-context-menu', 'repository-1')
                 ipcRenderer.invoke.resetHistory()
             })
             .get('.sidebar section.scrollable .sidebar-item:last .name')
             .should('contain.text', 'digestives')
             .rightclick()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-context-menu', 'repository-2')
             })
     })
