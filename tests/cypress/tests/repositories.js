@@ -18,7 +18,7 @@ describe('Repository management', () => {
     it('manages existing repositories', function () {
         cy
             .startWithProject()
-            .then(() => {
+            .nextTick(() => {
                 // Stub invocations for this test
                 cy.stub(ipcRenderer, 'invoke', method => {
                     switch (method) {
@@ -35,8 +35,7 @@ describe('Repository management', () => {
 
                 ipcRenderer.trigger('42:repositories', this.repositories)
             })
-            .wait(1)
-            .then(() => {
+            .nextTick(() => {
                 expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-frameworks', 'repository-1')
                 ipcRenderer.invoke.resetHistory()
             })
@@ -60,20 +59,19 @@ describe('Repository management', () => {
             // Toggle repository expansion from a couple of
             // different elements.
             .click()
-            .wait(1)
-            .then(() => {
+            .nextTick(() => {
                 expect(ipcRenderer.send).to.be.calledWith('repository-toggle', 'repository-2', true)
                 expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-frameworks', 'repository-2')
             })
-            .get('.sidebar section.scrollable .sidebar-item:last')
+            .get('.sidebar section.scrollable .sidebar-item:last').as('last')
             .should('have.class', 'is-expanded')
             .click()
-            .wait(1)
-            .then(() => {
+            .nextTick(() => {
                 expect(ipcRenderer.send).to.be.calledWith('repository-toggle', 'repository-2', false)
                 expect(ipcRenderer.invoke).to.be.callCount(1)
                 ipcRenderer.invoke.resetHistory()
             })
+            .get('@last')
             .should('not.have.class', 'is-expanded')
             .get('#list')
             .should('have.class', 'pane')
@@ -131,7 +129,7 @@ describe('Repository management', () => {
     it('can add repositories through the sidebar', function () {
         cy
             .startWithProject()
-            .then(() => {
+            .nextTick(() => {
                 // Stub invocations for this test
                 cy.stub(ipcRenderer, 'invoke', method => {
                     switch (method) {
@@ -150,8 +148,7 @@ describe('Repository management', () => {
 
                 ipcRenderer.trigger('42:repositories', this.repositories)
             })
-            .wait(1)
-            .then(() => {
+            .nextTick(() => {
                 expect(ipcRenderer.invoke).to.be.calledOnceWith('repository-frameworks', 'repository-1')
                 ipcRenderer.invoke.resetHistory()
             })
@@ -268,7 +265,7 @@ describe('Repository management', () => {
     it('triggers repository context menu', function () {
         cy
             .startWithProject()
-            .then(() => {
+            .nextTick(() => {
                 cy.stub(ipcRenderer, 'invoke').resolves(true)
 
                 // Collapse all repositories to avoid calling for frameworks.
@@ -277,7 +274,6 @@ describe('Repository management', () => {
                     return repository
                 }))
             })
-            .wait(1)
             .get('.sidebar section.scrollable .sidebar-item:first .name')
             .should('contain.text', 'hobnobs')
             .rightclick()

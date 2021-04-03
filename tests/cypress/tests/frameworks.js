@@ -26,6 +26,23 @@ describe('Framework management', () => {
             this.frameworks.push(framework)
         }
 
+        this.defaultResolver = (method, ...args) => {
+            switch (method) {
+                case 'repository-frameworks':
+                    return this.frameworks
+                case 'repository-exists':
+                    return true
+                case 'framework-get':
+                    return Promise.resolve(_.find(this.frameworks, { id: args[0] }))
+
+                case 'framework-get-ledger':
+                    return {
+                        ledger: this.ledger[args[0]],
+                        status: this.statusMap[args[0]]
+                    }
+            }
+        }
+
         cy
             .fixture('framework/ledger.json').then(ledger => {
                 this.ledgerStub = ledger
@@ -54,36 +71,18 @@ describe('Framework management', () => {
     it('manages existing frameworks', function () {
         cy
             .startWithProject()
-            .then(() => {
-                cy.stub(ipcRenderer, 'invoke', (method, ...args) => {
-                    switch (method) {
-                        case 'repository-frameworks':
-                            return this.frameworks
-                        case 'repository-exists':
-                            return true
-                        case 'framework-get':
-                            return Promise.resolve(_.find(this.frameworks, { id: args[0] }))
-
-                        case 'framework-get-ledger':
-                            return {
-                                ledger: this.ledger[args[0]],
-                                status: this.statusMap[args[0]]
-                            }
-                    }
-                })
-
+            .nextTick(() => {
+                cy.stub(ipcRenderer, 'invoke', this.defaultResolver)
                 ipcRenderer.trigger('42:repositories', this.repositories)
             })
-            .wait(1)
-            .then(() => {
+            .nextTick(() => {
                 ipcRenderer.send.resetHistory()
                 expect(ipcRenderer.invoke).to.be.calledWith('repository-frameworks', 'repository-1')
                 ipcRenderer.invoke.resetHistory()
 
                 ipcRenderer.trigger('framework-active', 'jest-1', this.repositories[0])
             })
-            .wait(1)
-            .then(() => {
+            .nextTick(() => {
                 expect(ipcRenderer.send.getCall(0).args).to.deep.equal(['project-active-framework', 'jest-1'])
                 expect(ipcRenderer.send.getCall(1).args).to.deep.equal(['framework-suites', 'jest-1'])
                 ipcRenderer.send.resetHistory()
@@ -94,7 +93,6 @@ describe('Framework management', () => {
 
                 ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
             })
-            .wait(1)
             .get('.sidebar section.scrollable .sidebar-item--framework:first')
             .should('contain.text', 'Jest')
             .should('have.class', 'status--idle')
@@ -198,8 +196,7 @@ describe('Framework management', () => {
                 )
                 ipcRenderer.send.resetHistory()
             })
-            .wait(1)
-            .then(() => {
+            .nextTick(() => {
                 ipcRenderer.trigger(
                     '/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php:framework-tests',
                     this.tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php']
@@ -217,14 +214,12 @@ describe('Framework management', () => {
                 )
                 ipcRenderer.send.resetHistory()
             })
-            .wait(1)
-            .then(() => {
+            .nextTick(() => {
                 ipcRenderer.trigger(
                     '/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php:framework-tests',
                     this.tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php']
                 )
             })
-            .wait(1)
             .get('@nuggets').eq(0)
             .should('have.class', 'is-expanded')
             .find('.nugget-items > .nugget')
@@ -265,47 +260,30 @@ describe('Framework management', () => {
     it('can filter suites', function () {
         cy
             .startWithProject()
-            .then(() => {
+            .nextTick(() => {
                 // Modify the Jest framework's statuses
                 this.ledger['jest-1'] = _.mapValues(this.ledger['jest-1'], (value, key) => {
-                    if (key === 'idle') {
-                        return 0
-                    } else if (key === 'passed') {
-                        return this.suites['jest-1'].length
+                    switch (key) {
+                        case 'idle':
+                            return 0
+                        case 'passed':
+                            return this.suites['jest-1'].length
+                        default:
+                            return value
                     }
-                    return value
                 })
-                this.statusMap['jest-1'] = _.mapValues(this.statusMap['jest-1'], () => {
-                    return 'passed'
-                })
+                this.statusMap['jest-1'] = _.mapValues(this.statusMap['jest-1'], () => 'passed')
 
                 // Stub invocations for this test
-                cy.stub(ipcRenderer, 'invoke', (method, ...args) => {
-                    switch (method) {
-                        case 'repository-frameworks':
-                            return this.frameworks
-                        case 'repository-exists':
-                            return true
-                        case 'framework-get':
-                            return Promise.resolve(_.find(this.frameworks, { id: args[0] }))
-
-                        case 'framework-get-ledger':
-                            return {
-                                ledger: this.ledger[args[0]],
-                                status: this.statusMap[args[0]]
-                            }
-                    }
-                })
+                cy.stub(ipcRenderer, 'invoke', this.defaultResolver)
 
                 ipcRenderer.trigger('42:repositories', this.repositories)
                 ipcRenderer.trigger('framework-active', 'jest-1', this.repositories[0])
             })
-            .wait(1)
-            .then(() => {
+            .nextTick(() => {
                 ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
                 ipcRenderer.send.resetHistory()
             })
-            .wait(1)
             .get('.cutoff')
             .should('not.exist')
             .get('.actions .btn-primary').as('run')
@@ -416,7 +394,13 @@ describe('Framework management', () => {
                 ipcRenderer.send.resetHistory()
 
                 ipcRenderer.trigger('jest-1:selective', 0)
-                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
+                ipcRenderer.trigger(
+                    'jest-1:refreshed',
+                    // Clone the suites object, because it'll be spliced during
+                    // assertions and we want to reference the original afterwards.
+                    _.clone(this.suites['jest-1']),
+                    this.suites['jest-1'].length
+                )
             })
             .get('.framework')
             .should('not.have.class', 'selective')
@@ -488,5 +472,57 @@ describe('Framework management', () => {
             .should('have.text', 'Run')
             .get('.cutoff')
             .should('not.exist')
+            .get('@nuggets')
+            .should('have.length', 15)
+    })
+
+    it('suites are deselected when not in view', function () {
+        cy
+            .startWithProject()
+            .nextTick(() => {
+                cy.stub(ipcRenderer, 'invoke', this.defaultResolver)
+                ipcRenderer.trigger('42:repositories', this.repositories)
+                ipcRenderer.trigger('framework-active', 'jest-1', this.repositories[0])
+            })
+            .nextTick(() => {
+                ipcRenderer.trigger('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
+            })
+            .nextTick(() => {
+                const ledger = _.clone(this.ledger['jest-1'])
+                const statusMap = _.clone(this.statusMap['jest-1'])
+                ledger.idle -= 1
+                ledger.failed += 1
+                statusMap['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'] = 'failed'
+
+                ipcRenderer.trigger('jest-1:ledger', ledger, statusMap)
+            })
+            .get('.filters .progress-breakdown > .Label')
+            .each(el => {
+                el.click()
+            })
+            .get('.framework > .children > .nugget').as('nuggets')
+            .get('@nuggets').eq(0).find('> .header button')
+            .click()
+            .get('@nuggets').eq(1).find('> .header button')
+            .click()
+            .nextTick(() => {
+                ipcRenderer.send.resetHistory()
+
+                const ledger = _.clone(this.ledger['jest-1'])
+                const statusMap = _.clone(this.statusMap['jest-1'])
+                ledger.idle -= 1
+                ledger.passed += 1
+                statusMap['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'] = 'passed'
+
+                ipcRenderer.trigger('jest-1:ledger', ledger, statusMap)
+            })
+            .nextTick(() => {
+                expect(ipcRenderer.send).to.be.calledOnceWith(
+                    'framework-select',
+                    'jest-1',
+                    ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'],
+                    false
+                )
+            })
     })
 })
