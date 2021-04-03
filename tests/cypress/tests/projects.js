@@ -1,22 +1,9 @@
-import { ipcRenderer } from 'electron'
-import { Lode } from '@preload/lode'
+const { ipcRenderer } = window.electron
 
 context('Project management', () => {
     it('can add projects from the welcome screen', () => {
         cy
-            .visit('/', {
-                onBeforeLoad (win) {
-                    win.Lode = Lode
-                },
-                onLoad (win) {
-                    cy.spy(ipcRenderer, 'send')
-                    ipcRenderer.trigger('did-finish-load', {
-                        theme: 'light',
-                        version: '0.0.0',
-                        focus: true
-                    })
-                }
-            })
+            .start()
             .get('body')
             .should('have.class', 'is-focused')
             .then(() => {
@@ -54,7 +41,7 @@ context('Project management', () => {
             })
             .get('@save')
             .click()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.send).to.be.calledWith('project-switch', { name: 'Biscuit' })
             })
             .get('.loading')
@@ -66,7 +53,7 @@ context('Project management', () => {
                 ipcRenderer.trigger('project-ready', project)
             })
             .wait(1)
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
                 ipcRenderer.trigger('42:repositories', [])
             })
@@ -108,18 +95,8 @@ context('Project management', () => {
 
     it('resumes existing projects', () => {
         cy
-            .visit('/', {
-                onBeforeLoad (win) {
-                    win.Lode = Lode
-                },
-                onLoad (win) {
-                    cy.spy(ipcRenderer, 'send')
-                    ipcRenderer.trigger('did-finish-load', {
-                        projectId: '42',
-                        version: '0.0.0',
-                        focus: true
-                    })
-                }
+            .start({
+                projectId: '42'
             })
             // Having a project ID should make the renderer enter loading
             // state instead of showing the Welcome screen.
@@ -132,7 +109,7 @@ context('Project management', () => {
                 ipcRenderer.trigger('project-ready', project)
             })
             .wait(1)
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
                 ipcRenderer.trigger('42:repositories', [])
             })
@@ -170,32 +147,16 @@ context('Project management', () => {
 
     it('triggers project context menu', () => {
         cy
-            .visit('/', {
-                onBeforeLoad (win) {
-                    win.Lode = Lode
-                },
-                onLoad (win) {
-                    cy.spy(ipcRenderer, 'send')
-                    cy.stub(ipcRenderer, 'invoke').resolves(true)
-                    ipcRenderer.trigger('did-finish-load', {
-                        projectId: '42',
-                        version: '0.0.0',
-                        focus: true
-                    })
-                }
-            })
-            .fixture('framework/project.json')
-            .then(project => {
-                ipcRenderer.trigger('project-ready', project)
-            })
-            .wait(1)
-            .should(() => {
+            .startWithProject()
+            .then(() => {
+                cy.stub(ipcRenderer, 'invoke').resolves(true)
+
                 ipcRenderer.trigger('42:repositories', [])
             })
             .get('.sidebar header .sidebar-item')
             .should('contain.text', 'Biscuit')
             .rightclick()
-            .should(() => {
+            .then(() => {
                 expect(ipcRenderer.invoke).to.be.calledOnceWith('project-context-menu')
             })
     })

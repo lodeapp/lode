@@ -21,6 +21,10 @@ const electron = {
          * @param args The arguments with which the event is being triggered
          */
         trigger (channel, ...args) {
+            if (typeof electron.ipcRenderer.listeners.on[channel] === 'undefined') {
+                throw Error(`Attempted to trigger unregistered event "${channel}"`)
+            }
+
             const event = {}
             electron.ipcRenderer.listeners.on[channel](event, ...args)
             if (typeof electron.ipcRenderer.listeners.once[channel] !== 'undefined') {
