@@ -30,6 +30,12 @@ Cypress.Commands.add('assertArgs', { prevSubject: true }, (subject, ...args) => 
     })
 })
 
+Cypress.Commands.add('assertArgEq', { prevSubject: true }, (subject, index, value) => {
+    cy.then(() => {
+        expect(subject.args[index]).to.deep.equal(value)
+    })
+})
+
 Cypress.Commands.add('assertChannel', { prevSubject: true }, (subject, channel) => {
     cy.then(() => {
         expect(subject.args[0]).to.equal(channel)
@@ -40,6 +46,6 @@ Cypress.Commands.add('assertText', { prevSubject: true }, (subject, string) => {
     cy
         .wrap(subject)
         .should(el => {
-            expect(el.get(0).innerText).to.eq(string)
+            expect(el.get(0).innerText.trim()).to.eq(string)
         })
 })
