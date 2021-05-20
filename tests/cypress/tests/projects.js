@@ -46,13 +46,11 @@ context('Project management', () => {
             .should('exist')
             .fixture('framework/project.json')
             .then(project => {
-                ipcRenderer.trigger('project-ready', project)
+                cy.ipcEvent('project-ready', project)
             })
-            .wait(1)
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
-                ipcRenderer.trigger('42:repositories', [])
-            })
+            .nextTick()
+            .assertEmitted('project-repositories', { id: '42', name: 'Biscuit' })
+            .ipcEvent('42:repositories', [])
             .get('.loading')
             .should('not.exist')
             .get('.spinner')
@@ -86,7 +84,7 @@ context('Project management', () => {
             .should('have.text', 'Add repositories to Biscuit')
             .get('.modal-footer .btn-primary').as('save')
             .should('contain.text', 'Add repositories')
-            .should('have.prop', 'disabled')
+            .should('be.disabled')
     })
 
     it('resumes existing projects', () => {
