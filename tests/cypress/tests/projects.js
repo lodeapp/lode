@@ -1,6 +1,6 @@
 const { ipcRenderer } = window.electron
 
-context('Project management', () => {
+describe('Project management', () => {
     it('can add projects from the welcome screen', () => {
         cy
             .start()
@@ -37,9 +37,6 @@ context('Project management', () => {
             .click()
             .assertEmitted('project-switch', { name: 'Biscuit' })
             .nextTick()
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledWith('project-switch', { name: 'Biscuit' })
-            })
             .get('.loading')
             .should('be.visible')
             .get('.spinner')
@@ -100,13 +97,11 @@ context('Project management', () => {
             .should('be.visible')
             .fixture('framework/project.json')
             .then(project => {
-                ipcRenderer.trigger('project-ready', project)
+                cy.ipcEvent('project-ready', project)
             })
-            .wait(1)
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
-                ipcRenderer.trigger('42:repositories', [])
-            })
+            .nextTick()
+            .assertEmitted('project-repositories', { id: '42', name: 'Biscuit' })
+            .ipcEvent('42:repositories', [])
             .get('.loading')
             .should('not.exist')
             .get('.spinner')
@@ -136,7 +131,7 @@ context('Project management', () => {
             .should('have.text', 'Add repositories to Biscuit')
             .get('.modal-footer .btn-primary').as('save')
             .should('contain.text', 'Add repositories')
-            .should('have.prop', 'disabled')
+            .should('be.disabled')
     })
 
     it('triggers project context menu', () => {
@@ -144,14 +139,11 @@ context('Project management', () => {
             .startWithProject()
             .nextTick(() => {
                 cy.stub(ipcRenderer, 'invoke').resolves(true)
-
-                ipcRenderer.trigger('42:repositories', [])
             })
+            .ipcEvent('42:repositories', [])
             .get('.sidebar header .sidebar-item')
             .should('contain.text', 'Biscuit')
             .rightclick()
-            .then(() => {
-                expect(ipcRenderer.invoke).to.be.calledOnceWith('project-context-menu')
-            })
+            .assertInvokedOnce('project-context-menu')
     })
 })
