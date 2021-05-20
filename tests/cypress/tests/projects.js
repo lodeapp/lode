@@ -94,7 +94,7 @@ describe('Project management', () => {
             .get('.loading')
             .should('be.visible')
             .get('.spinner')
-            .should('be.visible')
+            .should('exist')
             .fixture('framework/project.json')
             .then(project => {
                 cy.ipcEvent('project-ready', project)

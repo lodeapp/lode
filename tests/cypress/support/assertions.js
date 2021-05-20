@@ -51,13 +51,10 @@ Cypress.Commands.add('assertChannel', { prevSubject: true }, (subject, channel) 
     })
 })
 
-Cypress.Commands.add('assertText', { prevSubject: true }, (subject, string) => {
+Cypress.Commands.add('assertNormalizedText', { prevSubject: true }, (subject, string) => {
     cy
         .wrap(subject)
-        .then(el => {
-            return new Promise((resolve) => {
-                expect(el.get(0).innerText.trim()).to.eq(string)
-                resolve()
-            })
+        .should(el => {
+            expect(el.get(0).innerText.trim()).to.eq(string)
         })
 })
