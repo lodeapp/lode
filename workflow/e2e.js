@@ -32,8 +32,8 @@ process.on('SIGINT', () => {
 const startRenderer = require('./runners').startRenderer
 startRenderer().then(() => {
     const callback = exec(process.argv[2] === 'open'
-        ? 'cypress open'
-        : 'cypress run -b electron'
+        ? `cypress open ${process.argv.slice(3).join(' ')}`
+        : `cypress run -b electron ${process.argv.slice(3).join(' ')}`
     )
     callbackId = callback.pid
     callback.stdout.setEncoding('utf8')

@@ -19,6 +19,7 @@ Cypress.Commands.add('start', (options = {}) => {
                 })
             }
         })
+        .nextTick()
 })
 
 Cypress.Commands.add('startWithProject', (options = {}) => {

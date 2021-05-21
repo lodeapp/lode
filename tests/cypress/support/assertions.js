@@ -26,23 +26,32 @@ Cypress.Commands.add('assertEmittedCount', times => {
 
 Cypress.Commands.add('assertArgs', { prevSubject: true }, (subject, ...args) => {
     cy.then(() => {
-        expect(subject.args).to.deep.equal(args)
+        return new Promise((resolve) => {
+            expect(subject.args).to.deep.equal(args)
+            resolve()
+        })
     })
 })
 
 Cypress.Commands.add('assertArgEq', { prevSubject: true }, (subject, index, value) => {
     cy.then(() => {
-        expect(subject.args[index]).to.deep.equal(value)
+        return new Promise((resolve) => {
+            expect(subject.args[index]).to.deep.equal(value)
+            resolve()
+        })
     })
 })
 
 Cypress.Commands.add('assertChannel', { prevSubject: true }, (subject, channel) => {
     cy.then(() => {
-        expect(subject.args[0]).to.equal(channel)
+        return new Promise((resolve) => {
+            expect(subject.args[0]).to.equal(channel)
+            resolve()
+        })
     })
 })
 
-Cypress.Commands.add('assertText', { prevSubject: true }, (subject, string) => {
+Cypress.Commands.add('assertNormalizedText', { prevSubject: true }, (subject, string) => {
     cy
         .wrap(subject)
         .should(el => {

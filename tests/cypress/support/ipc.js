@@ -13,12 +13,15 @@ Cypress.Commands.add('ipcEvent', (...args) => {
 
 Cypress.Commands.add('ipcResetMockHistory', () => {
     cy.then(() => {
-        if (electron.ipcRenderer.send.resetHistory) {
-            electron.ipcRenderer.send.resetHistory()
-        }
-        if (electron.ipcRenderer.invoke.resetHistory) {
-            electron.ipcRenderer.invoke.resetHistory()
-        }
+        return new Promise((resolve) => {
+            if (electron.ipcRenderer.send.resetHistory) {
+                electron.ipcRenderer.send.resetHistory()
+            }
+            if (electron.ipcRenderer.invoke.resetHistory) {
+                electron.ipcRenderer.invoke.resetHistory()
+            }
+            resolve()
+        })
     })
 })
 
