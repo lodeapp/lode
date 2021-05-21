@@ -8,5 +8,11 @@
   "supportFile": "tests/cypress/support/index.js",
   "videosFolder": "tests/cypress/videos",
   "videoCompression": 0,
-  "video": true
+  "video": true,
+  "retries": {
+    "runMode": 2,
+    "openMode": 0
+  },
+  "scrollBehavior": false,
+  "waitForAnimations": false
 }

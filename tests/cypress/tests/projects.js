@@ -1,21 +1,15 @@
 const { ipcRenderer } = window.electron
 
-context('Project management', () => {
+describe('Project management', () => {
     it('can add projects from the welcome screen', () => {
         cy
             .start()
             .get('body')
             .should('have.class', 'is-focused')
-            .then(() => {
-                cy.log('Blur application')
-                ipcRenderer.trigger('blur')
-            })
+            .ipcEvent('blur')
             .get('body')
             .should('not.have.class', 'is-focused')
-            .then(() => {
-                cy.log('Focus application')
-                ipcRenderer.trigger('focus')
-            })
+            .ipcEvent('focus')
             .get('body')
             .should('have.class', 'is-focused')
             .get('.contents > main')
@@ -23,40 +17,37 @@ context('Project management', () => {
             .and('contain', 'Welcome to Lode')
             .get('.no-projects .btn.btn-primary')
             .should('have.text', 'Add your first project')
-            .click({ scrollBehavior: false })
+            .click()
             .get('.modal-header')
             .should('have.text', 'Add project')
             .get('.modal-footer .btn-primary').as('save')
             .should('contain.text', 'Add project')
-            .should('have.prop', 'disabled')
+            .should('be.disabled')
             // Since it's the first time this modal is shown, it should have
             // the help section explaining what a project is.
             .get('.modal-help')
             .should('contain.text', 'Projects allow you to group different repositories and run their tests all at once.')
             .get('#project-name')
             .type('Biscuit')
-            .window().then(win => {
+            .then(() => {
                 // Before saving, project ready ephemeral listener should not exist.
                 expect(ipcRenderer.listeners.once).to.eql({})
             })
             .get('@save')
             .click()
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledWith('project-switch', { name: 'Biscuit' })
-            })
+            .assertEmitted('project-switch', { name: 'Biscuit' })
+            .nextTick()
             .get('.loading')
             .should('be.visible')
             .get('.spinner')
-            .should('be.visible')
+            .should('exist')
             .fixture('framework/project.json')
             .then(project => {
-                ipcRenderer.trigger('project-ready', project)
+                cy.ipcEvent('project-ready', project)
             })
-            .wait(1)
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
-                ipcRenderer.trigger('42:repositories', [])
-            })
+            .nextTick()
+            .assertEmitted('project-repositories', { id: '42', name: 'Biscuit' })
+            .ipcEvent('42:repositories', [])
             .get('.loading')
             .should('not.exist')
             .get('.spinner')
@@ -90,7 +81,7 @@ context('Project management', () => {
             .should('have.text', 'Add repositories to Biscuit')
             .get('.modal-footer .btn-primary').as('save')
             .should('contain.text', 'Add repositories')
-            .should('have.prop', 'disabled')
+            .should('be.disabled')
     })
 
     it('resumes existing projects', () => {
@@ -103,16 +94,14 @@ context('Project management', () => {
             .get('.loading')
             .should('be.visible')
             .get('.spinner')
-            .should('be.visible')
+            .should('exist')
             .fixture('framework/project.json')
             .then(project => {
-                ipcRenderer.trigger('project-ready', project)
+                cy.ipcEvent('project-ready', project)
             })
-            .wait(1)
-            .then(() => {
-                expect(ipcRenderer.send).to.be.calledWith('project-repositories', { id: '42', name: 'Biscuit' })
-                ipcRenderer.trigger('42:repositories', [])
-            })
+            .nextTick()
+            .assertEmitted('project-repositories', { id: '42', name: 'Biscuit' })
+            .ipcEvent('42:repositories', [])
             .get('.loading')
             .should('not.exist')
             .get('.spinner')
@@ -142,7 +131,7 @@ context('Project management', () => {
             .should('have.text', 'Add repositories to Biscuit')
             .get('.modal-footer .btn-primary').as('save')
             .should('contain.text', 'Add repositories')
-            .should('have.prop', 'disabled')
+            .should('be.disabled')
     })
 
     it('triggers project context menu', () => {
@@ -150,14 +139,11 @@ context('Project management', () => {
             .startWithProject()
             .nextTick(() => {
                 cy.stub(ipcRenderer, 'invoke').resolves(true)
-
-                ipcRenderer.trigger('42:repositories', [])
             })
+            .ipcEvent('42:repositories', [])
             .get('.sidebar header .sidebar-item')
             .should('contain.text', 'Biscuit')
             .rightclick()
-            .then(() => {
-                expect(ipcRenderer.invoke).to.be.calledOnceWith('project-context-menu')
-            })
+            .assertInvokedOnce('project-context-menu')
     })
 })
