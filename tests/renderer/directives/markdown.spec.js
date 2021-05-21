@@ -33,16 +33,10 @@ it('generates block markdown', () => {
         template: `
 <div v-markdown.block>
 # Top biscuits
-- Hobnobs
-- Digestives
 </div>`
     })
     expect(wrapper.html()).toBe(`<div>
   <h1>Top biscuits</h1>
-  <ul>
-    <li>Hobnobs</li>
-    <li>Digestives</li>
-  </ul>
 </div>`)
 })
 

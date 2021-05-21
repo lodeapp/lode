@@ -20,8 +20,8 @@ exports[`matches snapshot for stats: "dates only" 1`] = `
         <td class=\\"heading\\">Last run</td>
         <td title=\\"October 21st 2015, 13:00:00\\">about 5 years ago</td>
       </tr>
-      <!---->
-      <!---->
+      <!--v-if-->
+      <!--v-if-->
     </tbody>
   </table>
 </div>"
@@ -47,8 +47,8 @@ exports[`matches snapshot for stats: "never run" 1`] = `
         <td class=\\"heading\\">Last run</td>
         <td>Never</td>
       </tr>
-      <!---->
-      <!---->
+      <!--v-if-->
+      <!--v-if-->
     </tbody>
   </table>
 </div>"
@@ -74,9 +74,9 @@ exports[`matches snapshot for stats: "with assertions" 1`] = `
         <td class=\\"heading\\">Last run</td>
         <td title=\\"December 1st 2020, 14:48:33\\">less than a minute ago</td>
       </tr>
-      <!---->
+      <!--v-if-->
       <tr>
-        <td class=\\"heading\\">Assertions</td>
+        <td class=\\"heading\\">Assertions</td><!-- @TODO: Number formatting -->
         <td>42</td>
       </tr>
     </tbody>
@@ -110,7 +110,7 @@ exports[`matches snapshot for stats: "with duration" 1`] = `
           <duration-stub ms=\\"1000\\"></duration-stub>
         </td>
       </tr>
-      <!---->
+      <!--v-if-->
     </tbody>
   </table>
 </div>"
@@ -142,7 +142,7 @@ exports[`matches snapshot for stats: "with long duration" 1`] = `
           <duration-stub ms=\\"32198\\"></duration-stub>
         </td>
       </tr>
-      <!---->
+      <!--v-if-->
     </tbody>
   </table>
 </div>"
