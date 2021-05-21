@@ -97,7 +97,7 @@
     "@types/uuid": "^3.4.4",
     "@typescript-eslint/parser": "^4.24.0",
     "@vue/compiler-sfc": "^3.0.11",
-    "@vue/test-utils": "^2.0.0-rc.2",
+    "@vue/test-utils": "^2.0.0-rc.6",
     "aws-sdk": "^2.799.0",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^26.3.0",
