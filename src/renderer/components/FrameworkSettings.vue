@@ -187,7 +187,7 @@
             </div>
             <div class="instructions" v-show="instructions && currentFrameworkInstructions">
                 <div>
-                    <h6>{{ 'How to setup :0 testing with Lode' | set(currentFrameworkName) }}</h6>
+                    <h6>{{ $string.set('How to setup :0 testing with Lode', currentFrameworkName) }}</h6>
                     <p v-markdown>{{ currentFrameworkInstructions }}</p>
                 </div>
             </div>
@@ -235,6 +235,10 @@ export default {
             default: false
         }
     },
+    emits: [
+        'input',
+        'remove'
+    ],
     data () {
         return {
             fields: {

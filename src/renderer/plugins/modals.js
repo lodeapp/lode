@@ -4,8 +4,8 @@ export default class Modals {
         this.modals = []
     }
 
-    install (Vue) {
-        Vue.prototype.$modal = this
+    install (app) {
+        app.config.globalProperties.$modal = this
     }
 
     open (name, properties = {}, callback = null) {

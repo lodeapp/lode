@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import _get from 'lodash/get'
 import _identity from 'lodash/identity'
 import _isArray from 'lodash/isArray'
@@ -11,15 +10,14 @@ export default {
     mutations: {
         SET (state, { id, filters }) {
             // Set by merging current state and removing falsy or empty values
-            Vue.set(state, id, _pickBy({
+            state[id] = _pickBy({
                 ..._get(state, id, {}),
                 ...filters
-            }, value => _isArray(value) ? !_isEmpty(value) : _identity(value)
-            ))
+            }, value => _isArray(value) ? !_isEmpty(value) : _identity(value))
         },
         RESET (state) {
             Object.keys(state).forEach(id => {
-                Vue.delete(state, id)
+                delete state[id]
             })
         }
     },

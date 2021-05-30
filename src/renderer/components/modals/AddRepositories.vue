@@ -35,14 +35,16 @@
                 </label>
             </dl>
         </form>
-        <div slot="footer" class="modal-footer tertiary separated">
-            <button type="button" class="btn btn-sm" @click="cancel" :disabled="loading">
-                Cancel
-            </button>
-            <button type="button" class="btn btn-sm btn-primary" :disabled="empty || loading" @click="add">
-                Add repositories
-            </button>
-        </div>
+        <template #footer>
+            <div class="modal-footer tertiary separated">
+                <button type="button" class="btn btn-sm" @click="cancel" :disabled="loading">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" :disabled="empty || loading" @click="add">
+                    Add repositories
+                </button>
+            </div>
+        </template>
     </Modal>
 </template>
 
@@ -50,15 +52,11 @@
 import _compact from 'lodash/compact'
 import _find from 'lodash/find'
 import _uniqBy from 'lodash/uniqBy'
-import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
 import Validator from '@/helpers/validator'
 
 export default {
     name: 'AddRepositories',
-    components: {
-        Modal
-    },
     mixins: [Confirm],
     props: {
         directories: {

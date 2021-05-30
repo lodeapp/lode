@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import _get from 'lodash/get'
 
 export default {
@@ -8,7 +7,7 @@ export default {
     },
     mutations: {
         SET (state, payload) {
-            Vue.set(state, 'status', {})
+            state.status = {}
             state.status = {
                 ...state.status,
                 ...payload

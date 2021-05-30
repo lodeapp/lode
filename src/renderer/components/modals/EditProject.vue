@@ -17,26 +17,24 @@
                 </dd>
             </dl>
         </form>
-        <div slot="footer" class="modal-footer tertiary separated">
-            <button type="button" class="btn btn-sm" @click="cancel">
-                Cancel
-            </button>
-            <button type="button" class="btn btn-sm btn-primary" :disabled="!name" @click="submit">
-                {{ add ? 'Add project' : 'Save changes' }}
-            </button>
-        </div>
+        <template #footer>
+            <div class="modal-footer tertiary separated">
+                <button type="button" class="btn btn-sm" @click="cancel">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" :disabled="!name" @click="submit">
+                    {{ add ? 'Add project' : 'Save changes' }}
+                </button>
+            </div>
+        </template>
     </Modal>
 </template>
 
 <script>
-import Modal from '@/components/modals/Modal'
 import Confirm from '@/components/modals/mixins/confirm'
 
 export default {
     name: 'EditProject',
-    components: {
-        Modal
-    },
     mixins: [Confirm],
     props: {
         add: {

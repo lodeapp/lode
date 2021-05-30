@@ -1,4 +1,7 @@
+import Modal from '@/components/modals/mixins/modal'
+
 export default {
+    mixins: [Modal],
     props: {
         resolve: {
             type: Function,
@@ -12,11 +15,11 @@ export default {
     methods: {
         confirm (data) {
             this.resolve(data)
-            this.$emit('hide')
+            this.close()
         },
         cancel () {
             this.reject()
-            this.$emit('hide')
+            this.close()
         }
     }
 }

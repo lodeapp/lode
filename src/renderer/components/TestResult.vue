@@ -224,7 +224,7 @@ export default {
         }
         document.addEventListener('keydown', this.cycleHandler)
     },
-    destroyed () {
+    unmounted () {
         document.removeEventListener('keydown', this.cycleHandler)
     },
     methods: {

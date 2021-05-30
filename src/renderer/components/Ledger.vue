@@ -7,7 +7,7 @@
             @click="toggle('selected')"
         >
             <span>{{ selected }}</span>
-            {{ 'selected|selected' | plural(selected) }}
+            {{ $string.plural('selected|selected', selected) }}
         </span>
         <template v-for="(count, status) in ledger">
             <span
@@ -18,7 +18,7 @@
                 @click="toggle(status)"
             >
                 <span>{{ count }}</span>
-                {{ statusString[status] | plural(count) }}
+                {{ $string.plural(statusString[status], count) }}
             </span>
         </template>
     </div>

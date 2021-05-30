@@ -42,6 +42,7 @@ export default {
             required: true
         }
     },
+    emits: ['activate'],
     data () {
         return {
             status: this.model.status || 'idle'
@@ -60,7 +61,7 @@ export default {
             .on(`${this.model.id}:status:sidebar`, this.statusListener)
             .on(`${this.model.id}:error`, this.onErrorEvent)
     },
-    beforeDestroy () {
+    beforeUnmount () {
         Lode.ipc
             .removeAllListeners(`${this.model.id}:status:sidebar`)
             .removeAllListeners(`${this.model.id}:error`)

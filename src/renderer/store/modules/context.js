@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import app from '@'
 import _clone from 'lodash/clone'
 import _last from 'lodash/last'
 
@@ -23,10 +23,10 @@ export default {
             state.framework = _clone(payload)
         },
         SUITES (state, payload) {
-            state.suitesKey = Vue.prototype.$string.from(payload.map(suite => suite.file))
+            state.suitesKey = app.config.globalProperties.$string.from(payload.map(suite => suite.file))
         },
         PERSIST_NUGGETS (state) {
-            Vue.set(state.persist, state.active, state.nuggets)
+            state.persist[state.active] = state.nuggets
         },
         SET_NUGGETS (state, payload) {
             state.nuggets = payload

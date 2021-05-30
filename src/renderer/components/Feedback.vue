@@ -9,7 +9,7 @@
         </div>
         <Diff v-if="content.diff" :content="content.diff" />
         <h4 v-if="trace && trace.length" class="text-muted">
-            {{ 'Exception|Exceptions' | plural(trace.length) }}
+            {{ $string.plural('Exception|Exceptions', trace.length) }}
             <small class="float-right">
                 <button type="button" class="btn-link more-actions" title="Reverse order" @click.prevent="reverse = !reverse">
                     <Icon symbol="arrow-switch" class="rotate-90" />

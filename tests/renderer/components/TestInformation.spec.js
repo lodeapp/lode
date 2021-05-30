@@ -1,9 +1,8 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
+import { config, shallowMount } from '@vue/test-utils'
 import TestInformation from '@/components/TestInformation'
 import Strings from '@/plugins/strings'
 
-const localVue = createLocalVue()
-localVue.use(new Strings())
+config.global.plugins = [new Strings()]
 
 const RealDate = Date.now
 beforeAll(() => {
@@ -38,7 +37,6 @@ test.each([
     }]
 ])('matches snapshot for stats: "%s"', async (name, stats) => {
     const wrapper = shallowMount(TestInformation, {
-        localVue,
         propsData: {
             stats
         }

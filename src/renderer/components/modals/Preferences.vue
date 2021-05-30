@@ -1,6 +1,6 @@
 <template>
     <Modal title="Preferences">
-        <form class="preferences" @submit.prevent="handleSubmit">
+        <form class="preferences" @submit.prevent="close">
             <div class="form-group">
                 <dl>
                     <dt><label for="project-name">Concurrent process limit:</label></dt>
@@ -26,22 +26,22 @@
                 </dl>
             </div>
         </form>
-        <div slot="footer" class="modal-footer tertiary flex-justify-end">
-            <button type="button" class="btn btn-sm btn-primary" @click="$emit('hide')">
-                Done
-            </button>
-        </div>
+        <template #footer>
+            <div class="modal-footer tertiary flex-justify-end">
+                <button type="button" class="btn btn-sm btn-primary" @click="close">
+                    Done
+                </button>
+            </div>
+        </template>
     </Modal>
 </template>
 
 <script>
-import Modal from '@/components/modals/Modal'
+import Modal from '@/components/modals/mixins/modal'
 
 export default {
     name: 'Preferences',
-    components: {
-        Modal
-    },
+    mixins: [Modal],
     computed: {
         concurrency: {
             get () {
@@ -58,11 +58,6 @@ export default {
             set (value) {
                 this.$root.updateSetting('confirm.switchProject', value)
             }
-        }
-    },
-    methods: {
-        handleSubmit () {
-            this.$emit('hide')
         }
     }
 }

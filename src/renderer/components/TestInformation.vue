@@ -79,7 +79,7 @@ export default {
             this.timeKey = this.$string.random()
         }, 15000)
     },
-    beforeDestroy () {
+    beforeUnmount () {
         window.clearInterval(this.timeInterval)
     },
     methods: {

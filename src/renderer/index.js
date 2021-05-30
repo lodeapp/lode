@@ -1,7 +1,7 @@
 import '@lib/logger/renderer'
 import '@lib/tracker/renderer'
 
-import Vue from 'vue'
+import { createApp, h } from 'vue'
 import store from './store'
 import { isArray, isEmpty } from 'lodash'
 
@@ -10,12 +10,12 @@ import '../styles/app.scss'
 
 // Plugins
 import Alerts from './plugins/alerts'
-import Filters from './plugins/filters'
 import Code from './plugins/code'
 import Input from './plugins/input'
 import Modals from './plugins/modals'
 import Strings from './plugins/strings'
 import Durations from './plugins/durations'
+import Unproxy from './plugins/unproxy'
 
 // Directives
 import Markdown from './directives/markdown'
@@ -25,31 +25,13 @@ import App from '@/components/App'
 import Icon from '@/components/Icon'
 import Nugget from '@/components/Nugget'
 
-Vue.config.productionTip = false
-
-// Register plugins
-Vue.use(new Alerts(store))
-Vue.use(new Filters())
-Vue.use(new Code())
-Vue.use(new Input())
-Vue.use(new Modals(store))
-Vue.use(new Strings())
-Vue.use(new Durations())
-
-// Register directives
-Vue.directive('markdown', Markdown(Vue))
-
-// Register global or recursive components
-Vue.component('Icon', Icon)
-Vue.component('Nugget', Nugget)
-
-export default new Vue({
+const app = createApp({
     components: {
         App
     },
     data () {
         return {
-            version: null,
+            version: '',
             modals: [],
             ready: false,
             loading: true,
@@ -415,8 +397,29 @@ export default new Vue({
             store.dispatch('context/onRemove', modelId)
         }
     },
-    store,
-    render (createElement) {
-        return createElement(App)
+    render () {
+        return h(App)
     }
-}).$mount('#app')
+})
+
+// Register plugins
+app.use(new Alerts(store))
+app.use(new Code())
+app.use(new Input())
+app.use(new Modals(store))
+app.use(new Strings())
+app.use(new Durations())
+app.use(new Unproxy())
+
+// Register directives
+app.directive('markdown', Markdown())
+
+// Register global or recursive components
+app.component('Icon', Icon)
+app.component('Nugget', Nugget)
+
+app.use(store)
+
+app.mount('#app')
+
+export default app

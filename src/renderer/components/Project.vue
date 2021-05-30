@@ -30,7 +30,7 @@
                     </div>
                     <h5 v-if="repositories.length" class="sidebar-header">
                         <span>Repositories</span>
-                        <button type="button" class="sidebar-action" @click="this.$root.repositoryAdd">
+                        <button type="button" class="sidebar-action" @click="$root.repositoryAdd">
                             <Icon symbol="plus" />
                         </button>
                     </h5>
@@ -49,9 +49,9 @@
                 <div class="draggable"></div>
                 <template v-if="!repositories.length">
                     <div class="cta">
-                        <h2>{{ 'Add repositories to :0' | set(model.name) }}</h2>
+                        <h2>{{ $string.set('Add repositories to :0', model.name) }}</h2>
                         <p>Lode can have multiple repositories and frameworks inside a project.</p>
-                        <button class="btn btn-primary" @click="this.$root.repositoryAdd">Add repositories</button>
+                        <button class="btn btn-primary" @click="$root.repositoryAdd">Add repositories</button>
                     </div>
                 </template>
                 <template v-else-if="!framework">
@@ -167,7 +167,7 @@ export default {
 
         this.getRepositories()
     },
-    beforeDestroy () {
+    beforeUnmount () {
         Lode.ipc
             .removeAllListeners(`${this.model.id}:status:sidebar`)
             .removeAllListeners(`${this.model.id}:repositories`)

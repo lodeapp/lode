@@ -41,6 +41,7 @@ describe('Framework management', () => {
                         status: this.statusMap[args[0]]
                     }
             }
+            return Promise.resolve()
         }
 
         cy

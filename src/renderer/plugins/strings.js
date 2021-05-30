@@ -5,7 +5,7 @@ export default class Strings {
         this.locale = locale
     }
 
-    install (Vue, options) {
-        Vue.prototype.$string = new BaseStrings(this.locale)
+    install (app) {
+        app.config.globalProperties.$string = new BaseStrings(this.locale)
     }
 }

@@ -49,6 +49,12 @@ export default {
             required: true
         }
     },
+    emits: [
+        'status',
+        'framework-activate',
+        'framework-manage',
+        'framework-remove'
+    ],
     data () {
         return {
             frameworks: [],
@@ -71,7 +77,7 @@ export default {
             this.getFrameworks()
         }
     },
-    beforeDestroy () {
+    beforeUnmount () {
         Lode.ipc
             .removeAllListeners(`${this.model.id}:status:sidebar`)
             .removeAllListeners(`${this.model.id}:frameworks`)

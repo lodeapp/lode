@@ -7,22 +7,22 @@
                 @click.prevent="$input.on($event, 'a', openLink)"
             ></pre>
         </div>
-        <div slot="footer" class="modal-footer tertiary flex-justify-end">
-            <button type="button" class="btn btn-sm btn-primary" @click="$emit('hide')">
-                Close
-            </button>
-        </div>
+        <template #footer>
+            <div class="modal-footer tertiary flex-justify-end">
+                <button type="button" class="btn btn-sm btn-primary" @click="close">
+                    Close
+                </button>
+            </div>
+        </template>
     </Modal>
 </template>
 
 <script>
-import Modal from '@/components/modals/Modal'
+import Modal from '@/components/modals/mixins/modal'
 
 export default {
     name: 'Licenses',
-    components: {
-        Modal
-    },
+    mixins: [Modal],
     data () {
         return {
             terms: ''
