@@ -94,7 +94,7 @@ export default {
 
             this.populate(filePaths, index)
         },
-        populate (filePaths, offset) {
+        populate (filePaths, offset = 0) {
             filePaths.forEach((path, index) => {
                 if (!_find(this.slots, { path })) {
                     // If this is the first chosen file path, replace at given offset.

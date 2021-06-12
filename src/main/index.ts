@@ -311,7 +311,7 @@ ipcMain
 
 ipcMain
     .handle('project-empty-repositories', async (event: Electron.IpcMainInvokeEvent) => {
-        return getProject(event).getEmptyRepositories()
+        return getProject(event).getEmptyRepositories().map(repository => repository.render())
     })
 
 ipcMain

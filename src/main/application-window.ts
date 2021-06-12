@@ -161,9 +161,7 @@ export class ApplicationWindow {
     }
 
     public send (event: string, args: Array<any> = []) {
-        // @TODO: Remove performance measurements
         this.events++
-        console.count(event)
         this.window.webContents.send(event, ...args)
     }
 
