@@ -7,15 +7,12 @@
 
     &.console--ansi,
     &.console--snippet {
-
         .content {
-
             .ansi,
             .snippet {
-
                 pre {
-                    border: 0;
                     background-color: $white;
+                    border: 0;
                 }
             }
         }

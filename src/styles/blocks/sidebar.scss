@@ -1,10 +1,10 @@
 .sidebar {
     background-color: var(--sidebar-color);
-    border-radius: 0.0001px; // Prevent .shadow from overflowing.
+    border-radius: .0001px; // Prevent .shadow from overflowing.
     display: flex;
     flex-direction: column;
-    padding: 33px 0 0;
     height: 100vh;
+    padding: 33px 0 0;
 
     // Fade contents on macOS when window is not focused. This will
     // be overridden to 1 when body.is-focused
@@ -13,16 +13,16 @@
     }
 
     @include win32 {
-        padding: 0;
         // Discount titlebar height to prevent overflow.
         height: calc(100vh - 30px);
+        padding: 0;
     }
 
     @include dark {
         background-color: var(--sidebar-color);
     }
 
-    & > .draggable {
+    > .draggable {
         width: 100%;
     }
 
@@ -42,10 +42,10 @@
         font-size: 1rem;
         margin: var(--spacing) 0 var(--spacing-half) var(--spacing);
 
-        & > .sidebar-action {
+        > .sidebar-action {
             background-color: var(--sidebar-text-secondary-color);
-            border-radius: 100%;
             border: 0;
+            border-radius: 100%;
             color: var(--sidebar-color);
             display: inline-block;
             float: right;
@@ -69,19 +69,17 @@
         }
 
         &:hover {
-
-            & > .sidebar-action {
+            > .sidebar-action {
                 visibility: visible;
             }
         }
     }
 
     .sidebar-item {
-
-        & > .header {
+        > .header {
             padding: var(--spacing-half) 0 var(--spacing-half) var(--spacing);
 
-            & > .title {
+            > .title {
                 padding: 0;
 
                 .heading {
@@ -91,7 +89,7 @@
                     overflow: hidden;
                     white-space: nowrap;
 
-                    & > i {
+                    > i {
                         color: var(--sidebar-text-secondary-color);
                         margin: 0 var(--spacing-half) 0 var(--spacing-third);
                         text-align: center;
@@ -102,19 +100,18 @@
                         }
                     }
 
-                    & > .name {
+                    > .name {
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
                     }
                 }
 
-                & > .status {
+                > .status {
                     margin-top: 4px;
 
                     &.status--passed {
-
-                        & > .indicator {
+                        > .indicator {
                             box-shadow:
                                 0 0 0 4px theme-color('passed', 200),
                                 0 0 0 5px rgba($color: theme-color('passed', 100), $alpha: .75);
@@ -123,8 +120,7 @@
 
                     &.status--idle,
                     &.status--empty {
-
-                        & > .indicator {
+                        > .indicator {
                             box-shadow:
                                 0 0 0 4px theme-color('idle', 400),
                                 0 0 0 5px rgba($color: theme-color('idle', 200), $alpha: .75);
@@ -133,8 +129,7 @@
 
                     &.status--failed,
                     &.status--error {
-
-                        & > .indicator {
+                        > .indicator {
                             box-shadow:
                                 0 0 0 4px theme-color('failed', 200),
                                 0 0 0 5px rgba($color: theme-color('failed', 100), $alpha: .75);
@@ -143,8 +138,7 @@
 
                     &.status--warning,
                     &.status--missing {
-
-                        & > .indicator {
+                        > .indicator {
                             box-shadow:
                                 0 0 0 4px theme-color('warning', 200),
                                 0 0 0 5px rgba($color: theme-color('warning', 100), $alpha: .75);
@@ -152,8 +146,7 @@
                     }
 
                     &.status--incomplete {
-
-                        & > .indicator {
+                        > .indicator {
                             box-shadow:
                                 0 0 0 4px theme-color('incomplete', 200),
                                 0 0 0 5px rgba($color: theme-color('incomplete', 100), $alpha: .75);
@@ -161,8 +154,7 @@
                     }
 
                     &.status--partial {
-
-                        & > .indicator {
+                        > .indicator {
                             box-shadow:
                                 0 0 0 4px theme-color('partial', 400),
                                 0 0 0 5px rgba($color: theme-color('partial', 200), $alpha: .75);
@@ -170,8 +162,7 @@
                     }
 
                     &.status--queued {
-
-                        & > .indicator {
+                        > .indicator {
                             box-shadow: 0 0 0 5px rgba($color: theme-color('idle', 100), $alpha: .75);
                         }
                     }
@@ -184,8 +175,7 @@
         }
 
         &.is-menu-active {
-
-            & > .header {
+            > .header {
                 background-color: var(--color-blue-200);
             }
         }
@@ -197,9 +187,7 @@
 }
 
 body {
-
     &.is-focused {
-
         .sidebar {
             opacity: 1;
         }

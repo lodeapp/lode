@@ -4,11 +4,10 @@ h3,
 h4,
 h5,
 h6 {
-
     &.text-muted {
-        text-transform: uppercase;
         color: var(--color-gray-500);
         margin-bottom: var(--spacing-half);
+        text-transform: uppercase;
     }
 }
 

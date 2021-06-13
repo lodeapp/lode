@@ -5,16 +5,16 @@
     flex-grow: 1;
     padding-top: 15%;
 
-    & > .loading-group {
+    > .loading-group {
         animation: fade-in-top .4s forwards;
         animation-delay: .2s; // Reduce flicker when loading quickly.
         opacity: 0;
 
         .spinner,
-        .spinner:after {
+        .spinner::after {
             border-radius: 50%;
-            width: 30em;
             height: 30em;
+            width: 30em;
         }
 
         .spinner {

@@ -1,7 +1,5 @@
 .scrollable {
-
     .shadow {
-
         &::after {
             border-top: 1px solid var(--color-gray-600);
             box-shadow: 0 2px 0 1px transparentize($black, .9);

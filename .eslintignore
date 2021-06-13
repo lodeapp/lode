@@ -3,4 +3,5 @@
 /static/**
 /src/main/lib/reporters/**
 /src/main/lib/process/debug/**
+/src/types/**
 /babel.config.js

@@ -6,7 +6,7 @@
         outline: 0;
     }
 
-    & > .seam {
+    > .seam {
         display: none;
         height: 100%;
         left: 0;
@@ -16,8 +16,8 @@
         z-index: 2;
 
         &::before {
-            border-right-width: 2px;
             border-right-style: solid;
+            border-right-width: 2px;
             content: '';
             height: calc(100% - 16px);
             left: 13px;
@@ -40,7 +40,7 @@
         }
     }
 
-    & > .header {
+    > .header {
         background-color: var(--primary-border-color);
         padding: 1px 0 0;
         padding-left: calc(var(--status-block-width) + var(--status-soft-border-width));
@@ -87,7 +87,6 @@
             top: calc(50% - 8px);
 
             i {
-
                 svg {
                     fill: $secondary-discreet-text;
                 }
@@ -95,15 +94,14 @@
         }
     }
 
-    & > .nugget-items {
+    > .nugget-items {
         background-color: var(--secondary-background-color);
         list-style: none;
         padding: 0 0 8px var(--status-block-width);
         position: relative;
         z-index: 1;
 
-        & > :last-child {
-
+        > :last-child {
             &.is-collapsed {
                 border-bottom: 1px solid var(--primary-border-color);
             }
@@ -111,9 +109,7 @@
     }
 
     &.is-collapsed {
-
-        & > .header {
-
+        > .header {
             .status {
                 border-bottom-color: transparent !important;
             }
@@ -121,25 +117,20 @@
     }
 
     &.is-expanded {
-
-        & > .seam {
+        > .seam {
             display: block;
         }
 
-        & > .nugget-items {
-
-            & > :nth-last-child(1) {
-
+        > .nugget-items {
+            > :nth-last-child(1) {
                 &.nugget.is-expanded {
-
-                    & > .seam {
-
+                    > .seam {
                         &::after {
                             bottom: 6px;
                         }
                     }
 
-                    & > .nugget-items {
+                    > .nugget-items {
                         padding-bottom: 0;
                     }
                 }
@@ -148,11 +139,8 @@
     }
 
     &.status--running {
-
-        & > .header {
-
+        > .header {
             .status {
-
                 &::after {
                     transform: scale(1);
                 }
@@ -161,14 +149,12 @@
     }
 
     &.status--passed {
-
-        & > .seam::before,
-        & > .seam::after {
+        > .seam::before,
+        > .seam::after {
             border-color: theme-color('passed');
         }
 
-        & > .header {
-
+        > .header {
             .status {
                 background-color: theme-color('passed');
                 border-color: darken(theme-color('passed'), 10%);
@@ -178,14 +164,12 @@
     }
 
     &.status--failed {
-
-        & > .seam::before,
-        & > .seam::after {
+        > .seam::before,
+        > .seam::after {
             border-color: theme-color('failed');
         }
 
-        & > .header {
-
+        > .header {
             .status {
                 background-color: theme-color('failed');
                 border-color: darken(theme-color('failed'), 15%);
@@ -196,14 +180,12 @@
 
     &.status--incomplete,
     &.status--skipped {
-
-        & > .seam::before,
-        & > .seam::after {
+        > .seam::before,
+        > .seam::after {
             border-color: theme-color('incomplete');
         }
 
-        & > .header {
-
+        > .header {
             .status {
                 background-color: theme-color('incomplete');
                 border-color: darken(theme-color('incomplete'), 14%);
@@ -214,14 +196,12 @@
 
     &.status--warning,
     &.status--missing {
-
-        & > .seam::before,
-        & > .seam::after {
+        > .seam::before,
+        > .seam::after {
             border-color: theme-color('warning');
         }
 
-        & > .header {
-
+        > .header {
             .status {
                 background-color: theme-color('warning');
                 border-color: darken(theme-color('warning'), 5%);
@@ -235,14 +215,12 @@
     }
 
     &.status--partial {
-
-        & > .seam::before,
-        & > .seam::after {
+        > .seam::before,
+        > .seam::after {
             border-color: theme-color('partial');
         }
 
-        & > .header {
-
+        > .header {
             .status {
                 @include striped('partial');
                 border-color: darken(theme-color('partial'), 10%);
@@ -252,14 +230,12 @@
     }
 
     &.status--empty {
-
-        & > .seam::before,
-        & > .seam::after {
+        > .seam::before,
+        > .seam::after {
             border-color: theme-color('idle');
         }
 
-        & > .header {
-
+        > .header {
             .status {
                 background-color: theme-color('idle', 200);
                 border-color: theme-color('idle');
@@ -282,14 +258,12 @@
 
     &.status--queued,
     &.status--running {
-
-        & > .seam::before,
-        & > .seam::after {
+        > .seam::before,
+        > .seam::after {
             border-color: theme-color('queued');
         }
 
-        & > .header {
-
+        > .header {
             .status {
                 background-color: theme-color('queued');
                 border-color: darken(theme-color('queued'), 3%);
@@ -299,14 +273,12 @@
     }
 
     &.status--idle {
-
-        & > .seam::before,
-        & > .seam::after {
+        > .seam::before,
+        > .seam::after {
             border-color: theme-color('idle');
         }
 
-        & > .header {
-
+        > .header {
             .status {
                 background-color: theme-color('idle');
                 border-color: darken(theme-color('idle'), 3%);
@@ -316,14 +288,12 @@
     }
 
     &.status--error {
-
-        & > .seam::before,
-        & > .seam::after {
+        > .seam::before,
+        > .seam::after {
             border-color: theme-color('failed');
         }
 
-        & > .header {
-
+        > .header {
             .status {
                 background-color: theme-color('failed', 400);
                 border-color: darken(theme-color('failed'), 10%);
@@ -337,16 +307,14 @@
     }
 
     &.is-active {
-
-        & > .header {
+        > .header {
             background-color: var(--item-selected-active-background-color);
 
-            & > .header-inner {
+            > .header-inner {
                 background-color: var(--item-selected-active-background-color);
                 color: var(--item-selected-active-text-color);
 
-                & > .selective-toggle {
-
+                > .selective-toggle {
                     button {
                         border-color: $white;
                     }
@@ -358,7 +326,7 @@
                         // increase contrast.
                         @include darwin {
                             border-radius: 2px;
-                            box-shadow: 0px 0px 0px 1px white;
+                            box-shadow: 0 0 0 1px $white;
                         }
                     }
                 }
@@ -369,10 +337,8 @@
     &:focus-within,
     &.is-active,
     &.is-child-active {
-
-        & > .header {
-
-            & > .status {
+        > .header {
+            > .status {
                 border-right-color: theme-color('selected');
                 box-shadow: 4px 0 0 0 $blue-300;
             }
@@ -383,15 +349,12 @@
     // This distinguishes them from just having a child active.
     &.suite:focus,
     &.has-children:focus {
-
-        & > .header {
-
-            & > .header-inner {
+        > .header {
+            > .header-inner {
                 background-color: theme-color('selected', 100);
 
-                & > .filename {
-
-                    & > .dir {
+                > .filename {
+                    > .dir {
                         // Give a slight readability boost to discreet text.
                         color: var(--text-color-secondary);
                     }

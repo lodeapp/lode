@@ -1,6 +1,16 @@
 {
+  "parser": "vue-eslint-parser",
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "parser": "@typescript-eslint/parser"
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
   "extends": [
-    "plugin:vue/vue3-recommended"
+    "plugin:vue/vue3-recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
   "rules": {
     "accessor-pairs": 2,
@@ -89,7 +99,7 @@
     "no-unreachable": 2,
     "no-unsafe-finally": 2,
     "no-unsafe-negation": 2,
-    "no-unused-vars": [2, { "vars": "all", "args": "none" }],
+    "no-unused-vars": 0,
     "no-useless-call": 2,
     "no-useless-computed-key": 2,
     "no-useless-constructor": 2,
@@ -111,6 +121,8 @@
     "space-unary-ops": [2, { "words": true, "nonwords": false }],
     "spaced-comment": [2, "always", { "markers": ["global", "globals", "eslint", "eslint-disable", "*package", "!", ","] }],
     "template-curly-spacing": [2, "never"],
+    "@typescript-eslint/no-unused-vars": [2, { "vars": "all", "args": "none" }],
+    "@typescript-eslint/no-empty-function": 0,
     "use-isnan": 2,
     "valid-typeof": 2,
     "vue/attributes-order": 0,
@@ -134,11 +146,6 @@
     "yield-star-spacing": [2, "both"],
     "yoda": [2, "never"]
   },
-  "parser": "vue-eslint-parser",
-  "parserOptions": {
-    "ecmaVersion": 2018,
-    "parser": "@typescript-eslint/parser"
-  },
   "globals": {
     "__CRASH_URL__": false,
     "__DARWIN__": false,
@@ -158,6 +165,7 @@
     "cy": false,
     "Cypress": false,
     "describe": false,
+    "Electron": false,
     "expect": false,
     "global": false,
     "it": false,

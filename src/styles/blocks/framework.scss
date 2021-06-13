@@ -9,19 +9,18 @@
         height: calc(100vh - 30px);
     }
 
-    & > .header {
+    > .header {
         background-color: var(--primary-background-color);
         position: sticky;
         top: 0;
         z-index: var(--framework-z-index);
 
-        & > .title {
-
+        > .title {
             .heading {
                 font-size: 1.5rem;
                 font-weight: var(--font-weight-bold);
 
-                & > .name {
+                > .name {
                     line-height: 1.2em;
                     padding-right: var(--spacing);
                     position: relative;
@@ -32,15 +31,14 @@
         }
 
         // First nugget has no top border.
-        & + .nugget {
-
-            & > .header {
+        + .nugget {
+            > .header {
                 padding-top: 0;
             }
         }
 
-        & > :last-child {
-            box-shadow: 0 1px 0 0px var(--color-gray-400);
+        > :last-child {
+            box-shadow: 0 1px 0 0 var(--color-gray-400);
         }
     }
 
@@ -78,9 +76,9 @@
             input {
                 background-color: transparent;
                 border: 0;
+                border-color: var(--color-gray-400);
                 box-shadow: none;
                 color: var(--input-text-color);
-                border-color: var(--color-gray-400);
 
                 &:focus {
                     border-color: var(--color-blue-400);
@@ -92,7 +90,6 @@
             }
 
             &.is-searching {
-
                 i {
                     color: var(--color-blue-400);
                 }
@@ -102,17 +99,17 @@
         &.sort {
             font-variant-numeric: tabular-nums;
 
-            & > button,
-            & > span {
-                -webkit-appearance: none;
+            > button,
+            > span {
+                appearance: none;
                 background: transparent;
                 border: 0;
                 color: var(--color-gray-600);
                 margin: 0;
-                padding: 0;
                 outline: 0;
+                padding: 0;
 
-                & > i {
+                > i {
                     height: 12px;
                     position: relative;
                     top: -1px;
@@ -126,28 +123,31 @@
         }
     }
 
-    & > .children {
+    > .children {
         background-color: var(--secondary-background-color);
-        flex-grow: 1;
         flex: 1;
+        flex-grow: 1;
         min-height: 0;
         overflow-x: hidden;
         overflow-y: auto;
 
-        & > div:last-of-type {
-
+        > div:last-of-type {
             &.is-collapsed {
                 border-bottom: 1px solid var(--primary-border-color);
             }
         }
 
-        & > .cutoff {
+        > .cutoff {
+
+            $height: 16px;
+            $thickness: 110%;
+            $offset: 4px;
             animation: fade-in-top .4s forwards;
             font-variant-numeric: tabular-nums;
             margin-top: var(--spacing);
             text-align: center;
 
-            & > div {
+            > div {
                 background-color: var(--secondary-background-color);
                 border: 1px solid var(--color-gray-400);
                 box-shadow: 0 0 0 3px rgba(0, 0, 0, .02);
@@ -162,10 +162,6 @@
                 }
             }
 
-            $height: 16px;
-            $thickness: 110%;
-            $offset: 4px;
-
             .zigzag {
                 background-color: var(--secondary-background-color);
                 display: block;
@@ -174,8 +170,8 @@
                 position: relative;
                 z-index: 1;
 
-                &:before,
-                &:after {
+                &::before,
+                &::after {
                     content: '';
                     display: block;
                     left: 0;
@@ -183,8 +179,8 @@
                     right: 0;
                 }
 
-                &:before {
-                    background: linear-gradient(-135deg, var(--primary-border-color) ($height/2), transparent 0) 0 ($height/2), linear-gradient( 135deg, var(--primary-border-color) ($height/2), transparent 0) 0 ($height/2);
+                &::before {
+                    background: linear-gradient(-135deg, var(--primary-border-color) ($height/2), transparent 0) 0 ($height/2), linear-gradient(135deg, var(--primary-border-color) ($height/2), transparent 0) 0 ($height/2);
                     background-position: top left;
                     background-repeat: repeat-x;
                     background-size: $height $height;
@@ -192,8 +188,8 @@
                     top: $thickness;
                 }
 
-                &:after {
-                    background: linear-gradient(-135deg, var(--secondary-background-color) ($height/2), transparent 0) 0 ($height/2), linear-gradient( 135deg, var(--secondary-background-color) ($height/2), transparent 0) 0 ($height/2);
+                &::after {
+                    background: linear-gradient(-135deg, var(--secondary-background-color) ($height/2), transparent 0) 0 ($height/2), linear-gradient(135deg, var(--secondary-background-color) ($height/2), transparent 0) 0 ($height/2);
                     background-position: top left;
                     background-repeat: repeat-x;
                     background-size: $height $height;

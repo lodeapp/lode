@@ -2,11 +2,11 @@
     margin-bottom: var(--spacing-double);
 
     table {
-        font-size: 1rem;
-        font-family: var(--font-family-monospace);
-        line-height: 1.5;
         border-left: 1px solid var(--color-gray-200);
         border-right: 1px solid var(--color-gray-200);
+        font-family: var(--font-family-monospace);
+        font-size: 1rem;
+        line-height: 1.5;
 
         .heading {
             font-weight: var(--font-weight-semibold);
@@ -18,14 +18,14 @@
         }
 
         td {
+            border-left: 0;
             padding: 3px 7px;
             user-select: text;
-            border-left: 0;
         }
 
         td:not(.heading) {
-            word-break: break-word;
             border-right: 0;
+            word-break: break-word;
         }
     }
 
@@ -42,8 +42,8 @@
             overflow: hidden;
             position: relative;
 
-            &:after {
-                background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.85) 90%);
+            &::after {
+                background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, .85) 90%);
                 bottom: 0;
                 content: '';
                 height: 7em;

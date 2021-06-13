@@ -1,5 +1,4 @@
 .feedback {
-
     h4,
     .message {
         user-select: text;
@@ -9,11 +8,10 @@
     .message {
         color: var(--color-gray-700);
         font-size: 1.2rem;
-        margin-top: var(--spacing-half);
         margin-bottom: var(--spacing-and-half);
+        margin-top: var(--spacing-half);
 
         :not(:empty) {
-
             &:not(.ansi) {
                 white-space: pre-wrap;
             }

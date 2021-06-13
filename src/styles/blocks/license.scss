@@ -2,7 +2,6 @@
     counter-increment: dependency;
 
     h5 {
-
         &::before {
             content: counters(dependency, '.') '. ';
         }

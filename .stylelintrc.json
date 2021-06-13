@@ -1,0 +1,13 @@
+{
+  "extends": "stylelint-config-sass-guidelines",
+  "rules": {
+    "comment-no-empty": true,
+    "comment-whitespace-inside": "always",
+    "indentation": 4,
+    "max-nesting-depth": [7, { "severity": "warning"}],
+    "number-leading-zero": "never",
+    "selector-class-pattern": null,
+    "selector-max-compound-selectors": null,
+    "selector-no-qualifying-type": null
+  }
+}

@@ -1,8 +1,6 @@
 .has-status {
-
-    & > .header {
-
-        & > .title {
+    > .header {
+        > .title {
             display: flex;
             padding: var(--spacing-and-half) var(--spacing) var(--spacing-half) var(--spacing-half);
             position: relative;
@@ -10,11 +8,11 @@
             .heading {
                 display: flex;
                 flex-grow: 1;
-                padding: 0 var(--spacing-half);
                 overflow-wrap: anywhere;
+                padding: 0 var(--spacing-half);
             }
 
-            & > .status {
+            > .status {
                 flex-shrink: 0;
                 height: 18px;
                 margin: 5px 3px 0;
@@ -22,7 +20,7 @@
                 width: 18px;
             }
 
-            & > .actions {
+            > .actions {
                 display: flex;
                 flex-shrink: 0;
                 font-size: 0;
@@ -39,7 +37,7 @@
                     }
                 }
 
-                & > :last-child {
+                > :last-child {
                     margin-right: 0;
                 }
             }
@@ -48,8 +46,7 @@
 }
 
 .status {
-
-    & > .indicator {
+    > .indicator {
         background-color: theme-color('idle');
         border-radius: 100%;
         box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .6);
@@ -67,10 +64,10 @@
         }
 
         .spinner,
-        .spinner:after {
+        .spinner::after {
             border-radius: 50%;
-            width: 10em;
             height: 10em;
+            width: 10em;
         }
 
         .spinner {
@@ -91,24 +88,21 @@
     }
 
     &.status--passed {
-
-        & > .indicator {
+        > .indicator {
             background-color: theme-color('passed');
             box-shadow: 0 0 0 4px theme-color('passed', 200);
         }
     }
 
     &.status--failed {
-
-        & > .indicator {
+        > .indicator {
             background-color: theme-color('failed');
             box-shadow: 0 0 0 4px theme-color('failed', 200);
         }
     }
 
     &.status--incomplete {
-
-        & > .indicator {
+        > .indicator {
             background-color: theme-color('incomplete');
             box-shadow: 0 0 0 4px theme-color('incomplete', 200);
         }
@@ -116,8 +110,7 @@
 
     &.status--warning,
     &.status--missing {
-
-        & > .indicator {
+        > .indicator {
             background-color: theme-color('warning');
             box-shadow: 0 0 0 4px theme-color('warning', 200);
 
@@ -129,16 +122,14 @@
     }
 
     &.status--partial {
-
-        & > .indicator {
+        > .indicator {
             @include striped('partial');
             box-shadow: 0 0 0 4px theme-color('partial', 400);
         }
     }
 
     &.status--queued {
-
-        & > .indicator {
+        > .indicator {
             background-color: theme-color('queued');
             box-shadow: 0 0 0 4px transparent;
 
@@ -150,8 +141,7 @@
     }
 
     &.status--empty {
-
-        & > .indicator {
+        > .indicator {
             background-color: $white;
             box-shadow: 0 0 0 4px theme-color('idle', 300);
 
@@ -162,16 +152,14 @@
     }
 
     &.status--idle {
-
-        & > .indicator {
+        > .indicator {
             background-color: theme-color('idle', 500);
             box-shadow: 0 0 0 4px theme-color('idle', 300);
         }
     }
 
     &.status--error {
-
-        & > .indicator {
+        > .indicator {
             background-color: theme-color('failed');
             box-shadow: 0 0 0 4px theme-color('failed', 200);
 
@@ -185,8 +173,7 @@
     &.status--loading,
     &.status--refreshing,
     &.status--running {
-
-        & > .indicator {
+        > .indicator {
             background-color: theme-color('idle', 300);
             box-shadow: 0 0 0 4px transparent;
         }

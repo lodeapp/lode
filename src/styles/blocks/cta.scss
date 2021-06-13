@@ -7,8 +7,7 @@
     }
 
     .btn {
-
-        & + .btn {
+        + .btn {
             margin-left: var(--spacing);
         }
     }

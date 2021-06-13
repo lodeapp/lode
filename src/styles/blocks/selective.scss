@@ -7,7 +7,7 @@
     width: 14px;
 
     button {
-        -webkit-appearance: none;
+        appearance: none;
         background-color: transparent;
         border: 0;
         border-color: $secondary-discreet-text;
@@ -26,6 +26,12 @@
         width: 12px;
         z-index: 1;
 
+        @include win32 {
+            // Button and input positioning is tricky, so just override
+            // as needed in Windows environments.
+            top: 3px;
+        }
+
         &:hover,
         &:focus,
         &:active {
@@ -35,20 +41,12 @@
         &[disabled] {
             border-color: transparentize($secondary-discreet-text, .5);
         }
-
-        @include win32 {
-            // Button and input positioning is tricky, so just override
-            // as needed in Windows environments.
-            top: 3px;
-        }
     }
 
     &:hover,
     &:focus,
     &:active {
-
         button {
-
             &:not([disabled]) {
                 background-color: var(--link-color);
                 border-color: $white;
@@ -69,7 +67,6 @@
     }
 
     .selective & {
-
         button {
             opacity: 0;
         }

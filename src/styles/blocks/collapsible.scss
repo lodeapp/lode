@@ -4,11 +4,11 @@
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 
-    & > .header {
+    > .header {
         background-color: var(--color-gray-000);
         border-radius: inherit;
-        position: relative;
         padding: var(--spacing);
+        position: relative;
 
         .btn,
         .btn-link {
@@ -42,38 +42,36 @@
         }
     }
 
-    & > .content {
+    > .content {
         padding: var(--spacing);
 
-        & > .ansi,
-        & > .snippet {
+        > .ansi,
+        > .snippet {
             margin: calc(var(--spacing) * -1);
 
             pre {
-                border: 0;
                 background-color: $white;
+                border: 0;
             }
         }
     }
 
     &.is-expanded {
-
-        & > .header {
+        > .header {
             border-bottom: 1px solid var(--color-gray-300);
             border-radius: 0;
         }
     }
 
-    & + .collapsible {
+    + .collapsible {
+        border-top: 0;
         border-top-left-radius: 0;
         border-top-right-radius: 0;
-        border-top: 0;
     }
 }
 
 .collapsible-group {
-
-    & > :last-child {
+    > :last-child {
         border-bottom-left-radius: 3px;
         border-bottom-right-radius: 3px;
     }
@@ -81,15 +79,13 @@
 
 .console,
 .trace {
-
     &.collapsible-group,
     .collapsible-group {
-
-        & > .collapsible {
+        > .collapsible {
             position: relative;
             z-index: 1;
 
-            & > .header {
+            > .header {
                 font-weight: var(--font-weight-normal);
 
                 // Filename inside of trace collapsibles will overflow
@@ -111,7 +107,7 @@
             }
 
             &.has-context-menu {
-                box-shadow: 0 0 0px 1px var(--color-blue-300);
+                box-shadow: 0 0 0 1px var(--color-blue-300);
                 z-index: 2;
             }
         }

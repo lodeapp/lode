@@ -1,8 +1,8 @@
 .test-result {
     display: flex;
+    flex: 1;
     flex-direction: column;
     flex-grow: 1;
-    flex: 1;
     min-height: 0;
 
     .tabs {
@@ -13,7 +13,7 @@
             padding: 0 var(--spacing-half);
 
             .tab {
-                -webkit-appearance: none;
+                appearance: none;
                 background: none;
                 border: 0;
                 box-shadow: none;
@@ -47,7 +47,7 @@
         // Avoid content inside results pane growing indefinitely,
         // especially when trace headers have very long filenames
         // which are set to not wrap.
-        & > div {
+        > div {
             position: absolute;
             width: calc(100% - 30px);
         }

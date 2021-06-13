@@ -152,7 +152,6 @@
 
 // Overrides
 @include win32-context {
-
     &.theme-light {
         --sidebar-color: #fff;
         --sidebar-border-color: var(--primary-border-color);

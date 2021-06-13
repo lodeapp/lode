@@ -10,7 +10,7 @@
         color: rgba($gray-600, .3);
     }
 
-    & > .has-status {
+    > .has-status {
         display: flex;
         flex-direction: column;
         height: 100vh;
@@ -20,7 +20,7 @@
             height: calc(100vh - 30px);
         }
 
-        & > .header {
+        > .header {
             background-color: var(--secondary-background-color);
             padding-bottom: 15px;
 
@@ -34,7 +34,7 @@
             }
 
             .breadcrumbs {
-                padding: 0 15px 0;
+                padding: 0 15px;
 
                 li {
                     display: inline;

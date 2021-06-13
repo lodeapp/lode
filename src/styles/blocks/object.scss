@@ -1,20 +1,19 @@
 .object {
-
-    & > .key-value {
+    > .key-value {
         margin-bottom: var(--spacing);
 
-        & > .key {
+        > .key {
             color: $secondary-discreet-text;
             font-weight: var(--font-weight-semibold);
             text-transform: uppercase;
         }
 
-        & > .value {
+        > .value {
             user-select: text;
         }
     }
 
-    & > :last-child {
+    > :last-child {
         margin-bottom: 0;
     }
 }

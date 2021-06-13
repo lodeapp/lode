@@ -3,10 +3,10 @@
     position: relative;
 
     button {
-        -webkit-appearance: none;
+        appearance: none;
         background-color: var(--primary-background-color);
-        border-radius: 3px;
         border: 1px solid var(--primary-border-color);
+        border-radius: 3px;
         float: right;
         margin-left: 4px;
         opacity: 0;
@@ -25,7 +25,6 @@
         }
 
         &:hover {
-
             i {
                 color: $gray-600;
             }
@@ -33,7 +32,6 @@
     }
 
     &:hover {
-
         button {
             opacity: 1;
             transition-delay: 200ms;

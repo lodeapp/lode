@@ -3,13 +3,11 @@
 // ========================================================================
 
 @mixin striped($status: 'partial') {
-    background: repeating-linear-gradient(
-        -55deg,
-        theme-color($status),
-        theme-color($status) 3px,
-        theme-color($status, 'step', 100) 3px,
-        theme-color($status, 'step', 100) 6px
-    );
+    background: repeating-linear-gradient(-55deg,
+    theme-color($status),
+    theme-color($status) 3px,
+    theme-color($status, 'step', 100) 3px,
+    theme-color($status, 'step', 100) 6px);
 }
 
 @mixin drop-shadow($opacity: .175) {

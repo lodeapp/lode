@@ -33,15 +33,14 @@
         transition: transform .3s ease, opacity .3s ease;
         width: auto;
 
-        &.modal-sm {
-            max-width: var(--modal-small);
-        }
-
         @include media-breakpoint-up(lg) {
-
             &.modal-lg {
                 max-width: var(--modal-large);
             }
+        }
+
+        &.modal-sm {
+            max-width: var(--modal-small);
         }
     }
 
@@ -67,7 +66,7 @@
         justify-content: left;
         padding: var(--spacing-and-half);
 
-       & > i {
+        > i {
             margin-right: var(--spacing);
             position: relative;
             top: 1px;
@@ -96,7 +95,7 @@
             line-height: 1;
         }
 
-        & > .more-actions {
+        > .more-actions {
             margin-left: auto;
 
             button {
@@ -147,7 +146,6 @@
         position: relative;
 
         p {
-
             &:last-child {
                 margin-bottom: 0;
             }
@@ -160,29 +158,28 @@
             padding: 2px 4px;
         }
 
-        & > form {
+        > form {
             margin: calc(var(--spacing-double) * -1);
             padding: 0 var(--spacing-double);
 
-            & > h5 {
-                margin-top: var(--spacing);
+            > h5 {
                 margin-bottom: calc(var(--spacing) * -1);
+                margin-top: var(--spacing);
             }
 
-            & > .form-group {
-
+            > .form-group {
                 .input-block {
                     width: 100%;
                 }
 
-                & > hr {
+                > hr {
                     margin-left: calc(var(--spacing-double) * -1);
                     margin-right: calc(var(--spacing-double) * -1);
                 }
             }
         }
 
-        & > .fluid {
+        > .fluid {
             margin: calc(var(--spacing-double) * -1);
         }
     }
@@ -231,7 +228,6 @@
         }
 
         p {
-
             &:last-child {
                 margin-bottom: 0;
             }
@@ -245,7 +241,6 @@
     }
 
     &.modal--paged {
-
         .modal-footer {
             justify-content: space-between;
 
@@ -253,7 +248,7 @@
                 color: $gray-500;
                 font-size: 0;
 
-                & > span {
+                > span {
                     font-size: 1.5rem;
                     margin-right: 3px;
                 }
@@ -262,7 +257,6 @@
     }
 
     .modal-dialog {
-
         &.modal-sm {
             max-width: var(--modal-small);
         }
@@ -283,7 +277,6 @@
 
 .modal-enter-from,
 .modal-leave-to {
-
     &.modal-backdrop {
         opacity: 0;
     }

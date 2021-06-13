@@ -31,19 +31,19 @@ button,
         border-color: transparentize($gray-500, .6);
         color: transparentize($black, .6);
 
-        & > .Counter {
+        > .Counter {
             opacity: .5;
         }
     }
 
     i,
     .octicon {
+        color: currentColor;
         line-height: 1.4em;
         vertical-align: middle;
-        color: currentColor;
     }
 
-    & > .Counter {
+    > .Counter {
         font-variant-numeric: tabular-nums;
         line-height: 16px;
         padding: 0 5px;
@@ -73,14 +73,14 @@ button,
             border-color: transparentize($blue-500, .9);
             color: transparentize($text-white, .1);
 
-            & > .Counter {
+            > .Counter {
                 background: transparentize($text-white, .3);
                 color: transparentize($blue-400, .5);
                 opacity: 1;
             }
         }
 
-        & > .Counter {
+        > .Counter {
             background-color: $text-white;
             color: $blue-400;
         }

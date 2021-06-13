@@ -1,7 +1,5 @@
 @include light-context {
-
     pre {
-
         .hljs {
             background-color: transparent;
             margin: calc(var(--spacing) * -1);
@@ -11,9 +9,7 @@
                 margin: calc(var(--spacing) * -1);
 
                 tbody {
-
                     tr {
-
                         .line-number,
                         .blob {
                             border-radius: 0;
@@ -40,14 +36,13 @@
                             background-color: var(--color-blue-100);
 
                             .line-number {
-                                color: var(--color-gray-600);
                                 border-right-color: var(--color-blue-300);
+                                color: var(--color-gray-600);
                             }
                         }
                     }
 
                     :first-child {
-
                         .line-number,
                         .blob {
                             padding-top: var(--spacing);
@@ -55,7 +50,6 @@
                     }
 
                     :last-child {
-
                         .line-number,
                         .blob {
                             padding-bottom: var(--spacing);
