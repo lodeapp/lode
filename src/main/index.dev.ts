@@ -1,4 +1,6 @@
-require('electron').app.whenReady().then(() => {
+import { app } from 'electron'
+
+app.whenReady().then(() => {
     // @TODO: install Vue Devtools when they are compatible again with Electron 10
     // const installExtension = require('electron-devtools-installer')
     // installExtension(installExtension.VUEJS_DEVTOOLS)

@@ -11,14 +11,14 @@ import { Status, parseStatus } from '@lib/frameworks/status'
  */
 export abstract class Nugget extends ProjectEventEmitter {
     public tests: Array<ITest> = []
-    public selected: boolean = false
-    public expanded: boolean = false
-    public partial: boolean = false
+    public selected = false
+    public expanded = false
+    public partial = false
 
     protected framework: IFramework
     protected result?: any
-    protected fresh: boolean = false
-    protected bloomed: boolean = false
+    protected fresh = false
+    protected bloomed = false
 
     protected updateCountsListener: _.DebouncedFunc<(nugget: Nugget, toggle: boolean) => Promise<void>>
 
@@ -81,7 +81,7 @@ export abstract class Nugget extends ProjectEventEmitter {
             id: result.id,
             name: result.name,
             displayName: result.displayName !== result.name ? result.displayName : null,
-            status: status ? status : result.status,
+            status: status || result.status,
             // @TODO: Offload to separate store
             feedback: result.feedback,
             console: result.console,
@@ -109,7 +109,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      * @param result The test result with which to instantiate a new test.
      * @param force Whether to bypass looking for the test in the nugget's current children.
      */
-    protected makeTest (result: ITestResult, force: boolean = false): ITest {
+    protected makeTest (result: ITestResult, force = false): ITest {
         let test: ITest | undefined | boolean = force ? false : this.findTest(result.id)
         if (!test) {
             test = this.newTest(result)
@@ -152,7 +152,6 @@ export abstract class Nugget extends ProjectEventEmitter {
      */
     protected async debriefTests (tests: Array<ITestResult>, cleanup: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
-
             // Attempt to find out if this is the last test to run.
             //
             // 1) isLast === -1 : No `isLast` key is found on result object,

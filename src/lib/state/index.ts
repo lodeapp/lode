@@ -11,7 +11,7 @@ import { ProjectIdentifier } from '@lib/frameworks/project'
 
 export class State extends EventEmitter {
     protected store: any
-    protected currentVersion: number = 1
+    protected currentVersion = 1
     protected defaultSettings: object = {
         userid: uuid(),
         concurrency: 3,
@@ -60,7 +60,7 @@ export class State extends EventEmitter {
 
     public save (state: object, overwrite = false): void {
         if (!overwrite) {
-            state = { ...this.get(), ...state}
+            state = { ...this.get(), ...state }
         }
         this.store.set(state)
         this.emit('save', state)

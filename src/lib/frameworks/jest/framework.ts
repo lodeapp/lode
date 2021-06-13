@@ -7,7 +7,6 @@ import { FrameworkOptions, FrameworkDefaults, Framework, FrameworkReloadOutcome 
 import { ISuite } from '@lib/frameworks/suite'
 
 export class Jest extends Framework {
-
     static readonly defaults: FrameworkDefaults = {
         all: {
             name: 'Jest',
@@ -31,7 +30,7 @@ export class Jest extends Framework {
             try {
                 // First, test for possible scripts, and adjust default command accordingly
                 const scripts = get(pkg, 'scripts')
-                for (let script in scripts) {
+                for (const script in scripts) {
                     // Test for whole-word "jest". Should match "jest" shorthand
                     // and also "./node_modules/jest/bin/jest.js", etc.
                     if (scripts[script].search(/(?<![^\/\\\s])\bjest\b(\.js)?(?!\.)/i) > -1) {

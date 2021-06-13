@@ -38,7 +38,7 @@ export class PHPUnit extends Framework {
      * The class of suite we use for this framework. Overrides the default
      * with a PHPUnit-specific suite class.
      */
-    protected suiteClass(): typeof Suite {
+    protected suiteClass (): typeof Suite {
         return PHPUnitSuite
     }
 
@@ -176,7 +176,7 @@ export class PHPUnit extends Framework {
      *
      * @param suites The suites whose progress we're setting up to measure.
      */
-    protected calculateProgressTotalForSuites(suites: Array<ISuite>): number {
+    protected calculateProgressTotalForSuites (suites: Array<ISuite>): number {
         return suites.reduce((acc, suite: ISuite) => {
             // Return the children count, or 1 if suite is empty, as it will
             // and progress counted regardless of it having children or not.

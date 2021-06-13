@@ -2,7 +2,6 @@ import ElectronStore from 'electron-store'
 import { ProjectOptions } from '@lib/frameworks/project'
 
 export class Project {
-
     protected store: any
 
     constructor (id: string) {

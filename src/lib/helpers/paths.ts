@@ -3,7 +3,7 @@ import * as Path from 'path'
 export function getResourceDirectory (): string {
     return __DEV__
         ? Path.join(process.cwd(), 'dist')
-        : Path.join(process.resourcesPath, 'app.asar.unpacked', 'dist');
+        : Path.join(process.resourcesPath, 'app.asar.unpacked', 'dist')
 }
 
 /**

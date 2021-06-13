@@ -4,7 +4,6 @@ import { clipboard } from 'electron'
 import { ISuite } from '@lib/frameworks/suite'
 
 export class SuiteMenu extends Menu {
-
     constructor (suite: ISuite, webContents: Electron.WebContents) {
         super(webContents)
 

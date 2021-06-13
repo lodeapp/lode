@@ -14,7 +14,7 @@ export default class Durations {
     protected locale: string
     protected strings: Strings
 
-    constructor (locale: string = 'en-US') {
+    constructor (locale = 'en-US') {
         this.locale = locale
         this.strings = new Strings(this.locale)
     }

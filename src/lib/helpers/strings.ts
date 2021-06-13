@@ -8,7 +8,7 @@ export default class Strings {
     protected locale: string
     protected translator: Translation
 
-    constructor (locale: string = 'en-US') {
+    constructor (locale = 'en-US') {
         this.locale = locale
         this.translator = new Translation(this.locale)
     }
@@ -17,9 +17,9 @@ export default class Strings {
      * Generates a random string of 15 characters
      */
     public random (): string {
-        var text = ''
-        var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-        for (var i = 0; i < 15; i++) {
+        let text = ''
+        const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        for (let i = 0; i < 15; i++) {
             text += possible.charAt(Math.floor(Math.random() * possible.length))
         }
         return text
@@ -51,7 +51,7 @@ export default class Strings {
      * @param string The string to convert to Markdown
      * @param breaks Whether to convert line breaks into br
      */
-    public markdownBlock (string: string, breaks: boolean = true): string {
+    public markdownBlock (string: string, breaks = true): string {
         return markdown({
             breaks,
             typographer: true
@@ -67,7 +67,7 @@ export default class Strings {
      * @param length Maximum length of the resulting string
      * @param options Additional truncation options
      */
-    public truncate (string: string, length: number = 140, options: any): string {
+    public truncate (string: string, length = 140, options: any): string {
         return _truncate(string, {
             ...{
                 length,

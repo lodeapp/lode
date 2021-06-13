@@ -14,10 +14,6 @@ export class ProcessError extends Error implements ErrorWithCode {
     process?: string
     code?: string | number | null | undefined
 
-    constructor (...args: Array<string>) {
-        super(...args)
-    }
-
     /**
      * Set the process that originated the error.
      *

@@ -3,8 +3,7 @@ import * as winston from 'winston'
 import { ensureDir } from 'fs-extra'
 import { app } from 'electron'
 import { LogLevel } from './levels'
-
-const DailyRotateFile = require('winston-daily-rotate-file')
+import DailyRotateFile from 'winston-daily-rotate-file'
 const { combine, timestamp, printf } = winston.format
 
 let logDirectoryPath: string | null = null
@@ -38,7 +37,7 @@ function initializeWinston (path: string): winston.LogMethod {
         format: combine(
             timestamp(),
             printf(({ level, message, timestamp }) => {
-                return `${timestamp} - ${level} ${message}`;
+                return `${timestamp} - ${level} ${message}`
             })
         )
     })
@@ -85,7 +84,7 @@ function getLogger (): Promise<winston.LogMethod> {
             .catch(error => {
                 reject(error)
             })
-        })
+    })
 
     return loggerPromise
 }
@@ -119,4 +118,3 @@ export async function log (level: LogLevel, message: string) {
         // ...
     }
 }
-

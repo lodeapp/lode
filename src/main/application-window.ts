@@ -10,20 +10,18 @@ let windowStateKeeper: any | null = null
 const windows: any = {}
 
 export class ApplicationWindow {
-
     protected window: BrowserWindow
 
     protected minWidth = 960
     protected minHeight = 660
 
-    protected ready: boolean = false
-    protected closed: boolean = false
+    protected ready = false
+    protected closed = false
     protected project: Project | null = null
 
-    protected events: number = 0
+    protected events = 0
 
     public constructor (identifier: ProjectIdentifier | null) {
-
         if (!windowStateKeeper) {
             // `electron-window-state` requires Electron's `screen` module, which can
             // only be required after the app has emitted `ready`. So require it lazily.
@@ -113,12 +111,12 @@ export class ApplicationWindow {
         return window
     }
 
-    public static getFromWebContents(webContents: Electron.WebContents): ApplicationWindow | null {
+    public static getFromWebContents (webContents: Electron.WebContents): ApplicationWindow | null {
         const child = BrowserWindow.fromWebContents(webContents)
         return child ? windows[child.id] : null
     }
 
-    public static getProjectFromWebContents(webContents: Electron.WebContents): Project | null {
+    public static getProjectFromWebContents (webContents: Electron.WebContents): Project | null {
         const window = this.getFromWebContents(webContents)
         return window ? window.getProject() : null
     }

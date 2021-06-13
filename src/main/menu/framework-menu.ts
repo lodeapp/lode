@@ -3,7 +3,6 @@ import { IRepository } from '@lib/frameworks/repository'
 import { IFramework } from '@lib/frameworks/framework'
 
 export class FrameworkMenu extends Menu {
-
     constructor (
         repository: IRepository | null,
         framework: IFramework | null,

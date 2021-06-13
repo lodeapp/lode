@@ -3,7 +3,6 @@ import { File } from '@main/file'
 import { clipboard } from 'electron'
 
 export class FileMenu extends Menu {
-
     constructor (filePath: string, webContents: Electron.WebContents) {
         super(webContents)
 

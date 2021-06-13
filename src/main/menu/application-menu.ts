@@ -22,7 +22,6 @@ enum ZoomDirection {
 }
 
 class ApplicationMenu {
-
     protected template: Array<Electron.MenuItemConstructorOptions> = []
 
     protected window: ApplicationWindow | null = null
@@ -44,6 +43,7 @@ class ApplicationMenu {
     }
 
     protected render (): void {
+        // eslint-disable-next-line no-array-constructor
         const template = new Array<Electron.MenuItemConstructorOptions>()
         const separator: Electron.MenuItemConstructorOptions = { type: 'separator' }
 
@@ -66,7 +66,6 @@ class ApplicationMenu {
             }
         }
 
-
         if (__DARWIN__) {
             template.push({
                 label: 'Lode',
@@ -80,24 +79,24 @@ class ApplicationMenu {
                     {
                         label: 'Preferences…',
                         accelerator: 'CmdOrCtrl+,',
-                        click: emit('show-preferences'),
+                        click: emit('show-preferences')
                     },
                     separator,
                     {
                         role: 'services',
-                        submenu: [],
+                        submenu: []
                     },
                     separator,
                     { role: 'hide' },
                     { role: 'hideOthers' },
                     { role: 'unhide' },
                     separator,
-                    { role: 'quit' },
-                ],
+                    { role: 'quit' }
+                ]
             })
         }
 
-         const fileMenu: Electron.MenuItemConstructorOptions = {
+        const fileMenu: Electron.MenuItemConstructorOptions = {
             label: __DARWIN__ ? 'File' : '&File',
             submenu: [
                 {
@@ -133,7 +132,7 @@ class ApplicationMenu {
                 {
                     label: 'Options…',
                     accelerator: 'CmdOrCtrl+,',
-                    click: emit('show-preferences'),
+                    click: emit('show-preferences')
                 },
                 separator,
                 { role: 'quit' }
@@ -152,9 +151,9 @@ class ApplicationMenu {
                 { role: 'copy', label: 'Copy' },
                 { role: 'paste', label: 'Paste' },
                 {
-                  label: 'Select all',
-                  accelerator: 'CmdOrCtrl+A',
-                  click: emit('select-all'),
+                    label: 'Select all',
+                    accelerator: 'CmdOrCtrl+A',
+                    click: emit('select-all')
                 }
             ]
         })
@@ -164,23 +163,23 @@ class ApplicationMenu {
             submenu: [
                 {
                     label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle full screen',
-                    role: 'togglefullscreen',
+                    role: 'togglefullscreen'
                 },
                 separator,
                 {
                     label: __DARWIN__ ? 'Reset Zoom' : 'Reset zoom',
                     accelerator: 'CmdOrCtrl+0',
-                    click: zoom(ZoomDirection.Reset),
+                    click: zoom(ZoomDirection.Reset)
                 },
                 {
                     label: __DARWIN__ ? 'Zoom In' : 'Zoom in',
                     accelerator: 'CmdOrCtrl+=',
-                    click: zoom(ZoomDirection.In),
+                    click: zoom(ZoomDirection.In)
                 },
                 {
                     label: __DARWIN__ ? 'Zoom Out' : 'Zoom out',
                     accelerator: 'CmdOrCtrl+-',
-                    click: zoom(ZoomDirection.Out),
+                    click: zoom(ZoomDirection.Out)
                 },
                 separator,
                 {
@@ -194,7 +193,7 @@ class ApplicationMenu {
                         if (focusedWindow) {
                             focusedWindow.webContents.toggleDevTools()
                         }
-                    },
+                    }
                 }
             ]
         })
@@ -223,7 +222,7 @@ class ApplicationMenu {
                     {
                         label: '&Reload',
                         accelerator: 'CmdOrCtrl+Shift+0',
-                        click(item: any, focusedWindow: Electron.BrowserWindow | undefined) {
+                        click (item: any, focusedWindow: Electron.BrowserWindow | undefined) {
                             if (focusedWindow) {
                                 focusedWindow.reload()
                             }
@@ -250,7 +249,7 @@ class ApplicationMenu {
                             : __WIN32__
                                 ? 'Show user data folder in Explorer'
                                 : 'Show user data folder in your File Manager',
-                        click() {
+                        click () {
                             const path = app.getPath('userData')
                             ensureDir(path)
                                 .then(() => {
@@ -264,13 +263,13 @@ class ApplicationMenu {
                     separator,
                     {
                         label: 'Crash main process',
-                        click() {
+                        click () {
                             throw new Error('Boomtown!')
                         }
                     },
                     {
                         label: 'Crash renderer process',
-                        click: emit('crash'),
+                        click: emit('crash')
                     }
                 ]
             })
@@ -293,10 +292,10 @@ class ApplicationMenu {
             {
                 label: __DARWIN__ ? 'Report Issue' : 'Report issue',
                 click () {
-                  shell.openExternal(
-                      'https://github.com/lodeapp/lode/issues/new/choose'
-                  ).catch(err => log.error('Failed opening issue creation page', err))
-                },
+                    shell.openExternal(
+                        'https://github.com/lodeapp/lode/issues/new/choose'
+                    ).catch(err => log.error('Failed opening issue creation page', err))
+                }
             },
             {
                 label: __DARWIN__ ? 'Contact Support' : 'Contact support',
@@ -320,7 +319,7 @@ class ApplicationMenu {
                             : __WIN32__
                                 ? 'Show logs in Explorer'
                                 : 'Show logs in your File Manager',
-                        click() {
+                        click () {
                             const path = getLogDirectoryPath()
                             ensureDir(path)
                                 .then(() => {
@@ -342,7 +341,7 @@ class ApplicationMenu {
         if (__DARWIN__) {
             template.push({
                 role: 'help',
-                submenu: helpItems,
+                submenu: helpItems
             })
         } else {
             template.push({

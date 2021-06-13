@@ -5,7 +5,6 @@ import { ISuite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
 
 export class TestMenu extends Menu {
-
     constructor (suite: ISuite, test: ITest, webContents: Electron.WebContents) {
         super(webContents)
 

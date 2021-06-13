@@ -71,17 +71,17 @@ export interface IRepository extends ProjectEventEmitter {
 export class Repository extends ProjectEventEmitter implements IRepository {
     public frameworks: Array<IFramework> = []
     public status: FrameworkStatus = 'loading'
-    public selected: boolean = false
-    public scanning: boolean = false
+    public selected = false
+    public scanning = false
 
     protected id: string
     protected path: string
     protected name: string
     protected expanded: boolean
-    protected parsed: boolean = false
-    protected ready: boolean = false
-    protected initialFrameworkCount: number = 0
-    protected initialFrameworkReady: number = 0
+    protected parsed = false
+    protected ready = false
+    protected initialFrameworkCount = 0
+    protected initialFrameworkReady = 0
     protected progressLedger: ProgressLedger = {
         run: 0,
         total: 0
@@ -492,7 +492,7 @@ export class Repository extends ProjectEventEmitter implements IRepository {
     /**
      * Progress the ledger by one unit.
      */
-    protected progress(): void {
+    protected progress (): void {
         this.progressLedger.run++
         this.emit('progress')
     }

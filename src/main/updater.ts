@@ -3,10 +3,9 @@ import { autoUpdater } from 'electron-updater'
 import { applicationMenu } from '@main/menu'
 
 export class Updater {
-
-    protected startup: boolean = true
-    protected downloading: boolean = false
-    protected downloaded: boolean = false
+    protected startup = true
+    protected downloading = false
+    protected downloaded = false
 
     constructor () {
         autoUpdater.autoDownload = false
@@ -65,7 +64,7 @@ export class Updater {
             })
         })
 
-        autoUpdater.on('error', (err) => {
+        autoUpdater.on('error', (_) => {
             applicationMenu.setOptions({
                 isCheckingForUpdate: false
             })

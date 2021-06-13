@@ -258,7 +258,7 @@ export class Suite extends Nugget implements ISuite {
                             return this.getRecursiveNuggetIds(test)
                         })
                     )
-                )
+            )
         ])
     }
 
@@ -317,7 +317,7 @@ export class Suite extends Nugget implements ISuite {
      * @param cleanup Whether to clean obsolete children after debriefing.
      */
     public async debrief (result: ISuiteResult, cleanup: boolean): Promise<void> {
-        let emit = !this.testsLoaded()
+        const emit = !this.testsLoaded()
         this.file = result.file
         this.result.meta = result.meta
         this.result.console = result.console

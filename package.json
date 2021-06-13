@@ -35,7 +35,6 @@
     "test:e2e": "yarn run icons && node workflow/e2e.js run",
     "cypress": "yarn run icons && node workflow/e2e.js open",
     "lint": "eslint --ext .ts,.js,.vue src",
-    "lint:fix": "eslint --ext .ts,.js,.vue --fix src",
     "lint:styles": "stylelint 'src/styles'",
     "size": "SIZE=true yarn run dev",
     "size:main": "SIZE=true PROCESS=main yarn run dev",

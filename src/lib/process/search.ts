@@ -7,7 +7,6 @@ export class BufferedSearch {
     } = {}
 
     term (term: string, string: string): boolean {
-
         // Have we started looking for this yet? If not, prepare buffer.
         if (!this.terms[term]) {
             this.terms[term] = {

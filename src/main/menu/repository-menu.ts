@@ -4,7 +4,6 @@ import { clipboard } from 'electron'
 import { IRepository } from '@lib/frameworks/repository'
 
 export class RepositoryMenu extends Menu {
-
     constructor (repository: IRepository, webContents: Electron.WebContents) {
         super(webContents)
 

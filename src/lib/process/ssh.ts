@@ -23,7 +23,6 @@ export type SSHOptions = {
 }
 
 export class SSH {
-
     protected defaults: SSHOptions = {
         host: '',
         options: {
@@ -44,7 +43,6 @@ export class SSH {
     protected connection?: SSHOptions
 
     constructor (connection?: SSHOptions) {
-
         if (!connection) {
             this.connection = this.defaults
         }
@@ -66,29 +64,29 @@ export class SSH {
             '-S none',
             shellEscape([get(this.connection, 'host', '')])
         ]
-        .concat(Object.keys(this.connection!.options!).map((key: string) => {
-            return ['-o', [key, get(this.connection, `options.${key}`)].join('=')].join(' ')
-        }))
-        .concat(
-            shellEscape(
-                flatten(
-                    [
-                        compact(['-l', get(this.connection, 'user', '')]),
-                        compact(['-p', get(this.connection, 'port')]),
-                        compact(['-i', get(this.connection, 'identity')])
-                    ]
-                    .filter(details => details.length > 1)
+            .concat(Object.keys(this.connection!.options!).map((key: string) => {
+                return ['-o', [key, get(this.connection, `options.${key}`)].join('=')].join(' ')
+            }))
+            .concat(
+                shellEscape(
+                    flatten(
+                        [
+                            compact(['-l', get(this.connection, 'user', '')]),
+                            compact(['-p', get(this.connection, 'port')]),
+                            compact(['-i', get(this.connection, 'identity')])
+                        ]
+                            .filter(details => details.length > 1)
+                    )
                 )
             )
-        )
-        .concat([
-            '-tt',
-            // If connection includes a remote path, connect straight into it
-            // by preprending the cd comand into our existing remote args.
-            '"' + (this.connection!.path ? ['cd ' + this.connection!.path + ' &&'] : []).concat(
-                args.map((arg: string) => this.sanitize(arg))
-            ).join(' ') + '"'
-        ])
+            .concat([
+                '-tt',
+                // If connection includes a remote path, connect straight into it
+                // by preprending the cd comand into our existing remote args.
+                '"' + (this.connection!.path ? ['cd ' + this.connection!.path + ' &&'] : []).concat(
+                    args.map((arg: string) => this.sanitize(arg))
+                ).join(' ') + '"'
+            ])
     }
 
     public sanitize (arg: string): string {

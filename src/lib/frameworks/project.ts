@@ -91,16 +91,16 @@ export class Project extends ProjectEventEmitter implements IProject {
     public name: string
     public repositories: Array<IRepository> = []
     public status: FrameworkStatus = 'loading'
-    public selected: boolean = false
+    public selected = false
 
     protected readonly id: string
     protected state: ProjectState
     protected active: ProjectActiveIdentifiers
-    protected parsed: boolean = false
-    protected ready: boolean = false
-    protected hasRepositories: boolean = false
-    protected initialRepositoryCount: number = 0
-    protected initialRepositoryReady: number = 0
+    protected parsed = false
+    protected ready = false
+    protected hasRepositories = false
+    protected initialRepositoryCount = 0
+    protected initialRepositoryReady = 0
 
     constructor (window: ApplicationWindow, identifier: ProjectIdentifier) {
         super(window)
@@ -425,7 +425,7 @@ export class Project extends ProjectEventEmitter implements IProject {
         // If an active framework is set, attempt to return it, if it still exists.
         if (this.active.framework) {
             let framework
-            for (var i = this.repositories.length - 1; i >= 0; i--) {
+            for (let i = this.repositories.length - 1; i >= 0; i--) {
                 framework = this.repositories[i].getFrameworkById(this.active.framework)
                 if (framework) {
                     return {
@@ -438,7 +438,7 @@ export class Project extends ProjectEventEmitter implements IProject {
 
         // Otherwise, iterate through the repositories and return the first
         // available framework.
-        for (var i = this.repositories.length - 1; i >= 0; i--) {
+        for (let i = this.repositories.length - 1; i >= 0; i--) {
             if (this.repositories[i].frameworks.length) {
                 return {
                     framework: this.repositories[i].frameworks[0],

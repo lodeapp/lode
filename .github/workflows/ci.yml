@@ -55,7 +55,7 @@ jobs:
       run: yarn lint:styles
     -
       name: Lint scripts
-      run: yarn lint
+      run: yarn lint --quiet
     -
       name: Check Typescript
       run: yarn tsc

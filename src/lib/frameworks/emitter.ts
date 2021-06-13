@@ -6,7 +6,6 @@ import { ApplicationWindow } from '@main/application-window'
  * to the renderer process from a given window.
  */
 export class ProjectEventEmitter extends EventEmitter {
-
     protected window: ApplicationWindow
 
     constructor (window: ApplicationWindow) {

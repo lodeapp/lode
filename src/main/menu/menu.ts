@@ -3,9 +3,8 @@ import { File } from '@main/file'
 import { Menu as Base } from 'electron'
 
 export class Menu {
-
     protected window: ApplicationWindow
-    protected built: boolean = false
+    protected built = false
     protected menu: Electron.Menu | null = null
     protected options: object = {}
     protected template: Array<Electron.MenuItemConstructorOptions> = []
@@ -91,7 +90,6 @@ export class Menu {
     }
 
     open (options?: object): this {
-
         if (!this.built) {
             this.build()
         }
@@ -119,7 +117,7 @@ export class Menu {
             log.error(`Error while trying to open file in path: '${path}'`, error)
             this.window.send('error', [
                 'Unable to open file in an external program. Please check you have a program associated with this file extension.',
-                'The following path was attempted: `' + path + '`',
+                'The following path was attempted: `' + path + '`'
             ])
         }
     }

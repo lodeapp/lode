@@ -9,8 +9,7 @@ const BlacklistedNames = new Set(['LOCAL_GIT_DIRECTORY'])
 /**
  * Merge environment variables from shell into the current process, if needed.
  */
-export function mergeEnvFromShell(): void {
-
+export function mergeEnvFromShell (): void {
     if (!needsEnv(process)) {
         return
     }
@@ -31,14 +30,14 @@ export function mergeEnvFromShell(): void {
  *
  * @param process The process to inspect.
  */
-function needsEnv(process: NodeJS.Process): boolean {
+function needsEnv (process: NodeJS.Process): boolean {
     return __DARWIN__ && !process.env.PWD
 }
 
 /**
  * Get the user-defined shell, if any.
  */
-function getUserShell() {
+function getUserShell () {
     if (process.env.SHELL) {
         return process.env.SHELL
     }

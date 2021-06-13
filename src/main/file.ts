@@ -82,7 +82,7 @@ export class File {
             const directoryURL = Url.format({
                 pathname: path,
                 protocol: 'file:',
-                slashes: true,
+                slashes: true
             })
 
             shell

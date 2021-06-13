@@ -28,7 +28,7 @@ export type FrameworkWithContext = {
 /**
  * Possible outcomes for a framework reload process
  */
- export type FrameworkReloadOutcome = 'success' | 'killed' | 'empty'
+export type FrameworkReloadOutcome = 'success' | 'killed' | 'empty'
 
 /**
  * A list of test suites.
@@ -155,21 +155,21 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     protected runner!: string | null
     protected process?: ProcessId
     protected running: Array<Promise<void>> = []
-    protected killed: boolean = false
+    protected killed = false
     protected queue: { [index: string]: Function } = {}
 
-    protected ready: boolean = false
+    protected ready = false
     protected suites: Array<ISuite> = []
-    protected selective: boolean = false
+    protected selective = false
     protected selected: SuiteList = {
         suites: []
     }
-    protected maxSelective: number = 200
-    protected initialSuiteCount: number = 0
-    protected initialSuiteReady: number = 0
-    protected hasSuites: boolean = false
+    protected maxSelective = 200
+    protected initialSuiteCount = 0
+    protected initialSuiteReady = 0
+    protected hasSuites = false
     protected proprietary: any = {}
-    protected active: boolean = false
+    protected active = false
     protected filters: { [key in FrameworkFilter]: Array<string> | string | null } = {
         keyword: null,
         status: null,
@@ -403,10 +403,10 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param options The new set of options to build the framework with.
      */
     public async updateOptions (options: FrameworkOptions): Promise<void> {
-        const initChanged = options.command !== this.command
-            || this.runsInRemote !== options.runsInRemote
-            || this.sshHost !== options.sshHost
-            || this.repositoryPath !== options.repositoryPath
+        const initChanged = options.command !== this.command ||
+            this.runsInRemote !== options.runsInRemote ||
+            this.sshHost !== options.sshHost ||
+            this.repositoryPath !== options.repositoryPath
 
         // If framework doesn't run in remote, reset
         // SSH options, lest they linger inadvertently.
@@ -930,8 +930,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param result The standardised suite results.
      */
     protected newSuite (result: ISuiteResult): ISuite {
-        const suiteClass = this.suiteClass()
-        return new suiteClass(this, result)
+        const SuiteClass = this.suiteClass()
+        return new SuiteClass(this, result)
     }
 
     /**
@@ -951,7 +951,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param result An object representing a suite's test results.
      * @param rebuild Whether to rebuild the tests inside the suite, regardless of them being built already.
      */
-    protected async makeSuite (result: ISuiteResult, rebuild: boolean = false): Promise<ISuite> {
+    protected async makeSuite (result: ISuiteResult, rebuild = false): Promise<ISuite> {
         return new Promise(async (resolve, reject) => {
             let suite: ISuite | undefined = this.findSuite(result.file)
 
@@ -1087,7 +1087,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     protected rebuildLedger (): void {
         // Reset ledger before starting
-        for (let key of Object.keys(this.ledger)) {
+        for (const key of Object.keys(this.ledger)) {
             this.ledger[<Status>key] = 0
         }
 

@@ -51,7 +51,7 @@ mergeEnvFromShell()
 
 // Set `__static` path to static files in production
 if (!__DEV__) {
-    (global as any).__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+    (global as any).__static = Path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
 function getProject (event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent): IProject {
@@ -271,7 +271,6 @@ ipcMain
                 } else {
                     new TestMenu((nuggets.shift() as ISuite), (nuggets.pop() as ITest), event.sender)
                         .open()
-
                 }
             }
         })

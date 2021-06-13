@@ -35,7 +35,6 @@ export type PotentialFrameworkOptions = FrameworkOptions & {
  * A generic validation class.
  */
 export class Validator {
-
     protected errors: ValidationErrors = {}
 
     /**
@@ -152,7 +151,6 @@ export class Validator {
  * A validation class for repository objects.
  */
 export class RepositoryValidator extends Validator {
-
     protected existing: Array<string>
 
     constructor (existing: Array<string>) {
@@ -221,7 +219,7 @@ export class FrameworkValidator extends Validator {
         if (!options.type) {
             this.addError('type', 'Please select a framework type.')
         } else if (!getFrameworkByType(options.type)) {
-            this.addError('type', 'Framework type "' + options.type  + '" is invalid.')
+            this.addError('type', 'Framework type "' + options.type + '" is invalid.')
         }
 
         if (!options.command) {

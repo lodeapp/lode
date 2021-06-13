@@ -13,7 +13,6 @@ class ProcessPool {
      * @param id An optional id with which process will be added to the pool.
      */
     public add (process: IProcess, id?: ProcessId): void {
-
         // If id was given, we'll use it, otherwise we'll
         // try to get it from the process itself.
         if (!id) {

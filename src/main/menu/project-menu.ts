@@ -2,7 +2,6 @@ import { Menu } from '@main/menu'
 import { IProject } from '@lib/frameworks/project'
 
 export class ProjectMenu extends Menu {
-
     constructor (project: IProject | null, webContents: Electron.WebContents) {
         super(webContents)
 

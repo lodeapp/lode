@@ -37,20 +37,20 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     protected readonly endDelimiter: string = '}REPORT>>>'
     protected search: BufferedSearch
     protected command!: string
-    protected binary: string = ''
+    protected binary = ''
     protected args: Array<string> = []
     protected path?: string
     protected chunks: Array<string> = []
     protected rawChunks: Array<string> = []
-    protected error: string = ''
-    protected killed: boolean = false
-    protected closed: boolean = false
+    protected error = ''
+    protected killed = false
+    protected closed = false
     protected exitCode?: number | null
     protected exitSignal: string | null = null
-    protected reports: boolean = false
-    protected reportBuffer: string = ''
-    protected reportClosed: boolean = false
-    protected writeToFile: boolean = false
+    protected reports = false
+    protected reportBuffer = ''
+    protected reportClosed = false
+    protected writeToFile = false
     protected process?: ChildProcess
     protected platform?: NodeJS.Platform
 
@@ -186,7 +186,6 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * @param err The error we're attempting to handle.
      */
     protected onError (err: ErrorWithCode): void {
-
         log.debug('Process error', err)
 
         // If the error's code is a string then it means the code isn't the
@@ -208,8 +207,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * @param code The exit code that triggered the process closing.
      * @param signal The signal string that triggered the process closing.
      */
-    protected onClose(code: number | null, signal: string | null) {
-
+    protected onClose (code: number | null, signal: string | null) {
         log.debug(['Process closing.', JSON.stringify({ code, signal })].join(' '))
 
         if (this.process && this.process.killed || this.killed) {
@@ -223,7 +221,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             this.emit('success', {
                 process: this,
                 lines: this.getLines(),
-                rawLines: this.getRawLines(),
+                rawLines: this.getRawLines()
             })
         } else {
             // If process errored out but did not emit an error event, we'll
@@ -265,16 +263,15 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param rawChunk The chunk of data we're about to process.
      */
-    protected onData(rawChunk: string): void {
-
-        let chunk = rawChunk
+    protected onData (rawChunk: string): void {
+        const chunk = rawChunk
 
         if (this.writeToFile) {
             // Only write raw chunks if we're storing this process run in a file.
             this.rawChunks.push(rawChunk)
         }
 
-        let storeChunk: boolean = true
+        let storeChunk = true
 
         if (!this.reports && !this.reportClosed) {
             // Look for start delimiter. If found, start report mode.

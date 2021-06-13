@@ -4,7 +4,6 @@ import { Runners } from '@lib/process/runners'
 import pool from '@lib/process/pool'
 
 export class ProcessFactory {
-
     /**
      * Make a new process according to the given options.
      *
@@ -12,15 +11,14 @@ export class ProcessFactory {
      * @param poolId An optional id with which the newly made process will be added to the pool.
      */
     public static make (options: ProcessOptions, poolId?: ProcessId): IProcess {
-
         let spawned: IProcess | null = null
 
         if (options.forceRunner) {
             // If a runner has been pre-determined, try to find it within list of
             // existing runners and create a process with it, if possible.
-            const runner = find(Runners, runner => runner.type === options.forceRunner)
-            if (runner) {
-                spawned = new runner(options)
+            const Runner = find(Runners, runner => runner.type === options.forceRunner)
+            if (Runner) {
+                spawned = new Runner(options)
             }
         } else {
             // If no runner was specificed, we'll try to determine which runner to
