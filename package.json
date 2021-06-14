@@ -35,7 +35,7 @@
     "test:e2e": "yarn run icons && node workflow/e2e.js run",
     "cypress": "yarn run icons && node workflow/e2e.js open",
     "lint": "eslint --ext .ts,.js,.vue src",
-    "lint:styles": "stylelint 'src/styles'",
+    "lint:styles": "stylelint 'src'",
     "size": "SIZE=true yarn run dev",
     "size:main": "SIZE=true PROCESS=main yarn run dev",
     "simulate": "yarn run build:before && cross-env IS_DEV=true yarn run pack:lode && ./node_modules/electron/dist/Electron.app/Contents/MacOS/Electron dist/main.js"

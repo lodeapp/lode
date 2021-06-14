@@ -9,5 +9,10 @@
     "selector-class-pattern": null,
     "selector-max-compound-selectors": null,
     "selector-no-qualifying-type": null
-  }
+  },
+  "ignoreFiles": [
+    "**/*.js",
+    "**/*.ts",
+    "**/*.json"
+  ]
 }

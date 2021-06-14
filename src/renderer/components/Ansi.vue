@@ -62,9 +62,7 @@ export default {
 
 <style lang="scss">
 pre {
-
-    & > div {
-
+    > div {
         div,
         span {
             // Force line wrapping of terminal content
