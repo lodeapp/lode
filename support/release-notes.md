@@ -1,4 +1,6 @@
+Changed:
+  - Upgraded Lode's renderer to Vue 3
+
 Fixed:
-  - Jest tests marked as "todo" not always being recognised as "incomplete"
-  - Suite selection persisting even when not in view
-  - Suite sometimes persisting after being deselected when using a combination status filters
+  - Scanning of empty repositories from main panel not working
+  - Drag and drop of repositories not working

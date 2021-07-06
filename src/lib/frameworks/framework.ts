@@ -754,7 +754,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * A function that runs after a framework has been refreshed.
      */
-    protected afterRefresh () {
+    protected afterRefresh (): void {
         this.cleanStaleSuites()
         // After a full refresh, emit tests from expanded nuggets recursively
         // to the renderer process.
@@ -772,7 +772,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * A function that runs after a framework has been run, either fully or
      * selectively.
      */
-    protected afterRun () {
+    protected afterRun (): void {
         // If a selected suite didn't run, mark their status as "error".
         if (this.selective) {
             this.selected.suites.forEach(suite => {

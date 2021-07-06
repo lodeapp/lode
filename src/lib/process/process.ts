@@ -162,7 +162,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param process The child process to add listeners to.
      */
-    protected addListeners (process: ChildProcess) {
+    protected addListeners (process: ChildProcess): void {
         process.on('close', (...args) => this.onClose(...args))
         process.on('error', (err) => this.onError(err as ErrorWithCode))
         process.stdout!.on('data', (...args) => this.onData(...args))
@@ -207,7 +207,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * @param code The exit code that triggered the process closing.
      * @param signal The signal string that triggered the process closing.
      */
-    protected onClose (code: number | null, signal: string | null) {
+    protected onClose (code: number | null, signal: string | null): void {
         log.debug(['Process closing.', JSON.stringify({ code, signal })].join(' '))
 
         if (this.process && this.process.killed || this.killed) {
