@@ -4,6 +4,7 @@
         margin-left: 0;
 
         &::after {
+            border: 0;
             color: lighten($secondary-discreet-text, 20%);
             content: '●';
         }

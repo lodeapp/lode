@@ -1,6 +1,6 @@
 <template>
     <div class="snippet">
-        <button v-if="copy" type="button" title="Copy to clipboard" @click="clipboard">
+        <button v-if="copy" type="button" class="btn btn-sm" title="Copy to clipboard" @click="clipboard">
             <Icon symbol="clippy" />
         </button>
         <pre><code :class="['hljs', activeLanguage]" v-html="snippet"></code></pre>

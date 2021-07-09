@@ -11,13 +11,16 @@
         margin-left: 4px;
         opacity: 0;
         outline: none;
+        padding-left: 0;
+        padding-right: 0;
         position: absolute;
         right: 4px;
         top: 4px;
         transition: opacity 100ms ease-in;
+        width: 35px;
 
         &:nth-of-type(2) {
-            right: 38px;
+            right: 42px;
         }
 
         i {

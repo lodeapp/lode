@@ -1,9 +1,9 @@
 <template>
     <div v-if="content" class="ansi">
-        <button type="button" title="Copy to clipboard" @click="clipboard">
+        <button type="button" class="btn btn-sm" title="Copy to clipboard" @click="clipboard">
             <Icon symbol="clippy" />
         </button>
-        <button type="button" title="Show raw output" @click="showRaw = !showRaw">
+        <button type="button" class="btn btn-sm" title="Show raw output" @click="showRaw = !showRaw">
             <Icon symbol="code" />
         </button>
         <pre v-if="showRaw">{{ content }}</pre>

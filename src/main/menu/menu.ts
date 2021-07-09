@@ -106,7 +106,7 @@ export class Menu {
         return this.template
     }
 
-    public emit (name: MenuEvent, properties?: any) {
+    public emit (name: MenuEvent, properties?: any): void {
         this.window.sendMenuEvent({ name, properties })
     }
 
