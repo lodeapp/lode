@@ -122,12 +122,6 @@ app
             new Updater()
             return
         }
-
-        setInterval(() => {
-            process.getProcessMemoryInfo().then(memory => {
-                log.info(`Private: ${memory.private}, Shared: ${memory.shared}`)
-            })
-        }, 5000)
     })
 
 ipcMain

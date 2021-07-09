@@ -1,5 +1,5 @@
 import * as Path from 'path'
-import { flatten, get, omit } from 'lodash'
+import { flatten, get, omit, trimStart } from 'lodash'
 import { File } from '@main/file'
 import { Status, parseStatus } from '@lib/frameworks/status'
 import { IFramework } from '@lib/frameworks/framework'
@@ -211,8 +211,8 @@ export class Suite extends Nugget implements ISuite {
      * Get this suite's relative file path.
      */
     public getRelativePath (): string {
-        return this.framework.runsInRemote && this.framework.getRemotePath() === '/'
-            ? this.file
+        return this.framework.runsInRemote && (!this.framework.getRemotePath() || this.framework.getRemotePath() === '/')
+            ? trimStart(this.file, '/')
             : Path.relative(
                 this.framework.runsInRemote
                     ? (Path.join(this.framework.getRemotePath(), this.framework.path))

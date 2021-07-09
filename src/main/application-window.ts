@@ -150,12 +150,6 @@ export class ApplicationWindow {
                 ? `http://localhost:9080`
                 : `file://${__dirname}/index.html`
         )
-
-        if (__DEV__) {
-            setInterval(() => {
-                log.info(`IPC events: ${this.events}`)
-            }, 5000)
-        }
     }
 
     public send (event: string, args: Array<any> = []) {
