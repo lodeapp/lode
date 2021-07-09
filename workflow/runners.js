@@ -108,6 +108,7 @@ const startMain = function () {
 const startElectron = function () {
     if (process.argv[2] === 'migrate') {
         electronProcess = spawn(electron, [
+            '--trace-warnings',
             '--inspect=5858',
             Path.join(__dirname, '../dist/main.js'),
             'migrate',
