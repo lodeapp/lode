@@ -366,9 +366,11 @@ class ApplicationMenu {
 
     public build (window: ApplicationWindow | null): Promise<Array<Electron.MenuItemConstructorOptions>> {
         this.setWindow(window)
+        const project = window ? window.getProject() : null
         return this.setOptions({
             ...this.options,
-            project: window ? window.getProject() : null
+            ...project ? project.getActive() : {},
+            project
         })
     }
 
