@@ -35,7 +35,8 @@ const app = createApp({
             modals: [],
             ready: false,
             loading: true,
-            project: null
+            project: null,
+            menu: null
         }
     },
     created () {
@@ -50,6 +51,7 @@ const app = createApp({
                     this.loading = false
                 }
                 this.version = properties.version
+                this.menu = properties.menu
                 this.ready = true
             })
             .on('blur', () => {

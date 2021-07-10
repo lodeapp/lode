@@ -4,6 +4,7 @@ import { app, ipcMain, BrowserWindow, nativeTheme } from 'electron'
 import { getResourceDirectory } from '@lib/helpers/paths'
 import { state } from '@lib/state'
 import { ProjectIdentifier, ProjectOptions, Project } from '@lib/frameworks/project'
+import { applicationMenu } from '@main/menu'
 
 let windowStateKeeper: any | null = null
 
@@ -130,8 +131,10 @@ export class ApplicationWindow {
 
         this.window.webContents.on('did-finish-load', () => {
             this.onReady()
+            console.log(applicationMenu.getSections())
             this.window.webContents.send('did-finish-load', {
                 theme: nativeTheme.shouldUseDarkColors ? 'dark' : 'light',
+                menu: applicationMenu.getSections(),
                 projectId: get(this.getProject(), 'id', null),
                 focus: this.window.isFocused(),
                 version: app.getVersion()

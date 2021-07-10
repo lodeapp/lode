@@ -1,3 +1,4 @@
+import { compact } from 'lodash'
 import { ensureDir } from 'fs-extra'
 import { app, ipcMain, Menu, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
@@ -392,6 +393,12 @@ class ApplicationMenu {
 
     public getTemplate (): Array<Electron.MenuItemConstructorOptions> {
         return this.template
+    }
+
+    public getSections (): Array<string> {
+        return compact(this.template.map(item => {
+            return item.label || ''
+        }))
     }
 }
 
