@@ -115,7 +115,7 @@ const app = createApp({
                         this.frameworkRemove(properties)
                         break
                     case 'filter':
-                        const filter = this.$el.querySelector('[type="search"]')
+                        const filter = app._container.querySelector('[type="search"]')
                         filter.focus()
                         if (properties) {
                             filter.value = properties
