@@ -2,7 +2,9 @@
     <header class="titlebar">
         <div class="titlebar-drag"></div>
         <ul class="titlebar-menu">
-            <li v-for="item in $root.menu" :key="item">{{ item }}</li>
+            <li v-for="item in $root.menu" :key="item">
+                <button type="button" @click="menu(item, $event)">{{ item }}</button>
+            </li>
         </ul>
         <div class="controls">
             <div class="control control-min" @click="minimize">
@@ -35,6 +37,10 @@ export default {
         },
         close () {
             console.log('CLOSING')
+        },
+        menu (item, event) {
+            console.log('MENU', item)
+            Lode.ipc.invoke('titlebar-menu', item, JSON.parse(JSON.stringify(event.target.getBoundingClientRect())))
         }
     }
 }

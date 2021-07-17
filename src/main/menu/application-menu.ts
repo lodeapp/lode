@@ -4,7 +4,7 @@ import { app, ipcMain, Menu, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
-import { ProjectMenu, FrameworkMenu } from '@main/menu'
+import { Menu as ContextMenu, ProjectMenu, FrameworkMenu } from '@main/menu'
 import { ApplicationWindow } from '@main/application-window'
 import { ProjectIdentifier, IProject } from '@lib/frameworks/project'
 import { IRepository } from '@lib/frameworks/repository'
@@ -43,9 +43,13 @@ class ApplicationMenu {
         hasDownloadedUpdate: false
     }
 
+    protected menus: {
+        [key: string]: ContextMenu
+    } = {}
+
     protected render (): void {
-        // eslint-disable-next-line no-array-constructor
-        const template = new Array<Electron.MenuItemConstructorOptions>()
+        this.template = []
+
         const separator: Electron.MenuItemConstructorOptions = { type: 'separator' }
 
         const currentProject: ProjectIdentifier | null = state.getCurrentProject()
@@ -68,7 +72,7 @@ class ApplicationMenu {
         }
 
         if (__DARWIN__) {
-            template.push({
+            this.template.push({
                 label: 'Lode',
                 submenu: [
                     {
@@ -140,9 +144,9 @@ class ApplicationMenu {
             )
         }
 
-        template.push(fileMenu)
+        this.template.push(fileMenu)
 
-        template.push({
+        this.template.push({
             label: __DARWIN__ ? 'Edit' : '&Edit',
             submenu: [
                 { role: 'undo', label: 'Undo' },
@@ -159,7 +163,7 @@ class ApplicationMenu {
             ]
         })
 
-        template.push({
+        this.template.push({
             label: '&View',
             submenu: [
                 {
@@ -199,25 +203,19 @@ class ApplicationMenu {
             ]
         })
 
-        template.push({
-            label: __DARWIN__ ? 'Project' : '&Project',
-            submenu: new ProjectMenu(
-                this.options.project,
-                this.window!.getWebContents()
-            ).getTemplate()
-        })
+        this.registerContextMenu(__DARWIN__ ? 'Project' : '&Project', new ProjectMenu(
+            this.options.project,
+            this.window!.getWebContents()
+        ))
 
-        template.push({
-            label: __DARWIN__ ? 'Framework' : 'F&ramework',
-            submenu: new FrameworkMenu(
-                this.options.repository,
-                this.options.framework,
-                this.window!.getWebContents()
-            ).getTemplate()
-        })
+        this.registerContextMenu(__DARWIN__ ? 'Framework' : 'F&ramework', new FrameworkMenu(
+            this.options.repository,
+            this.options.framework,
+            this.window!.getWebContents()
+        ))
 
         if (__DEV__) {
-            template.push({
+            this.template.push({
                 label: __DARWIN__ ? 'Development' : '&Development',
                 submenu: [
                     {
@@ -277,7 +275,7 @@ class ApplicationMenu {
         }
 
         if (__DARWIN__) {
-            template.push({
+            this.template.push({
                 role: 'window',
                 submenu: [
                     { role: 'minimize' },
@@ -340,12 +338,12 @@ class ApplicationMenu {
         ]
 
         if (__DARWIN__) {
-            template.push({
+            this.template.push({
                 role: 'help',
                 submenu: helpItems
             })
         } else {
-            template.push({
+            this.template.push({
                 label: '&Help',
                 submenu: [
                     {
@@ -359,10 +357,19 @@ class ApplicationMenu {
             })
         }
 
-        Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+        Menu.setApplicationMenu(Menu.buildFromTemplate(this.template))
+    }
 
-        // Update template after rendering.
-        this.template = template
+    protected registerContextMenu (label: string, menu: ContextMenu): void {
+        this.menus[label] = menu
+        this.template.push({
+            label,
+            submenu: menu.getTemplate()
+        })
+    }
+
+    public getContextMenu (label: string): ContextMenu {
+        return this.menus[label]
     }
 
     public build (window: ApplicationWindow | null): Promise<Array<Electron.MenuItemConstructorOptions>> {

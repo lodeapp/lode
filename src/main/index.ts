@@ -8,6 +8,7 @@ import { isEmpty, identity, pickBy } from 'lodash'
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import {
     applicationMenu,
+    Menu as ContextMenu,
     ProjectMenu,
     RepositoryMenu,
     FrameworkMenu,
@@ -472,6 +473,22 @@ ipcMain
                     resolve()
                 })
                 .open()
+        })
+    })
+
+ipcMain
+    .handle('titlebar-menu', async (event: Electron.IpcMainInvokeEvent, item: string, rect: DOMRect): Promise<void> => {
+        return new Promise(resolve => {
+            console.log({ item })
+            const menu: ContextMenu = applicationMenu.getContextMenu(item)
+            if (menu) {
+                applicationMenu.getContextMenu(item)
+                    .attachTo(rect)
+                    .after(() => {
+                        resolve()
+                    })
+                    .open()
+            }
         })
     })
 

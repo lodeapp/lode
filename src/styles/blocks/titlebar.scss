@@ -20,20 +20,26 @@
     .titlebar-menu {
         left: 0;
         list-style: none;
-        padding: 7px 6px;
         position: absolute;
         top: 0;
+        z-index: 3;
 
         li {
             display: inline-block;
-            margin-right: 12px;
 
-            &:hover {
-                background: rgba(0, 0, 0, .1);
-            }
+            button {
+                appearance: none;
+                background-color: transparent;
+                border: 0;
+                padding: 7px 12px;
 
-            &:active {
-                background: rgba(0, 0, 0, .2);
+                &:hover {
+                    background: rgba(0, 0, 0, .1);
+                }
+
+                &:active {
+                    background: rgba(0, 0, 0, .2);
+                }
             }
         }
     }

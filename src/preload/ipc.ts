@@ -53,7 +53,8 @@ export enum AllowedIpcInvocationMap {
     'repository-scan',
     'repository-validate',
     'terms',
-    'test-get'
+    'test-get',
+    'titlebar-menu'
 }
 
 export type AllowedIpcEvents = keyof typeof AllowedIpcEventMap
