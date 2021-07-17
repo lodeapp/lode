@@ -72,206 +72,182 @@ class ApplicationMenu {
         }
 
         if (__DARWIN__) {
-            this.template.push({
-                label: 'Lode',
-                submenu: [
-                    {
-                        label: 'About Lode',
-                        click: emit('show-about')
-                    },
-                    updater,
-                    separator,
-                    {
-                        label: 'Preferences…',
-                        accelerator: 'CmdOrCtrl+,',
-                        click: emit('show-preferences')
-                    },
-                    separator,
-                    {
-                        role: 'services',
-                        submenu: []
-                    },
-                    separator,
-                    { role: 'hide' },
-                    { role: 'hideOthers' },
-                    { role: 'unhide' },
-                    separator,
-                    { role: 'quit' }
-                ]
-            })
-        }
-
-        const fileMenu: Electron.MenuItemConstructorOptions = {
-            label: __DARWIN__ ? 'File' : '&File',
-            submenu: [
-                {
-                    label: __DARWIN__ ? 'New Project' : 'New project',
-                    accelerator: 'CmdOrCtrl+N',
-                    click: emit('project-add')
-                },
-                {
-                    label: __DARWIN__ ? 'Switch Project' : 'Switch project',
-                    enabled: projects && projects.length > 1,
-                    submenu: projects && projects.length > 1 ? projects.map(project => {
-                        return {
-                            label: project.name,
-                            type: 'checkbox',
-                            checked: !!currentProject && currentProject.id === project.id,
-                            click: emit('project-switch', project.id, (menuItem: Electron.MenuItem) => {
-                                // Don't toggle the item, unless it's the current project,
-                                // as the switch might still be cancelled by the user. If
-                                // switch project is confirmed, menu will be rebuilt anyway.
-                                menuItem.checked = !!currentProject && currentProject.id === project.id
-                            })
-                        }
-                    }) : undefined
-                }
-            ]
-        }
-
-        if (!__DARWIN__) {
-            const fileItems = fileMenu.submenu as Electron.MenuItemConstructorOptions[]
-
-            fileItems.push(
-                separator,
-                {
-                    label: 'Options…',
+            this.addSection('Lode', new ContextMenu(this.window!.getWebContents())
+                .add({
+                    label: 'About Lode',
+                    click: emit('show-about')
+                })
+                .add(updater)
+                .separator()
+                .add({
+                    label: 'Preferences…',
                     accelerator: 'CmdOrCtrl+,',
                     click: emit('show-preferences')
-                },
-                separator,
-                { role: 'quit' }
+                })
+                .separator()
+                .add({
+                    role: 'services',
+                    submenu: []
+                })
+                .separator()
+                .add({ role: 'hide' })
+                .add({ role: 'hideOthers' })
+                .add({ role: 'unhide' })
+                .separator()
+                .add({ role: 'quit' })
             )
         }
 
-        this.template.push(fileMenu)
+        this.addSection('&File', new ContextMenu(this.window!.getWebContents())
+            .add({
+                label: __DARWIN__ ? 'New Project' : 'New project',
+                accelerator: 'CmdOrCtrl+N',
+                click: emit('project-add')
+            })
+            .add({
+                label: __DARWIN__ ? 'Switch Project' : 'Switch project',
+                enabled: projects && projects.length > 1,
+                submenu: projects && projects.length > 1 ? projects.map(project => {
+                    return {
+                        label: project.name,
+                        type: 'checkbox',
+                        checked: !!currentProject && currentProject.id === project.id,
+                        click: emit('project-switch', project.id, (menuItem: Electron.MenuItem) => {
+                            // Don't toggle the item, unless it's the current project,
+                            // as the switch might still be cancelled by the user. If
+                            // switch project is confirmed, menu will be rebuilt anyway.
+                            menuItem.checked = !!currentProject && currentProject.id === project.id
+                        })
+                    }
+                }) : undefined
+            })
+            .addIf(!__DARWIN__, separator)
+            .addIf(!__DARWIN__, {
+                label: 'Options…',
+                accelerator: 'CmdOrCtrl+,',
+                click: emit('show-preferences')
+            })
+            .addIf(!__DARWIN__, separator)
+            .addIf(!__DARWIN__, { role: 'quit' })
+        )
 
-        this.template.push({
-            label: __DARWIN__ ? 'Edit' : '&Edit',
-            submenu: [
-                { role: 'undo', label: 'Undo' },
-                { role: 'redo', label: 'Redo' },
-                separator,
-                { role: 'cut', label: 'Cut' },
-                { role: 'copy', label: 'Copy' },
-                { role: 'paste', label: 'Paste' },
-                {
-                    label: 'Select all',
-                    accelerator: 'CmdOrCtrl+A',
-                    click: emit('select-all')
-                }
-            ]
-        })
+        this.addSection('&Edit', new ContextMenu(this.window!.getWebContents())
+            .add({ role: 'undo', label: 'Undo' })
+            .add({ role: 'redo', label: 'Redo' })
+            .separator()
+            .add({ role: 'cut', label: 'Cut' })
+            .add({ role: 'copy', label: 'Copy' })
+            .add({ role: 'paste', label: 'Paste' })
+            .add({
+                label: 'Select all',
+                accelerator: 'CmdOrCtrl+A',
+                click: emit('select-all')
+            })
+        )
 
-        this.template.push({
-            label: '&View',
-            submenu: [
-                {
-                    label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle full screen',
-                    role: 'togglefullscreen'
-                },
-                separator,
-                {
-                    label: __DARWIN__ ? 'Reset Zoom' : 'Reset zoom',
-                    accelerator: 'CmdOrCtrl+0',
-                    click: zoom(ZoomDirection.Reset)
-                },
-                {
-                    label: __DARWIN__ ? 'Zoom In' : 'Zoom in',
-                    accelerator: 'CmdOrCtrl+=',
-                    click: zoom(ZoomDirection.In)
-                },
-                {
-                    label: __DARWIN__ ? 'Zoom Out' : 'Zoom out',
-                    accelerator: 'CmdOrCtrl+-',
-                    click: zoom(ZoomDirection.Out)
-                },
-                separator,
-                {
-                    label: __DARWIN__
-                        ? 'Toggle Developer Tools'
-                        : 'Toggle developer tools',
-                    accelerator: (() => {
-                        return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
-                    })(),
-                    click (item: any, focusedWindow: Electron.BrowserWindow | undefined) {
-                        if (focusedWindow) {
-                            focusedWindow.webContents.toggleDevTools()
-                        }
+        this.addSection('&View', new ContextMenu(this.window!.getWebContents())
+            .add({
+                label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle full screen',
+                role: 'togglefullscreen'
+            })
+            .separator()
+            .add({
+                label: __DARWIN__ ? 'Reset Zoom' : 'Reset zoom',
+                accelerator: 'CmdOrCtrl+0',
+                click: zoom(ZoomDirection.Reset)
+            })
+            .add({
+                label: __DARWIN__ ? 'Zoom In' : 'Zoom in',
+                accelerator: 'CmdOrCtrl+=',
+                click: zoom(ZoomDirection.In)
+            })
+            .add({
+                label: __DARWIN__ ? 'Zoom Out' : 'Zoom out',
+                accelerator: 'CmdOrCtrl+-',
+                click: zoom(ZoomDirection.Out)
+            })
+            .separator()
+            .add({
+                label: __DARWIN__
+                    ? 'Toggle Developer Tools'
+                    : 'Toggle developer tools',
+                accelerator: (() => {
+                    return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
+                })(),
+                click (item: any, focusedWindow: Electron.BrowserWindow | undefined) {
+                    if (focusedWindow) {
+                        focusedWindow.webContents.toggleDevTools()
                     }
                 }
-            ]
-        })
+            })
+        )
 
-        this.registerContextMenu(__DARWIN__ ? 'Project' : '&Project', new ProjectMenu(
+        this.addSection('&Project', new ProjectMenu(
             this.options.project,
             this.window!.getWebContents()
         ))
 
-        this.registerContextMenu(__DARWIN__ ? 'Framework' : 'F&ramework', new FrameworkMenu(
+        this.addSection('F&ramework', new FrameworkMenu(
             this.options.repository,
             this.options.framework,
             this.window!.getWebContents()
         ))
 
         if (__DEV__) {
-            this.template.push({
-                label: __DARWIN__ ? 'Development' : '&Development',
-                submenu: [
-                    {
-                        label: '&Reload',
-                        accelerator: 'CmdOrCtrl+Shift+0',
-                        click (item: any, focusedWindow: Electron.BrowserWindow | undefined) {
-                            if (focusedWindow) {
-                                focusedWindow.reload()
-                            }
-                        },
-                        visible: __DEV__
-                    },
-                    separator,
-                    {
-                        label: __DARWIN__ ? 'Log Project' : 'Log project',
-                        click: emit('log-project')
-                    },
-                    {
-                        label: __DARWIN__ ? 'Log Settings' : 'Log settings',
-                        click: emit('log-settings')
-                    },
-                    {
-                        label: __DARWIN__ ? 'Log Renderer State' : 'Log renderer state',
-                        click: emit('log-renderer-state')
-                    },
-                    separator,
-                    {
-                        label: __DARWIN__
-                            ? 'Show User Data Folder in Finder'
-                            : __WIN32__
-                                ? 'Show user data folder in Explorer'
-                                : 'Show user data folder in your File Manager',
-                        click () {
-                            const path = app.getPath('userData')
-                            ensureDir(path)
-                                .then(() => {
-                                    shell.openPath(path)
-                                })
-                                .catch(error => {
-                                    log.error('Failed to opened logs directory from menu.', error)
-                                })
+            this.addSection('&Development', new ContextMenu(this.window!.getWebContents())
+                .add({
+                    label: '&Reload',
+                    accelerator: 'CmdOrCtrl+Shift+0',
+                    click (item: any, focusedWindow: Electron.BrowserWindow | undefined) {
+                        if (focusedWindow) {
+                            focusedWindow.reload()
                         }
                     },
-                    separator,
-                    {
-                        label: 'Crash main process',
-                        click () {
-                            throw new Error('Boomtown!')
-                        }
-                    },
-                    {
-                        label: 'Crash renderer process',
-                        click: emit('crash')
+                    visible: __DEV__
+                })
+                .separator()
+                .add({
+                    label: __DARWIN__ ? 'Log Project' : 'Log project',
+                    click: emit('log-project')
+                })
+                .add({
+                    label: __DARWIN__ ? 'Log Settings' : 'Log settings',
+                    click: emit('log-settings')
+                })
+                .add({
+                    label: __DARWIN__ ? 'Log Renderer State' : 'Log renderer state',
+                    click: emit('log-renderer-state')
+                })
+                .separator()
+                .add({
+                    label: __DARWIN__
+                        ? 'Show User Data Folder in Finder'
+                        : __WIN32__
+                            ? 'Show user data folder in Explorer'
+                            : 'Show user data folder in your File Manager',
+                    click () {
+                        const path = app.getPath('userData')
+                        ensureDir(path)
+                            .then(() => {
+                                shell.openPath(path)
+                            })
+                            .catch(error => {
+                                log.error('Failed to opened logs directory from menu.', error)
+                            })
                     }
-                ]
-            })
+                })
+                .separator()
+                .add({
+                    label: 'Crash main process',
+                    click () {
+                        throw new Error('Boomtown!')
+                    }
+                })
+                .add({
+                    label: 'Crash renderer process',
+                    click: emit('crash')
+                })
+            )
         }
 
         if (__DARWIN__) {
@@ -343,33 +319,26 @@ class ApplicationMenu {
                 submenu: helpItems
             })
         } else {
-            this.template.push({
-                label: '&Help',
-                submenu: [
-                    {
-                        label: 'About Lode',
-                        click: emit('show-about')
-                    },
-                    updater,
-                    separator,
-                    ...helpItems
-                ]
-            })
+            this.addSection('&Help', new ContextMenu(this.window!.getWebContents())
+                .add({
+                    label: 'About Lode',
+                    click: emit('show-about')
+                })
+                .add(updater)
+                .separator()
+                .addMultiple(helpItems)
+            )
         }
 
         Menu.setApplicationMenu(Menu.buildFromTemplate(this.template))
     }
 
-    protected registerContextMenu (label: string, menu: ContextMenu): void {
+    protected addSection (label: string, menu: ContextMenu): void {
         this.menus[label] = menu
         this.template.push({
             label,
             submenu: menu.getTemplate()
         })
-    }
-
-    public getContextMenu (label: string): ContextMenu {
-        return this.menus[label]
     }
 
     public build (window: ApplicationWindow | null): Promise<Array<Electron.MenuItemConstructorOptions>> {
@@ -406,6 +375,10 @@ class ApplicationMenu {
         return compact(this.template.map(item => {
             return item.label || ''
         }))
+    }
+
+    public getSection (label: string): ContextMenu {
+        return this.menus[label]
     }
 }
 

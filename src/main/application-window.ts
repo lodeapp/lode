@@ -131,7 +131,6 @@ export class ApplicationWindow {
 
         this.window.webContents.on('did-finish-load', () => {
             this.onReady()
-            console.log(applicationMenu.getSections())
             this.window.webContents.send('did-finish-load', {
                 theme: nativeTheme.shouldUseDarkColors ? 'dark' : 'light',
                 menu: applicationMenu.getSections(),

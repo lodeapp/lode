@@ -479,16 +479,16 @@ ipcMain
 ipcMain
     .handle('titlebar-menu', async (event: Electron.IpcMainInvokeEvent, item: string, rect: DOMRect): Promise<void> => {
         return new Promise(resolve => {
-            console.log({ item })
-            const menu: ContextMenu = applicationMenu.getContextMenu(item)
-            if (menu) {
-                applicationMenu.getContextMenu(item)
-                    .attachTo(rect)
-                    .after(() => {
-                        resolve()
-                    })
-                    .open()
+            const menu: ContextMenu = applicationMenu.getSection(item)
+            if (!menu) {
+                resolve()
             }
+            menu
+                .attachTo(rect)
+                .after(() => {
+                    resolve()
+                })
+                .open()
         })
     })
 
