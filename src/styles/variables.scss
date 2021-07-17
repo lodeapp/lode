@@ -157,8 +157,7 @@
 }
 
 // Overrides
-// @include win32-context {
-@include darwin-context {
+@include win32-context {
     --titlebar-height: 32px;
 
     &.theme-light {
