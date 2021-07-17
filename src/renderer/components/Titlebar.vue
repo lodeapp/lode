@@ -30,10 +30,10 @@ export default {
             console.log('MINIMIZING')
         },
         maximize () {
-            console.log('MAXIMIZING')
+            Lode.ipc.send('maximize')
         },
         restore () {
-            console.log('RESTORING')
+            Lode.ipc.send('maximize')
         },
         close () {
             console.log('CLOSING')

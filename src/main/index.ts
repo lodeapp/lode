@@ -141,6 +141,15 @@ ipcMain
     .on('window-set', (event: Electron.IpcMainEvent, args: any[]) => {
         currentWindow = event as any
     })
+    .on('maximize', (event: Electron.IpcMainEvent) => {
+        if (currentWindow) {
+            if (currentWindow.getChild().isMaximized()) {
+                currentWindow.getChild().unmaximize()
+                return
+            }
+            currentWindow.getChild().maximize()
+        }
+    })
     .on('menu-refresh', (event: Electron.IpcMainEvent) => {
         applicationMenu.build(currentWindow)
     })

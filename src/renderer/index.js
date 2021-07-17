@@ -51,7 +51,7 @@ const app = createApp({
                     this.loading = false
                 }
                 this.version = properties.version
-                this.menu = properties.menu
+                this.menu = __WIN32__ ? properties.menu : null
                 this.ready = true
             })
             .on('blur', () => {

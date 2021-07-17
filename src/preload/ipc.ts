@@ -13,6 +13,7 @@ export enum AllowedIpcEventMap {
   'framework-toggle-child',
   'framework-update',
   'log',
+  'maximize',
   'menu-refresh',
   'nugget-context-menu',
   'project-active-framework',
