@@ -136,6 +136,7 @@ export class ApplicationWindow {
                 menu: applicationMenu.getSections(),
                 projectId: get(this.getProject(), 'id', null),
                 focus: this.window.isFocused(),
+                maximized: this.window.isMaximized(),
                 version: app.getVersion()
             })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
@@ -146,6 +147,8 @@ export class ApplicationWindow {
             ipcMain.emit('window-set', this)
         })
         this.window.on('blur', () => this.window.webContents.send('blur'))
+        this.window.on('maximize', () => this.window.webContents.send('maximize'))
+        this.window.on('unmaximize', () => this.window.webContents.send('unmaximize'))
 
         this.window.loadURL(
             process.env.NODE_ENV === 'development'

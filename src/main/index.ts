@@ -150,6 +150,18 @@ ipcMain
             currentWindow.getChild().maximize()
         }
     })
+    .on('minimize', (event: Electron.IpcMainEvent) => {
+        if (currentWindow) {
+            currentWindow.getChild().minimize()
+        }
+    })
+    .on('close', (event: Electron.IpcMainEvent) => {
+        if (currentWindow) {
+            // `close` method doesn't seem to work on a frameless window,
+            // so we're going with `destroy` for now.
+            currentWindow.getChild().destroy()
+        }
+    })
     .on('menu-refresh', (event: Electron.IpcMainEvent) => {
         applicationMenu.build(currentWindow)
     })
@@ -486,19 +498,17 @@ ipcMain
     })
 
 ipcMain
-    .handle('titlebar-menu', async (event: Electron.IpcMainInvokeEvent, item: string, rect: DOMRect): Promise<void> => {
-        return new Promise(resolve => {
-            const menu: ContextMenu = applicationMenu.getSection(item)
-            if (!menu) {
-                resolve()
-            }
-            menu
-                .attachTo(rect)
-                .after(() => {
-                    resolve()
-                })
-                .open()
-        })
+    .handle('titlebar-menu', (event: Electron.IpcMainInvokeEvent, item: string, rect: DOMRect): void => {
+        const menu: ContextMenu = applicationMenu.getSection(item)
+        if (!menu) {
+            return
+        }
+        menu
+            .attachTo(rect, false)
+            .after(() => {
+                event.sender.send('titlebar-menu-closed', item)
+            })
+            .open()
     })
 
 ipcMain

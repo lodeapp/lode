@@ -7,7 +7,7 @@
     height: var(--titlebar-height);
     padding: 2px 4px 0;
     position: relative;
-    width: calc(100% - 2px);
+    width: 100%;
 
     .titlebar-drag {
         -webkit-app-region: drag;
@@ -31,14 +31,15 @@
                 appearance: none;
                 background-color: transparent;
                 border: 0;
-                padding: 7px 12px;
+                outline: 0;
+                padding: 5px 12px 4px;
 
                 &:hover {
-                    background: rgba(0, 0, 0, .1);
+                    background-color: rgba(0, 0, 0, .1);
                 }
 
-                &:active {
-                    background: rgba(0, 0, 0, .2);
+                &:focus {
+                    background-color: transparent;
                 }
             }
         }
@@ -62,13 +63,25 @@
             justify-content: center;
             width: 100%;
 
-            &:hover {
-                background: rgba(0, 0, 0, .1);
+            button {
+                appearance: none;
+                background-color: transparent;
+                border: 0;
+                color: inherit;
+                display: block;
+                height: 100%;
+                outline: 0;
+                width: 100%;
+
+                &:hover {
+                    background-color: rgba(0, 0, 0, .1);
+                }
+
+                svg {
+                    fill: currentColor;
+                }
             }
 
-            &:active {
-                background: rgba(0, 0, 0, .2);
-            }
 
             &.control-min {
                 grid-column: 1;
@@ -79,31 +92,51 @@
                 grid-column: 2;
             }
 
-            .control-close {
+            &.control-close {
                 grid-column: 3;
+
+                &:hover {
+                    background-color: #e81123;
+                    color: #fff;
+                }
+            }
+
+            &.control-restore {
+                display: none;
+            }
+        }
+    }
+
+    .is-maximized & {
+        .controls {
+            .control-restore {
+                display: flex;
+            }
+
+            .control-max {
+                display: none;
             }
         }
     }
 }
 
-.maximized {
-    .titlebar {
-        padding: 0;
-        width: 100%;
-    }
-
-    .control-restore {
-        display: flex !important;
-    }
-
-    .control-max {
-        display: none;
-    }
+.titlebar-backdrop {
+    background-color: $black;
+    bottom: 0;
+    height: calc(100% - var(--titlebar-height));
+    left: 0;
+    margin-top: var(--titlebar-height);
+    opacity: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    transition: opacity ease-out 20ms;
+    width: 100%;
+    z-index: 1002;
 }
 
-@media (device-pixel-ratio: 1.5), (device-pixel-ratio: 2), (device-pixel-ratio: 3) {
-    .controls img {
-        height: 10px;
-        width: 10px;
+.titlebar-active {
+    .titlebar-backdrop {
+        opacity: .4;
     }
 }

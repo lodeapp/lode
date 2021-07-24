@@ -158,12 +158,9 @@
 
 // Overrides
 @include win32-context {
-    --titlebar-height: 32px;
+    --titlebar-height: 28px;
 
     &.theme-light {
-        --sidebar-color: #fff;
-        --sidebar-border-color: var(--primary-border-color);
-
         --primary-background-color: #{$white};
         --secondary-background-color: #{$white};
         --secondary-background-color-dark: #{darken($white, 5%)};

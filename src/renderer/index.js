@@ -47,6 +47,9 @@ const app = createApp({
                 if (properties.focus) {
                     document.body.classList.add('is-focused')
                 }
+                if (properties.maximized) {
+                    document.body.classList.add('is-maximized')
+                }
                 if (!properties.projectId) {
                     this.loading = false
                 }
@@ -59,6 +62,12 @@ const app = createApp({
             })
             .on('focus', () => {
                 document.body.classList.add('is-focused')
+            })
+            .on('maximize', () => {
+                document.body.classList.add('is-maximized')
+            })
+            .on('unmaximize', () => {
+                document.body.classList.remove('is-maximized')
             })
             .on('theme-updated', (event, newTheme) => {
                 document.body.classList.remove('theme-light')

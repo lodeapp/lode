@@ -3,31 +3,66 @@
         <div class="titlebar-drag"></div>
         <ul class="titlebar-menu">
             <li v-for="item in $root.menu" :key="item">
-                <button type="button" @click="onMenuClick(item, $event)">{{ label(item) }}</button>
+                <button
+                    type="button"
+                    @mousedown="onMenuClick(item, $event)"
+                >{{ label(item) }}</button>
             </li>
         </ul>
         <div class="controls">
             <div class="control control-min" @click="minimize">
-                <img srcset="static/icons/system/min-k-10.png 1x, static/icons/system/min-k-12.png 1.25x, static/icons/system/min-k-15.png 1.5x, static/icons/system/min-k-15.png 1.75x, static/icons/system/min-k-20.png 2x, static/icons/system/min-k-20.png 2.25x, static/icons/system/min-k-24.png 2.5x, static/icons/system/min-k-30.png 3x, static/icons/system/min-k-30.png 3.5x" draggable="false">
+                <button type="button">
+                    <svg aria-hidden="true" version="1.1" width="10" height="10">
+                        <path d="M 0,5 10,5 10,6 0,6 Z" />
+                    </svg>
+                </button>
             </div>
             <div class="control control-max" @click="maximize">
-                <img srcset="static/icons/system/max-k-10.png 1x, static/icons/system/max-k-12.png 1.25x, static/icons/system/max-k-15.png 1.5x, static/icons/system/max-k-15.png 1.75x, static/icons/system/max-k-20.png 2x, static/icons/system/max-k-20.png 2.25x, static/icons/system/max-k-24.png 2.5x, static/icons/system/max-k-30.png 3x, static/icons/system/max-k-30.png 3.5x" draggable="false">
+                <button type="button">
+                    <svg aria-hidden="true" version="1.1" width="10" height="10">
+                        <path d="M 0,0 0,10 10,10 10,0 Z M 1,1 9,1 9,9 1,9 Z" />
+                    </svg>
+                </button>
             </div>
             <div class="control control-restore" @click="restore">
-                <img srcset="static/icons/system/restore-k-10.png 1x, static/icons/system/restore-k-12.png 1.25x, static/icons/system/restore-k-15.png 1.5x, static/icons/system/restore-k-15.png 1.75x, static/icons/system/restore-k-20.png 2x, static/icons/system/restore-k-20.png 2.25x, static/icons/system/restore-k-24.png 2.5x, static/icons/system/restore-k-30.png 3x, static/icons/system/restore-k-30.png 3.5x" draggable="false">
+                <button type="button">
+                    <svg aria-hidden="true" version="1.1" width="10" height="10">
+                        <path d="m 2,1e-5 0,2 -2,0 0,8 8,0 0,-2 2,0 0,-8 z m 1,1 6,0 0,6 -1,0 0,-5 -5,0 z m -2,2 6,0 0,6 -6,0 z" />
+                    </svg>
+                </button>
             </div>
             <div class="control control-close" @click="close">
-                <img srcset="static/icons/system/close-k-10.png 1x, static/icons/system/close-k-12.png 1.25x, static/icons/system/close-k-15.png 1.5x, static/icons/system/close-k-15.png 1.75x, static/icons/system/close-k-20.png 2x, static/icons/system/close-k-20.png 2.25x, static/icons/system/close-k-24.png 2.5x, static/icons/system/close-k-30.png 3x, static/icons/system/close-k-30.png 3.5x" draggable="false">
+                <button type="button">
+                    <svg aria-hidden="true" version="1.1" width="10" height="10">
+                        <path d="M 0,0 0,0.7 4.3,5 0,9.3 0,10 0.7,10 5,5.7 9.3,10 10,10 10,9.3 5.7,5 10,0.7 10,0 9.3,0 5,4.3 0.7,0 Z" />
+                    </svg>
+                </button>
             </div>
         </div>
     </header>
+    <div v-if="active" class="titlebar-backdrop"></div>
 </template>
 
 <script>
 export default {
+    data () {
+        return {
+            active: false
+        }
+    },
+    created () {
+        Lode.ipc.on('titlebar-menu-closed', (event, item) => {
+            document.body.classList.remove('titlebar-active')
+            setTimeout(() => {
+                if (this.active === item) {
+                    this.active = false
+                }
+            }, 100)
+        })
+    },
     methods: {
         minimize () {
-            console.log('MINIMIZING')
+            Lode.ipc.send('minimize')
         },
         maximize () {
             Lode.ipc.send('maximize')
@@ -36,12 +71,17 @@ export default {
             Lode.ipc.send('maximize')
         },
         close () {
-            console.log('CLOSING')
+            Lode.ipc.send('close')
         },
         label (item) {
             return item.replace(/(&)(\w+)/, '$2')
         },
         onMenuClick (item, event) {
+            if (this.active === item) {
+                return
+            }
+            this.active = item
+            document.body.classList.add('titlebar-active')
             Lode.ipc.invoke('titlebar-menu', item, JSON.parse(JSON.stringify(event.target.getBoundingClientRect())))
         }
     }

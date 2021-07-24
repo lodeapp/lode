@@ -52,14 +52,14 @@ export class Menu {
         return this
     }
 
-    attachTo (rect: DOMRect | undefined): this {
+    attachTo (rect: DOMRect | undefined, padding: boolean = true): this {
         if (rect) {
             const { x, y, height } = rect
             this.options = {
                 ...this.options,
                 ...{
                     x: Math.ceil(x),
-                    y: Math.ceil(y + height + 7)
+                    y: Math.ceil(y + height + (padding ? 7 : 0))
                 }
             }
         }
