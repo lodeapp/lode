@@ -1,5 +1,5 @@
 <template>
-    <Titlebar v-if="$root.menu" />
+    <Titlebar v-if="$root.menu" :sections="$root.menu" />
     <div class="contents">
         <template v-if="$root.ready">
             <main v-if="!$root.loading && !$root.project" class="no-projects">

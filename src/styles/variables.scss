@@ -165,4 +165,9 @@
         --secondary-background-color: #{$white};
         --secondary-background-color-dark: #{darken($white, 5%)};
     }
+
+    &.titlebar-hidden {
+        // stylelint-disable-next-line length-zero-no-unit
+        --titlebar-height: 0px;
+    }
 }

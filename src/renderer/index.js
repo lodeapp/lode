@@ -50,6 +50,10 @@ const app = createApp({
                 if (properties.maximized) {
                     document.body.classList.add('is-maximized')
                 }
+                if (properties.fullscreen) {
+                    document.body.classList.add('is-fullscreen')
+                    document.body.classList.add('titlebar-hidden')
+                }
                 if (!properties.projectId) {
                     this.loading = false
                 }
@@ -68,6 +72,14 @@ const app = createApp({
             })
             .on('unmaximize', () => {
                 document.body.classList.remove('is-maximized')
+            })
+            .on('enter-full-screen', () => {
+                document.body.classList.add('is-fullscreen')
+                document.body.classList.add('titlebar-hidden')
+            })
+            .on('leave-full-screen', () => {
+                document.body.classList.remove('is-fullscreen')
+                document.body.classList.remove('titlebar-hidden')
             })
             .on('theme-updated', (event, newTheme) => {
                 document.body.classList.remove('theme-light')

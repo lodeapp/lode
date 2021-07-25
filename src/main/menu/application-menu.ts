@@ -147,8 +147,9 @@ class ApplicationMenu {
 
         this.addSection('&View', new ContextMenu(this.window!.getWebContents())
             .add({
-                label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle full screen',
-                role: 'togglefullscreen'
+                label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle &full screen',
+                role: 'togglefullscreen',
+                accelerator: __DARWIN__ ? undefined : 'F11'
             })
             .separator()
             .add({

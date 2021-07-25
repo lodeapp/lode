@@ -7,6 +7,7 @@
     height: var(--titlebar-height);
     padding: 2px 4px 0;
     position: relative;
+    top: 0;
     width: 100%;
 
     .titlebar-drag {
@@ -27,6 +28,23 @@
         li {
             display: inline-block;
 
+            &.titlebar-logo {
+                height: 28px;
+                padding: 0 5px;
+                padding: 0 7px;
+                position: relative;
+                text-align: center;
+                top: -2px;
+                width: 32px;
+
+                img {
+                    height: 17px;
+                    position: relative;
+                    top: 5px;
+                    width: 17px;
+                }
+            }
+
             button {
                 appearance: none;
                 background-color: transparent;
@@ -34,12 +52,9 @@
                 outline: 0;
                 padding: 5px 12px 4px;
 
-                &:hover {
-                    background-color: rgba(0, 0, 0, .1);
-                }
-
+                &:hover,
                 &:focus {
-                    background-color: transparent;
+                    background-color: rgba(0, 0, 0, .1);
                 }
             }
         }
@@ -107,6 +122,12 @@
         }
     }
 
+    &.shortcut-mode {
+        .accelerator {
+            text-decoration: underline;
+        }
+    }
+
     .is-maximized & {
         .controls {
             .control-restore {
@@ -138,5 +159,11 @@
 .titlebar-active {
     .titlebar-backdrop {
         opacity: .4;
+    }
+}
+
+.is-fullscreen.titlebar-hidden {
+    .titlebar {
+        display: none;
     }
 }

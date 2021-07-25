@@ -137,6 +137,7 @@ export class ApplicationWindow {
                 projectId: get(this.getProject(), 'id', null),
                 focus: this.window.isFocused(),
                 maximized: this.window.isMaximized(),
+                fullscreen: this.window.isFullScreen(),
                 version: app.getVersion()
             })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
@@ -149,6 +150,8 @@ export class ApplicationWindow {
         this.window.on('blur', () => this.window.webContents.send('blur'))
         this.window.on('maximize', () => this.window.webContents.send('maximize'))
         this.window.on('unmaximize', () => this.window.webContents.send('unmaximize'))
+        this.window.on('enter-full-screen', () => this.window.webContents.send('enter-full-screen'))
+        this.window.on('leave-full-screen', () => this.window.webContents.send('leave-full-screen'))
 
         this.window.loadURL(
             process.env.NODE_ENV === 'development'
