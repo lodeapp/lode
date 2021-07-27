@@ -79,22 +79,29 @@ export default {
                 label: section.replace(/&(\w{1})/, '<span class="accelerator">$1</span>')
             }
         })
-        Lode.ipc.on('titlebar-menu-closed', (event, item) => {
-            document.body.classList.remove('titlebar-active')
-            this.toggleShortcutMode(false)
-            setTimeout(() => {
-                if (this.active === item) {
-                    this.active = false
-                }
-            }, 100)
-        })
+        Lode.ipc
+            .on('titlebar-menu-closed', (event, item) => {
+                document.body.classList.remove('titlebar-active')
+                this.toggleShortcutMode(false)
+                this.hide()
+                setTimeout(() => {
+                    if (this.active === item) {
+                        this.active = false
+                    }
+                }, 100)
+            })
+            .on('leave-full-screen', () => {
+                this.toggleShortcutMode(false)
+            })
     },
     mounted () {
-        document.addEventListener('keydown', this.shortcutToggleHandler)
+        // Register on both keydown and keyup, but they will only run once
+        // either on fullscreen (keyup) or not (keydown).
+        document.addEventListener('keydown', this.altHandler)
         document.addEventListener('keyup', this.altHandler)
     },
     unmounted () {
-        document.removeEventListener('keydown', this.shortcutToggleHandler)
+        document.removeEventListener('keydown', this.altHandler)
         document.removeEventListener('keyup', this.altHandler)
     },
     methods: {
@@ -110,14 +117,18 @@ export default {
         close () {
             Lode.ipc.send('close')
         },
+        isFullscreen () {
+            return document.body.classList.contains('is-fullscreen')
+        },
         show () {
-            if (document.body.classList.contains('is-fullscreen')) {
+            if (this.isFullscreen()) {
+                this.toggleShortcutMode(true)
                 document.body.classList.remove('titlebar-hidden')
                 this.forceShow = true
             }
         },
         hide () {
-            if (document.body.classList.contains('is-fullscreen')) {
+            if (this.isFullscreen()) {
                 document.body.classList.add('titlebar-hidden')
                 this.toggleShortcutMode(false)
                 this.forceShow = false
@@ -129,18 +140,17 @@ export default {
                     button.blur()
                 })
         },
-        shortcutToggleHandler (event) {
-            if (this.$input.isAltKey(event) && !this.$input.isRepeating(event)) {
-                this.toggleShortcutMode()
-            }
-        },
         altHandler (event) {
-            if (this.$input.isAltKey(event)) {
-                if (document.body.classList.contains('titlebar-hidden')) {
-                    this.show()
-                    return
+            if (this.$input.isAltKey(event) && !this.$input.isRepeating(event)) {
+                if (this.isFullscreen() && event.type === 'keyup') {
+                    if (document.body.classList.contains('titlebar-hidden')) {
+                        this.show()
+                        return
+                    }
+                    this.hide()
+                } else if (!this.isFullscreen() && event.type === 'keydown') {
+                    this.toggleShortcutMode()
                 }
-                this.hide()
             }
         },
         escapeHandler (event) {
@@ -209,11 +219,6 @@ export default {
             this.active = item
             document.body.classList.add('titlebar-active')
             Lode.ipc.invoke('titlebar-menu', item, JSON.parse(JSON.stringify(el.getBoundingClientRect())))
-            if (this.forceShow) {
-                Lode.ipc.once('titlebar-menu-closed', () => {
-                    this.hide()
-                })
-            }
         }
     }
 }
