@@ -8,7 +8,7 @@
             <li v-for="item in menu" :key="item">
                 <button
                     type="button"
-                    @mousedown="openSection(item.section)"
+                    @mousedown.left="openSection(item.section)"
                     @keyup.down="openSection(item.section)"
                     @keyup.enter="openSection(item.section)"
                     @keyup.right="focusRight($event)"

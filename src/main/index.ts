@@ -157,9 +157,7 @@ ipcMain
     })
     .on('close', (event: Electron.IpcMainEvent) => {
         if (currentWindow) {
-            // `close` method doesn't seem to work on a frameless window,
-            // so we're going with `destroy` for now.
-            currentWindow.getChild().destroy()
+            currentWindow.getChild().close()
         }
     })
     .on('menu-refresh', (event: Electron.IpcMainEvent) => {

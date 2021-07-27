@@ -94,7 +94,10 @@ class ApplicationMenu {
                 .add({ role: 'hideOthers' })
                 .add({ role: 'unhide' })
                 .separator()
-                .add({ role: 'quit' })
+                .add({
+                    role: 'quit',
+                    accelerator: 'Alt+F4'
+                })
             )
         }
 
