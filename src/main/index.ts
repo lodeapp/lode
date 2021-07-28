@@ -8,6 +8,7 @@ import { isEmpty, identity, pickBy } from 'lodash'
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import {
     applicationMenu,
+    Menu as ContextMenu,
     ProjectMenu,
     RepositoryMenu,
     FrameworkMenu,
@@ -139,6 +140,25 @@ ipcMain
     })
     .on('window-set', (event: Electron.IpcMainEvent, args: any[]) => {
         currentWindow = event as any
+    })
+    .on('maximize', (event: Electron.IpcMainEvent) => {
+        if (currentWindow) {
+            if (currentWindow.getChild().isMaximized()) {
+                currentWindow.getChild().unmaximize()
+                return
+            }
+            currentWindow.getChild().maximize()
+        }
+    })
+    .on('minimize', (event: Electron.IpcMainEvent) => {
+        if (currentWindow) {
+            currentWindow.getChild().minimize()
+        }
+    })
+    .on('close', (event: Electron.IpcMainEvent) => {
+        if (currentWindow) {
+            currentWindow.getChild().close()
+        }
     })
     .on('menu-refresh', (event: Electron.IpcMainEvent) => {
         applicationMenu.build(currentWindow)
@@ -473,6 +493,20 @@ ipcMain
                 })
                 .open()
         })
+    })
+
+ipcMain
+    .handle('titlebar-menu', (event: Electron.IpcMainInvokeEvent, item: string, rect: DOMRect): void => {
+        const menu: ContextMenu = applicationMenu.getSection(item)
+        if (!menu) {
+            return
+        }
+        menu
+            .attachTo(rect, false)
+            .after(() => {
+                event.sender.send('titlebar-menu-closed', item)
+            })
+            .open()
     })
 
 ipcMain

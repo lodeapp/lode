@@ -13,12 +13,7 @@
     > .has-status {
         display: flex;
         flex-direction: column;
-        height: 100vh;
-
-        @include win32 {
-            // Discount titlebar height to prevent overflow.
-            height: calc(100vh - 30px);
-        }
+        height: calc(100vh - var(--titlebar-height));
 
         > .header {
             background-color: var(--secondary-background-color);

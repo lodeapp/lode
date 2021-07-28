@@ -39,6 +39,9 @@ export default class Input {
     isEscapeKey (event) {
         return event.code === 'Escape'
     }
+    isAltKey (event) {
+        return event.key === 'Alt'
+    }
     isAuxiliaryKey (event) {
         return this.auxiliaryKeyCodes().indexOf(event.code) > -1
     }
@@ -92,6 +95,9 @@ export default class Input {
     }
     isTag (event, tag) {
         return event.target.tagName.toLowerCase() === tag.toLowerCase()
+    }
+    isRepeating (event) {
+        return event.repeat
     }
     on (event, tag, callback) {
         event.preventDefault()

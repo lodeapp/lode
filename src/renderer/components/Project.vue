@@ -6,7 +6,7 @@
         />
         <Split v-else :class="{ 'empty': !repository || !framework || frameworkLoading || repositoryMissing }">
             <Pane class="sidebar">
-                <div class="draggable"></div>
+                <Draggable />
                 <header>
                     <h5 class="sidebar-header">Project</h5>
                     <div
@@ -46,7 +46,7 @@
                 </Scrollable>
             </Pane>
             <Pane id="list">
-                <div class="draggable"></div>
+                <Draggable />
                 <template v-if="!repositories.length">
                     <div class="cta">
                         <h2>{{ $string.set('Add repositories to :0', model.name) }}</h2>
@@ -87,7 +87,7 @@
                 </template>
             </Pane>
             <Pane id="results">
-                <div class="draggable"></div>
+                <Draggable />
                 <template v-if="framework && !repositoryMissing && !frameworkLoading">
                     <div v-if="!context.length" class="results blankslate">
                         <h3>No test selected</h3>
@@ -106,6 +106,7 @@
 import _findIndex from 'lodash/findIndex'
 import { mapGetters } from 'vuex'
 import Pane from '@/components/Pane'
+import Draggable from '@/components/Draggable'
 import Scrollable from '@/components/Scrollable'
 import ProjectLoader from '@/components/ProjectLoader'
 import SidebarRepository from '@/components/SidebarRepository'
@@ -118,6 +119,7 @@ export default {
     name: 'Project',
     components: {
         Pane,
+        Draggable,
         Scrollable,
         ProjectLoader,
         SidebarRepository,

@@ -3,7 +3,7 @@
     border-radius: .0001px; // Prevent .shadow from overflowing.
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: calc(100vh - var(--titlebar-height));
     padding: 33px 0 0;
 
     // Fade contents on macOS when window is not focused. This will
@@ -13,8 +13,6 @@
     }
 
     @include win32 {
-        // Discount titlebar height to prevent overflow.
-        height: calc(100vh - 30px);
         padding: 0;
     }
 

@@ -35,7 +35,8 @@ const app = createApp({
             modals: [],
             ready: false,
             loading: true,
-            project: null
+            project: null,
+            menu: null
         }
     },
     created () {
@@ -46,10 +47,18 @@ const app = createApp({
                 if (properties.focus) {
                     document.body.classList.add('is-focused')
                 }
+                if (properties.maximized) {
+                    document.body.classList.add('is-maximized')
+                }
+                if (properties.fullscreen) {
+                    document.body.classList.add('is-fullscreen')
+                    document.body.classList.add('titlebar-hidden')
+                }
                 if (!properties.projectId) {
                     this.loading = false
                 }
                 this.version = properties.version
+                this.menu = __WIN32__ ? properties.menu : null
                 this.ready = true
             })
             .on('blur', () => {
@@ -57,6 +66,20 @@ const app = createApp({
             })
             .on('focus', () => {
                 document.body.classList.add('is-focused')
+            })
+            .on('maximize', () => {
+                document.body.classList.add('is-maximized')
+            })
+            .on('unmaximize', () => {
+                document.body.classList.remove('is-maximized')
+            })
+            .on('enter-full-screen', () => {
+                document.body.classList.add('is-fullscreen')
+                document.body.classList.add('titlebar-hidden')
+            })
+            .on('leave-full-screen', () => {
+                document.body.classList.remove('is-fullscreen')
+                document.body.classList.remove('titlebar-hidden')
             })
             .on('theme-updated', (event, newTheme) => {
                 document.body.classList.remove('theme-light')

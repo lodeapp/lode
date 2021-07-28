@@ -4,6 +4,7 @@ import { app, ipcMain, BrowserWindow, nativeTheme } from 'electron'
 import { getResourceDirectory } from '@lib/helpers/paths'
 import { state } from '@lib/state'
 import { ProjectIdentifier, ProjectOptions, Project } from '@lib/frameworks/project'
+import { applicationMenu } from '@main/menu'
 
 let windowStateKeeper: any | null = null
 
@@ -132,11 +133,22 @@ export class ApplicationWindow {
             this.onReady()
             this.window.webContents.send('did-finish-load', {
                 theme: nativeTheme.shouldUseDarkColors ? 'dark' : 'light',
+                menu: applicationMenu.getSections(),
                 projectId: get(this.getProject(), 'id', null),
                 focus: this.window.isFocused(),
+                maximized: this.window.isMaximized(),
+                fullscreen: this.window.isFullScreen(),
                 version: app.getVersion()
             })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
+        })
+
+        this.window.on('close', () => {
+            // Frameless window doesn't seem to want to close normally in
+            // Windows, so we'll destroy it instead.
+            if (__WIN32__) {
+                this.window.destroy()
+            }
         })
 
         this.window.on('focus', () => {
@@ -144,6 +156,10 @@ export class ApplicationWindow {
             ipcMain.emit('window-set', this)
         })
         this.window.on('blur', () => this.window.webContents.send('blur'))
+        this.window.on('maximize', () => this.window.webContents.send('maximize'))
+        this.window.on('unmaximize', () => this.window.webContents.send('unmaximize'))
+        this.window.on('enter-full-screen', () => this.window.webContents.send('enter-full-screen'))
+        this.window.on('leave-full-screen', () => this.window.webContents.send('leave-full-screen'))
 
         this.window.loadURL(
             process.env.NODE_ENV === 'development'

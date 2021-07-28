@@ -1,10 +1,12 @@
 .contents {
     display: flex;
+    flex: 0 0 auto;
     flex-direction: row;
-    flex-grow: 1;
+    height: 100%;
+    position: relative;
 
     .no-projects {
-        height: 100vw;
+        flex: 1 1 auto;
         padding: 210px 0 0;
         text-align: center;
         width: 100%;

@@ -85,6 +85,12 @@
     --secondary-background-color: #{$gray-000};
     --secondary-background-color-dark: #{$gray-100};
 
+    // Titlebar
+    // Pixel unit is required in order for `calc` values to compute properly.
+    // stylelint-disable-next-line length-zero-no-unit
+    --titlebar-height: 0px;
+    --titlebar-background-color: #{$white};
+
     // Panes
     --pane-gutter-width: 11px;
     --pane-border-color: var(--primary-border-color);
@@ -152,12 +158,16 @@
 
 // Overrides
 @include win32-context {
-    &.theme-light {
-        --sidebar-color: #fff;
-        --sidebar-border-color: var(--primary-border-color);
+    --titlebar-height: 28px;
 
+    &.theme-light {
         --primary-background-color: #{$white};
         --secondary-background-color: #{$white};
         --secondary-background-color-dark: #{darken($white, 5%)};
+    }
+
+    &.titlebar-hidden {
+        // stylelint-disable-next-line length-zero-no-unit
+        --titlebar-height: 0px;
     }
 }

@@ -1,26 +1,169 @@
 .titlebar {
+    background-color: var(--titlebar-background-color);
     border-bottom: 1px solid var(--sidebar-border-color);
+    color: $black;
+    display: block;
+    flex: 0 0 auto;
+    height: var(--titlebar-height);
+    padding: 2px 4px 0;
+    position: relative;
+    top: 0;
+    width: 100%;
 
-    .menubar {
-        font-size: var(--font-size);
+    .titlebar-drag {
+        -webkit-app-region: drag;
+        height: 100%;
+        position: relative;
+        width: 100%;
+        z-index: 1;
+    }
 
-        .action-item {
-            .action-menu-item {
-                text-decoration: none;
+    .titlebar-menu {
+        left: 0;
+        list-style: none;
+        position: absolute;
+        top: 0;
+        z-index: 3;
 
-                &:hover {
-                    text-decoration: none;
+        li {
+            display: inline-block;
+
+            &.titlebar-logo {
+                height: 28px;
+                padding: 0 5px;
+                padding: 0 7px;
+                position: relative;
+                text-align: center;
+                top: -2px;
+                width: 32px;
+
+                img {
+                    height: 17px;
+                    position: relative;
+                    top: 5px;
+                    width: 17px;
                 }
             }
 
-            .action-label {
-                &.separator {
-                    border-bottom-color: #999;
-                    margin-left: 0 !important;
-                    margin-right: 0 !important;
+            button {
+                appearance: none;
+                background-color: transparent;
+                border: 0;
+                outline: 0;
+                padding: 5px 12px 4px;
+
+                &:hover,
+                &:focus {
+                    background-color: rgba(0, 0, 0, .1);
                 }
             }
         }
+    }
 
+    .controls {
+        -webkit-app-region: no-drag;
+        display: grid;
+        grid-template-columns: repeat(3, 46px);
+        height: 100%;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 2;
+
+        .control {
+            align-items: center;
+            display: flex;
+            grid-row: 1 / span 1;
+            height: 100%;
+            justify-content: center;
+            width: 100%;
+
+            button {
+                appearance: none;
+                background-color: transparent;
+                border: 0;
+                color: inherit;
+                display: block;
+                height: 100%;
+                outline: 0;
+                width: 100%;
+
+                &:hover {
+                    background-color: rgba(0, 0, 0, .1);
+                }
+
+                svg {
+                    fill: currentColor;
+                }
+            }
+
+
+            &.control-min {
+                grid-column: 1;
+            }
+
+            &.control-max,
+            &.control-restore {
+                grid-column: 2;
+            }
+
+            &.control-close {
+                grid-column: 3;
+
+                &:hover {
+                    background-color: #e81123;
+                    color: #fff;
+                }
+            }
+
+            &.control-restore {
+                display: none;
+            }
+        }
+    }
+
+    &.shortcut-mode {
+        .accelerator {
+            text-decoration: underline;
+        }
+    }
+
+    .is-maximized & {
+        .controls {
+            .control-restore {
+                display: flex;
+            }
+
+            .control-max {
+                display: none;
+            }
+        }
+    }
+}
+
+.titlebar-backdrop {
+    background-color: $black;
+    bottom: 0;
+    height: calc(100% - var(--titlebar-height));
+    left: 0;
+    margin-top: var(--titlebar-height);
+    opacity: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    transition: opacity ease-out 20ms;
+    width: 100%;
+    z-index: 1002;
+}
+
+.titlebar-active {
+    .titlebar-backdrop {
+        opacity: .4;
+    }
+}
+
+.is-fullscreen.titlebar-hidden {
+    .titlebar {
+        display: none;
     }
 }

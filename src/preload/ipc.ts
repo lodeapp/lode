@@ -1,30 +1,33 @@
 import { ipcRenderer } from 'electron'
 
 export enum AllowedIpcEventMap {
-  'framework-add',
-  'framework-filter',
-  'framework-refresh',
-  'framework-remove',
-  'framework-reset-filters',
-  'framework-select',
-  'framework-start',
-  'framework-stop',
-  'framework-suites',
-  'framework-toggle-child',
-  'framework-update',
-  'log',
-  'menu-refresh',
-  'nugget-context-menu',
-  'project-active-framework',
-  'project-repositories',
-  'project-switch',
-  'repository-remove',
-  'repository-toggle',
-  'select-all',
-  'settings-reset',
-  'settings-update',
-  'track-event',
-  'track-screenview'
+    'close',
+    'framework-add',
+    'framework-filter',
+    'framework-refresh',
+    'framework-remove',
+    'framework-reset-filters',
+    'framework-select',
+    'framework-start',
+    'framework-stop',
+    'framework-suites',
+    'framework-toggle-child',
+    'framework-update',
+    'log',
+    'maximize',
+    'minimize',
+    'menu-refresh',
+    'nugget-context-menu',
+    'project-active-framework',
+    'project-repositories',
+    'project-switch',
+    'repository-remove',
+    'repository-toggle',
+    'select-all',
+    'settings-reset',
+    'settings-update',
+    'track-event',
+    'track-screenview'
 }
 
 export enum AllowedIpcInvocationMap {
@@ -53,7 +56,8 @@ export enum AllowedIpcInvocationMap {
     'repository-scan',
     'repository-validate',
     'terms',
-    'test-get'
+    'test-get',
+    'titlebar-menu'
 }
 
 export type AllowedIpcEvents = keyof typeof AllowedIpcEventMap
