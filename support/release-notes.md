@@ -1,8 +1,2 @@
-Added:
-  - Custom titlebar for Windows version
-
-Changed:
-  - Upgraded Electron to v13
-
 Fixed:
-  - Selecting to filter from framework menu not working as expected
+  - Icons alignment inside buttons on Windows version

@@ -40,7 +40,11 @@ button,
     .octicon {
         color: currentColor;
         line-height: 1.4em;
-        vertical-align: middle !important;
+
+        // Windows doesn't seem to need the same icon adjustments as macOS.
+        @include darwin {
+            vertical-align: middle !important;
+        }
     }
 
     > .Counter {
