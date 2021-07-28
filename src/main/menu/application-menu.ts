@@ -95,8 +95,7 @@ class ApplicationMenu {
                 .add({ role: 'unhide' })
                 .separator()
                 .add({
-                    role: 'quit',
-                    accelerator: 'Alt+F4'
+                    role: 'quit'
                 })
             )
         }
@@ -131,7 +130,10 @@ class ApplicationMenu {
                 click: emit('show-preferences')
             })
             .addIf(!__DARWIN__, separator)
-            .addIf(!__DARWIN__, { role: 'quit' })
+            .addIf(!__DARWIN__, {
+                role: 'quit',
+                accelerator: 'Alt+F4'
+            })
         )
 
         this.addSection('&Edit', new ContextMenu(this.window!.getWebContents())

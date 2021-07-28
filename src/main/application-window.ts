@@ -143,6 +143,14 @@ export class ApplicationWindow {
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
         })
 
+        this.window.on('close', () => {
+            // Frameless window doesn't seem to want to close normally in
+            // Windows, so we'll destroy it instead.
+            if (__WIN32__) {
+                this.window.destroy()
+            }
+        })
+
         this.window.on('focus', () => {
             this.window.webContents.send('focus')
             ipcMain.emit('window-set', this)
