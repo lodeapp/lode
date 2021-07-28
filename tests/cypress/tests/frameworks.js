@@ -550,4 +550,21 @@ describe('Framework management', () => {
             .should('have.class', 'status--idle')
             .ipcResetMockHistory()
     })
+
+    it('can focus on framework filter from application menu', function () {
+        cy
+            .startWithProject()
+            .nextTick(() => {
+                cy.stub(ipcRenderer, 'invoke', this.defaultResolver)
+            })
+            .ipcEvent('42:repositories', this.repositories)
+            .ipcEvent('framework-active', 'jest-1', this.repositories[0])
+            .nextTick()
+            .ipcEvent('jest-1:refreshed', this.suites['jest-1'], this.suites['jest-1'].length)
+            .ipcResetMockHistory()
+            .ipcEvent('menu-event', { name: 'filter' })
+            .nextTick()
+            .get('.filters.search input')
+            .should('be.focused')
+    })
 })
