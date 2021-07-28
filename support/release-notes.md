@@ -1,3 +1,6 @@
+Added:
+  - Custom titlebar for Windows version
+
 Changed:
   - Upgraded Electron to v13
 
