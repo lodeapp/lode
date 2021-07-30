@@ -64,11 +64,9 @@
   },
   "linux": {
     "category": "Development",
-    "icon": "build/icons/512x512.png",
+    "icon": "build/icons",
     "target": [
-      "deb",
-      "tar.gz",
-      "appimage"
+      "deb"
     ]
   },
   "publish": [

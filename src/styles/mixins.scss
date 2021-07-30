@@ -43,6 +43,18 @@
     }
 }
 
+@mixin linux {
+    body.platform-linux & {
+        @content;
+    }
+}
+
+@mixin linux-context {
+    body.platform-linux {
+        @content;
+    }
+}
+
 @mixin light {
     body.theme-light & {
         @content;

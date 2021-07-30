@@ -5,6 +5,10 @@
     height: 100%;
     position: relative;
 
+    @include linux {
+        border-top: 1px solid var(--sidebar-border-color);
+    }
+
     .no-projects {
         flex: 1 1 auto;
         padding: 210px 0 0;

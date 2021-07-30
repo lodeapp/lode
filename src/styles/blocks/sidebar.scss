@@ -4,7 +4,7 @@
     display: flex;
     flex-direction: column;
     height: calc(100vh - var(--titlebar-height));
-    padding: 33px 0 0;
+    padding: 0;
 
     // Fade contents on macOS when window is not focused. This will
     // be overridden to 1 when body.is-focused
@@ -12,8 +12,8 @@
         opacity: .7;
     }
 
-    @include win32 {
-        padding: 0;
+    @include darwin {
+        padding: 33px 0 0;
     }
 
     @include dark {
