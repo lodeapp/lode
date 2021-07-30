@@ -68,7 +68,7 @@ export class ApplicationWindow {
         } else if (__WIN32__) {
             windowOptions.frame = false
         } else if (__LINUX__) {
-            windowOptions.icon = Path.join(__static, 'icons/512x512.png')
+            windowOptions.icon = Path.join(__static, 'icons/1024x1024.png')
         }
 
         this.window = new BrowserWindow(windowOptions)
