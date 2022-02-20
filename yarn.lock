@@ -1368,24 +1368,24 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@primer/css@^17.3.0":
-  version "17.11.1"
-  resolved "https://registry.yarnpkg.com/@primer/css/-/css-17.11.1.tgz#bcc85c2955ec03ca37abb91806a03ecbfaa7fc99"
-  integrity sha512-9IAan2XO9D54VvSjNP7QZ3C62XMqIf6ltSnIGYh32HDaQuv8LbpptaAqH3bOrJl34Bwn40xI5qWt2vJwKYnFyA==
+"@primer/css@^19.4.0":
+  version "19.4.0"
+  resolved "https://registry.yarnpkg.com/@primer/css/-/css-19.4.0.tgz#3a6c1436987034253c05d3f4627b53b6593382de"
+  integrity sha512-Ptg9eTw140v97M+jdxP8vjC4BsiWjAvhMA0qjPx1rsH9oHfIrAqLEBDXkfMl5wYZrEflatyHAbxa4zos5DJttA==
   dependencies:
-    "@primer/primitives" "^4.7.1"
+    "@primer/primitives" "^7.4.0"
 
-"@primer/octicons@^14.2.2":
-  version "14.2.2"
-  resolved "https://registry.yarnpkg.com/@primer/octicons/-/octicons-14.2.2.tgz#cfe2b59b47fdd5354f7ea1aae8f6bd472fc96f1d"
-  integrity sha512-EjNTkyrg165PDWJXFtFW/757cnT2wVNJTLQC38FI90S2xazMEs3kKMjlG8vtD3CuF8VR0oQUitwZRUHJbgbc6w==
+"@primer/octicons@^16.3.1":
+  version "16.3.1"
+  resolved "https://registry.yarnpkg.com/@primer/octicons/-/octicons-16.3.1.tgz#f52ed3a643d2da995abbcd98b2f54447bf29c808"
+  integrity sha512-J3IlK0Ok88RQZVB//af7Lnl1Vw2buyyr5G3oEvK1wRSYTJi/E/HBm5JZUihmDAtm/unr85FC534DwA5e+4LR2w==
   dependencies:
     object-assign "^4.1.1"
 
-"@primer/primitives@^4.7.1":
-  version "4.8.1"
-  resolved "https://registry.yarnpkg.com/@primer/primitives/-/primitives-4.8.1.tgz#05f76e47f67018514fd54b35ca615b9d27ef2a46"
-  integrity sha512-mgr6+EKpn4DixuhLt3drk7QmNQO8M7RYONWovg1nkV7p56jklhDLfZmp1luLUee37eQGAxx3ToStL6gqINFjnQ==
+"@primer/primitives@^7.4.0":
+  version "7.4.1"
+  resolved "https://registry.yarnpkg.com/@primer/primitives/-/primitives-7.4.1.tgz#5ab1af3b078bb6b7b158ac84a1ae8a07fbdd3f95"
+  integrity sha512-cos7zQ6tgTtbQzF1gymiuQPcccqkHpccQCaahMRdqHqJP7kiG9/lbq+u13UdrAFJ8iJEyORfHXKd+bwhQf4svw==
 
 "@samverschueren/stream-to-observable@^0.3.0":
   version "0.3.1"

@@ -1,7 +1,7 @@
 <template>
     <div class="snippet">
         <button v-if="copy" type="button" class="btn btn-sm" title="Copy to clipboard" @click="clipboard">
-            <Icon symbol="clippy" />
+            <Icon symbol="copy" />
         </button>
         <pre><code :class="['hljs', activeLanguage]" v-html="snippet"></code></pre>
     </div>

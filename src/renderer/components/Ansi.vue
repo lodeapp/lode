@@ -1,7 +1,7 @@
 <template>
     <div v-if="content" class="ansi">
         <button type="button" class="btn btn-sm" title="Copy to clipboard" @click="clipboard">
-            <Icon symbol="clippy" />
+            <Icon symbol="copy" />
         </button>
         <button type="button" class="btn btn-sm" title="Show raw output" @click="showRaw = !showRaw">
             <Icon symbol="code" />

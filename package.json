@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "Lode",
-  "version": "0.33.1",
+  "version": "0.34.0",
   "author": "Tomas Buteler <info@lode.run>",
   "description": "A universal GUI for unit testing",
   "license": "MIT",
@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "@bugsnag/js": "^6.4.0",
-    "@primer/css": "^17.3.0",
-    "@primer/octicons": "^14.2.2",
+    "@primer/css": "^19.4.0",
+    "@primer/octicons": "^16.3.1",
     "@sentry/electron": "^2.5.1",
     "bottleneck": "^2.13.0",
     "date-fns": "^2.16.1",

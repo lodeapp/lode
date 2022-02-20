@@ -2,6 +2,8 @@
 // Functions
 // ========================================================================
 
+@use "sass:math";
+
 @function palette($color, $intensity: '500') {
     @if type-of($intensity) != string {
         $intensity: to-string($intensity);
@@ -69,7 +71,7 @@
             $result: $result * 10 + map-get($numbers, $character);
         } @else {
             $digits: $digits * 10;
-            $result: $result + map-get($numbers, $character) / $digits;
+            $result: $result + math.div(map-get($numbers, $character), $digits);
         }
     }
 

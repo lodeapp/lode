@@ -5,7 +5,7 @@
                 <Icon :symbol="expanded ? 'dash' : 'plus'" />
             </button>
             <button v-if="copy" class="btn-link" @click.stop.prevent="clipboard">
-                <Icon symbol="clippy" />
+                <Icon symbol="copy" />
             </button>
             <slot name="header"></slot>
         </div>
