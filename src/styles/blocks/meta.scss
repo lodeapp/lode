@@ -43,9 +43,9 @@
             position: relative;
 
             &::after {
-                background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, .85) 90%);
+                background-image: linear-gradient(to bottom, rgb(255 255 255 / 0%), rgb(255 255 255 / 85%) 90%);
                 bottom: 0;
-                content: '';
+                content: "";
                 height: 7em;
                 left: 0;
                 pointer-events: none;

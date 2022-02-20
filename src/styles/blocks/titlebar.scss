@@ -54,7 +54,7 @@
 
                 &:hover,
                 &:focus {
-                    background-color: rgba(0, 0, 0, .1);
+                    background-color: rgb(0 0 0 / 10%);
                 }
             }
         }
@@ -89,14 +89,13 @@
                 width: 100%;
 
                 &:hover {
-                    background-color: rgba(0, 0, 0, .1);
+                    background-color: rgb(0 0 0 / 10%);
                 }
 
                 svg {
-                    fill: currentColor;
+                    fill: currentcolor;
                 }
             }
-
 
             &.control-min {
                 grid-column: 1;

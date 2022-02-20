@@ -1,6 +1,7 @@
+@use "sass:color";
+
 // Default
 :root {
-
     // Colors
     --color-gray-000: #{$gray-000};
     --color-gray-100: #{$gray-100};
@@ -12,7 +13,6 @@
     --color-gray-700: #{$gray-700};
     --color-gray-800: #{$gray-800};
     --color-gray-900: #{$gray-900};
-
     --color-blue-000: #{$blue-000};
     --color-blue-100: #{$blue-100};
     --color-blue-200: #{$blue-200};
@@ -23,7 +23,6 @@
     --color-blue-700: #{$blue-700};
     --color-blue-800: #{$blue-800};
     --color-blue-900: #{$blue-900};
-
     --color-green-000: #{$green-000};
     --color-green-100: #{$green-100};
     --color-green-200: #{$green-200};
@@ -34,7 +33,6 @@
     --color-green-700: #{$green-700};
     --color-green-800: #{$green-800};
     --color-green-900: #{$green-900};
-
     --color-yellow-000: #{$yellow-000};
     --color-yellow-100: #{$yellow-100};
     --color-yellow-200: #{$yellow-200};
@@ -45,7 +43,6 @@
     --color-yellow-700: #{$yellow-700};
     --color-yellow-800: #{$yellow-800};
     --color-yellow-900: #{$yellow-900};
-
     --color-orange-000: #{$orange-000};
     --color-orange-100: #{$orange-100};
     --color-orange-200: #{$orange-200};
@@ -56,7 +53,6 @@
     --color-orange-700: #{$orange-700};
     --color-orange-800: #{$orange-800};
     --color-orange-900: #{$orange-900};
-
     --color-red-000: #{$red-000};
     --color-red-100: #{$red-100};
     --color-red-200: #{$red-200};
@@ -67,7 +63,6 @@
     --color-red-700: #{$red-700};
     --color-red-800: #{$red-800};
     --color-red-900: #{$red-900};
-
     --color-purple-000: #{$purple-000};
     --color-purple-100: #{$purple-100};
     --color-purple-200: #{$purple-200};
@@ -100,17 +95,27 @@
     --sidebar-border-color: #{$gray-500};
     --sidebar-text-color: #{$gray-800};
     --sidebar-text-secondary-color: #{$gray-700};
-    --sidebar-active-color: rgba(0, 0, 0, .08);
+    --sidebar-active-color: rgb(0 0 0 / 8%);
 
     // Typography
-    --font-family-sans-serif: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif;
-    --font-family-monospace: 'SFMono-Regular', 'Fira Mono', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-
+    --font-family-sans-serif:
+        -apple-system,
+        blinkmacsystemfont,
+        "Segoe UI",
+        "Roboto",
+        "Oxygen",
+        "Ubuntu",
+        "Cantarell",
+        "Fira Sans",
+        "Droid Sans",
+        "Helvetica Neue",
+        arial,
+        sans-serif;
+    --font-family-monospace: "SFMono-Regular", "Fira Mono", consolas, "Liberation Mono", menlo, courier, monospace;
     --font-weight-bold: 800;
     --font-weight-semibold: 600;
     --font-weight-normal: 400;
     --font-weight-light: 300;
-
     --font-size: 12px;
     --font-size-sm: 11px;
     --font-size-md: 14px;
@@ -118,14 +123,12 @@
     --font-size-xl: 32px;
     --font-size-xxl: 42px;
     --font-size-xs: 9px;
-
     --input-text-color: #{$black};
     --input-placeholder-text-color: #{$gray-600};
     --link-color: #{$blue-400};
-
     --text-color: #{$black};
     --text-color-secondary: #{$gray-600};
-    --text-color-secondary-discreet: #{lighten($gray-600, 15%)};
+    --text-color-secondary-discreet: #{color.adjust($gray-600, $lightness: 15%)};
 
     // Spacing
     --spacing: 10px;
@@ -141,8 +144,8 @@
     --status-soft-border-width: 4px;
 
     // Focus
-    --item-selected-background-color: #{theme-color('selected', 100)};
-    --item-selected-active-background-color: #{theme-color('selected', 400)};
+    --item-selected-background-color: #{theme-color("selected", 100)};
+    --item-selected-active-background-color: #{theme-color("selected", 400)};
     --item-selected-active-text-color: #{$white};
 
     // Modals
@@ -163,7 +166,7 @@
     &.theme-light {
         --primary-background-color: #{$white};
         --secondary-background-color: #{$white};
-        --secondary-background-color-dark: #{darken($white, 5%)};
+        --secondary-background-color-dark: #{color.adjust($white, $lightness: -5%)};
     }
 
     &.titlebar-hidden {

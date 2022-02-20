@@ -133,10 +133,10 @@
         }
 
         > .cutoff {
-
             $height: 16px;
             $thickness: 110%;
             $offset: 4px;
+
             animation: fade-in-top .4s forwards;
             font-variant-numeric: tabular-nums;
             margin-top: var(--spacing);
@@ -145,7 +145,7 @@
             > div {
                 background-color: var(--secondary-background-color);
                 border: 1px solid var(--color-gray-400);
-                box-shadow: 0 0 0 3px rgba(0, 0, 0, .02);
+                box-shadow: 0 0 0 3px rgb(0 0 0 / 2%);
                 display: inline-block;
                 margin: var(--spacing) auto;
                 padding: var(--spacing-half) var(--spacing);
@@ -167,7 +167,7 @@
 
                 &::before,
                 &::after {
-                    content: '';
+                    content: "";
                     display: block;
                     left: 0;
                     position: absolute;
@@ -175,7 +175,9 @@
                 }
 
                 &::before {
-                    background: linear-gradient(-135deg, var(--primary-border-color) ($height*0.5), transparent 0) 0 ($height*0.5), linear-gradient(135deg, var(--primary-border-color) ($height*0.5), transparent 0) 0 ($height*0.5);
+                    background:
+                        linear-gradient(-135deg, var(--primary-border-color) ($height * .5), transparent 0) 0 ($height * .5),
+                        linear-gradient(135deg, var(--primary-border-color) ($height * .5), transparent 0) 0 ($height * .5);
                     background-position: top left;
                     background-repeat: repeat-x;
                     background-size: $height $height;
@@ -184,7 +186,9 @@
                 }
 
                 &::after {
-                    background: linear-gradient(-135deg, var(--secondary-background-color) ($height*0.5), transparent 0) 0 ($height*0.5), linear-gradient(135deg, var(--secondary-background-color) ($height*0.5), transparent 0) 0 ($height*0.5);
+                    background:
+                        linear-gradient(-135deg, var(--secondary-background-color) ($height * .5), transparent 0) 0 ($height * .5),
+                        linear-gradient(135deg, var(--secondary-background-color) ($height * .5), transparent 0) 0 ($height * .5);
                     background-position: top left;
                     background-repeat: repeat-x;
                     background-size: $height $height;

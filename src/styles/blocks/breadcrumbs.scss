@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .breadcrumbs {
     .breadcrumb-item {
         color: $secondary-text;
@@ -5,15 +7,15 @@
 
         &::after {
             border: 0;
-            color: lighten($secondary-discreet-text, 20%);
-            content: '●';
+            color: color.adjust($secondary-discreet-text, $lightness: 20%);
+            content: "●";
         }
     }
 
     ol {
         > :last-child {
             &::after {
-                content: '';
+                content: "";
             }
         }
     }

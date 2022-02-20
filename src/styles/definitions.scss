@@ -2,6 +2,8 @@
 // Colors
 // ========================================================================
 
+@use "sass:color";
+
 //
 //
 // -------- Grays --------
@@ -92,13 +94,11 @@ $purple-900: #29134e !default;
 // Black based on same hue as $gray-900
 $black: #1b1f23 !default;
 $white: #fff !default;
-
 $black-fade-15: rgba($black, .15) !default;
 $black-fade-30: rgba($black, .3) !default;
 $black-fade-50: rgba($black, .5) !default;
 $black-fade-70: rgba($black, .7) !default;
 $black-fade-85: rgba($black, .85) !default;
-
 $white-fade-15: rgba($white, .15) !default;
 $white-fade-30: rgba($white, .3) !default;
 $white-fade-50: rgba($white, .5) !default;
@@ -109,89 +109,89 @@ $white-fade-85: rgba($white, .85) !default;
 // Palette map
 //
 $palette: (
-    'gray': (
-        '000': $gray-000,
-        '100': $gray-100,
-        '200': $gray-200,
-        '300': $gray-300,
-        '400': $gray-400,
-        '500': $gray-500,
-        '600': $gray-600,
-        '700': $gray-700,
-        '800': $gray-800,
-        '900': $gray-900,
+    "gray": (
+        "000": $gray-000,
+        "100": $gray-100,
+        "200": $gray-200,
+        "300": $gray-300,
+        "400": $gray-400,
+        "500": $gray-500,
+        "600": $gray-600,
+        "700": $gray-700,
+        "800": $gray-800,
+        "900": $gray-900,
     ),
-    'blue': (
-        '000': $blue-000,
-        '100': $blue-100,
-        '200': $blue-200,
-        '300': $blue-300,
-        '400': $blue-400,
-        '500': $blue-500,
-        '600': $blue-600,
-        '700': $blue-700,
-        '800': $blue-800,
-        '900': $blue-900,
+    "blue": (
+        "000": $blue-000,
+        "100": $blue-100,
+        "200": $blue-200,
+        "300": $blue-300,
+        "400": $blue-400,
+        "500": $blue-500,
+        "600": $blue-600,
+        "700": $blue-700,
+        "800": $blue-800,
+        "900": $blue-900,
     ),
-    'green': (
-        '000': $green-000,
-        '100': $green-100,
-        '200': $green-200,
-        '300': $green-300,
-        '400': $green-400,
-        '500': $green-500,
-        '600': $green-600,
-        '700': $green-700,
-        '800': $green-800,
-        '900': $green-900,
+    "green": (
+        "000": $green-000,
+        "100": $green-100,
+        "200": $green-200,
+        "300": $green-300,
+        "400": $green-400,
+        "500": $green-500,
+        "600": $green-600,
+        "700": $green-700,
+        "800": $green-800,
+        "900": $green-900,
     ),
-    'yellow': (
-        '000': $yellow-000,
-        '100': $yellow-100,
-        '200': $yellow-200,
-        '300': $yellow-300,
-        '400': $yellow-400,
-        '500': $yellow-500,
-        '600': $yellow-600,
-        '700': $yellow-700,
-        '800': $yellow-800,
-        '900': $yellow-900,
+    "yellow": (
+        "000": $yellow-000,
+        "100": $yellow-100,
+        "200": $yellow-200,
+        "300": $yellow-300,
+        "400": $yellow-400,
+        "500": $yellow-500,
+        "600": $yellow-600,
+        "700": $yellow-700,
+        "800": $yellow-800,
+        "900": $yellow-900,
     ),
-    'orange': (
-        '000': $orange-000,
-        '100': $orange-100,
-        '200': $orange-200,
-        '300': $orange-300,
-        '400': $orange-400,
-        '500': $orange-500,
-        '600': $orange-600,
-        '700': $orange-700,
-        '800': $orange-800,
-        '900': $orange-900,
+    "orange": (
+        "000": $orange-000,
+        "100": $orange-100,
+        "200": $orange-200,
+        "300": $orange-300,
+        "400": $orange-400,
+        "500": $orange-500,
+        "600": $orange-600,
+        "700": $orange-700,
+        "800": $orange-800,
+        "900": $orange-900,
     ),
-    'red': (
-        '000': $red-000,
-        '100': $red-100,
-        '200': $red-200,
-        '300': $red-300,
-        '400': $red-400,
-        '500': $red-500,
-        '600': $red-600,
-        '700': $red-700,
-        '800': $red-800,
-        '900': $red-900,
+    "red": (
+        "000": $red-000,
+        "100": $red-100,
+        "200": $red-200,
+        "300": $red-300,
+        "400": $red-400,
+        "500": $red-500,
+        "600": $red-600,
+        "700": $red-700,
+        "800": $red-800,
+        "900": $red-900,
     ),
-    'purple': (
-        '000': $purple-000,
-        '100': $purple-100,
-        '200': $purple-200,
-        '300': $purple-300,
-        '400': $purple-400,
-        '500': $purple-500,
-        '600': $purple-600,
-        '700': $purple-700,
-        '800': $purple-800,
-        '900': $purple-900,
+    "purple": (
+        "000": $purple-000,
+        "100": $purple-100,
+        "200": $purple-200,
+        "300": $purple-300,
+        "400": $purple-400,
+        "500": $purple-500,
+        "600": $purple-600,
+        "700": $purple-700,
+        "800": $purple-800,
+        "900": $purple-900,
     ),
 );
 
@@ -199,8 +199,7 @@ $palette: (
 // Contextual
 //
 $secondary-text: $gray-600;
-$secondary-discreet-text: lighten($gray-600, 15%);
-
+$secondary-discreet-text: color.adjust($gray-600, $lightness: 15%);
 $brand-color: #f55272;
 $brand-contrast-color: #f0f8ff;
 $brand-contrast-text-color: #012c71;
@@ -210,36 +209,36 @@ $brand-contrast-text-color: #012c71;
 //
 
 $status-colors: (
-    'selected': (
-        'color': 'blue',
-        'default': '400',
+    "selected": (
+        "color": "blue",
+        "default": "400",
     ),
-    'passed': (
-        'color': 'green',
-        'default': '400',
+    "passed": (
+        "color": "green",
+        "default": "400",
     ),
-    'incomplete': (
-        'color': 'yellow',
-        'default': '500',
+    "incomplete": (
+        "color": "yellow",
+        "default": "500",
     ),
-    'warning': (
-        'color': 'orange',
-        'default': '500',
+    "warning": (
+        "color": "orange",
+        "default": "500",
     ),
-    'failed': (
-        'color': 'red',
-        'default': '500',
+    "failed": (
+        "color": "red",
+        "default": "500",
     ),
-    'idle': (
-        'color': 'gray',
-        'default': '400',
+    "idle": (
+        "color": "gray",
+        "default": "400",
     ),
-    'queued': (
-        'color': 'blue',
-        'default': '200',
+    "queued": (
+        "color": "blue",
+        "default": "200",
     ),
-    'partial': (
-        'color': 'yellow',
-        'default': '700',
+    "partial": (
+        "color": "yellow",
+        "default": "700",
     ),
 ) !default;

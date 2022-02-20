@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .add-repositories {
     .auto-scan {
         margin-top: var(--spacing-double);
@@ -45,7 +47,7 @@
 
 .framework-settings {
     border-top: 1px solid var(--primary-border-color);
-    box-shadow: inset 0 -4px 0 transparentize($gray-300, .8);
+    box-shadow: inset 0 -4px 0 color.adjust($gray-300, $alpha: -.8);
     counter-increment: framework;
     margin: 0;
     padding: var(--spacing-double) var(--spacing);
@@ -74,7 +76,7 @@
     .instructions {
         background-color: $blue-100;
         border-top: 1px solid $blue-300;
-        box-shadow: inset 0 -4px 0 transparentize($blue-300, .8);
+        box-shadow: inset 0 -4px 0 color.adjust($blue-300, $alpha: -.8);
         display: flex;
         margin: 0 calc(var(--spacing) * -1) var(--spacing);
         padding: var(--spacing-double);
@@ -94,7 +96,7 @@
         }
 
         code {
-            background-color: transparentize($blue-300, .6);
+            background-color: color.adjust($blue-300, $alpha: -.6);
             padding: 1px 4px;
         }
     }
@@ -102,7 +104,7 @@
     .counter {
         border: 1px solid $blue-500;
         border-radius: 100%;
-        box-shadow: 0 0 0 4px transparentize($blue-400, .8);
+        box-shadow: 0 0 0 4px color.adjust($blue-400, $alpha: -.8);
         color: $blue-600;
         font-size: 12px;
         height: 25px;
@@ -114,14 +116,14 @@
         top: 14px;
 
         &::before {
-            content: counters(framework, '');
+            content: counters(framework, "");
         }
     }
 
     &.status--pending {
         .counter {
             border: 1px solid $yellow-700;
-            box-shadow: 0 0 0 4px transparentize($yellow-500, .7);
+            box-shadow: 0 0 0 4px color.adjust($yellow-500, $alpha: -.7);
             color: $yellow-800;
         }
     }
@@ -129,7 +131,7 @@
     &.status--removed {
         .counter {
             border: 1px solid $red-500;
-            box-shadow: 0 0 0 4px transparentize($red-400, .8);
+            box-shadow: 0 0 0 4px color.adjust($red-400, $alpha: -.8);
             color: $red-600;
         }
     }

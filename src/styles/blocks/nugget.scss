@@ -1,5 +1,8 @@
+@use "sass:color";
+
 .nugget {
     @include clearfix;
+
     position: relative;
 
     &:focus {
@@ -18,7 +21,7 @@
         &::before {
             border-right-style: solid;
             border-right-width: 2px;
-            content: '';
+            content: "";
             height: calc(100% - 16px);
             left: 13px;
             position: absolute;
@@ -32,7 +35,7 @@
             border-style: double;
             border-width: 4px;
             bottom: 14px;
-            content: '';
+            content: "";
             height: 2px;
             left: 9px;
             position: absolute;
@@ -57,8 +60,8 @@
             z-index: 3;
 
             &::after {
-                color: theme-color('selected', 600);
-                content: '●';
+                color: theme-color("selected", 600);
+                content: "●";
                 display: block;
                 position: relative;
                 top: calc(50% - .7rem);
@@ -151,14 +154,14 @@
     &.status--passed {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color('passed');
+            border-color: theme-color("passed");
         }
 
         > .header {
             .status {
-                background-color: theme-color('passed');
-                border-color: darken(theme-color('passed'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('passed', 200);
+                background-color: theme-color("passed");
+                border-color: color.adjust(theme-color("passed"), $lightness: -10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("passed", 200);
             }
         }
     }
@@ -166,14 +169,14 @@
     &.status--failed {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color('failed');
+            border-color: theme-color("failed");
         }
 
         > .header {
             .status {
-                background-color: theme-color('failed');
-                border-color: darken(theme-color('failed'), 15%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('failed', 200);
+                background-color: theme-color("failed");
+                border-color: color.adjust(theme-color("failed"), $lightness: -15%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("failed", 200);
             }
         }
     }
@@ -182,14 +185,14 @@
     &.status--skipped {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color('incomplete');
+            border-color: theme-color("incomplete");
         }
 
         > .header {
             .status {
-                background-color: theme-color('incomplete');
-                border-color: darken(theme-color('incomplete'), 14%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('incomplete', 300);
+                background-color: theme-color("incomplete");
+                border-color: color.adjust(theme-color("incomplete"), $lightness: -14%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("incomplete", 300);
             }
         }
     }
@@ -198,14 +201,14 @@
     &.status--missing {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color('warning');
+            border-color: theme-color("warning");
         }
 
         > .header {
             .status {
-                background-color: theme-color('warning');
-                border-color: darken(theme-color('warning'), 5%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('warning', 300);
+                background-color: theme-color("warning");
+                border-color: color.adjust(theme-color("warning"), $lightness: -5%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("warning", 300);
 
                 i {
                     color: $white;
@@ -217,14 +220,15 @@
     &.status--partial {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color('partial');
+            border-color: theme-color("partial");
         }
 
         > .header {
             .status {
-                @include striped('partial');
-                border-color: darken(theme-color('partial'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('partial', 400);
+                @include striped("partial");
+
+                border-color: color.adjust(theme-color("partial"), $lightness: -10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("partial", 400);
             }
         }
     }
@@ -232,18 +236,18 @@
     &.status--empty {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color('idle');
+            border-color: theme-color("idle");
         }
 
         > .header {
             .status {
-                background-color: theme-color('idle', 200);
-                border-color: theme-color('idle');
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('idle', 200);
+                background-color: theme-color("idle", 200);
+                border-color: theme-color("idle");
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("idle", 200);
 
                 &::before {
-                    border-left: 1px solid theme-color('idle');
-                    content: '';
+                    border-left: 1px solid theme-color("idle");
+                    content: "";
                     display: block;
                     height: calc(100% + 10px);
                     left: 8px;
@@ -260,14 +264,14 @@
     &.status--running {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color('queued');
+            border-color: theme-color("queued");
         }
 
         > .header {
             .status {
-                background-color: theme-color('queued');
-                border-color: darken(theme-color('queued'), 3%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('queued', 100);
+                background-color: theme-color("queued");
+                border-color: color.adjust(theme-color("queued"), $lightness: -3%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("queued", 100);
             }
         }
     }
@@ -275,14 +279,14 @@
     &.status--idle {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color('idle');
+            border-color: theme-color("idle");
         }
 
         > .header {
             .status {
-                background-color: theme-color('idle');
-                border-color: darken(theme-color('idle'), 3%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('idle', 200);
+                background-color: theme-color("idle");
+                border-color: color.adjust(theme-color("idle"), $lightness: -3%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("idle", 200);
             }
         }
     }
@@ -290,14 +294,14 @@
     &.status--error {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color('failed');
+            border-color: theme-color("failed");
         }
 
         > .header {
             .status {
-                background-color: theme-color('failed', 400);
-                border-color: darken(theme-color('failed'), 10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color('failed', 200);
+                background-color: theme-color("failed", 400);
+                border-color: color.adjust(theme-color("failed"), $lightness: -10%);
+                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("failed", 200);
 
                 i {
                     color: $white;
@@ -320,7 +324,6 @@
                     }
 
                     input:checked {
-
                         // On macOS, checkboxes are blue, so we'll add a round
                         // white border to checkboxes in active nuggets, to
                         // increase contrast.
@@ -339,7 +342,7 @@
     &.is-child-active {
         > .header {
             > .status {
-                border-right-color: theme-color('selected');
+                border-right-color: theme-color("selected");
                 box-shadow: 4px 0 0 0 $blue-300;
             }
         }
@@ -351,7 +354,7 @@
     &.has-children:focus {
         > .header {
             > .header-inner {
-                background-color: theme-color('selected', 100);
+                background-color: theme-color("selected", 100);
 
                 > .filename {
                     > .dir {

@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .has-status {
     > .header {
         > .title {
@@ -47,9 +49,9 @@
 
 .status {
     > .indicator {
-        background-color: theme-color('idle');
+        background-color: theme-color("idle");
         border-radius: 100%;
-        box-shadow: 0 0 0 4px transparentize(theme-color('idle'), .6);
+        box-shadow: 0 0 0 4px color.adjust(theme-color("idle"), $alpha: -.6);
         display: inline-block;
         height: 14px;
         position: relative;
@@ -72,10 +74,10 @@
 
         .spinner {
             animation: rotate .6s infinite linear;
-            border-bottom: .75em solid rgba(153, 153, 153, .4);
-            border-left: .75em solid rgba(100, 100, 100, .9);
-            border-right: .75em solid rgba(153, 153, 153, .4);
-            border-top: .75em solid rgba(153, 153, 153, .4);
+            border-bottom: .75em solid rgb(153 153 153 / 40%);
+            border-left: .75em solid rgb(100 100 100 / 90%);
+            border-right: .75em solid rgb(153 153 153 / 40%);
+            border-top: .75em solid rgb(153 153 153 / 40%);
             display: block;
             font-size: 2px;
             left: -3px;
@@ -89,30 +91,30 @@
 
     &.status--passed {
         > .indicator {
-            background-color: theme-color('passed');
-            box-shadow: 0 0 0 4px theme-color('passed', 200);
+            background-color: theme-color("passed");
+            box-shadow: 0 0 0 4px theme-color("passed", 200);
         }
     }
 
     &.status--failed {
         > .indicator {
-            background-color: theme-color('failed');
-            box-shadow: 0 0 0 4px theme-color('failed', 200);
+            background-color: theme-color("failed");
+            box-shadow: 0 0 0 4px theme-color("failed", 200);
         }
     }
 
     &.status--incomplete {
         > .indicator {
-            background-color: theme-color('incomplete');
-            box-shadow: 0 0 0 4px theme-color('incomplete', 200);
+            background-color: theme-color("incomplete");
+            box-shadow: 0 0 0 4px theme-color("incomplete", 200);
         }
     }
 
     &.status--warning,
     &.status--missing {
         > .indicator {
-            background-color: theme-color('warning');
-            box-shadow: 0 0 0 4px theme-color('warning', 200);
+            background-color: theme-color("warning");
+            box-shadow: 0 0 0 4px theme-color("warning", 200);
 
             i {
                 color: $white;
@@ -123,19 +125,20 @@
 
     &.status--partial {
         > .indicator {
-            @include striped('partial');
-            box-shadow: 0 0 0 4px theme-color('partial', 400);
+            @include striped("partial");
+
+            box-shadow: 0 0 0 4px theme-color("partial", 400);
         }
     }
 
     &.status--queued {
         > .indicator {
-            background-color: theme-color('queued');
+            background-color: theme-color("queued");
             box-shadow: 0 0 0 4px transparent;
 
             .spinner {
-                border-color: theme-color('queued', 200);
-                border-left-color: theme-color('queued', 400);
+                border-color: theme-color("queued", 200);
+                border-left-color: theme-color("queued", 400);
             }
         }
     }
@@ -143,25 +146,25 @@
     &.status--empty {
         > .indicator {
             background-color: $white;
-            box-shadow: 0 0 0 4px theme-color('idle', 300);
+            box-shadow: 0 0 0 4px theme-color("idle", 300);
 
             i {
-                color: theme-color('idle', 'step', 200);
+                color: theme-color("idle", "step", 200);
             }
         }
     }
 
     &.status--idle {
         > .indicator {
-            background-color: theme-color('idle', 500);
-            box-shadow: 0 0 0 4px theme-color('idle', 300);
+            background-color: theme-color("idle", 500);
+            box-shadow: 0 0 0 4px theme-color("idle", 300);
         }
     }
 
     &.status--error {
         > .indicator {
-            background-color: theme-color('failed');
-            box-shadow: 0 0 0 4px theme-color('failed', 200);
+            background-color: theme-color("failed");
+            box-shadow: 0 0 0 4px theme-color("failed", 200);
 
             i {
                 color: $white;
@@ -174,7 +177,7 @@
     &.status--refreshing,
     &.status--running {
         > .indicator {
-            background-color: theme-color('idle', 300);
+            background-color: theme-color("idle", 300);
             box-shadow: 0 0 0 4px transparent;
         }
     }

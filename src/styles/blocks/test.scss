@@ -8,6 +8,7 @@
         text-overflow: ellipsis;
         top: 0;
         white-space: nowrap;
+
         // 100% - left positioning - padding
         width: calc(100% - (var(--status-block-width) + 9px) - var(--status-block-width));
     }

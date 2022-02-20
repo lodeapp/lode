@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .selective-toggle {
     height: 16px;
     margin-left: 3px;
@@ -39,7 +41,7 @@
         }
 
         &[disabled] {
-            border-color: transparentize($secondary-discreet-text, .5);
+            border-color: color.adjust($secondary-discreet-text, $alpha: -.5);
         }
     }
 
