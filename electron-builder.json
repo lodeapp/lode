@@ -23,8 +23,20 @@
     "entitlements": "./support/entitlements.mac.plist",
     "entitlementsInherit": "./support/entitlements.mac.plist",
     "target": [
-      "zip",
-      "dmg"
+      {
+        "target": "zip",
+        "arch": [
+          "x64",
+          "arm64"
+        ]
+      },
+      {
+        "target": "dmg",
+        "arch": [
+          "x64",
+          "arm64"
+        ]
+      }
     ]
   },
   "dmg": {
