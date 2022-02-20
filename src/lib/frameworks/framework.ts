@@ -731,7 +731,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                             throw Error('Report was malformed.')
                         }
                         this.running.push(this.debriefSuite(report))
-                    } catch (error) {
+                    } catch (error: any) {
                         this.emit('error', error)
                         this.emitToRenderer(`${this.id}:error`, error.toString(), this.troubleshoot(error))
                         log.error('Failed to debrief suite results.', error)

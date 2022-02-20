@@ -4,44 +4,48 @@ import { clipboard } from 'electron'
 import { IRepository } from '@lib/frameworks/repository'
 
 export class RepositoryMenu extends Menu {
+    protected repository: IRepository
     constructor (repository: IRepository, webContents: Electron.WebContents) {
         super(webContents)
+        this.repository = repository
+    }
 
-        if (repository.exists()) {
+    async build (): Promise<this> {
+        if (await this.repository.exists()) {
             this
                 .add({
-                    label: repository.getDisplayName(),
+                    label: this.repository.getDisplayName(),
                     enabled: false
                 })
                 .add({
                     label: __DARWIN__ ? 'Refresh' : 'Refresh',
                     click: () => {
-                        repository.refresh()
+                        this.repository.refresh()
                     }
                 })
                 .add({
                     label: __DARWIN__ ? 'Run' : 'Run',
                     click: () => {
-                        repository.start()
+                        this.repository.start()
                     }
                 })
                 .add({
                     label: __DARWIN__ ? 'Stop' : 'Stop',
                     click: () => {
-                        repository.stop()
+                        this.repository.stop()
                     }
                 })
                 .separator()
                 .add({
                     label: __DARWIN__ ? 'Manage Frameworks…' : 'Manage frameworks…',
                     click: () => {
-                        this.emit('repository-manage', { repository: repository.render() })
+                        this.emit('repository-manage', { repository: this.repository.render() })
                     }
                 })
                 .add({
                     label: __DARWIN__ ? 'Scan for Frameworks…' : 'Scan for frameworks…',
                     click: () => {
-                        this.emit('repository-scan', repository.render())
+                        this.emit('repository-scan', this.repository.render())
                     }
                 })
                 .separator()
@@ -51,7 +55,7 @@ export class RepositoryMenu extends Menu {
                         ? 'Copy Repository Path'
                         : 'Copy repository path',
                     click: () => {
-                        clipboard.writeText(repository.getPath())
+                        clipboard.writeText(this.repository.getPath())
                     }
                 })
                 .add({
@@ -62,7 +66,7 @@ export class RepositoryMenu extends Menu {
                             ? 'Show in Explorer'
                             : 'Show in your File Manager',
                     click: () => {
-                        File.reveal(repository.getPath())
+                        File.reveal(this.repository.getPath())
                     }
                 })
         } else {
@@ -76,7 +80,7 @@ export class RepositoryMenu extends Menu {
                     id: 'locate',
                     label: __DARWIN__ ? 'Locate Repository' : 'Locate repository',
                     click: () => {
-                        repository.locate(this.window.getChild())
+                        this.repository.locate(this.window.getChild())
                     }
                 })
         }
@@ -86,8 +90,12 @@ export class RepositoryMenu extends Menu {
             .add({
                 label: 'Remove',
                 click: () => {
-                    this.emit('repository-remove', repository.render())
+                    this.emit('repository-remove', this.repository.render())
                 }
             })
+
+        await super.build()
+
+        return this
     }
 }

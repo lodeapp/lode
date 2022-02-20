@@ -66,7 +66,7 @@ export class Menu {
         return this
     }
 
-    build (): this {
+    async build (): Promise<this> {
         this.menu = Base.buildFromTemplate(this.template)
 
         if (this.beforeCallbacks.length) {
@@ -89,9 +89,9 @@ export class Menu {
         return this
     }
 
-    open (options?: object): this {
+    async open (options?: object): Promise<this> {
         if (!this.built) {
-            this.build()
+            await this.build()
         }
 
         this.menu!.popup({
@@ -113,7 +113,7 @@ export class Menu {
     public async openFile (path: string): Promise<void> {
         try {
             await File.open(path)
-        } catch (error) {
+        } catch (error: any) {
             log.error(`Error while trying to open file in path: '${path}'`, error)
             this.window.send('error', [
                 'Unable to open file in an external program. Please check you have a program associated with this file extension.',

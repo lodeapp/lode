@@ -54,7 +54,7 @@ export class Validator {
     public isDirectory (path: string): boolean {
         try {
             return Fs.statSync(path).isDirectory()
-        } catch (error) {
+        } catch (error: any) {
             if (error.code === 'ENOENT') {
                 return false
             }
@@ -70,7 +70,7 @@ export class Validator {
     public isFile (path: string): boolean {
         try {
             return Fs.statSync(path).isFile()
-        } catch (error) {
+        } catch (error: any) {
             if (error.code === 'ENOENT') {
                 return false
             }
