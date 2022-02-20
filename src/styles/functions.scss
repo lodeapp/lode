@@ -3,7 +3,11 @@
 // ========================================================================
 
 @function palette($color, $intensity: '500') {
-    @return map-get(map-get($palette, $color), to-string($intensity));
+    @if type-of($intensity) != string {
+        $intensity: to-string($intensity);
+    }
+
+    @return map-get(map-get($palette, #{$color}), $intensity);
 }
 
 @function theme-color($key: 'selected', $intensity: 'default', $step: 0) {
@@ -18,7 +22,6 @@
         @if $intensity < 0 {
             $intensity: '000';
         }
-        $intensity: to-string($intensity);
     }
     $color: map-get(map-get($status-colors, $key), 'color');
     @return palette($color, $intensity);
