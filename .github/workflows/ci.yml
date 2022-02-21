@@ -52,7 +52,7 @@ jobs:
       run: yarn --prefer-offline --network-timeout 100000
     -
       name: Lint styles
-      run: yarn lint:styles src
+      run: yarn lint:styles
     -
       name: Lint scripts
       run: yarn lint --quiet

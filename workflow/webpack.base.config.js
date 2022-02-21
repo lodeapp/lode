@@ -4,6 +4,7 @@ const path = require('path')
 const webpack = require('webpack')
 const TerserWebpackPlugin = require('terser-webpack-plugin')
 const ESLintPlugin = require('eslint-webpack-plugin')
+const StyleLintPlugin = require('stylelint-webpack-plugin')
 
 module.exports = {
     output: {
@@ -44,6 +45,9 @@ module.exports = {
     plugins: [
         new ESLintPlugin({
             quiet: true
+        }),
+        new StyleLintPlugin({
+            files: ['src/**/*.{vue,scss}']
         }),
         new webpack.DefinePlugin({
             __VUE_OPTIONS_API__: true,

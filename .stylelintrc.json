@@ -1,5 +1,9 @@
 {
-  "extends": ["stylelint-config-standard-scss"],
+  "extends": [
+    "stylelint-config-standard-scss",
+    "stylelint-config-html/html",
+    "stylelint-config-html/vue"
+  ],
   "rules": {
     "comment-whitespace-inside": "always",
     "indentation": 4,
