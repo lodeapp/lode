@@ -176,8 +176,16 @@
 
                 &::before {
                     background:
-                        linear-gradient(-135deg, var(--primary-border-color) ($height * .5), transparent 0) 0 ($height * .5),
-                        linear-gradient(135deg, var(--primary-border-color) ($height * .5), transparent 0) 0 ($height * .5);
+                        linear-gradient(
+                            -135deg,
+                            var(--primary-border-color) ($height * .5),
+                            transparent 0
+                        ) 0 ($height * .5),
+                        linear-gradient(
+                            135deg,
+                            var(--primary-border-color) ($height * .5),
+                            transparent 0
+                        ) 0 ($height * .5);
                     background-position: top left;
                     background-repeat: repeat-x;
                     background-size: $height $height;
@@ -187,8 +195,16 @@
 
                 &::after {
                     background:
-                        linear-gradient(-135deg, var(--secondary-background-color) ($height * .5), transparent 0) 0 ($height * .5),
-                        linear-gradient(135deg, var(--secondary-background-color) ($height * .5), transparent 0) 0 ($height * .5);
+                        linear-gradient(
+                            -135deg,
+                            var(--secondary-background-color) ($height * .5),
+                            transparent 0
+                        ) 0 ($height * .5),
+                        linear-gradient(
+                            135deg,
+                            var(--secondary-background-color) ($height * .5),
+                            transparent 0
+                        ) 0 ($height * .5);
                     background-position: top left;
                     background-repeat: repeat-x;
                     background-size: $height $height;

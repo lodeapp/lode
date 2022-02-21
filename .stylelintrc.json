@@ -1,11 +1,12 @@
 {
   "extends": ["stylelint-config-standard-scss"],
   "rules": {
-    "scss/comment-no-empty": null,
     "comment-whitespace-inside": "always",
     "indentation": 4,
     "max-nesting-depth": [7, { "severity": "warning"}],
+    "no-descending-specificity": null,
     "number-leading-zero": "never",
+    "scss/comment-no-empty": null,
     "selector-class-pattern": null,
     "selector-max-compound-selectors": null,
     "selector-no-qualifying-type": null
