@@ -4,6 +4,9 @@ export function formatError (error: Error, title?: string): string {
         : `${error.name}: ${error.message}`
 }
 
-export function formatLogMessage (message: string, error?: Error): string {
+export function formatLogMessage (message: string | object, error?: Error): string {
+    if (typeof message === 'object') {
+        message = JSON.stringify(message)
+    }
     return error ? formatError(error, message) : message
 }

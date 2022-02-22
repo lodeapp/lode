@@ -156,7 +156,6 @@
     "__dirname": false,
     "__LINUX__": false,
     "__LOGGER__": false,
-    "__MIGRATE__": false,
     "__SILENT__": false,
     "__static": false,
     "__WIN32__": false,

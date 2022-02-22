@@ -101,7 +101,7 @@ interface ILogger {
    *                include the stack trace (if one is available) and
    *                then appended to the log message.
    */
-  debug(message: string, error?: Error): void
+  debug(message: string | object, error?: Error): void
 }
 
 declare const log: ILogger
