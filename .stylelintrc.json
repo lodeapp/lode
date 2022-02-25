@@ -19,6 +19,7 @@
     "**/*.js",
     "**/*.ts",
     "**/*.json",
-    "**/reporters/**"
+    "**/reporters/**",
+    "src/styles/images/**"
   ]
 }
