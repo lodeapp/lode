@@ -42,12 +42,6 @@ button,
     .octicon {
         color: currentcolor;
         line-height: 1.4em;
-        vertical-align: middle !important;
-
-        // Windows doesn't seem to need the same icon adjustments as macOS or Linux.
-        @include win32 {
-            vertical-align: text-top !important;
-        }
     }
 
     > .Counter {

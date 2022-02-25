@@ -23,35 +23,16 @@ const rendererConfig = merge(base, {
     module: {
         rules: [
             {
-                test: /\.scss$/,
+                test: /\.(sass|scss|css)$/,
                 use: [
-                    {
-                        loader: 'style-loader',
-                        options: { injectType: 'linkTag' }
-                    },
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[path][name].css'
-                        }
-                    },
+                    'style-loader',
+                    'css-loader',
                     'sass-loader'
                 ]
             },
             {
-                test: /\.css$/,
-                use: [
-                    {
-                        loader: 'style-loader',
-                        options: { injectType: 'linkTag' }
-                    },
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[path][name].css'
-                        }
-                    }
-                ]
+                test: /\.(png|svg|jpg|jpeg|gif)$/i,
+                type: 'asset/resource'
             },
             {
                 test: /\.vue$/,
@@ -71,6 +52,16 @@ const rendererConfig = merge(base, {
         fallback: {
             'path': require.resolve('path-browserify'),
             'stream': require.resolve('stream-browserify')
+        },
+        alias: {
+            // Patch Primer CSS images not being included in the package.
+            '/images/spinners/octocat-spinner-16px.gif': path.join(__dirname, '../src/styles/images/error.png'),
+            '/images/modules/ajax/success.png': path.join(__dirname, '../src/styles/images/error@2x.png'),
+            '/images/modules/ajax/error.png': path.join(__dirname, '../src/styles/images/octocat-spinner-16px.gif'),
+            '/images/spinners/octocat-spinner-32.gif': path.join(__dirname, '../src/styles/images/octocat-spinner-32-EAF2F5.gif'),
+            '/images/modules/ajax/success@2x.png': path.join(__dirname, '../src/styles/images/octocat-spinner-32.gif'),
+            '/images/modules/ajax/error@2x.png': path.join(__dirname, '../src/styles/images/success.png'),
+            '/images/spinners/octocat-spinner-32-EAF2F5.gif': path.join(__dirname, '../src/styles/images/success@2x.png')
         }
     },
     plugins: [

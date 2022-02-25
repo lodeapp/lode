@@ -2,7 +2,6 @@
 
 const path = require('path')
 const webpack = require('webpack')
-const TerserWebpackPlugin = require('terser-webpack-plugin')
 const ESLintPlugin = require('eslint-webpack-plugin')
 const StyleLintPlugin = require('stylelint-webpack-plugin')
 
@@ -39,7 +38,8 @@ module.exports = {
         ]
     },
     optimization: {
-        minimizer: [new TerserWebpackPlugin()]
+        minimize: process.env.NODE_ENV === 'production',
+        removeEmptyChunks: true,
     },
     devtool: process.env.NODE_ENV !== 'production' ? 'source-map' : false,
     plugins: [

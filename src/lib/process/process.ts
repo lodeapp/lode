@@ -26,7 +26,7 @@ export interface IProcessEnvironment {
 }
 
 export interface IProcess extends EventEmitter {
-    getId (): ProcessId
+    getId (): ProcessId | undefined
     stop (): void
     owns (command: string): boolean
 }
@@ -172,7 +172,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     /**
      * Get this process's unique id.
      */
-    public getId (): ProcessId {
+    public getId (): ProcessId | undefined {
         if (__DEV__ && process.env.FROM_FILE) {
             // If we're re-processing from a file, generate a hash from the filename.
             return Array.from(process.env.FROM_FILE).reduce((s, c) => Math.imul(31, s) + c.charCodeAt(0) | 0, 0)
@@ -345,7 +345,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      */
     public stop (): void {
         this.killed = true
-        kill(this.process!.pid)
+        if (this.process) {
+            kill(<number> this.process.pid)
+        }
     }
 
     /**

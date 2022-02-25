@@ -49,17 +49,14 @@ const startRenderer = () => {
                 port: 9080,
                 static: {
                     directory: Path.join(__dirname, '../')
-                },
-                onBeforeSetupMiddleware (devServer) {
-                    devServer.middleware.waitUntilValid(() => {
-                        resolve()
-                    })
                 }
             },
             compiler
         )
 
-        server.start()
+        server.start().then(() => {
+            resolve()
+        })
     })
 }
 
