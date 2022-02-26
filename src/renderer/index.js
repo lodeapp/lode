@@ -59,6 +59,9 @@ const app = createApp({
                 }
                 this.version = properties.version
                 this.menu = __WIN32__ ? properties.menu : null
+                if (__DARWIN__ && properties.runningUnderARM64Translation) {
+                    this.handleAppRunningInTranslation()
+                }
                 this.ready = true
             })
             .on('blur', () => {
@@ -382,6 +385,15 @@ const app = createApp({
         handleFrameworkRemove (frameworkId) {
             this.onModelRemove(frameworkId)
             Lode.ipc.send('framework-remove', frameworkId)
+        },
+        handleAppRunningInTranslation () {
+            this.$modal.confirmIf(this.setting('confirm.runningUnderTranslation'), 'RunningUnderTranslation')
+                .then(disableConfirm => {
+                    if (disableConfirm) {
+                        this.updateSetting('confirm.runningUnderTranslation', false)
+                    }
+                })
+                .catch(() => {})
         },
         setting (key) {
             return store.getters['settings/value'](key)

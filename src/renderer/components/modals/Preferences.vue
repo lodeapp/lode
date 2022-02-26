@@ -16,11 +16,15 @@
                     </dd>
                 </dl>
                 <dl>
-                    <dt><label>Show confirmation dialog:</label></dt>
+                    <dt><label>Show dialog:</label></dt>
                     <dd class="checkbox-list">
                         <label>
                             <input type="checkbox" checked="checked" v-model="confirmSwitchProject">
                             When switching from non-idle projects
+                        </label>
+                        <label>
+                            <input type="checkbox" checked="checked" v-model="confirmRunningUnderTranslation">
+                            When running application on the wrong architecture
                         </label>
                     </dd>
                 </dl>
@@ -57,6 +61,14 @@ export default {
             },
             set (value) {
                 this.$root.updateSetting('confirm.switchProject', value)
+            }
+        },
+        confirmRunningUnderTranslation: {
+            get () {
+                return this.$root.setting('confirm.runningUnderTranslation')
+            },
+            set (value) {
+                this.$root.updateSetting('confirm.runningUnderTranslation', value)
             }
         }
     }

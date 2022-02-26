@@ -16,7 +16,8 @@ export class State extends EventEmitter {
         userid: uuid(),
         concurrency: 3,
         confirm: {
-            switchProject: true
+            switchProject: true,
+            runningUnderTranslation: true
         },
         currentProject: null,
         paneSizes: [16, 44, 40],

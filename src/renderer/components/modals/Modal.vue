@@ -90,7 +90,7 @@ export default {
         }
         document.addEventListener('keydown', this.escapeHandler)
 
-        const selectors = ['.autofocus', 'input, select']
+        const selectors = ['.autofocus', 'input:not([type="checkbox"]):not([type="radio"]), select']
         setTimeout(() => {
             selectors.some(selector => {
                 const elements = this.$el.querySelectorAll(selector)

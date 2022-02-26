@@ -131,6 +131,7 @@ export class ApplicationWindow {
             this.onReady()
             this.window.webContents.send('did-finish-load', {
                 theme: nativeTheme.shouldUseDarkColors ? 'dark' : 'light',
+                runningUnderARM64Translation: app.runningUnderARM64Translation,
                 menu: applicationMenu.getSections(),
                 projectId: get(this.getProject(), 'id', null),
                 focus: this.window.isFocused(),
