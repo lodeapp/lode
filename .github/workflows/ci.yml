@@ -105,7 +105,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       -
         name: Install dependencies
-        run: yarn install
+        run: yarn --prefer-offline --network-timeout 100000
       -
         name: Release
         run: yarn release
