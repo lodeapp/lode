@@ -38,10 +38,11 @@ const startRenderer = () => {
     return new Promise((resolve, reject) => {
         const rendererConfig = require('./webpack.renderer.config')
         rendererConfig.mode = 'development'
-        const compiler = webpack(rendererConfig)
 
+        const compiler = webpack(rendererConfig)
         compiler.hooks.done.tap('done', stats => {
             logStats('Renderer', stats)
+            resolve()
         })
 
         const server = new WebpackDevServer(
@@ -54,9 +55,7 @@ const startRenderer = () => {
             compiler
         )
 
-        server.start().then(() => {
-            resolve()
-        })
+        server.start()
     })
 }
 
