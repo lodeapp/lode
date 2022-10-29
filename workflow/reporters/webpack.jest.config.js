@@ -3,7 +3,6 @@
 process.env.BABEL_ENV = 'reporters'
 
 const { getReplacements } = require('../app-info')
-const TerserWebpackPlugin = require('terser-webpack-plugin')
 const replacements = getReplacements()
 
 const path = require('path')
@@ -40,8 +39,8 @@ const config = {
         new webpack.DefinePlugin(replacements)
     ],
     optimization: {
-        minimizer: [new TerserWebpackPlugin()]
-    }
+        minimize: process.env.NODE_ENV === 'production'
+    },
 }
 
 if (process.env.NODE_ENV === 'production') {
