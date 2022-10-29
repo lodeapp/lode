@@ -101,12 +101,12 @@ import _identity from 'lodash/identity'
 import _indexOf from 'lodash/indexOf'
 import _isEmpty from 'lodash/isEmpty'
 import _pickBy from 'lodash/pickBy'
-import Ansi from '@/components/Ansi'
-import Console from '@/components/Console'
-import Feedback from '@/components/Feedback'
-import KeyValue from '@/components/KeyValue'
-import Parameters from '@/components/Parameters'
-import TestInformation from '@/components/TestInformation'
+import Ansi from '@/components/Ansi.vue'
+import Console from '@/components/Console.vue'
+import Feedback from '@/components/Feedback.vue'
+import KeyValue from '@/components/KeyValue.vue'
+import Parameters from '@/components/Parameters.vue'
+import TestInformation from '@/components/TestInformation.vue'
 
 export default {
     name: 'TestResult',

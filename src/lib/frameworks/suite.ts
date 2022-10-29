@@ -13,6 +13,7 @@ export interface ISuite extends Nugget {
     getFile (): string
     getFilePath (): string
     getRelativePath (): string
+    getFilePathRelativeToBase (): string
     getDisplayName (): string
     getStatus (): Status
     getNuggetIds (selective: boolean): Array<string>
@@ -208,7 +209,8 @@ export class Suite extends Nugget implements ISuite {
     }
 
     /**
-     * Get this suite's relative file path.
+     * Get this suite's file path relative
+     * to the base path in the framework settings, if any.
      */
     public getRelativePath (): string {
         return this.framework.runsInRemote && (!this.framework.getRemotePath() || this.framework.getRemotePath() === '/')
@@ -219,6 +221,18 @@ export class Suite extends Nugget implements ISuite {
                     : this.framework.fullPath,
                 this.file
             )
+    }
+
+    /**
+     * Get this suite's file path relative
+     * to the root of the repository.
+     */
+    public getFilePathRelativeToBase (): string {
+        if (!this.framework.runsInRemote) {
+            return Path.join(this.framework.path, Path.relative(this.framework.fullPath, this.file))
+        }
+
+        return Path.relative(this.framework.getRemotePath(), this.file)
     }
 
     /**

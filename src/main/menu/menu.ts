@@ -37,8 +37,11 @@ export class Menu {
         return this
     }
 
-    separator (): this {
-        this.add({ type: 'separator' })
+    separator (properties = {}): this {
+        this.add({
+            ...properties,
+            type: 'separator'
+        })
         return this
     }
 

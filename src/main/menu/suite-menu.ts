@@ -8,6 +8,7 @@ export class SuiteMenu extends Menu {
         super(webContents)
 
         const filePath = suite.getFilePath()
+        const relativePath = suite.getFilePathRelativeToBase()
         const remoteFilePath = suite.file !== filePath ? suite.file : ''
         this
             .add({
@@ -37,6 +38,16 @@ export class SuiteMenu extends Menu {
                 },
                 enabled: File.exists(filePath)
             })
+            .add({
+                id: 'copy-relative',
+                label: __DARWIN__
+                    ? 'Copy Relative File Path'
+                    : 'Copy relative file path',
+                click: () => {
+                    clipboard.writeText(relativePath)
+                },
+                enabled: File.exists(filePath)
+            })
             .addIf(!!remoteFilePath, {
                 id: 'copy-remote',
                 label: __DARWIN__
@@ -45,6 +56,12 @@ export class SuiteMenu extends Menu {
                 click: () => {
                     clipboard.writeText(remoteFilePath)
                 }
+            })
+            .separator({
+                // If we don't declare `before`, this separator
+                // somehow gets overridden by the custom suite's
+                // context menu (if it uses `before`, like PHPUnit's).
+                before: ['reveal']
             })
             .add({
                 id: 'reveal',
