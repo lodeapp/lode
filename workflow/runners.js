@@ -11,27 +11,8 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 let electronProcess = null
 let manualRestart = false
 
-const logStats = (proc, data) => {
-    let log = ''
-
-    log += '\n'
-    log += chalk.yellow.bold(`┏ ${proc} Process ${new Array((19 - proc.length) + 1).join('-')}`)
-    log += '\n\n'
-
-    if (typeof data === 'object') {
-        data.toString({
-            colors: true,
-            chunks: false
-        }).split(/\r?\n/).forEach(line => {
-            log += '  ' + line + '\n'
-        })
-    } else {
-        log += `  ${data}\n`
-    }
-
-    log += '\n' + chalk.yellow.bold(`┗ ${new Array(28 + 1).join('-')}`)
-
-    console.log(log)
+const log = text => {
+    console.log(`<i> ${chalk.green.bold(text)}`)
 }
 
 const startRenderer = () => {
@@ -41,7 +22,7 @@ const startRenderer = () => {
 
         const compiler = webpack(rendererConfig)
         compiler.hooks.done.tap('done', stats => {
-            logStats('Renderer', stats)
+            log('Renderer bundle ready')
             resolve()
         })
 
@@ -65,7 +46,7 @@ const start = (name, config) => {
         const compiler = webpack(config)
 
         compiler.hooks.watchRun.tapAsync('watch-run', (compilation, done) => {
-            logStats(name, chalk.white.bold('compiling...'))
+            log(`${name} bundle compiling...`)
             done()
         })
 
@@ -75,7 +56,7 @@ const start = (name, config) => {
                 return
             }
 
-            logStats(name, stats)
+            log(`${name} bundle ready`)
 
             if (electronProcess && electronProcess.kill) {
                 manualRestart = true
@@ -104,7 +85,7 @@ const startMain = () => {
 }
 
 const startElectron = () => {
-    electronProcess = spawn(electron, ['--trace-warnings', '--inspect=5858', Path.join(__dirname, '../dist/main.js')])
+    electronProcess = spawn(electron, ['--trace-warnings', '--inspect=5858', '--remote-debugging-port=9223', Path.join(__dirname, '../dist/main.js')])
 
     electronProcess.stdout.on('data', data => {
         electronLog(data)
@@ -151,7 +132,6 @@ const init = () => {
 }
 
 module.exports = {
-    logStats,
     startRenderer,
     start,
     startPreload,
