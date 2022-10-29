@@ -4,7 +4,7 @@
             <img :src="logo">
             <h4>Lode</h4>
             <p class="version">
-                <span>{{ $string.set('Version :0', version) }}</span>
+                <span>{{ $string.set('Version :0 (:1)', version, arch) }}</span>
                 <a href="#" @click.prevent="openReleaseNotes">Release notes</a>
             </p>
             <p v-markdown.set="(new Date()).getFullYear()">&copy; 2018 - :0 Tomas Buteler. All rights reserved.</p>
@@ -30,6 +30,9 @@ export default {
     computed: {
         version () {
             return this.$root.version
+        },
+        arch () {
+            return this.$root.arch
         }
     },
     methods: {

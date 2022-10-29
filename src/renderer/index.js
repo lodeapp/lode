@@ -32,8 +32,10 @@ const app = createApp({
     data () {
         return {
             version: '',
+            arch: '',
             modals: [],
             ready: false,
+            translated: false,
             loading: true,
             project: null,
             menu: null
@@ -58,11 +60,17 @@ const app = createApp({
                     this.loading = false
                 }
                 this.version = properties.version
+                this.arch = properties.arch
                 this.menu = __WIN32__ ? properties.menu : null
-                if (__DARWIN__ && properties.runningUnderARM64Translation) {
-                    this.handleAppRunningInTranslation()
-                }
+                this.translated = properties.runningUnderARM64Translation
+
                 this.ready = true
+
+                if (this.translated) {
+                    setTimeout(() => {
+                        this.handleAppRunningInTranslation()
+                    }, 10)
+                }
             })
             .on('blur', () => {
                 document.body.classList.remove('is-focused')

@@ -137,7 +137,8 @@ export class ApplicationWindow {
                 focus: this.window.isFocused(),
                 maximized: this.window.isMaximized(),
                 fullscreen: this.window.isFullScreen(),
-                version: app.getVersion()
+                version: app.getVersion(),
+                arch: process.arch
             })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
         })
