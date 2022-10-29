@@ -204,6 +204,20 @@ export class PHPUnit extends Framework {
     }
 
     /**
+     * Process a PHPUnit test feedback message.
+     *
+     * @param text The feedback text to be processed by the framework.
+     */
+    public processFeedbackText (text: string): string {
+        // @TODO: Offload to separate class that parses and replaces strings.
+        if (text.match(/^Failed asserting that '(.+)' matches JSON string "(.|\s)+"./gim)) {
+            // ...
+        }
+
+        return text
+    }
+
+    /**
      * Troubleshoot a PHPUnit error.
      *
      * @param error The error to be parsed for troubleshooting.

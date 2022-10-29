@@ -33,7 +33,8 @@ import { IRepository } from '@lib/frameworks/repository'
 import { Frameworks } from '@lib/frameworks'
 import {
     FrameworkOptions,
-    FrameworkFilter
+    FrameworkFilter,
+    IFramework
 } from '@lib/frameworks/framework'
 import { Nugget } from '@lib/frameworks/nugget'
 import { ISuite } from '@lib/frameworks/suite'
@@ -482,6 +483,17 @@ ipcMain
             // something's been removed and force the user to select one again.
             return {}
         }
+    })
+
+ipcMain
+    .handle('test-feedback-text', async (event: Electron.IpcMainInvokeEvent, text: string) => {
+        const project: IProject = getProject(event)
+        const framework: IFramework | null = project.getActive().framework
+        if (framework) {
+            return framework.processFeedbackText(text)
+        }
+
+        return text
     })
 
 ipcMain

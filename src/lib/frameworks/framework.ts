@@ -128,6 +128,7 @@ export interface IFramework extends ProjectEventEmitter {
     setNuggetStatus (id: string, to: Status, from: Status, updateLedger: boolean): void
     getProgressLedger (): ProgressLedger
     resetProgressLedger (): void
+    processFeedbackText (text: string): string
 }
 
 /**
@@ -1508,6 +1509,18 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      */
     public static instructions (): string {
         return ''
+    }
+
+    /**
+     * Give the opportunity for frameworks to process test feedback text,
+     * enriching the frameworks to make use of an HTML renderer.
+     *
+     * Supports markdown.
+     *
+     * @param text The feedback text to be processed by the framework.
+     */
+    public processFeedbackText (text: string): string {
+        return text
     }
 
     /**

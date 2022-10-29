@@ -57,6 +57,7 @@ export enum AllowedIpcInvocationMap {
     'repository-validate',
     'terms',
     'test-get',
+    'test-feedback-text',
     'titlebar-menu'
 }
 

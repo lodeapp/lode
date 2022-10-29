@@ -11,20 +11,20 @@
                     <td class="heading">Status</td>
                     <td>{{ label }}</td>
                 </tr>
-                <tr v-if="typeof stats.first !== 'undefined'">
+                <tr v-if="stats.first !== undefined">
                     <td class="heading">First seen</td>
                     <td :key="timeKey" :title="firstSeen">{{ displayFirstSeen() }}</td>
                 </tr>
                 <tr>
                     <td class="heading">Last run</td>
-                    <td :key="timeKey" v-if="typeof stats.last !== 'undefined'" :title="lastRun">{{ displayLastRun() }}</td>
+                    <td :key="timeKey" v-if="stats.last !== undefined" :title="lastRun">{{ displayLastRun() }}</td>
                     <td v-else>Never</td>
                 </tr>
-                <tr v-if="typeof stats.duration !== 'undefined'">
+                <tr v-if="stats.duration !== undefined">
                     <td class="heading">Duration</td>
                     <td><Duration :ms="stats.duration" /></td>
                 </tr>
-                <tr v-if="typeof stats.assertions !== 'undefined'">
+                <tr v-if="stats.assertions !== undefined">
                     <td class="heading">Assertions</td>
                     <!-- @TODO: Number formatting -->
                     <td>{{ stats.assertions }}</td>
@@ -37,9 +37,9 @@
 <script>
 import format from 'date-fns/format'
 import formatDistanceToNow from 'date-fns/formatDistanceToNow'
-import _isEmpty from 'lodash/isEmpty'
+import { isEmpty } from 'lodash'
 import { labels } from '@lib/frameworks/status'
-import Duration from '@/components/Duration'
+import Duration from '@/components/Duration.vue'
 
 export default {
     name: 'TestInformation',
@@ -65,7 +65,7 @@ export default {
     },
     computed: {
         isEmpty () {
-            return _isEmpty(this.stats)
+            return isEmpty(this.stats)
         },
         lastRun () {
             return format(new Date(this.stats.last), 'MMMM do yyyy, HH:mm:ss')

@@ -2,7 +2,7 @@
     <div class="feedback">
         <h4>{{ content.title }}</h4>
         <div class="message">
-            <p v-if="content.text">{{ content.text }}</p>
+            <p v-if="text">{{ text }}</p>
             <template v-if="content.ansi">
                 <Ansi :content="content.ansi" />
             </template>
@@ -31,13 +31,11 @@
 </template>
 
 <script>
-import _cloneDeep from 'lodash/cloneDeep'
-import _isArray from 'lodash/isArray'
-import _reverse from 'lodash/reverse'
-import Ansi from '@/components/Ansi'
-import Diff from '@/components/Diff'
-import MetaTable from '@/components/MetaTable'
-import Trace from '@/components/Trace'
+import { cloneDeep, isArray, reverse } from 'lodash'
+import Ansi from '@/components/Ansi.vue'
+import Diff from '@/components/Diff.vue'
+import MetaTable from '@/components/MetaTable.vue'
+import Trace from '@/components/Trace.vue'
 
 export default {
     name: 'Feedback',
@@ -57,6 +55,7 @@ export default {
     },
     data () {
         return {
+            text: null,
             reverse: false
         }
     },
@@ -66,15 +65,23 @@ export default {
                 return this.content.trace
             }
 
-            let trace = _cloneDeep(this.content.trace)
+            let trace = cloneDeep(this.content.trace)
             trace = trace.map(t => {
-                if (_isArray(t)) {
-                    _reverse(t)
+                if (isArray(t)) {
+                    reverse(t)
                 }
                 return t
             })
-            _reverse(trace)
+            reverse(trace)
             return trace
+        }
+    },
+    async created () {
+        this.text = await this.processText(this.content.text)
+    },
+    methods: {
+        async processText (text) {
+            return (await Lode.ipc.invoke('test-feedback-text', text))
         }
     }
 }

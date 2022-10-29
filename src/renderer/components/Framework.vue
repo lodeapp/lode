@@ -16,10 +16,23 @@
                         </span>
                     </h3>
                     <div class="actions">
-                        <button type="button" class="btn-link more-actions" tabindex="-1" @click.prevent="onContextMenu">
+                        <button
+                            type="button"
+                            class="btn-link more-actions"
+                            tabindex="-1"
+                            title="Additional framework actions"
+                            @click.prevent="onContextMenu"
+                        >
                             <Icon symbol="three-bars" />
                         </button>
-                        <button class="btn btn-sm" @click="refresh" :disabled="queued || running || refreshing" tabindex="-1">
+                        <button
+                            type="button"
+                            class="btn btn-sm"
+                            title="Refresh framework"
+                            tabindex="-1"
+                            :disabled="queued || running || refreshing"
+                            @click="refresh"
+                        >
                             <Icon symbol="sync" />
                         </button>
                         <button

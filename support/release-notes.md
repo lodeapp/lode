@@ -1,4 +1,6 @@
 New:
-  - Lode is now available in both Intel and Apple silicon versions. Please re-download the application in your desired architecture if you have installed Lode from a previous version
+  - Copy a test's relative path from the context menu
+  - Allow frameworks to process test result feedback messages
 Changed:
-  - Various dependency upgrades
+  - Improved feedback on which process architecture Lode is running in
+  - Upgrade to Electron v18
