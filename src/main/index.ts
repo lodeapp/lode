@@ -5,7 +5,7 @@ import '@lib/tracker/main'
 import Fs from 'fs'
 import Path from 'path'
 import { isEmpty, identity, pickBy } from 'lodash'
-import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron'
 import {
     applicationMenu,
     Menu as ContextMenu,
@@ -304,6 +304,12 @@ ipcMain
             window.clear()
             window.reload()
         }
+    })
+    .on('copy-to-clipboard', async (event: Electron.IpcMainEvent, string: string) => {
+        clipboard.writeText(string)
+    })
+    .on('open-external-link', async (event: Electron.IpcMainEvent, link: string) => {
+        shell.openExternal(link)
     })
 
 ipcMain

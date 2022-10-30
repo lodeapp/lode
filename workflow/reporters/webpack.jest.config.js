@@ -15,7 +15,9 @@ const config = {
     },
     output: {
         filename: 'index.js',
-        libraryTarget: 'commonjs2',
+        library: {
+            type: 'commonjs2'
+        },
         path: path.join(__dirname, '../../static/reporters/jest')
     },
     resolve: {

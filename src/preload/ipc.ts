@@ -2,6 +2,7 @@ import { ipcRenderer } from 'electron'
 
 export enum AllowedIpcEventMap {
     'close',
+    'copy-to-clipboard',
     'framework-add',
     'framework-filter',
     'framework-refresh',
@@ -15,9 +16,10 @@ export enum AllowedIpcEventMap {
     'framework-update',
     'log',
     'maximize',
-    'minimize',
     'menu-refresh',
+    'minimize',
     'nugget-context-menu',
+    'open-external-link',
     'project-active-framework',
     'project-repositories',
     'project-switch',

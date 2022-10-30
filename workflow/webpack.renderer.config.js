@@ -17,9 +17,6 @@ const rendererConfig = merge(base, {
     entry: {
         renderer: path.join(__dirname, '../src/renderer/index.js')
     },
-    output: {
-        libraryTarget: 'umd'
-    },
     module: {
         rules: [
             {

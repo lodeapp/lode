@@ -1,14 +1,21 @@
-import { clipboard, shell } from 'electron'
 import { Ipc } from './ipc'
 
-export const Lode = {
-    ipc: new Ipc(),
+class Preload {
+    public readonly ipc: Ipc
+    public readonly copyToClipboard: (string: string) => void
+    public readonly openExternal: (link: string) => void
 
-    copyToClipboard (string: string): void {
-        clipboard.writeText(string)
-    },
+    constructor () {
+        this.ipc = new Ipc()
 
-    openExternal (link: string): void {
-        shell.openExternal(link)
+        this.copyToClipboard = (string: string): void => {
+            this.ipc.send('copy-to-clipboard', string)
+        }
+
+        this.openExternal = (link: string): void => {
+            this.ipc.send('open-external-link', link)
+        }
     }
 }
+
+export const Lode = new Preload()

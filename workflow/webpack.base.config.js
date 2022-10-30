@@ -8,7 +8,9 @@ const StyleLintPlugin = require('stylelint-webpack-plugin')
 module.exports = {
     output: {
         filename: '[name].js',
-        libraryTarget: 'commonjs2',
+        library: {
+            type: 'umd'
+        },
         path: path.join(__dirname, '../dist')
     },
     resolve: {
@@ -38,8 +40,8 @@ module.exports = {
         ]
     },
     optimization: {
-        minimize: process.env.NODE_ENV === 'production',
-        removeEmptyChunks: true,
+        minimize: false,
+        removeEmptyChunks: true
     },
     devtool: process.env.NODE_ENV !== 'production' ? 'source-map' : false,
     plugins: [

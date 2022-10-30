@@ -20,7 +20,7 @@ function build () {
 
 function pack (config) {
     return new Promise((resolve, reject) => {
-        config.mode = 'production'
+        config.mode = process.env.NODE_ENV === 'development' ? 'development' : 'production'
         webpack(config, (err, stats) => {
             if (err) reject(err.stack || err)
             else if (stats.hasErrors()) {

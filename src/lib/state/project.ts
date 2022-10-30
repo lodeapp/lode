@@ -7,7 +7,7 @@ export class Project {
     constructor (id: string) {
         log.info('Initializing project store: ' + id)
         this.store = new ElectronStore({
-            encryptionKey: process.env.NODE_ENV === 'production' ? 'v1' : undefined,
+            encryptionKey: 'v1',
             name: 'project',
             defaults: {
                 options: {
@@ -46,4 +46,3 @@ export class Project {
         return this.store.get('options')
     }
 }
-
