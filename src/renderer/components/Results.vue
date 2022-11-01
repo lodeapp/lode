@@ -33,11 +33,10 @@
 </template>
 
 <script>
-import _clone from 'lodash/clone'
-import _last from 'lodash/last'
+import { clone, last } from 'lodash'
 import { mapGetters } from 'vuex'
-import Indicator from '@/components/Indicator'
-import TestResult from '@/components/TestResult'
+import Indicator from '@/components/Indicator.vue'
+import TestResult from '@/components/TestResult.vue'
 
 export default {
     name: 'Results',
@@ -62,7 +61,7 @@ export default {
     },
     computed: {
         identifier () {
-            return _last(this.context)
+            return last(this.context)
         },
         status () {
             return this.getStatus(this.identifier)
@@ -93,7 +92,7 @@ export default {
                 return
             }
             this.loading = true
-            const context = _clone(this.context)
+            const context = clone(this.context)
             const frameworkId = context.shift()
             const { framework, nuggets, results } = await Lode.ipc.invoke('test-get', frameworkId, context)
             if (!framework) {

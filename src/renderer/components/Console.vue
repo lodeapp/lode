@@ -23,9 +23,9 @@
 </template>
 
 <script>
-import Ansi from '@/components/Ansi'
-import Collapsible from '@/components/Collapsible'
-import Snippet from '@/components/Snippet'
+import Ansi from '@/components/Ansi.vue'
+import Collapsible from '@/components/Collapsible.vue'
+import Snippet from '@/components/Snippet.vue'
 import HasFile from '@/components/mixins/HasFile'
 
 export default {

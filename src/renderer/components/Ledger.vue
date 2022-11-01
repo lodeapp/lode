@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import _cloneDeep from 'lodash/cloneDeep'
+import { cloneDeep } from 'lodash'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -59,7 +59,7 @@ export default {
     computed: {
         ledger () {
             // Modify ledger to consolidate running and queued states.
-            const ledger = _cloneDeep(this.base)
+            const ledger = cloneDeep(this.base)
             ledger['queued'] += ledger['running']
             delete ledger['running']
             return ledger
@@ -84,10 +84,10 @@ export default {
             this.activate(status)
         },
         activate (status) {
-            this.setFilter(_cloneDeep(this.statusFilters).concat([status]))
+            this.setFilter(cloneDeep(this.statusFilters).concat([status]))
         },
         deactivate (status) {
-            const statuses = _cloneDeep(this.statusFilters)
+            const statuses = cloneDeep(this.statusFilters)
             const index = statuses.indexOf(status)
             if (index > -1) {
                 statuses.splice(index, 1)

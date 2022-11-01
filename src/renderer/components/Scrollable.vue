@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import _get from 'lodash/get'
+import { get } from 'lodash'
 import OverlayScrollbars from 'overlayscrollbars'
 
 export default {
@@ -21,7 +21,7 @@ export default {
         this.overlayScrollbars()
     },
     updated () {
-        this.position = _get(this.scrollbars.scroll(), 'position.y')
+        this.position = get(this.scrollbars.scroll(), 'position.y')
         this.scrollbars.destroy()
         this.overlayScrollbars()
     },

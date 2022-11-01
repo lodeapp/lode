@@ -103,17 +103,17 @@
 </template>
 
 <script>
-import _findIndex from 'lodash/findIndex'
+import { findIndex } from 'lodash'
 import { mapGetters } from 'vuex'
-import Pane from '@/components/Pane'
-import Draggable from '@/components/Draggable'
-import Scrollable from '@/components/Scrollable'
-import ProjectLoader from '@/components/ProjectLoader'
-import SidebarRepository from '@/components/SidebarRepository'
-import Indicator from '@/components/Indicator'
-import Framework from '@/components/Framework'
-import Results from '@/components/Results'
-import Split from '@/components/Split'
+import Pane from '@/components/Pane.vue'
+import Draggable from '@/components/Draggable.vue'
+import Scrollable from '@/components/Scrollable.vue'
+import ProjectLoader from '@/components/ProjectLoader.vue'
+import SidebarRepository from '@/components/SidebarRepository.vue'
+import Indicator from '@/components/Indicator.vue'
+import Framework from '@/components/Framework.vue'
+import Results from '@/components/Results.vue'
+import Split from '@/components/Split.vue'
 
 export default {
     name: 'Project',
@@ -191,7 +191,7 @@ export default {
             this.loading = false
         },
         onRepositoryStatus (to, from, repository) {
-            const index = _findIndex(this.repositories, ['id', repository.id])
+            const index = findIndex(this.repositories, ['id', repository.id])
             if (index > -1) {
                 this.repositories[index].status = to
                 if (this.repository && this.repository.id === repository.id) {

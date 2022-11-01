@@ -1822,6 +1822,11 @@
   resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-2.4.4.tgz#5d9b63132df54d8909fce1c3f8ca260fdd693e17"
   integrity sha512-ReVR2rLTV1kvtlWFyuot+d1pkpG2Fw/XKE3PDAdj57rbM97ttSp9JZ2UsP+2EHTylra9cUf6JA7tGwW1INzUrA==
 
+"@types/primer__octicons@^17.5.0":
+  version "17.5.0"
+  resolved "https://registry.yarnpkg.com/@types/primer__octicons/-/primer__octicons-17.5.0.tgz#6020cf901da6e7c7db7103e815fcf0de586e94ca"
+  integrity sha512-L1R2HtxiGMx6aRU+Ti+J+qY/NrealYY4V4SRartlSebJLqzMsWRGbajgBEQIi7jRycRPFCiH2jV3FCsW/nIxbw==
+
 "@types/qs@*":
   version "6.9.7"
   resolved "https://registry.yarnpkg.com/@types/qs/-/qs-6.9.7.tgz#63bb7d067db107cc1e457c303bc25d511febf6cb"

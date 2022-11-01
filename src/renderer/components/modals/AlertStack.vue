@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import _get from 'lodash/get'
+import { get } from 'lodash'
 import { mapGetters } from 'vuex'
 import Ansi from '@/components/Ansi.vue'
 import Modal from '@/components/modals/mixins/modal'
@@ -71,19 +71,19 @@ export default {
             return this.alerts[this.index]
         },
         message () {
-            return _get(this.current, 'message')
+            return get(this.current, 'message')
         },
         error () {
-            return _get(this.current, 'error')
+            return get(this.current, 'error')
         },
         help () {
-            return _get(this.current, 'help')
+            return get(this.current, 'help')
         },
         type () {
-            return _get(this.current, 'type', 'error')
+            return get(this.current, 'type', 'error')
         },
         title () {
-            const title = _get(this.current, 'title')
+            const title = get(this.current, 'title')
             if (title) {
                 return title
             }

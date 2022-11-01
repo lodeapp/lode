@@ -209,7 +209,7 @@
 
 <script>
 import * as Path from 'path'
-import _find from 'lodash/find'
+import { find } from 'lodash'
 
 export default {
     name: 'FrameworkSettings',
@@ -266,7 +266,7 @@ export default {
             return this.framework.scanStatus === 'removed'
         },
         frameworkType () {
-            return _find(this.availableFrameworks, ['type', this.fields.type])
+            return find(this.availableFrameworks, ['type', this.fields.type])
         },
         currentFrameworkName () {
             return this.frameworkType ? this.frameworkType.name : ''

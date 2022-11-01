@@ -34,8 +34,8 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import Indicator from '@/components/Indicator'
-import SidebarFramework from '@/components/SidebarFramework'
+import Indicator from '@/components/Indicator.vue'
+import SidebarFramework from '@/components/SidebarFramework.vue'
 
 export default {
     name: 'SidebarRepository',

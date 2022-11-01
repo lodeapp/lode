@@ -96,6 +96,7 @@
     "@types/lodash": "^4.14.169",
     "@types/markdown-it": "^12.2.3",
     "@types/node": "^16.0.0",
+    "@types/primer__octicons": "^17.5.0",
     "@types/shell-escape": "^0.2.0",
     "@types/uuid": "^3.4.4",
     "@typescript-eslint/eslint-plugin": "^5.12.1",

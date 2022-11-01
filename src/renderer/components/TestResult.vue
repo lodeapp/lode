@@ -96,11 +96,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
-import _get from 'lodash/get'
-import _identity from 'lodash/identity'
-import _indexOf from 'lodash/indexOf'
-import _isEmpty from 'lodash/isEmpty'
-import _pickBy from 'lodash/pickBy'
+import { get, identity, indexOf, isEmpty, pickBy } from 'lodash'
 import Ansi from '@/components/Ansi.vue'
 import Console from '@/components/Console.vue'
 import Feedback from '@/components/Feedback.vue'
@@ -146,23 +142,23 @@ export default {
                 // If store has a previously active tab from other results,
                 // and that same tab exists in this new pane, set that in order
                 // to allow some consistency when navigating between test results.
-                if (_indexOf(this.availableTabs, this.lastActiveTab) > -1) {
+                if (indexOf(this.availableTabs, this.lastActiveTab) > -1) {
                     return this.lastActiveTab
                 }
             }
 
             // If no tab is active, return the first available one.
-            return _get(this.availableTabs, '0', '')
+            return get(this.availableTabs, '0', '')
         },
         availableTabs () {
-            return Object.keys(_pickBy({
+            return Object.keys(pickBy({
                 error: this.error,
                 feedback: this.feedback && !this.isTransient,
                 parameters: this.parameters && !this.isTransient,
                 console: this.console && !this.isTransient,
                 suiteConsole: this.suiteConsole && !this.isTransient,
                 stats: this.stats
-            }, _identity))
+            }, identity))
         },
         error () {
             return this.status === 'error'
@@ -183,7 +179,7 @@ export default {
             return this.results && this.results.console && this.results.console.length ? this.results.console : false
         },
         stats () {
-            return this.results && this.results.stats && !_isEmpty(this.results.stats) ? this.results.stats : false
+            return this.results && this.results.stats && !isEmpty(this.results.stats) ? this.results.stats : false
         },
         suiteConsole () {
             // Hide suite console output until test is in a definitive state
@@ -191,7 +187,7 @@ export default {
                 return false
             }
 
-            return _get(this.results, 'suite-console', false)
+            return get(this.results, 'suite-console', false)
         },
         ...mapGetters({
             lastActiveTab: 'tabs/lastActive'
@@ -208,13 +204,13 @@ export default {
                         this.setTab(seek)
                     }
                 } else if (this.$input.isCycleForward(event)) {
-                    index = _indexOf(this.availableTabs, this.tab) + 1
+                    index = indexOf(this.availableTabs, this.tab) + 1
                     const forward = this.availableTabs[index >= this.availableTabs.length ? 0 : index]
                     if (forward) {
                         this.setTab(forward)
                     }
                 } else if (this.$input.isCycleBackward(event)) {
-                    index = _indexOf(this.availableTabs, this.tab) - 1
+                    index = indexOf(this.availableTabs, this.tab) - 1
                     const backward = this.availableTabs[index < 0 ? (this.availableTabs.length - 1) : index]
                     if (backward) {
                         this.setTab(backward)

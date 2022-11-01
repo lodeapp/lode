@@ -44,10 +44,10 @@
 </template>
 
 <script>
-import _isArray from 'lodash/isArray'
-import Collapsible from '@/components/Collapsible'
-import Filename from '@/components/Filename'
-import Snippet from '@/components/Snippet'
+import { isArray } from 'lodash'
+import Collapsible from '@/components/Collapsible.vue'
+import Filename from '@/components/Filename.vue'
+import Snippet from '@/components/Snippet.vue'
 import HasFile from '@/components/mixins/HasFile'
 
 export default {
@@ -68,7 +68,7 @@ export default {
     },
     computed: {
         isNested () {
-            return this.trace.length && this.trace[0] && _isArray(this.trace[0])
+            return this.trace.length && this.trace[0] && isArray(this.trace[0])
         }
     }
 }

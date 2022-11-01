@@ -13,7 +13,7 @@
 
 <script>
 import Terminal from 'terminal.js'
-import Icon from '@/components/Icon'
+import Icon from '@/components/Icon.vue'
 
 export default {
     name: 'Ansi',
@@ -41,13 +41,15 @@ export default {
     },
     methods: {
         processContent (content) {
-            [
+            const replacements = [
                 [/\n/g, '\r\n'],
                 [/<<<REPORT\{?\s*/, ''],
                 [/Connection to .+ closed\.\s*$/, ''],
                 [/PHPUnit .+ by Sebastian Bergmann and contributors\.\s+/, ''],
                 [/\x1b]8;;.*\x1b]8;;/g, '']
-            ].forEach(replace => {
+            ]
+
+            replacements.forEach((replace) => {
                 content = content.replace(replace[0], replace[1])
             })
 

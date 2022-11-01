@@ -49,9 +49,7 @@
 </template>
 
 <script>
-import _compact from 'lodash/compact'
-import _find from 'lodash/find'
-import _uniqBy from 'lodash/uniqBy'
+import { compact, find, uniqBy } from 'lodash'
 import Confirm from '@/components/modals/mixins/confirm'
 import Validator from '@/helpers/validator'
 
@@ -96,7 +94,7 @@ export default {
         },
         populate (filePaths, offset = 0) {
             filePaths.forEach((path, index) => {
-                if (!_find(this.slots, { path })) {
+                if (!find(this.slots, { path })) {
                     // If this is the first chosen file path, replace at given offset.
                     if (index === 0) {
                         this.slots[offset].path = path
@@ -157,7 +155,7 @@ export default {
                 this.loading = true
                 const repositories = await Lode.ipc.invoke(
                     'repository-add',
-                    _compact(_uniqBy(this.slots, 'path').map(slot => slot.path))
+                    compact(uniqBy(this.slots, 'path').map(slot => slot.path))
                 )
                 this.confirm({
                     repositories,

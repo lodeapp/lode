@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import { mapGetters } from 'vuex'
-import Filename from '@/components/Filename'
+import Filename from '@/components/Filename.vue'
 
 export default {
     components: {

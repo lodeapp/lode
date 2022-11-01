@@ -1,0 +1,7 @@
+declare module 'default-shell'
+declare module 'fuzzysearch'
+declare module 'sha1-es'
+declare module 'shell-env'
+declare module 'strip-ansi'
+declare module 'terminal.js'
+declare module 'universal-analytics'

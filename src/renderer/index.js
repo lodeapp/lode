@@ -21,9 +21,9 @@ import Unproxy from './plugins/unproxy'
 import Markdown from './directives/markdown'
 
 // Global / recursive components
-import App from '@/components/App'
-import Icon from '@/components/Icon'
-import Nugget from '@/components/Nugget'
+import App from '@/components/App.vue'
+import Icon from '@/components/Icon.vue'
+import Nugget from '@/components/Nugget.vue'
 
 const app = createApp({
     components: {

@@ -20,7 +20,7 @@ module.exports = {
             '@main': path.join(__dirname, '../src/main'),
             'vue$': 'vue/dist/vue.esm-bundler.js'
         },
-        extensions: ['.js', '.ts', '.vue', '.json', '.css']
+        extensions: ['.js', '.ts']
     },
     module: {
         rules: [

@@ -20,10 +20,10 @@
 </template>
 
 <script>
-import Titlebar from '@/components/Titlebar'
-import ModalController from '@/components/ModalController'
-import ProjectLoader from '@/components/ProjectLoader'
-import Project from '@/components/Project'
+import Titlebar from '@/components/Titlebar.vue'
+import ModalController from '@/components/ModalController.vue'
+import ProjectLoader from '@/components/ProjectLoader.vue'
+import Project from '@/components/Project.vue'
 
 export default {
     name: 'Lode',

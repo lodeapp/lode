@@ -49,10 +49,9 @@
 </template>
 
 <script>
-import _findIndex from 'lodash/findIndex'
-import _isEmpty from 'lodash/isEmpty'
+import { findIndex, isEmpty } from 'lodash'
 import Modal from '@/components/modals/mixins/modal'
-import FrameworkSettings from '@/components/FrameworkSettings'
+import FrameworkSettings from '@/components/FrameworkSettings.vue'
 import Validator from '@/helpers/validator'
 
 export default {
@@ -87,7 +86,7 @@ export default {
     },
     computed: {
         singleFramework () {
-            return !_isEmpty(this.framework)
+            return !isEmpty(this.framework)
         },
         filteredFrameworks () {
             if (!this.singleFramework) {
@@ -162,13 +161,13 @@ export default {
             this.scanning = false
         },
         handleChange (framework, values) {
-            const index = _findIndex(this.frameworks, { key: framework.key })
+            const index = findIndex(this.frameworks, { key: framework.key })
             if (index > -1) {
                 this.frameworks[index] = { ...this.frameworks[index], ...values, ...{ dirty: true }}
             }
         },
         handleRemove (framework) {
-            const index = _findIndex(this.frameworks, { key: framework.key })
+            const index = findIndex(this.frameworks, { key: framework.key })
             if (index > -1) {
                 const removed = this.frameworks.splice(index, 1)
                 // If framework already exists, mark for removal if changes are saved

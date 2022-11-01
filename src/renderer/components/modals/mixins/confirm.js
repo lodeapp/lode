@@ -1,7 +1,9 @@
 import Modal from '@/components/modals/mixins/modal'
 
 export default {
-    mixins: [Modal],
+    mixins: [
+        Modal
+    ],
     props: {
         resolve: {
             type: Function,

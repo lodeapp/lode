@@ -1,13 +1,18 @@
+import type { App, State } from 'vue'
+import type { Store } from 'vuex'
+
 export default class Alerts {
-    constructor (store) {
+    private store: Store<State>
+
+    constructor (store: Store<State>) {
         this.store = store
     }
 
-    install (app) {
+    install (app: App) {
         app.config.globalProperties.$alert = this
     }
 
-    show (alert) {
+    show (alert: any) {
         this.store.dispatch('alert/show', alert)
     }
 

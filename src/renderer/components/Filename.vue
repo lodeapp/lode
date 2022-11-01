@@ -12,7 +12,7 @@
 
 <script>
 import * as Path from 'path'
-import _escape from 'lodash/escape'
+import { escape } from 'lodash'
 
 export default {
     name: 'Filename',
@@ -51,7 +51,7 @@ export default {
     },
     methods: {
         renderChunk (string) {
-            return _escape(string)
+            return escape(string)
         }
     }
 }

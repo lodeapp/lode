@@ -25,7 +25,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import Indicator from '@/components/Indicator'
+import Indicator from '@/components/Indicator.vue'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 
 export default {

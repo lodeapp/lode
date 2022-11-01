@@ -133,15 +133,12 @@
 </template>
 
 <script>
-import _debounce from 'lodash/debounce'
-import _findIndex from 'lodash/findIndex'
-import _head from 'lodash/head'
-import _isEmpty from 'lodash/isEmpty'
+import { debounce, findIndex, head, isEmpty } from 'lodash'
 import { mapGetters } from 'vuex'
 import { sortDisplayName } from '@lib/frameworks/sort'
-import Filename from '@/components/Filename'
-import Indicator from '@/components/Indicator'
-import Ledger from '@/components/Ledger'
+import Filename from '@/components/Filename.vue'
+import Indicator from '@/components/Indicator.vue'
+import Ledger from '@/components/Ledger.vue'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 
 export default {
@@ -184,7 +181,7 @@ export default {
             return this.status === 'queued'
         },
         isFiltering () {
-            return !_isEmpty(this.filters(this.model.id))
+            return !isEmpty(this.filters(this.model.id))
         },
         visible () {
             return this.suites.length
@@ -213,7 +210,7 @@ export default {
         })
     },
     watch: {
-        keyword: _debounce(function (keyword) {
+        keyword: debounce(function (keyword) {
             this.setKeywordFilter(keyword)
         }, 300)
     },
@@ -291,7 +288,7 @@ export default {
             // If a suite has been deselected, it's possible we'll need to
             // remove it, in case we're filtering by selected status.
             if (this.statusFilters.length && !selected) {
-                const file = _head(context)
+                const file = head(context)
                 this.updateSuitePresence(this.getStatus(file), file, false)
             }
         },
@@ -309,7 +306,7 @@ export default {
             Lode.ipc.send('nugget-context-menu', this.model.id, context)
         },
         updateSuitePresence (status, file, selected) {
-            const index = _findIndex(this.suites, ['file', file])
+            const index = findIndex(this.suites, ['file', file])
             if (index > -1) {
                 if (
                     this.statusFilters.indexOf(status) === -1 &&

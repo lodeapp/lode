@@ -23,11 +23,9 @@
 </template>
 
 <script>
-import _get from 'lodash/get'
-import _identity from 'lodash/identity'
-import _pickBy from 'lodash/pickBy'
-import Collapsible from '@/components/Collapsible'
-import Snippet from '@/components/Snippet'
+import { get, identity, pickBy } from 'lodash'
+import Collapsible from '@/components/Collapsible.vue'
+import Snippet from '@/components/Snippet.vue'
 
 export default {
     name: 'Diff',
@@ -43,7 +41,7 @@ export default {
     },
     computed: {
         diff () {
-            return this.formatDiff(_get(this.parts, 'diff', ''))
+            return this.formatDiff(get(this.parts, 'diff', ''))
         },
         parts () {
             if (typeof this.content === 'string') {
@@ -52,12 +50,12 @@ export default {
                 }
             }
 
-            return _pickBy({
-                'diff': this.formatDiff(_get(this.content, '@', '')),
-                'actual': _get(this.content, '+', ''),
-                'expected': _get(this.content, '-', ''),
-                'expected-partial': _get(this.content, 'q', '')
-            }, _identity)
+            return pickBy({
+                'diff': this.formatDiff(get(this.content, '@', '')),
+                'actual': get(this.content, '+', ''),
+                'expected': get(this.content, '-', ''),
+                'expected-partial': get(this.content, 'q', '')
+            }, identity)
         },
         hasSupporting () {
             return typeof this.content !== 'string'
@@ -72,7 +70,7 @@ export default {
             return diff.replace(/\n@@ @@\n/, '\n\n')
         },
         partName (key) {
-            return _get({
+            return get({
                 'diff': 'Difference',
                 'actual': '<span class="text-mono">+++</span> Actual',
                 'expected': '<span class="text-mono">---</span> Expected',

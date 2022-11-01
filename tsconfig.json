@@ -10,9 +10,13 @@
       "noUnusedLocals": true,
       "strict": true,
       "sourceMap": true,
+      "jsx": "preserve",
       "outDir": "./dist",
       "types" : [ "node", "lodash" ],
-      "typeRoots": [ "./node_modules/@types" ],
+      "typeRoots": [
+        "./node_modules/@types",
+        "./src/types"
+      ],
       "baseUrl": "./src",
       "paths": {
         "@/*": ["renderer/*"],
