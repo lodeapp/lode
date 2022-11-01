@@ -39,6 +39,10 @@ jobs:
       - name: Get yarn cache directory
         run: echo "yarn_dir=$(yarn cache dir)" >> $GITHUB_ENV
 
+      - name: Get yarn cache directory (Windows)
+        if: matrix.os == 'windows-latest'
+        run: echo "yarn_dir=$(yarn cache dir)" >> $env:GITHUB_ENV
+
       - name: Cache yarn dependencies
         uses: actions/cache@v3
         with:
