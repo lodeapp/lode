@@ -61,6 +61,7 @@ export interface IProject extends ProjectEventEmitter {
     selected: boolean
 
     getId (): string
+    getIdentifier(): ProjectIdentifier
     start (): void
     refresh (): void
     stop (): Promise<any>
@@ -130,6 +131,16 @@ export class Project extends ProjectEventEmitter implements IProject {
      */
     public getId (): string {
         return this.id
+    }
+
+    /**
+     * Get this project's identifier object.
+     */
+    public getIdentifier (): ProjectIdentifier {
+        return {
+            id: this.id,
+            name: this.name
+        }
     }
 
     /**

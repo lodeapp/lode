@@ -173,14 +173,23 @@ ipcMain
     .on('project-switch', (event: Electron.IpcMainEvent, identifier?: ProjectIdentifier | null) => {
         const window: ApplicationWindow = ApplicationWindow.getFromWebContents(event.sender)!
         const project: IProject | null = window.getProject()
-        if (identifier && !isEmpty(pickBy(identifier, identity))) {
-            window.setProject(identifier)
-            state.set('currentProject', window.getProject()!.getId())
-        } else {
-            window.clear()
-        }
-        if (project) {
-            project.stop()
+        try {
+            if (identifier && !isEmpty(pickBy(identifier, identity))) {
+                window.setProject(identifier)
+                state.set('currentProject', window.getProject()!.getId())
+            } else {
+                window.clear()
+            }
+            if (project) {
+                project.stop()
+            }
+        } catch (error) {
+            if (project) {
+                window.setProject(project.getIdentifier())
+                if (identifier && identifier.id) {
+                    window.onProjectLoadingFailure(identifier.id)
+                }
+            }
         }
     })
     .on('project-repositories', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier) => {
@@ -313,10 +322,8 @@ ipcMain
     })
 
 ipcMain
-    .handle('project-remove', async (event: Electron.IpcMainInvokeEvent) => {
-        const project: IProject = getProject(event)
-        await project.delete()
-        return state.removeProject(project.getId())
+    .handle('project-remove', async (event: Electron.IpcMainInvokeEvent, id: string) => {
+        return state.removeProject(id)
     })
 
 ipcMain

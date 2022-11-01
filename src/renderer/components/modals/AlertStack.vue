@@ -52,7 +52,7 @@
 <script>
 import _get from 'lodash/get'
 import { mapGetters } from 'vuex'
-import Ansi from '@/components/Ansi'
+import Ansi from '@/components/Ansi.vue'
 import Modal from '@/components/modals/mixins/modal'
 
 export default {

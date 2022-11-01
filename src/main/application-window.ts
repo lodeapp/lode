@@ -235,6 +235,10 @@ export class ApplicationWindow {
         this.refreshSettings()
     }
 
+    public onProjectLoadingFailure (id: string): void {
+        this.window.webContents.send('project-loading-failed', id)
+    }
+
     public refreshActiveFramework (): void {
         if (this.project) {
             const { framework, repository } = this.project.getActive()

@@ -100,6 +100,13 @@ const app = createApp({
             .on('project-ready', (event, project) => {
                 this.loadProject(project)
             })
+            .on('project-loading-failed', (event, id) => {
+                this.$modal.confirm('ProjectLoadingFailed')
+                    .then(async () => {
+                        await Lode.ipc.invoke('project-remove', id)
+                    })
+                    .catch(() => {})
+            })
             .on('settings-updated', (event, settings) => {
                 this.updateSettings(settings)
             })
