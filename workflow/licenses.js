@@ -28,8 +28,9 @@ const addendum = {
     licenses: {
         'cycle@1.0.3': 'Public domain',
         'file-stream-rotator@0.3.1': 'MIT',
+        'json-schema@0.2.3': 'BSD',
         'latinize@0.4.1': 'BSD',
-        'json-schema@0.2.3': 'BSD'
+        'type-fest@2.19.0': 'MIT'
     },
     // Author information for copyright notices, in case we don't have the
     // actual license text and need to generate it on-the-fly.
