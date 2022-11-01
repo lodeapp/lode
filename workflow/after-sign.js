@@ -1,6 +1,6 @@
 const Path = require('path')
 const { execSync } = require('child_process')
-const { notarize } = require('electron-notarize')
+const { notarize } = require('@electron/notarize')
 const builder = require('../electron-builder.json')
 
 module.exports = async function (params) {
