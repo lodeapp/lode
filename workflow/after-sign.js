@@ -1,7 +1,7 @@
 const Path = require('path')
 const { execSync } = require('child_process')
+const { notarize } = require('electron-notarize')
 const builder = require('../electron-builder.json')
-const notarize = require('electron-notarize')
 
 module.exports = async function (params) {
     if (params.electronPlatformName !== 'darwin') {
@@ -19,7 +19,7 @@ module.exports = async function (params) {
         console.log(`Starting notarization of ${builder.appId}.`)
 
         try {
-            await notarize.notarize({
+            await notarize({
                 appBundleId: builder.appId,
                 appPath,
                 appleId: process.env.APPLE_ID,
