@@ -1,16 +1,5 @@
 .markdown-body {
     table {
         width: 100%;
-
-        tr,
-        td {
-            border-color: var(--color-gray-300);
-        }
-
-        tr {
-            &:nth-child(2n) {
-                background-color: var(--color-gray-000);
-            }
-        }
     }
 }

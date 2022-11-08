@@ -62,7 +62,7 @@
             left: -1px;
             line-height: 0;
             position: relative;
-            top: -2px;
+            top: -1px;
         }
 
         .spinner,
@@ -98,7 +98,7 @@
 
     &.status--failed {
         > .indicator {
-            background-color: theme-color("failed");
+            background-color: var(--color-danger-fg);
             box-shadow: 0 0 0 4px theme-color("failed", 200);
         }
     }
@@ -163,7 +163,7 @@
 
     &.status--error {
         > .indicator {
-            background-color: theme-color("failed");
+            background-color: var(--color-danger-fg);
             box-shadow: 0 0 0 4px theme-color("failed", 200);
 
             i {

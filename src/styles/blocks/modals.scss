@@ -80,7 +80,7 @@
             }
 
             &.type--error {
-                color: theme-color("failed");
+                color: var(--color-danger-fg);
             }
 
             &.type--warning {
@@ -94,7 +94,6 @@
         h4,
         h5,
         h6 {
-            color: $black;
             line-height: 1;
         }
 
@@ -261,7 +260,7 @@
 }
 
 .modal-backdrop {
-    background-color: $black;
+    background-color: black;
     bottom: 0;
     left: 0;
     opacity: .4;

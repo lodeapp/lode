@@ -2,6 +2,7 @@ import * as Path from 'path'
 import { get } from 'lodash'
 import { app, ipcMain, BrowserWindow, nativeTheme } from 'electron'
 import { getResourceDirectory } from '@lib/helpers/paths'
+import { supportsSystemThemeChanges } from '@lib/themes'
 import { state } from '@lib/state'
 import { ProjectIdentifier, ProjectOptions, Project } from '@lib/frameworks/project'
 import { applicationMenu } from '@main/menu'
@@ -84,10 +85,6 @@ export class ApplicationWindow {
         }
 
         this.load()
-
-        nativeTheme.on('updated', () => {
-            this.window.webContents.send('theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
-        })
     }
 
     public static init (identifier: ProjectIdentifier | null): ApplicationWindow {
@@ -131,6 +128,7 @@ export class ApplicationWindow {
             this.onReady()
             this.window.webContents.send('did-finish-load', {
                 theme: nativeTheme.shouldUseDarkColors ? 'dark' : 'light',
+                supportsThemes: supportsSystemThemeChanges(),
                 runningUnderARM64Translation: app.runningUnderARM64Translation,
                 menu: applicationMenu.getSections(),
                 projectId: get(this.getProject(), 'id', null),
@@ -141,9 +139,14 @@ export class ApplicationWindow {
                 arch: process.arch
             })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
+
+            nativeTheme.addListener('updated', (event: string) => {
+                this.window.webContents.send('theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
+            })
         })
 
         this.window.on('close', () => {
+            nativeTheme.removeAllListeners()
             // Frameless window doesn't seem to want to close normally in
             // Windows, so we'll destroy it instead.
             if (__WIN32__) {

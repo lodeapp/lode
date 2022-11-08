@@ -33,7 +33,7 @@
         }
 
         > :last-child {
-            box-shadow: 0 1px 0 0 var(--color-gray-400);
+            box-shadow: 0 1px 0 0 var(--color-border-default);
         }
     }
 
@@ -53,12 +53,15 @@
         &.search,
         &.sort {
             background-color: var(--secondary-background-color-dark);
-            border-top: 1px solid var(--color-gray-400);
-            color: var(--color-gray-600);
+            border-top: 1px solid var(--color-border-default);
             line-height: 1em;
             padding-bottom: var(--spacing-half);
             text-align: center;
             white-space: nowrap;
+
+            i {
+                color: var(--color-fg-muted);
+            }
         }
 
         &.search {
@@ -71,12 +74,11 @@
             input {
                 background-color: transparent;
                 border: 0;
-                border-color: var(--color-gray-400);
+                border-color: var(--color-border-default);
                 box-shadow: none;
-                color: var(--input-text-color);
 
                 &:focus {
-                    border-color: var(--color-blue-400);
+                    border-color: var(--color-accent-emphasis);
                 }
             }
 
@@ -86,7 +88,7 @@
 
             &.is-searching {
                 i {
-                    color: var(--color-blue-400);
+                    color: var(--color-accent-emphasis);
                 }
             }
         }
@@ -99,7 +101,7 @@
                 appearance: none;
                 background: transparent;
                 border: 0;
-                color: var(--color-gray-600);
+                color: var(--color-fg-subtle);
                 margin: 0;
                 outline: 0;
                 padding: 0;
@@ -144,7 +146,7 @@
 
             > div {
                 background-color: var(--secondary-background-color);
-                border: 1px solid var(--color-gray-400);
+                border: 1px solid var(--color-border-default);
                 box-shadow: 0 0 0 3px rgb(0 0 0 / 2%);
                 display: inline-block;
                 margin: var(--spacing) auto;

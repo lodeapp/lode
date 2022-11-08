@@ -7,32 +7,17 @@ button,
 }
 
 .btn {
-    background: var(--secondary-background-color-dark);
-    border-color: var(--color-gray-500);
+    background: var(--color-btn-bg);
+    border-color: var(--color-btn-border);
     border-radius: 2px;
     box-shadow: none;
     font-weight: var(--font-weight-semibold);
 
-    &:hover {
-        background: color.adjust($gray-200, $lightness: 2%);
-        border-color: $gray-500;
-    }
-
-    &:focus {
-        box-shadow: 0 0 0 2px color.adjust($blue-400, $alpha: -.7);
-    }
-
     &:active {
-        background: color.adjust($gray-200, $lightness: -3%);
-        border-color: $gray-500;
         box-shadow: none;
     }
 
     &:disabled {
-        background: color.adjust($gray-100, $alpha: -.1);
-        border-color: color.adjust($gray-500, $alpha: -.6);
-        color: color.adjust($black, $alpha: -.6);
-
         > .Counter {
             opacity: .5;
         }
@@ -104,7 +89,7 @@ button,
     outline: 0;
 
     &.more-actions {
-        border-radius: 2px;
+        border-radius: 2px !important;
         color: $gray-500;
         height: 100%;
         min-width: 15px;
@@ -121,7 +106,7 @@ button,
         &:hover,
         &:focus,
         &:active {
-            background-color: var(--secondary-background-color-dark);
+            background-color: var(--color-btn-bg);
             outline: 0;
         }
     }

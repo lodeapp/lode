@@ -1,4 +1,4 @@
-import _get from 'lodash/get'
+import { get } from 'lodash'
 
 export default class Translation {
     protected locale: string
@@ -29,14 +29,14 @@ export default class Translation {
         const strings: Array<string> = string.split('|')
 
         const index = this.getIntervalIndex(strings.map((partial: string) => {
-            return _get(partial.match(this.intervalRegExp), 1, '')
+            return get(partial.match(this.intervalRegExp), 1, '')
         }), amount)
 
         // Fallback to first if index is not found
         string = index === false ? strings[0] : strings[index]
 
         // Return string without interval portion
-        return _get(string.match(this.intervalRegExp), 2, string)
+        return get(string.match(this.intervalRegExp), 2, string)
     }
 
     /**

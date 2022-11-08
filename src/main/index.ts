@@ -5,7 +5,7 @@ import '@lib/tracker/main'
 import Fs from 'fs'
 import Path from 'path'
 import { isEmpty, identity, pickBy } from 'lodash'
-import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, nativeTheme, shell } from 'electron'
 import {
     applicationMenu,
     Menu as ContextMenu,
@@ -20,6 +20,7 @@ import { ApplicationWindow } from '@main/application-window'
 import { Updater } from '@main/updater'
 import { LogLevel } from '@lib/logger/levels'
 import { mergeEnvFromShell } from '@lib/process/shell'
+import { initializeTheme, ThemeName } from '@lib/themes'
 import { state } from '@lib/state'
 import { log as writeLog } from '@lib/logger'
 import {
@@ -116,6 +117,7 @@ function entities (
 app
     .on('ready', () => {
         track.screenview('Application started')
+        initializeTheme(state.get('theme'))
         currentWindow = ApplicationWindow.init(state.getCurrentProject())
         applicationMenu.build(currentWindow)
 
@@ -301,6 +303,9 @@ ipcMain
     })
     .on('select-all', (event: Electron.IpcMainEvent) => {
         event.sender.selectAll()
+    })
+    .on('set-theme', (event: Electron.IpcMainEvent, theme: ThemeName) => {
+        nativeTheme.themeSource = theme
     })
     .on('settings-update', (event: Electron.IpcMainEvent, setting: string, value: any) => {
         state.set(setting, value)

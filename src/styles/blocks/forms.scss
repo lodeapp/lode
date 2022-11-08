@@ -1,10 +1,6 @@
 input {
     -webkit-app-region: no-drag;
 
-    &::placeholder {
-        color: var(--input-placeholder-text-color);
-    }
-
     &[type="checkbox"],
     &[type="radio"] {
         position: relative;
@@ -33,7 +29,7 @@ select {
     }
 
     &.form-select {
-        box-shadow: 0 1px 1px $gray-100;
+        box-shadow: var(--color-shadow-small);
     }
 }
 
@@ -54,13 +50,13 @@ select {
     }
 
     .form-help {
-        color: palette("gray", 600);
+        color: var(--color-fg-subtle);
         margin-top: var(--spacing-third);
         order: 1;
     }
 
     .form-error {
-        color: palette("red", 700);
+        color: var(--color-danger-fg);
         margin-top: var(--spacing-third);
         order: 2;
     }
@@ -68,7 +64,7 @@ select {
     &.errored,
     .errored {
         .form-control {
-            border-color: palette("red", 700);
+            border-color: var(--color-danger-fg);
         }
     }
 
@@ -129,13 +125,13 @@ select {
     background-color: transparent;
     border: 0;
     box-shadow: none;
-    color: palette("gray", 500);
+    color: var(--color-fg-muted);
     margin-left: var(--spacing-half);
     text-align: center;
 
     &:hover,
     &:focus {
-        color: palette("red", 500);
+        color: var(--color-danger-fg);
         outline: 0;
     }
 }

@@ -26,6 +26,7 @@ export enum AllowedIpcEventMap {
     'repository-remove',
     'repository-toggle',
     'select-all',
+    'set-theme',
     'settings-reset',
     'settings-update',
     'track-event',

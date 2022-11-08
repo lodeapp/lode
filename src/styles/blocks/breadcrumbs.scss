@@ -2,7 +2,7 @@
 
 .breadcrumbs {
     .breadcrumb-item {
-        color: $secondary-text;
+        color: var(--color-fg-subtle);
         margin-left: 0;
 
         &::after {

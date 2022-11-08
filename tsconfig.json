@@ -19,9 +19,9 @@
       ],
       "baseUrl": "./src",
       "paths": {
-        "@/*": ["renderer/*"],
-        "@main/*": ["main/*"],
-        "@lib/*": ["lib/*"]
+        "@/*": ["./renderer/*"],
+        "@main/*": ["./main/*"],
+        "@lib/*": ["./lib/*"]
       },
       "allowJs": true,
       "lib": [

@@ -19,10 +19,10 @@
 
         .spinner {
             animation: rotate .6s infinite linear;
-            border-bottom: 1em solid var(--color-blue-200);
-            border-left: 1em solid var(--color-blue-400);
-            border-right: 1em solid var(--color-blue-200);
-            border-top: 1em solid var(--color-blue-200);
+            border-bottom: 1em solid var(--color-accent-muted);
+            border-left: 1em solid var(--color-accent-emphasis);
+            border-right: 1em solid var(--color-accent-muted);
+            border-top: 1em solid var(--color-accent-muted);
             display: block;
             font-size: 2px;
             left: 0;

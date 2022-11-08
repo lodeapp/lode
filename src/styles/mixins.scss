@@ -59,25 +59,25 @@
 }
 
 @mixin light {
-    body.theme-light & {
+    html[data-color-mode="light"] & {
         @content;
     }
 }
 
 @mixin light-context {
-    body.theme-light {
+    html[data-color-mode="light"] {
         @content;
     }
 }
 
 @mixin dark {
-    body.theme-dark & {
+    html[data-color-mode="dark"] & {
         @content;
     }
 }
 
 @mixin dark-context {
-    body.theme-dark {
+    html[data-color-mode="dark"] {
         @content;
     }
 }

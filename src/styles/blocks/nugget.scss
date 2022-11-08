@@ -169,12 +169,12 @@
     &.status--failed {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color("failed");
+            border-color: var(--color-danger-fg);
         }
 
         > .header {
             .status {
-                background-color: theme-color("failed");
+                background-color: var(--color-danger-fg);
                 border-color: color.adjust(theme-color("failed"), $lightness: -15%);
                 box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("failed", 200);
             }
@@ -294,7 +294,7 @@
     &.status--error {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color("failed");
+            border-color: var(--color-danger-fg);
         }
 
         > .header {

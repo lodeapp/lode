@@ -8,16 +8,16 @@
     }
 
     .trace-link {
-        border-left: 2px solid var(--color-gray-300);
+        border-left: 2px solid var(--color-border-default);
         display: block;
         height: 35px;
         left: var(--spacing-double);
         position: relative;
 
         i {
-            background-color: $white;
+            background-color: var(--color-canvas-default);
             border-radius: 22px;
-            color: var(--color-gray-500);
+            color: var(--color-fg-subtle);
             height: 20px;
             left: -11px;
             line-height: 21px;
@@ -28,11 +28,11 @@
         }
 
         span {
-            color: var(--color-gray-700);
+            color: var(--color-fg-muted);
             font-family: var(--font-family-monospace);
             left: 13px;
             position: relative;
-            top: 9px;
+            top: 7px;
         }
     }
 }

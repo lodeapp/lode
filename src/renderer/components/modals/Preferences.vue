@@ -3,10 +3,10 @@
         <form class="preferences" @submit.prevent="close">
             <div class="form-group">
                 <dl>
-                    <dt><label for="project-name">Concurrent process limit:</label></dt>
+                    <dt><label for="select-concurrency">Concurrent process limit:</label></dt>
                     <dd>
                         <div class="form-help">Decrease if you experience slow performance.</div>
-                        <select class="form-control form-select input-sm" v-model="concurrency">
+                        <select id="select-concurrency" class="form-control form-select input-sm" v-model="concurrency">
                             <option>1</option>
                             <option>2</option>
                             <option>3</option>
@@ -26,6 +26,16 @@
                             <input type="checkbox" checked="checked" v-model="confirmRunningUnderTranslation">
                             When running application on the wrong architecture
                         </label>
+                    </dd>
+                </dl>
+                <dl v-if="$root.supportsThemes">
+                    <dt><label for="select-theme">Appearance</label></dt>
+                    <dd>
+                        <select id="select-theme" class="form-control form-select input-sm" v-model="theme">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="system">System</option>
+                        </select>
                     </dd>
                 </dl>
             </div>
@@ -69,6 +79,15 @@ export default {
             },
             set (value) {
                 this.$root.updateSetting('confirm.runningUnderTranslation', value)
+            }
+        },
+        theme: {
+            get () {
+                return this.$root.setting('theme')
+            },
+            set (value) {
+                this.$root.updateSetting('theme', value)
+                Lode.ipc.send('set-theme', value)
             }
         }
     }

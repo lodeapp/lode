@@ -1,4 +1,10 @@
 @use "sass:color";
+@include color-variables(
+    ("page-header-darker-bg": (
+        light: var(--color-scale-gray-1),
+        dark: var(--color-scale-gray-9)
+    )
+));
 
 // Default
 :root {
@@ -13,78 +19,18 @@
     --color-gray-700: #{$gray-700};
     --color-gray-800: #{$gray-800};
     --color-gray-900: #{$gray-900};
-    --color-blue-000: #{$blue-000};
-    --color-blue-100: #{$blue-100};
-    --color-blue-200: #{$blue-200};
-    --color-blue-300: #{$blue-300};
-    --color-blue-400: #{$blue-400};
-    --color-blue-500: #{$blue-500};
-    --color-blue-600: #{$blue-600};
-    --color-blue-700: #{$blue-700};
-    --color-blue-800: #{$blue-800};
-    --color-blue-900: #{$blue-900};
-    --color-green-000: #{$green-000};
-    --color-green-100: #{$green-100};
-    --color-green-200: #{$green-200};
-    --color-green-300: #{$green-300};
-    --color-green-400: #{$green-400};
-    --color-green-500: #{$green-500};
-    --color-green-600: #{$green-600};
-    --color-green-700: #{$green-700};
-    --color-green-800: #{$green-800};
-    --color-green-900: #{$green-900};
-    --color-yellow-000: #{$yellow-000};
-    --color-yellow-100: #{$yellow-100};
-    --color-yellow-200: #{$yellow-200};
-    --color-yellow-300: #{$yellow-300};
-    --color-yellow-400: #{$yellow-400};
-    --color-yellow-500: #{$yellow-500};
-    --color-yellow-600: #{$yellow-600};
-    --color-yellow-700: #{$yellow-700};
-    --color-yellow-800: #{$yellow-800};
-    --color-yellow-900: #{$yellow-900};
-    --color-orange-000: #{$orange-000};
-    --color-orange-100: #{$orange-100};
-    --color-orange-200: #{$orange-200};
-    --color-orange-300: #{$orange-300};
-    --color-orange-400: #{$orange-400};
-    --color-orange-500: #{$orange-500};
-    --color-orange-600: #{$orange-600};
-    --color-orange-700: #{$orange-700};
-    --color-orange-800: #{$orange-800};
-    --color-orange-900: #{$orange-900};
-    --color-red-000: #{$red-000};
-    --color-red-100: #{$red-100};
-    --color-red-200: #{$red-200};
-    --color-red-300: #{$red-300};
-    --color-red-400: #{$red-400};
-    --color-red-500: #{$red-500};
-    --color-red-600: #{$red-600};
-    --color-red-700: #{$red-700};
-    --color-red-800: #{$red-800};
-    --color-red-900: #{$red-900};
-    --color-purple-000: #{$purple-000};
-    --color-purple-100: #{$purple-100};
-    --color-purple-200: #{$purple-200};
-    --color-purple-300: #{$purple-300};
-    --color-purple-400: #{$purple-400};
-    --color-purple-500: #{$purple-500};
-    --color-purple-600: #{$purple-600};
-    --color-purple-700: #{$purple-700};
-    --color-purple-800: #{$purple-800};
-    --color-purple-900: #{$purple-900};
 
     // Contextual colors
-    --primary-background-color: #{$white};
-    --primary-border-color: #{$gray-300};
-    --secondary-background-color: #{$gray-000};
-    --secondary-background-color-dark: #{$gray-100};
+    --primary-background-color: var(--color-canvas-default);
+    --primary-border-color: var(--color-border-subtle);
+    --secondary-background-color: var(--color-page-header-bg);
+    --secondary-background-color-dark: var(--color-page-header-darker-bg);
 
     // Titlebar
     // Pixel unit is required in order for `calc` values to compute properly.
     // stylelint-disable-next-line length-zero-no-unit
     --titlebar-height: 0px;
-    --titlebar-background-color: #{$white};
+    --titlebar-background-color: var(--color-canvas-default);
 
     // Panes
     --pane-gutter-width: 11px;
@@ -127,10 +73,7 @@
     --font-size-xl: 32px;
     --font-size-xxl: 42px;
     --font-size-xs: 9px;
-    --input-text-color: #{$black};
-    --input-placeholder-text-color: #{$gray-600};
-    --link-color: #{$blue-400};
-    --text-color: #{$black};
+    --link-color: var(--color-accent-fg);
     --text-color-secondary: #{$gray-600};
     --text-color-secondary-discreet: #{color.adjust($gray-600, $lightness: 15%)};
 
@@ -164,14 +107,18 @@
 }
 
 // Overrides
+@include light-context {
+    --color-danger-fg: #f7434c !important;
+}
+
+@include dark-context {
+    --color-fg-default: #d1d5da !important;
+}
+
 @include win32-context {
     --titlebar-height: 28px;
-
-    &.theme-light {
-        --primary-background-color: #{$white};
-        --secondary-background-color: #{$white};
-        --secondary-background-color-dark: #{color.adjust($white, $lightness: -5%)};
-    }
+    --secondary-background-color: var(--color-canvas-default);
+    --secondary-background-color-dark: #{color.adjust($white, $lightness: -5%)};
 
     &.titlebar-hidden {
         // stylelint-disable-next-line length-zero-no-unit

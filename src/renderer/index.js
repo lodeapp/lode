@@ -36,6 +36,7 @@ const app = createApp({
             modals: [],
             ready: false,
             translated: false,
+            supportsThemes: false,
             loading: true,
             project: null,
             menu: null
@@ -44,7 +45,7 @@ const app = createApp({
     created () {
         Lode.ipc
             .on('did-finish-load', (event, properties) => {
-                document.body.classList.add(`theme-${properties.theme}`)
+                this.setTheme(properties.theme)
                 document.body.classList.add(`platform-${process.platform}`)
                 if (properties.focus) {
                     document.body.classList.add('is-focused')
@@ -63,6 +64,7 @@ const app = createApp({
                 this.arch = properties.arch
                 this.menu = __WIN32__ ? properties.menu : null
                 this.translated = properties.runningUnderARM64Translation
+                this.supportsThemes = properties.supportsThemes
 
                 this.ready = true
 
@@ -93,9 +95,7 @@ const app = createApp({
                 document.body.classList.remove('titlebar-hidden')
             })
             .on('theme-updated', (event, newTheme) => {
-                document.body.classList.remove('theme-light')
-                document.body.classList.remove('theme-dark')
-                document.body.classList.add(`theme-${newTheme}`)
+                this.setTheme(newTheme)
             })
             .on('project-ready', (event, project) => {
                 this.loadProject(project)
@@ -219,6 +219,9 @@ const app = createApp({
         }
     },
     methods: {
+        setTheme (theme) {
+            document.documentElement.setAttribute('data-color-mode', theme)
+        },
         mapStatuses (project) {
             const mapTests = (nugget, statuses) => {
                 (nugget.tests || []).forEach(test => {

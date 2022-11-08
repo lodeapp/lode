@@ -19,6 +19,7 @@ export class State extends EventEmitter {
             switchProject: true,
             runningUnderTranslation: true
         },
+        theme: 'system',
         currentProject: null,
         paneSizes: [16, 44, 40],
         projects: []

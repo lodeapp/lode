@@ -1392,24 +1392,24 @@
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.21.tgz#5de5a2385a35309427f6011992b544514d559aa1"
   integrity sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==
 
-"@primer/css@^19.4.0":
-  version "19.4.0"
-  resolved "https://registry.yarnpkg.com/@primer/css/-/css-19.4.0.tgz#3a6c1436987034253c05d3f4627b53b6593382de"
-  integrity sha512-Ptg9eTw140v97M+jdxP8vjC4BsiWjAvhMA0qjPx1rsH9oHfIrAqLEBDXkfMl5wYZrEflatyHAbxa4zos5DJttA==
+"@primer/css@^20.5.1":
+  version "20.5.1"
+  resolved "https://registry.yarnpkg.com/@primer/css/-/css-20.5.1.tgz#85e30ceb629e469f164f03549a2313f9fdd7a2a4"
+  integrity sha512-kMjlYzXqE0k6xIKC0BCZEDlngYZUcvbTgDWqUVbOk9IM19EYTMgHxME5i8wHpVGH22fQb8jnMbShdIq03uCWJw==
   dependencies:
-    "@primer/primitives" "^7.4.0"
+    "@primer/primitives" "^7.9.0"
 
-"@primer/octicons@^16.3.1":
-  version "16.3.1"
-  resolved "https://registry.yarnpkg.com/@primer/octicons/-/octicons-16.3.1.tgz#f52ed3a643d2da995abbcd98b2f54447bf29c808"
-  integrity sha512-J3IlK0Ok88RQZVB//af7Lnl1Vw2buyyr5G3oEvK1wRSYTJi/E/HBm5JZUihmDAtm/unr85FC534DwA5e+4LR2w==
+"@primer/octicons@^17.9.0":
+  version "17.9.0"
+  resolved "https://registry.yarnpkg.com/@primer/octicons/-/octicons-17.9.0.tgz#bfa05140752815210b594f50222f1e7abb578523"
+  integrity sha512-B6y3VxPrF6U+GUjZR883NsstI7v/Qcup9puDG+fOJvCm8b7UXNl46TbRrctMCZnYlyIzUF3/SgjJhr5od/Y6sw==
   dependencies:
     object-assign "^4.1.1"
 
-"@primer/primitives@^7.4.0":
-  version "7.4.1"
-  resolved "https://registry.yarnpkg.com/@primer/primitives/-/primitives-7.4.1.tgz#5ab1af3b078bb6b7b158ac84a1ae8a07fbdd3f95"
-  integrity sha512-cos7zQ6tgTtbQzF1gymiuQPcccqkHpccQCaahMRdqHqJP7kiG9/lbq+u13UdrAFJ8iJEyORfHXKd+bwhQf4svw==
+"@primer/primitives@^7.9.0":
+  version "7.10.0"
+  resolved "https://registry.yarnpkg.com/@primer/primitives/-/primitives-7.10.0.tgz#de0d9648d484184442583564f02d6600b872fa5f"
+  integrity sha512-DdLHq21e93R9qDHyRuRpytBLY0Up9IwNWMOUgPNW6lRSng4N4+IdUlLS3Ekbasmxfs8Z8vKS8aezeYovQ5qsxQ==
 
 "@sentry/browser@6.7.1":
   version "6.7.1"
@@ -3499,6 +3499,11 @@ compare-version@^0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/compare-version/-/compare-version-0.1.2.tgz#0162ec2d9351f5ddd59a9202cba935366a725080"
   integrity sha1-AWLsLZNR9d3VmpICy6k1NmpyUIA=
+
+compare-versions@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/compare-versions/-/compare-versions-5.0.1.tgz#14c6008436d994c3787aba38d4087fabe858555e"
+  integrity sha512-v8Au3l0b+Nwkp4G142JcgJFh1/TUhdxut7wzD1Nq1dyp5oa3tXaqb03EXOAB6jS4gMlalkjAUPZBMiAfKUixHQ==
 
 component-emitter@^1.2.1:
   version "1.3.0"
@@ -7281,6 +7286,11 @@ memfs@^3.4.1:
   integrity sha512-1c9VPVvW5P7I85c35zAdEr1TD5+F11IToIHIlrVIcflfnzPkJa0ZoYEoEdYDP8KgPFoSZ/opDrUsAoZWym3mtw==
   dependencies:
     fs-monkey "1.0.3"
+
+memoize-one@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/memoize-one/-/memoize-one-6.0.0.tgz#b2591b871ed82948aee4727dc6abceeeac8c1045"
+  integrity sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==
 
 memory-fs@^0.5.0:
   version "0.5.0"
