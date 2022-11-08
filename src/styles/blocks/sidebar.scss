@@ -1,5 +1,6 @@
+/* stylelint-disable color-function-notation */
 .sidebar {
-    background-color: var(--sidebar-color);
+    background-color: var(--color-sidebar-bg);
     border-radius: .0001px; // Prevent .shadow from overflowing.
     display: flex;
     flex-direction: column;
@@ -14,10 +15,6 @@
 
     @include darwin {
         padding: 33px 0 0;
-    }
-
-    @include dark {
-        background-color: var(--sidebar-color);
     }
 
     > .draggable {
@@ -36,37 +33,36 @@
     }
 
     .sidebar-header {
-        color: var(--sidebar-text-secondary-color);
+        color: var(--color-sidebar-fg-secondary);
         font-size: 1rem;
         margin: var(--spacing) 0 var(--spacing-half) var(--spacing);
 
         > .sidebar-action {
-            background-color: var(--sidebar-text-secondary-color);
+            appearance: none;
+            background-color: transparent;
             border: 0;
-            border-radius: 100%;
-            color: var(--sidebar-color);
-            display: inline-block;
+            color: var(--color-sidebar-fg-secondary);
             float: right;
-            height: 18px;
+            height: 22px;
             line-height: 16px;
             margin-right: var(--spacing);
-            opacity: .85;
             outline: 0;
             padding: 0;
+            position: relative;
             text-align: center;
+            top: -1px;
             visibility: hidden;
-            width: 18px;
+            width: 22px;
 
-            i {
-                transform: scale(.8);
-            }
-
-            &:hover {
-                opacity: 1;
+            &:active,
+            &:focus {
+                color: var(--color-sidebar-fg);
             }
         }
 
-        &:hover {
+        &:hover,
+        &:active,
+        &:focus {
             > .sidebar-action {
                 visibility: visible;
             }
@@ -81,14 +77,14 @@
                 padding: 0;
 
                 .heading {
-                    color: var(--sidebar-text-color);
+                    color: var(--color-sidebar-fg);
                     font-size: 15px;
                     font-weight: var(--font-weight-normal);
                     overflow: hidden;
                     white-space: nowrap;
 
                     > i {
-                        color: var(--sidebar-text-secondary-color);
+                        color: var(--color-sidebar-fg-secondary);
                         margin: 0 var(--spacing-half) 0 var(--spacing-third);
                         text-align: center;
                         width: 14px;
@@ -108,60 +104,62 @@
                 > .status {
                     margin-top: 4px;
 
-                    &.status--passed {
-                        > .indicator {
-                            box-shadow:
-                                0 0 0 4px theme-color("passed", 200),
-                                0 0 0 5px rgba($color: theme-color("passed", 100), $alpha: 75%);
+                    @include light {
+                        &.status--passed {
+                            > .indicator {
+                                box-shadow:
+                                    0 0 0 4px theme-color("passed", 200),
+                                    0 0 0 5px rgba($color: theme-color("passed", 100), $alpha: 75%);
+                            }
                         }
-                    }
 
-                    &.status--idle,
-                    &.status--empty {
-                        > .indicator {
-                            box-shadow:
-                                0 0 0 4px theme-color("idle", 400),
-                                0 0 0 5px rgba($color: theme-color("idle", 200), $alpha: 75%);
+                        &.status--idle,
+                        &.status--empty {
+                            > .indicator {
+                                box-shadow:
+                                    0 0 0 4px theme-color("idle", 400),
+                                    0 0 0 5px rgba($color: theme-color("idle", 200), $alpha: 75%);
+                            }
                         }
-                    }
 
-                    &.status--failed,
-                    &.status--error {
-                        > .indicator {
-                            box-shadow:
-                                0 0 0 4px theme-color("failed", 200),
-                                0 0 0 5px rgba($color: theme-color("failed", 100), $alpha: 75%);
+                        &.status--failed,
+                        &.status--error {
+                            > .indicator {
+                                box-shadow:
+                                    0 0 0 4px theme-color("failed", 200),
+                                    0 0 0 5px rgba($color: theme-color("failed", 100), $alpha: 75%);
+                            }
                         }
-                    }
 
-                    &.status--warning,
-                    &.status--missing {
-                        > .indicator {
-                            box-shadow:
-                                0 0 0 4px theme-color("warning", 200),
-                                0 0 0 5px rgba($color: theme-color("warning", 100), $alpha: 75%);
+                        &.status--warning,
+                        &.status--missing {
+                            > .indicator {
+                                box-shadow:
+                                    0 0 0 4px theme-color("warning", 200),
+                                    0 0 0 5px rgba($color: theme-color("warning", 100), $alpha: 75%);
+                            }
                         }
-                    }
 
-                    &.status--incomplete {
-                        > .indicator {
-                            box-shadow:
-                                0 0 0 4px theme-color("incomplete", 200),
-                                0 0 0 5px rgba($color: theme-color("incomplete", 100), $alpha: 75%);
+                        &.status--incomplete {
+                            > .indicator {
+                                box-shadow:
+                                    0 0 0 4px theme-color("incomplete", 200),
+                                    0 0 0 5px rgba($color: theme-color("incomplete", 100), $alpha: 75%);
+                            }
                         }
-                    }
 
-                    &.status--partial {
-                        > .indicator {
-                            box-shadow:
-                                0 0 0 4px theme-color("partial", 400),
-                                0 0 0 5px rgba($color: theme-color("partial", 200), $alpha: 75%);
+                        &.status--partial {
+                            > .indicator {
+                                box-shadow:
+                                    0 0 0 4px theme-color("partial", 400),
+                                    0 0 0 5px rgba($color: theme-color("partial", 200), $alpha: 75%);
+                            }
                         }
-                    }
 
-                    &.status--queued {
-                        > .indicator {
-                            box-shadow: 0 0 0 5px rgba($color: theme-color("idle", 100), $alpha: 75%);
+                        &.status--queued {
+                            > .indicator {
+                                box-shadow: 0 0 0 5px rgba($color: theme-color("idle", 100), $alpha: 75%);
+                            }
                         }
                     }
                 }
@@ -169,12 +167,12 @@
         }
 
         &.is-active {
-            background-color: var(--sidebar-active-color);
+            background-color: var(--color-sidebar-fg-active);
         }
 
         &.is-menu-active {
             > .header {
-                background-color: var(--color-scale-blue-1);
+                background-color: var(--color-sidebar-accent);
             }
         }
     }

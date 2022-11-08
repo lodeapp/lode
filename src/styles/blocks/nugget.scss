@@ -312,10 +312,10 @@
 
     &.is-active {
         > .header {
-            background-color: var(--item-selected-active-background-color);
+            background-color: var(--color-item-active-bg);
 
             > .header-inner {
-                background-color: var(--item-selected-active-background-color);
+                background-color: var(--color-item-active-bg);
                 color: var(--item-selected-active-text-color);
 
                 > .selective-toggle {

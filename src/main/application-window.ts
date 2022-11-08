@@ -45,7 +45,7 @@ export class ApplicationWindow {
             minWidth: this.minWidth,
             minHeight: this.minHeight,
             useContentSize: true,
-            backgroundColor: '#F7F7F7',
+            backgroundColor: '#00FFFFFF',
             webPreferences: {
                 // Disable auxclick event
                 // See https://developers.google.com/web/updates/2016/10/auxclick
@@ -85,6 +85,10 @@ export class ApplicationWindow {
         }
 
         this.load()
+
+        nativeTheme.on('updated', () => {
+            this.window.webContents.send('theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
+        })
     }
 
     public static init (identifier: ProjectIdentifier | null): ApplicationWindow {
@@ -139,10 +143,6 @@ export class ApplicationWindow {
                 arch: process.arch
             })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
-
-            nativeTheme.addListener('updated', (event: string) => {
-                this.window.webContents.send('theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
-            })
         })
 
         this.window.on('close', () => {

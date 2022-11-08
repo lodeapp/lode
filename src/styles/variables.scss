@@ -1,10 +1,40 @@
 @use "sass:color";
 @include color-variables(
-    ("page-header-darker-bg": (
-        light: var(--color-scale-gray-1),
-        dark: var(--color-scale-gray-9)
+    (
+        "page-header-darker-bg": (
+            light: var(--color-scale-gray-1),
+            dark: var(--color-scale-gray-8),
+        ),
+        "sidebar-bg": (
+            light: #e9ecef,
+            dark: var(--color-canvas-default),
+        ),
+        "sidebar-border": (
+            light: var(--color-scale-gray-3),
+            dark: var(--color-border-default),
+        ),
+        "sidebar-fg": (
+            light: var(--color-scale-gray-8),
+            dark: var(--color-fg-default),
+        ),
+        "sidebar-fg-secondary": (
+            light: var(--color-scale-gray-6),
+            dark: var(--color-fg-muted),
+        ),
+        "sidebar-fg-active": (
+            light: rgb(0 0 0 / 8%),
+            dark: var(--color-scale-gray-7),
+        ),
+        "sidebar-accent": (
+            light: var(--color-scale-blue-1),
+            dark: var(--color-item-active-bg),
+        ),
+        "item-active-bg": (
+            light: #2188ff,
+            dark: #0366d6,
+        ),
     )
-));
+);
 
 // Default
 :root {
@@ -35,13 +65,6 @@
     // Panes
     --pane-gutter-width: 11px;
     --pane-border-color: var(--primary-border-color);
-
-    // Sidebar
-    --sidebar-color: #e9ecef;
-    --sidebar-border-color: #{$gray-500};
-    --sidebar-text-color: #{$gray-800};
-    --sidebar-text-secondary-color: #{$gray-700};
-    --sidebar-active-color: rgb(0 0 0 / 8%);
 
     // Typography
     --font-family-sans-serif:
@@ -92,7 +115,6 @@
 
     // Focus
     --item-selected-background-color: #{theme-color("selected", 100)};
-    --item-selected-active-background-color: #{theme-color("selected", 400)};
     --item-selected-active-text-color: #{$white};
 
     // Modals

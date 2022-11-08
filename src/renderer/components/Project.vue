@@ -31,7 +31,7 @@
                     <h5 v-if="repositories.length" class="sidebar-header">
                         <span>Repositories</span>
                         <button type="button" class="sidebar-action" @click="$root.repositoryAdd">
-                            <Icon symbol="plus" />
+                            <Icon symbol="plus-circle" />
                         </button>
                     </h5>
                 </header>

@@ -17,7 +17,7 @@
             z-index: 1;
 
             + .gutter {
-                border-left: 1px solid var(--sidebar-border-color);
+                border-left: 1px solid var(--color-sidebar-border);
                 cursor: col-resize !important;
                 margin: 0;
                 margin-right: calc(calc(var(--pane-gutter-width) - 1px) * -1);

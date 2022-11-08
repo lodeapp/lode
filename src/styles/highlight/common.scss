@@ -1,10 +1,9 @@
 pre {
-    padding: 0;
-
     .hljs {
         background-color: var(--primary-background-color) !important;
         border-radius: 3px;
         display: block;
+        margin: calc(var(--spacing) * -1);
         overflow-x: auto;
         padding: .5em;
         padding: 0 !important;
