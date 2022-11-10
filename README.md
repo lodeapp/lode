@@ -51,3 +51,5 @@ If you're just getting started with Electron development, I would strongly recom
 Code is licensed under the [MIT license](LICENSE).
 
 Usage of the software is bound to its own [terms and conditions](https://lode.run/terms/).
+
+
