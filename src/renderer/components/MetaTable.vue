@@ -1,5 +1,5 @@
 <template>
-    <div class="meta markdown-body" :class="[`is-${expanded ? 'expanded' : 'collapsed'}`]">
+    <div class="meta markdown-body">
         <table>
             <colgroup>
                 <col width="1%">
@@ -22,16 +22,6 @@ export default {
         object: {
             type: Object,
             required: true
-        }
-    },
-    data () {
-        return {
-            expanded: true
-        }
-    },
-    methods: {
-        toggle () {
-            this.expanded = !this.expanded
         }
     }
 }

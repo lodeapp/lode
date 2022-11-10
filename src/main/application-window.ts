@@ -45,7 +45,7 @@ export class ApplicationWindow {
             minWidth: this.minWidth,
             minHeight: this.minHeight,
             useContentSize: true,
-            backgroundColor: '#00FFFFFF',
+            backgroundColor: nativeTheme.shouldUseDarkColors ? '#161B22' : '#EAEEF2',
             webPreferences: {
                 // Disable auxclick event
                 // See https://developers.google.com/web/updates/2016/10/auxclick

@@ -1,4 +1,4 @@
-import _get from 'lodash/get'
+import { get } from 'lodash'
 
 export default {
     namespaced: true,
@@ -22,7 +22,7 @@ export default {
     },
     getters: {
         nugget: state => nugget => {
-            return _get(state.status, nugget, 'idle')
+            return get(state.status, nugget, 'idle')
         }
     }
 }

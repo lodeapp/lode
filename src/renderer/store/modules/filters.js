@@ -1,8 +1,4 @@
-import _get from 'lodash/get'
-import _identity from 'lodash/identity'
-import _isArray from 'lodash/isArray'
-import _isEmpty from 'lodash/isEmpty'
-import _pickBy from 'lodash/pickBy'
+import { get, identity, isArray, isEmpty, pickBy } from 'lodash'
 
 export default {
     namespaced: true,
@@ -10,10 +6,10 @@ export default {
     mutations: {
         SET (state, { id, filters }) {
             // Set by merging current state and removing falsy or empty values
-            state[id] = _pickBy({
-                ..._get(state, id, {}),
+            state[id] = pickBy({
+                ...get(state, id, {}),
                 ...filters
-            }, value => _isArray(value) ? !_isEmpty(value) : _identity(value))
+            }, value => isArray(value) ? !isEmpty(value) : identity(value))
         },
         RESET (state) {
             Object.keys(state).forEach(id => {

@@ -3,7 +3,7 @@
         margin-bottom: var(--spacing);
 
         > .key {
-            color: $secondary-discreet-text;
+            color: var(--color-fg-subtler);
             font-weight: var(--font-weight-semibold);
             text-transform: uppercase;
         }

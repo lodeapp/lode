@@ -78,7 +78,7 @@
                 box-shadow: none;
 
                 &:focus {
-                    border-color: var(--color-accent-emphasis);
+                    border-color: var(--color-accent-fg);
                 }
             }
 
@@ -88,7 +88,7 @@
 
             &.is-searching {
                 i {
-                    color: var(--color-accent-emphasis);
+                    color: var(--color-accent-fg);
                 }
             }
         }

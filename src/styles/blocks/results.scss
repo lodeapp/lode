@@ -7,7 +7,8 @@
         border: 0;
         border-radius: 0;
         box-shadow: none;
-        color: rgba($gray-600, .3);
+        color: var(--color-fg-subtle);
+        opacity: .4;
     }
 
     > .has-status {

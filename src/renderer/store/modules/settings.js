@@ -1,4 +1,4 @@
-import _get from 'lodash/get'
+import { get } from 'lodash'
 
 export default {
     namespaced: true,
@@ -9,7 +9,7 @@ export default {
             if (!key) {
                 return state
             }
-            return _get(state, key)
+            return get(state, key)
         }
     }
 }

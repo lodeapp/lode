@@ -36,7 +36,7 @@
         &:hover,
         &:focus,
         &:active {
-            color: var(--link-color);
+            color: var(--color-link);
         }
     }
 
@@ -47,7 +47,6 @@
 
 .framework-settings {
     border-top: 1px solid var(--primary-border-color);
-    box-shadow: inset 0 -4px 0 color.adjust($gray-300, $alpha: -.8);
     counter-increment: framework;
     margin: 0;
     padding: var(--spacing-double) var(--spacing);
@@ -155,7 +154,7 @@
         }
 
         i {
-            color: $gray-500;
+            color: var(--color-fg-muted);
             position: absolute;
             right: 11px;
             top: 11px;

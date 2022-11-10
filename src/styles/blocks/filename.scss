@@ -9,13 +9,13 @@
     }
 
     > .dir {
-        color: var(--text-color-secondary-discreet);
+        color: var(--color-fg-subtler);
         word-break: break-all;
     }
 
     // Truncate variation has a different structure.
     &--truncate {
-        color: var(--text-color-secondary-discreet);
+        color: var(--color-fg-subtler);
         font-size: 1rem;
         word-break: break-all;
 

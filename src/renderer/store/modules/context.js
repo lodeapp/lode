@@ -1,6 +1,5 @@
 import app from '@'
-import _clone from 'lodash/clone'
-import _last from 'lodash/last'
+import { clone, last } from 'lodash'
 
 export default {
     namespaced: true,
@@ -17,10 +16,10 @@ export default {
             state.active = payload
         },
         REPOSITORY (state, payload) {
-            state.repository = _clone(payload)
+            state.repository = clone(payload)
         },
         FRAMEWORK (state, payload) {
-            state.framework = _clone(payload)
+            state.framework = clone(payload)
         },
         SUITES (state, payload) {
             state.suitesKey = app.config.globalProperties.$string.from(payload.map(suite => suite.file))
@@ -84,7 +83,7 @@ export default {
             return state.nuggets
         },
         test: state => {
-            return _last(state.nuggets)
+            return last(state.nuggets)
         },
         suitesKey: state => {
             return state.suitesKey

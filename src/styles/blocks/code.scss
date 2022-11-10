@@ -4,7 +4,6 @@
 
     button {
         appearance: none;
-        background-color: var(--primary-background-color);
         border: 1px solid var(--primary-border-color);
         border-radius: 3px;
         float: right;
@@ -24,12 +23,12 @@
         }
 
         i {
-            color: $gray-500;
+            color: var(--color-fg-subtler);
         }
 
         &:hover {
             i {
-                color: $gray-600;
+                color: var(--color-link);
             }
         }
     }

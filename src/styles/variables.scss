@@ -29,27 +29,27 @@
             light: var(--color-scale-blue-1),
             dark: var(--color-item-active-bg),
         ),
+        "fg-subtler": (
+            light: #939ba2,
+            dark: #8c9399,
+        ),
+        "link": (
+            light: var(--color-accent-fg),
+            dark: var(--color-accent-fg),
+        ),
         "item-active-bg": (
             light: #2188ff,
             dark: #0366d6,
+        ),
+        "item-active-fg": (
+            light: var(--color-scale-white),
+            dark: var(--color-scale-white),
         ),
     )
 );
 
 // Default
 :root {
-    // Colors
-    --color-gray-000: #{$gray-000};
-    --color-gray-100: #{$gray-100};
-    --color-gray-200: #{$gray-200};
-    --color-gray-300: #{$gray-300};
-    --color-gray-400: #{$gray-400};
-    --color-gray-500: #{$gray-500};
-    --color-gray-600: #{$gray-600};
-    --color-gray-700: #{$gray-700};
-    --color-gray-800: #{$gray-800};
-    --color-gray-900: #{$gray-900};
-
     // Contextual colors
     --primary-background-color: var(--color-canvas-default);
     --primary-border-color: var(--color-border-subtle);
@@ -96,9 +96,6 @@
     --font-size-xl: 32px;
     --font-size-xxl: 42px;
     --font-size-xs: 9px;
-    --link-color: var(--color-accent-fg);
-    --text-color-secondary: #{$gray-600};
-    --text-color-secondary-discreet: #{color.adjust($gray-600, $lightness: 15%)};
 
     // Spacing
     --spacing: 10px;
@@ -112,10 +109,6 @@
     // Status
     --status-block-width: 25px;
     --status-soft-border-width: 4px;
-
-    // Focus
-    --item-selected-background-color: #{theme-color("selected", 100)};
-    --item-selected-active-text-color: #{$white};
 
     // Modals
     --modal-large: 840px;
@@ -140,7 +133,6 @@
 @include win32-context {
     --titlebar-height: 28px;
     --secondary-background-color: var(--color-canvas-default);
-    --secondary-background-color-dark: #{color.adjust($white, $lightness: -5%)};
 
     &.titlebar-hidden {
         // stylelint-disable-next-line length-zero-no-unit

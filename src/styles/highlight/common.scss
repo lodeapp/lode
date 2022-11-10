@@ -4,11 +4,12 @@ pre {
         border-radius: 3px;
         display: block;
         margin: calc(var(--spacing) * -1);
+        padding: var(--spacing) !important;
         overflow-x: auto;
-        padding: .5em;
-        padding: 0 !important;
 
         .has-lines {
+            margin: calc(var(--spacing) * -1);
+
             tbody {
                 tr {
                     .line-number,

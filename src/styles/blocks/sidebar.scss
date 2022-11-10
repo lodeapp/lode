@@ -1,4 +1,3 @@
-/* stylelint-disable color-function-notation */
 .sidebar {
     background-color: var(--color-sidebar-bg);
     border-radius: .0001px; // Prevent .shadow from overflowing.
@@ -23,6 +22,7 @@
 
     header {
         position: sticky;
+        padding-bottom: 2px;
     }
 
     section {

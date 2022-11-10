@@ -1,5 +1,5 @@
 import sha1 from 'sha1-es'
-import _truncate from 'lodash/truncate'
+import { truncate } from 'lodash'
 import markdown from 'markdown-it'
 import latinize from 'latinize'
 import Translation from './translation'
@@ -68,7 +68,7 @@ export default class Strings {
      * @param options Additional truncation options
      */
     public truncate (string: string, length = 140, options: any): string {
-        return _truncate(string, {
+        return truncate(string, {
             ...{
                 length,
                 omission: '…'

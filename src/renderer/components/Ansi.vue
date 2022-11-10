@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import Terminal from 'terminal.js'
+import * as Convert from 'ansi-to-html'
 import Icon from '@/components/Icon.vue'
 
 export default {
@@ -27,33 +27,22 @@ export default {
         }
     },
     data () {
-        // Create a new Terminal instance with plenty of space for our output.
-        // We'll trim the unsused space when rendering the html.
-        const terminal = new Terminal({ columns: 20000, rows: 20000 })
-        terminal.write(this.processContent(this.content))
         return {
             showRaw: false,
             raw: this.content,
-            html: terminal
-                .toString('html')
-                .replace(/(<div style='overflow:hidden'><br \/><\/div>)*(<div style='line-height:0;visibility:hidden;'>)(&nbsp;)*<\/div>$/gm, '')
+            // eslint-disable-next-line new-cap
+            html: new Convert.default({
+                fg: 'var(--color-fg-default)',
+                bg: 'var(--primary-background-color)',
+                newline: true,
+                escapeXML: true,
+                stream: false
+            }).toHtml(this.processContent(this.content))
         }
     },
     methods: {
         processContent (content) {
-            const replacements = [
-                [/\n/g, '\r\n'],
-                [/<<<REPORT\{?\s*/, ''],
-                [/Connection to .+ closed\.\s*$/, ''],
-                [/PHPUnit .+ by Sebastian Bergmann and contributors\.\s+/, ''],
-                [/\x1b]8;;.*\x1b]8;;/g, '']
-            ]
-
-            replacements.forEach((replace) => {
-                content = content.replace(replace[0], replace[1])
-            })
-
-            return content + '\r\n'
+            return content
         },
         clipboard () {
             Lode.copyToClipboard(this.showRaw ? this.content : this.$el.querySelector('pre').innerText)

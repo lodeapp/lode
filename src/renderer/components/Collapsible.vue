@@ -4,7 +4,7 @@
             <button v-if="content" class="btn btn-sm" @click.stop.prevent="toggle">
                 <Icon :symbol="expanded ? 'dash' : 'plus'" />
             </button>
-            <button v-if="copy" class="btn-link" @click.stop.prevent="clipboard">
+            <button v-if="copy" class="btn-link" title="Copy to clipboard" @click.stop.prevent="clipboard">
                 <Icon symbol="copy" />
             </button>
             <slot name="header"></slot>

@@ -91,7 +91,7 @@
 
             i {
                 svg {
-                    fill: $secondary-discreet-text;
+                    fill: var(--color-fg-subtler);
                 }
             }
         }
@@ -316,21 +316,11 @@
 
             > .header-inner {
                 background-color: var(--color-item-active-bg);
-                color: var(--item-selected-active-text-color);
+                color: var(--color-item-active-fg);
 
                 > .selective-toggle {
                     button {
-                        border-color: $white;
-                    }
-
-                    input:checked {
-                        // On macOS, checkboxes are blue, so we'll add a round
-                        // white border to checkboxes in active nuggets, to
-                        // increase contrast.
-                        @include darwin {
-                            border-radius: 2px;
-                            box-shadow: 0 0 0 1px $white;
-                        }
+                        border-color: var(--color-item-active-fg);
                     }
                 }
             }
@@ -359,7 +349,7 @@
                 > .filename {
                     > .dir {
                         // Give a slight readability boost to discreet text.
-                        color: var(--text-color-secondary);
+                        color: var(--color-fg-subtle);
                     }
                 }
             }

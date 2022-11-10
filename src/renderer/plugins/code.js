@@ -55,7 +55,7 @@ export default class Code {
 
     highlight (code, language) {
         code = this.asString(code)
-        return language ? this.highlighter.highlight(language, code) : this.highlighter.highlightAuto(code)
+        return language ? this.highlighter.highlight(code, { language }) : this.highlighter.highlightAuto(code)
     }
 
     lines (code, line = 1, highlight = false) {

@@ -3,8 +3,8 @@
 .scrollable {
     .shadow {
         &::after {
-            border-top: 1px solid var(--color-gray-600);
-            box-shadow: 0 2px 0 1px color.adjust($black, $alpha: -.9);
+            border-top: 1px solid var(--color-border-default);
+            box-shadow: var(--color-shadow-small);
             content: "";
             height: 0;
             position: fixed;

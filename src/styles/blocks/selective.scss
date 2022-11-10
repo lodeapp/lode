@@ -12,7 +12,7 @@
         appearance: none;
         background-color: transparent;
         border: 0;
-        border-color: $secondary-discreet-text;
+        border-color: var(--color-fg-subtler);
         border-radius: 100%;
         border-style: double;
         border-width: 4px;
@@ -41,7 +41,7 @@
         }
 
         &[disabled] {
-            border-color: color.adjust($secondary-discreet-text, $alpha: -.5);
+            opacity: .5;
         }
     }
 
@@ -50,9 +50,9 @@
     &:active {
         button {
             &:not([disabled]) {
-                background-color: var(--link-color);
-                border-color: $white;
-                transform: scale(1.4);
+                background-color: var(--color-link);
+                border-color: var(--primary-background-color);
+                transform: scale(1.5);
             }
         }
     }

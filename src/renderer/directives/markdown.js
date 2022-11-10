@@ -1,5 +1,5 @@
+import { castArray } from 'lodash'
 import Strings from '@lib/helpers/strings'
-import _castArray from 'lodash/castArray'
 
 // Use an object for each binding so we can store original templates
 // in case dynamic content changes and we need to re-compute markup.
@@ -13,7 +13,7 @@ class MarkdownDirective {
         let text = this.template
         // If set modifier is present, use value as replacers
         if (binding.modifiers.set) {
-            text = this.helper.set(this.template, ..._castArray(binding.value))
+            text = this.helper.set(this.template, ...castArray(binding.value))
         } else if (binding.modifiers.plural) {
             text = this.helper.plural(this.template, binding.value)
         }

@@ -1,4 +1,4 @@
-import _last from 'lodash/last'
+import { last } from 'lodash'
 
 export default {
     namespaced: true,
@@ -41,7 +41,7 @@ export default {
     },
     getters: {
         isOpen: state => name => {
-            return _last(state.modals) === name
+            return last(state.modals) === name
         },
         hasModals: state => {
             return state.modals.length > 0

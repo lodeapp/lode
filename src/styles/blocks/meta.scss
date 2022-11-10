@@ -2,8 +2,8 @@
     margin-bottom: var(--spacing-double);
 
     table {
-        border-left: 1px solid var(--color-gray-200);
-        border-right: 1px solid var(--color-gray-200);
+        border-left: 1px solid var(--color-border-default);
+        border-right: 1px solid var(--color-border-default);
         font-family: var(--font-family-monospace);
         font-size: 1rem;
         line-height: 1.5;
@@ -26,33 +26,6 @@
         td:not(.heading) {
             border-right: 0;
             word-break: break-word;
-        }
-    }
-
-    &.is-collapsed {
-        border: 1px solid var(--color-gray-200);
-        max-height: 150px;
-        overflow: hidden;
-        position: relative;
-
-        table {
-            border: 0;
-            margin-top: -1px !important;
-            max-height: inherit;
-            overflow: hidden;
-            position: relative;
-
-            &::after {
-                background-image: linear-gradient(to bottom, rgb(255 255 255 / 0%), rgb(255 255 255 / 85%) 90%);
-                bottom: 0;
-                content: "";
-                height: 7em;
-                left: 0;
-                pointer-events: none;
-                position: absolute;
-                width: 100%;
-                z-index: 1;
-            }
         }
     }
 }
