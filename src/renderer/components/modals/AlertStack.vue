@@ -1,7 +1,7 @@
 <template>
     <Modal :help="help" :class="[alerts.length > 1 ? 'modal--paged' : '']">
         <template #header>
-            <Icon v-if="type === 'error'" class="type--error" symbol="issue-opened" />
+            <Icon v-if="type === 'error'" symbol="stop" class="type--error" />
             <h3 class="modal-title" v-html="title"></h3>
             <button type="button" class="close" aria-label="Close" @click="close">
                 <span aria-hidden="true">&times;</span>

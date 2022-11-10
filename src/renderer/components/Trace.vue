@@ -3,7 +3,7 @@
         <template v-if="isNested">
             <div v-for="(item, index) in trace" :key="index">
                 <div v-if="index" class="trace-link">
-                    <Icon symbol="issue-reopened" />
+                    <Icon symbol="issue-tracked-in" />
                     <span>Previous Error</span>
                 </div>
                 <Trace :trace="item" />

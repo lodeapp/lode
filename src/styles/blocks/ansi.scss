@@ -1,0 +1,44 @@
+.ansi {
+    &.is-loading {
+        overflow: hidden;
+    }
+
+    .parsed {
+        .xterm-viewport {
+            display: none;
+        }
+
+        .xterm-screen {
+            height: auto !important;
+            width: 100% !important;
+        }
+
+        .xterm-rows {
+            background-color: transparent;
+            user-select: text;
+            width: 100% !important;
+
+            > div {
+                // Force line wrapping of terminal content
+                display: inline-block;
+                width: 100% !important;
+                height: auto !important;
+                word-break: break-all;
+
+                span {
+                    width: auto !important;
+                }
+            }
+        }
+
+        .xterm-cursor {
+            display: none;
+        }
+    }
+
+    .terminal-mount {
+        height: 0 !important;
+        visibility: hidden;
+        width: 0 !important;
+    }
+}

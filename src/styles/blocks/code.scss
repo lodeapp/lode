@@ -4,9 +4,10 @@
 
     button {
         appearance: none;
-        border: 1px solid var(--primary-border-color);
         border-radius: 3px;
+        border: 1px solid var(--primary-border-color);
         float: right;
+        height: 30px;
         margin-left: 4px;
         opacity: 0;
         outline: none;
@@ -17,6 +18,7 @@
         top: 4px;
         transition: opacity 100ms ease-in;
         width: 35px;
+        z-index: 1;
 
         &:nth-of-type(2) {
             right: 42px;
@@ -24,6 +26,8 @@
 
         i {
             color: var(--color-fg-subtler);
+            position: relative;
+            top: -1px;
         }
 
         &:hover {
@@ -33,7 +37,7 @@
         }
     }
 
-    &:hover {
+    &:not(.is-loading):hover {
         button {
             opacity: 1;
             transition-delay: 200ms;

@@ -13,6 +13,12 @@ button,
     box-shadow: none;
     font-weight: var(--font-weight-semibold);
 
+    &:focus,
+    &:focus-visible {
+        box-shadow: var(--color-btn-primary-shadow);
+        outline: 0;
+    }
+
     &:active {
         box-shadow: none;
     }
@@ -41,7 +47,6 @@ button,
     &.btn-primary {
         background: $blue-400;
         border-color: $blue-500;
-        box-shadow: none;
         color: $white;
 
         &:hover {

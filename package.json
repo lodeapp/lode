@@ -81,7 +81,10 @@
     "vue": "^3.0.0",
     "vuex": "^4.0.0",
     "winston": "^3.1.0",
-    "winston-daily-rotate-file": "^3.3.3"
+    "winston-daily-rotate-file": "^3.3.3",
+    "xterm": "^5.0.0",
+    "xterm-addon-fit": "^0.6.0",
+    "xterm-addon-serialize": "^0.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",

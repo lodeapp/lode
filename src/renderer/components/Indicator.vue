@@ -6,7 +6,7 @@
         :title="label"
     >
         <span class="indicator">
-            <Icon v-if="status === 'error'" symbol="issue-opened" />
+            <Icon v-if="status === 'error'" symbol="x-circle" />
             <Icon v-if="status === 'empty'" symbol="circle-slash" />
             <Icon v-if="status === 'missing'" symbol="question" />
             <span v-if="['queued', 'loading', 'refreshing', 'running'].indexOf(status) > -1" class="spinner"></span>

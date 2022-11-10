@@ -37,6 +37,10 @@
             light: var(--color-accent-fg),
             dark: var(--color-accent-fg),
         ),
+        "btn-primary-shadow": (
+            light: 0 0 0 2px rgba(33, 136, 255, .5),
+            dark: 0 0 0 2px rgba(33, 136, 255, .5),
+        ),
         "item-active-bg": (
             light: #2188ff,
             dark: #0366d6,

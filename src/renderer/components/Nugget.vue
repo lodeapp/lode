@@ -16,7 +16,7 @@
         <div class="seam"></div>
         <div class="header" @click.prevent @mousedown.prevent.stop="handleToggle">
             <div class="status" :aria-label="label" :title="label">
-                <Icon v-if="status === 'error'" symbol="issue-opened" />
+                <Icon v-if="status === 'error'" symbol="x-circle" />
             </div>
             <div class="header-inner">
                 <div v-if="selectable" class="selective-toggle" :class="{ disabled: running }" @mousedown.prevent.stop="onSelect">

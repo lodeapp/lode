@@ -1,0 +1,80 @@
+@include color-variables(
+    (
+        "xterm-foreground": (
+            light: "#383a42",
+            dark: "#dcdfe4",
+        ),
+        "xterm-background": (
+            light: var(--secondary-background-color),
+            dark: var(--secondary-background-color),
+        ),
+        "xterm-cursor": (
+            light: transparent,
+            dark: transparent,
+        ),
+        "xterm-black": (
+            light: "#383a42",
+            dark: "#282c34",
+        ),
+        "xterm-brightBlack": (
+            light: "#4f525e",
+            dark: "#282c34",
+        ),
+        "xterm-red": (
+            light: "#e45649",
+            dark: "#e06c75",
+        ),
+        "xterm-brightRed": (
+            light: "#e06c75",
+            dark: "#e06c75",
+        ),
+        "xterm-green": (
+            light: "#50a14f",
+            dark: "#98c379",
+        ),
+        "xterm-brightGreen": (
+            light: "#98c379",
+            dark: "#98c379",
+        ),
+        "xterm-yellow": (
+            light: "#c18401",
+            dark: "#e5c07b",
+        ),
+        "xterm-brightYellow": (
+            light: "#e5c07b",
+            dark: "#e5c07b",
+        ),
+        "xterm-blue": (
+            light: "#0184bc",
+            dark: "#61afef",
+        ),
+        "xterm-brightBlue": (
+            light: "#61afef",
+            dark: "#61afef",
+        ),
+        "xterm-magenta": (
+            light: "#a626a4",
+            dark: "#c678dd",
+        ),
+        "xterm-brightMagenta": (
+            light: "#c678dd",
+            dark: "#c678dd",
+        ),
+        "xterm-cyan": (
+            light: "#0997b3",
+            dark: "#56b6c2",
+        ),
+        "xterm-brightCyan": (
+            light: "#56b6c2",
+            dark: "#56b6c2",
+        ),
+        "xterm-white": (
+            light: "#fafafa",
+            dark: "#dcdfe4",
+        ),
+        "xterm-brightWhite": (
+            light: "#ffffff",
+            dark: "#dcdfe4",
+        ),
+    ),
+);
