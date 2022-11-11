@@ -221,6 +221,7 @@ const app = createApp({
     methods: {
         setTheme (theme) {
             document.documentElement.setAttribute('data-color-mode', theme)
+            this.$store.commit('theme/SET', theme)
         },
         mapStatuses (project) {
             const mapTests = (nugget, statuses) => {

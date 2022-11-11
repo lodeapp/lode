@@ -23,6 +23,7 @@
 import { escape } from 'lodash'
 import { Terminal } from 'xterm'
 import { SerializeAddon } from 'xterm-addon-serialize'
+import { mapGetters } from 'vuex'
 import Icon from '@/components/Icon.vue'
 
 export default {
@@ -41,57 +42,61 @@ export default {
         return {
             loading: true,
             showRaw: false,
-            terminal: new Terminal({
-                theme: {
-                    foreground: 'var(--color-xterm-foreground)',
-                    background: 'var(--color-xterm-background)',
-                    cursor: 'var(--color-xterm-cursor)',
-                    black: 'var(--color-xterm-black)',
-                    brightBlack: 'var(--color-xterm-brightBlack)',
-                    red: 'var(--color-xterm-red)',
-                    brightRed: 'var(--color-xterm-brightRed)',
-                    green: 'var(--color-xterm-green)',
-                    brightGreen: 'var(--color-xterm-brightGreen)',
-                    yellow: 'var(--color-xterm-yellow)',
-                    brightYellow: 'var(--color-xterm-brightYellow)',
-                    blue: 'var(--color-xterm-blue)',
-                    brightBlue: 'var(--color-xterm-brightBlue)',
-                    magenta: 'var(--color-xterm-magenta)',
-                    brightMagenta: 'var(--color-xterm-brightMagenta)',
-                    cyan: 'var(--color-xterm-cyan)',
-                    brightCyan: 'var(--color-xterm-brightCyan)',
-                    white: 'var(--color-xterm-white)',
-                    brightWhite: 'var(--color-xterm-brightWhite)'
-                },
-                allowProposedApi: true,
-                convertEol: true,
-                rows: rows.length,
-                cols: Math.max(...(rows.map(el => el.length))),
-                fontFamily: 'var(--font-family-monospace)',
-                fontSize: 'var(--font-size)'
-            }),
+            rows: rows.length,
+            cols: Math.max(...(rows.map(el => el.length))),
             html: ''
         }
     },
-    async mounted () {
-        setTimeout(() => {
-            const serializeAddon = new SerializeAddon()
-            this.terminal.loadAddon(serializeAddon)
-            this.terminal.open(this.$el.querySelector('.terminal-mount'))
-            this.terminal.write(this.processContent(this.content), () => {
-                this.html = serializeAddon.serializeAsHTML({
-                    includeGlobalBackground: true
-                })
-                this.$el.querySelector('.terminal-mount').remove()
-                // @TODO: run in xterm in headless mode (i.e. don't `open`)
-                // and dispose properly instead of removing the mounted element
-                // this.terminal.dispose(); also remove `.terminal-mount` and
-                // related styles.
-                this.loading = false
-            })
+    computed: {
+        ...mapGetters({
+            colors: 'theme/colors'
         })
     },
+    watch: {
+        colors () {
+            this.setHtml()
+        }
+    },
+    async mounted () {
+        this.setHtml()
+    },
     methods: {
+        setHtml () {
+            this.loading = true
+            this.html = ''
+
+            const terminal = new Terminal({
+                theme: this.colors,
+                allowProposedApi: true,
+                convertEol: true,
+                rows: this.rows,
+                cols: this.cols,
+                fontFamily: 'var(--font-family-monospace)',
+                fontSize: 'var(--font-size)'
+            })
+
+            setTimeout(() => {
+                const serializeAddon = new SerializeAddon()
+                terminal.loadAddon(serializeAddon)
+                terminal.open(this.$el.querySelector('.terminal-mount'))
+                terminal.write(this.processContent(this.content), () => {
+                    this.html = serializeAddon.serializeAsHTML({
+                        includeGlobalBackground: true
+                    })
+
+                    // @TODO: run in xterm in headless mode (i.e. don't `open`)
+                    // and dispose properly instead of removing the mounted element
+                    // terminal.dispose(); also remove `.terminal-mount` and
+                    // related styles.
+                    this.$el.querySelector('.terminal-mount').remove()
+                    const mount = document.createElement('div')
+                    mount.className = 'terminal-mount'
+                    this.$el.append(mount)
+
+                    this.loading = false
+                })
+            })
+        },
         processContent (content) {
             return escape(content)
         },

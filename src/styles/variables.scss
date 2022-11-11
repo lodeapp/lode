@@ -136,7 +136,6 @@
 
 @include win32-context {
     --titlebar-height: 28px;
-    --secondary-background-color: var(--color-canvas-default);
 
     &.titlebar-hidden {
         // stylelint-disable-next-line length-zero-no-unit
