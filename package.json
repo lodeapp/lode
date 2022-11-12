@@ -96,6 +96,7 @@
     "@electron/notarize": "^1.2.3",
     "@types/fs-extra": "^5.0.4",
     "@types/glob": "^7.1.1",
+    "@types/html-webpack-plugin": "^3.2.6",
     "@types/is-unc-path": "^1.0.0",
     "@types/latinize": "^0.2.15",
     "@types/lodash": "^4.14.169",
