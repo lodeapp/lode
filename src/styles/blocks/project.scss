@@ -38,7 +38,8 @@
                 white-space: nowrap;
                 z-index: 2;
 
-                .loading {
+                .loading,
+                .cta {
                     align-items: flex-start;
                     margin-left: calc(var(--spacing-triple) - var(--pane-gutter-width));
                     padding-top: var(--spacing-double);
