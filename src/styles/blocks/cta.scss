@@ -1,0 +1,14 @@
+.cta {
+    animation: fade-in-top .4s forwards;
+
+    code {
+        background-color: var(--color-gray-200);
+        padding: 2px;
+    }
+
+    .btn {
+        + .btn {
+            margin-left: var(--spacing);
+        }
+    }
+}

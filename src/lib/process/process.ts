@@ -127,10 +127,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             windowsHide: true,
             env: this.spawnEnv({
                 ...process.env,
-                ...{
-                    // Ensure ANSI color is supported
-                    FORCE_COLOR: 3
-                }
+                // Ensure ANSI color is supported
+                FORCE_COLOR: 3
             })
         })
 
