@@ -67,7 +67,7 @@ jobs:
         run: yarn test
 
       - name: Cypress test
-        run: yarn test:e2e --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
+        run: yarn test:cypress --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Save Cypress results
         uses: actions/upload-artifact@v3

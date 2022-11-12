@@ -1,5 +1,6 @@
 'use strict'
 
+const Path = require('node:path')
 const { exec } = require('child_process')
 let callbackId = null
 
@@ -31,9 +32,16 @@ process.on('SIGINT', () => {
 
 const startRenderer = require('./runners').startRenderer
 startRenderer().then(() => {
-    const callback = exec(process.argv[2] === 'open'
-        ? `cypress open ${process.argv.slice(3).join(' ')}`
-        : `cypress run -b electron ${process.argv.slice(3).join(' ')}`
+    const callback = exec(
+        process.argv[2] === 'open'
+            ? `cypress open ${process.argv.slice(3).join(' ')} --config-file ${Path.resolve(__dirname, '../tests/cypress/config.ts')}`
+            : `cypress run -b electron ${process.argv.slice(3).join(' ')} --config-file ${Path.resolve(__dirname, '../tests/cypress/config.ts')}`,
+        {
+            env: {
+                ...process.env,
+                FORCE_COLOR: 3
+            }
+        }
     )
     callbackId = callback.pid
     callback.stdout.setEncoding('utf8')

@@ -37,9 +37,9 @@ yarn simulate
 The Lode codebase has two sets of tests: [Jest](https://jestjs.io/) for the main process and [Cypress](https://www.cypress.io/) for the renderer process.
 
 ```sh
-yarn test       # Jest tests
-yarn test:e2e   # Cypress tests
-yarn cypress    # Open the Cypress application
+yarn test           # Jest tests
+yarn test:cypress   # Cypress tests
+yarn cypress        # Open the Cypress application
 ```
 
 Because the Lode application enforces [context isolation](https://www.electronjs.org/docs/tutorial/context-isolation#context-isolation), we are able to run renderer process without the need for Node.js APIs, and since Electron's API is access through the preload scripts using a centralized `Lode` object, we can easily mock their behavior for testing with Cypress.
