@@ -38,6 +38,7 @@
         @include media-breakpoint-up(lg) {
             &.modal-lg {
                 max-width: var(--modal-large);
+                max-height: 500px;
             }
         }
 
@@ -142,7 +143,7 @@
 
     .modal-body {
         flex: 1 1 auto;
-        max-height: 340px;
+        max-height: 460px;
         overflow: auto;
         padding: var(--spacing-double);
         position: relative;

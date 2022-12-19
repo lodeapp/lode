@@ -283,6 +283,13 @@ ipcMain
             nugget!.toggleExpanded(false, true)
         })
     })
+    .on('framework-collapse-all', async (event: Electron.IpcMainEvent, frameworkId: string, identifiers: Array<string>, toggle: boolean) => {
+        entities(event, frameworkId, identifiers).then(({ framework }) => {
+            framework.getAllSuites().forEach((nugget: ISuite) => {
+                nugget.toggleExpanded(false, true)
+            })
+        })
+    })
     .on('framework-select', async (event: Electron.IpcMainEvent, frameworkId: string, identifiers: Array<string>, toggle: boolean) => {
         entities(event, frameworkId, identifiers).then(({ nugget }) => {
             nugget!.toggleSelected(toggle, true)

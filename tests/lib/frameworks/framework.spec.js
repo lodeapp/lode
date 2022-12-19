@@ -733,7 +733,6 @@ describe('Framework running', () => {
         )
     })
 
-
     it('interrupts framework run if reload errors', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
@@ -907,7 +906,7 @@ describe('Framework selective running', () => {
         )
     })
 
-    it('marks suites as having errored if not run when selected', async () => {
+    it('marks suites as having errored if they do not run when selected', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 

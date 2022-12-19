@@ -14,6 +14,11 @@ export default {
         },
         COLLAPSE (state, identifier) {
             delete state[identifier]
+        },
+        COLLAPSE_ALL (state) {
+            for (const identifier in state) {
+                delete state[identifier]
+            }
         }
     },
     actions: {
@@ -25,6 +30,9 @@ export default {
         },
         collapse: ({ state, commit }, identifier) => {
             commit('COLLAPSE', identifier)
+        },
+        collapseAll: ({ state, commit }) => {
+            commit('COLLAPSE_ALL')
         }
     },
     getters: {

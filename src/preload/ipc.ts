@@ -4,6 +4,7 @@ export enum AllowedIpcEventMap {
     'close',
     'copy-to-clipboard',
     'framework-add',
+    'framework-collapse-all',
     'framework-filter',
     'framework-refresh',
     'framework-remove',

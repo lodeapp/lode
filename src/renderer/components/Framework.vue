@@ -80,7 +80,9 @@
                     </template>
                 </div>
                 <div v-if="total" class="filters search" :class="{ 'is-searching': keyword }">
-                    <Icon symbol="search" />
+                    <button type="button" @click="onFilter" title="Filter items">
+                        <Icon symbol="search" />
+                    </button>
                     <input
                         type="search"
                         class="form-control input-block input-sm"
@@ -93,6 +95,9 @@
                     >
                 </div>
                 <div v-if="total" class="filters sort">
+                    <button type="button" @click="onCollapseAll" title="Collapse all">
+                        <Icon symbol="fold" />
+                    </button>
                     <span>
                         <template v-if="visible > 1">
                             {{ $string.set($string.plural(':n item sorted by :0|:n items sorted by :0', visible), displaySort) }}
@@ -274,6 +279,16 @@ export default {
         },
         updateTotal (total) {
             this.total = total
+        },
+        onFilter () {
+            const filter = this.$el.querySelector('[type="search"]')
+            if (filter) {
+                filter.focus()
+            }
+        },
+        onCollapseAll () {
+            this.$store.dispatch('expand/collapseAll')
+            Lode.ipc.send('framework-collapse-all', this.model.id)
         },
         onChildToggle (context, toggle) {
             Lode.ipc.send('framework-toggle-child', this.model.id, context, toggle)

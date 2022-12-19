@@ -17,7 +17,7 @@
                             {{ $string.plural('1 removed|:n removed', amountRemoved) }}
                         </span>
                     </span>
-                    <button type="button" class="btn btn-sm" @click="handleScan" :disabled="scanning">Scan</button>
+                    <button type="button" class="btn btn-sm" @click="handleScan" :disabled="scanning">Scan for frameworks</button>
                 </h5>
                 <template v-if="availableFrameworks">
                     <FrameworkSettings
