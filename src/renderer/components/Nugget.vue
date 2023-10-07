@@ -12,6 +12,8 @@
         @keydown="handleKeydown"
         @keydown.self.stop.prevent.space="onSelect"
         @contextmenu.stop.prevent="onContextMenu"
+        @dblclick.stop.prevent="onDoubleClick"
+        @open="open"
     >
         <div class="seam"></div>
         <div class="header" @click.prevent @mousedown.prevent.stop="handleToggle">
@@ -52,6 +54,7 @@
                 @select="onChildSelect"
                 @activate="onChildActivation"
                 @context-menu="onChildContextMenu"
+                @open="openChild"
             />
         </div>
     </div>
@@ -80,6 +83,7 @@ export default {
     emits: [
         'activate',
         'context-menu',
+        'open',
         'select',
         'status',
         'toggle'
@@ -198,11 +202,13 @@ export default {
             if (!this.hasChildren) {
                 return
             }
+
             if (this.show) {
                 this.$store.dispatch('expand/collapse', this.identifier)
                 this.collapse()
                 return
             }
+
             this.$store.dispatch('expand/expand', this.identifier)
             this.expand()
         },
@@ -248,9 +254,23 @@ export default {
         onContextMenu () {
             this.$emit('context-menu', [this.identifier])
         },
-        onChildContextMenu (context, test) {
+        onChildContextMenu (context) {
             context.unshift(this.identifier)
-            this.$emit('context-menu', context, test)
+            this.$emit('context-menu', context)
+        },
+        onDoubleClick (event) {
+            if (this.hasChildren) {
+                return
+            }
+
+            this.$emit('open', [this.identifier])
+        },
+        openChild (context) {
+            context.unshift(this.identifier)
+            this.$emit('open', context)
+        },
+        open (context) {
+            this.$emit('open', context)
         }
     }
 }

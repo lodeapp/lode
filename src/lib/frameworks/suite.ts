@@ -24,6 +24,7 @@ export interface ISuite extends Nugget {
     testsLoaded (): boolean
     rebuildTests (result: ISuiteResult): Promise<void>
     canBeOpened (): boolean
+    open (): void
     canToggleTests (): boolean
     toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void>
     toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void>
@@ -128,10 +129,17 @@ export class Suite extends Nugget implements ISuite {
     }
 
     /**
-     * Whether the suite's file can be opened
+     * Whether the suite's file can be opened.
      */
     public canBeOpened (): boolean {
         return File.isSafe(this.getFilePath()) && File.exists(this.getFilePath())
+    }
+
+    /**
+     * Open the suite's file.
+     */
+    public open (): void {
+        File.open(this.getFilePath())
     }
 
     /**

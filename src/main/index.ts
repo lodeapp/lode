@@ -300,6 +300,19 @@ ipcMain
             }
         })
     })
+    .on('open-test', async (event: Electron.IpcMainEvent, frameworkId: string, identifiers: Array<string>) => {
+        entities(event, frameworkId, identifiers).then(({ nuggets }) => {
+            if (nuggets && nuggets.length) {
+                const suite = (nuggets.shift() as ISuite)
+
+                if (!suite || !suite.canBeOpened()) {
+                    return
+                }
+
+                suite.open()
+            }
+        })
+    })
     .on('select-all', (event: Electron.IpcMainEvent) => {
         event.sender.selectAll()
     })

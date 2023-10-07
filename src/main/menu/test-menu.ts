@@ -1,5 +1,4 @@
 import { Menu } from '@main/menu'
-import { File } from '@main/file'
 import { clipboard } from 'electron'
 import { ISuite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
@@ -32,7 +31,7 @@ export class TestMenu extends Menu {
                     ? 'Open Suite with Default Program'
                     : 'Open suite with default program',
                 click: () => {
-                    File.open(suite.getFilePath())
+                    suite.open()
                 },
                 enabled: suite.canBeOpened()
             })

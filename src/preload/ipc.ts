@@ -20,6 +20,7 @@ export enum AllowedIpcEventMap {
     'menu-refresh',
     'minimize',
     'nugget-context-menu',
+    'open-test',
     'open-external-link',
     'project-active-framework',
     'project-repositories',

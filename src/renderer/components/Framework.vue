@@ -121,6 +121,7 @@
                     @status="onChildStatus"
                     @activate="onChildActivation"
                     @context-menu="onChildContextMenu"
+                    @open="onChildOpen"
                 >
                     <Filename :path="suite.relative" />
                 </Nugget>
@@ -319,6 +320,9 @@ export default {
         },
         onChildContextMenu (context) {
             Lode.ipc.send('nugget-context-menu', this.model.id, context)
+        },
+        onChildOpen (context) {
+            Lode.ipc.send('open-test', this.model.id, context)
         },
         updateSuitePresence (status, file, selected) {
             const index = findIndex(this.suites, ['file', file])
