@@ -140,7 +140,8 @@ export class ApplicationWindow {
                 maximized: this.window.isMaximized(),
                 fullscreen: this.window.isFullScreen(),
                 version: app.getVersion(),
-                arch: process.arch
+                arch: process.arch,
+                nodeVersion: process.versions.node
             })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
         })

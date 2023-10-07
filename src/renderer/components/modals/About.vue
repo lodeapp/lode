@@ -7,6 +7,12 @@
                 <span>{{ $string.set('Version :0 (:1)', version, arch) }}</span>
                 <a href="#" @click.prevent="openReleaseNotes">Release notes</a>
             </p>
+            <hr>
+            <p class="version">
+                <span>{{ $string.set('Electron v:0', electronVersion) }}</span>
+                <span>{{ $string.set('Node v:0', nodeVersion) }}</span>
+            </p>
+            <hr>
             <p v-markdown.set="(new Date()).getFullYear()">&copy; 2018 - :0 Tomas Buteler. All rights reserved.</p>
             <p class="legal">
                 <a href="#" @click.prevent="showTerms">Terms and Conditions</a>
@@ -33,6 +39,12 @@ export default {
         },
         arch () {
             return this.$root.arch
+        },
+        electronVersion () {
+            return (navigator.userAgent.match(new RegExp('Electron/[0-9\.]{1,}'))[0] || '').replace('Electron/', '')
+        },
+        nodeVersion () {
+            return this.$root.nodeVersion
         }
     },
     methods: {

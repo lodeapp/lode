@@ -32,6 +32,7 @@ const app = createApp({
         return {
             version: '',
             arch: '',
+            nodeVersion: '',
             modals: [],
             ready: false,
             translated: false,
@@ -61,6 +62,7 @@ const app = createApp({
                 }
                 this.version = properties.version
                 this.arch = properties.arch
+                this.nodeVersion = properties.nodeVersion
                 this.menu = __WIN32__ ? properties.menu : null
                 this.translated = properties.runningUnderARM64Translation
                 this.supportsThemes = properties.supportsThemes
