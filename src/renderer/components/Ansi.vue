@@ -15,7 +15,6 @@
             <pre v-if="showRaw">{{ content }}</pre>
             <div v-else v-html="html" class="parsed"></div>
         </div>
-        <div class="terminal-mount"></div>
     </div>
 </template>
 
@@ -78,27 +77,13 @@ export default {
             setTimeout(() => {
                 const serializeAddon = new SerializeAddon()
                 terminal.loadAddon(serializeAddon)
-                terminal.open(this.$el.querySelector('.terminal-mount'))
-                terminal.write(this.processContent(this.content), () => {
+                terminal.write(this.content, () => {
                     this.html = serializeAddon.serializeAsHTML({
                         includeGlobalBackground: true
                     })
-
-                    // @TODO: run in xterm in headless mode (i.e. don't `open`)
-                    // and dispose properly instead of removing the mounted element
-                    // terminal.dispose(); also remove `.terminal-mount` and
-                    // related styles.
-                    this.$el.querySelector('.terminal-mount').remove()
-                    const mount = document.createElement('div')
-                    mount.className = 'terminal-mount'
-                    this.$el.append(mount)
-
                     this.loading = false
                 })
             })
-        },
-        processContent (content) {
-            return escape(content)
         },
         clipboard () {
             Lode.copyToClipboard(
