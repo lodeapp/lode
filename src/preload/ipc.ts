@@ -29,9 +29,7 @@ export enum AllowedIpcEventMap {
     'select-all',
     'set-theme',
     'settings-reset',
-    'settings-update',
-    'track-event',
-    'track-screenview'
+    'settings-update'
 }
 
 export enum AllowedIpcInvocationMap {

@@ -1,6 +1,5 @@
 import '@lib/crash/reporter'
 import '@lib/logger/main'
-import '@lib/tracker/main'
 
 import Fs from 'fs'
 import Path from 'path'
@@ -116,7 +115,6 @@ function entities (
 
 app
     .on('ready', () => {
-        track.screenview('Application started')
         initializeTheme(state.get('theme'))
         currentWindow = ApplicationWindow.init(state.getCurrentProject())
         applicationMenu.build(currentWindow)
@@ -134,12 +132,6 @@ ipcMain
         // We're using the main log function directly so that they are not
         // marked as being from the "main" process.
         writeLog(level, message)
-    })
-    .on('track-screenview', (event: Electron.IpcMainEvent, screen: string) => {
-        track.screenview(screen)
-    })
-    .on('track-event', (event: Electron.IpcMainEvent, category: string, action: string, label: string | null, value: string | null) => {
-        track.event(category, action, label, value)
     })
     .on('window-set', (event: Electron.IpcMainEvent, args: any[]) => {
         currentWindow = event as any

@@ -1,5 +1,4 @@
 import '@lib/logger/renderer'
-import '@lib/tracker/renderer'
 
 import { createApp, h } from 'vue'
 import store from './store'

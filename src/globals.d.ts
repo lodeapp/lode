@@ -106,18 +106,6 @@ interface ILogger {
 
 declare const log: ILogger
 
-interface ITracker {
-    screenview (screen: string): void
-    event (
-      category: string,
-      action: string,
-      label?: string | null,
-      value?: string | null
-    ): void
-}
-
-declare const track: ITracker
-
 type MenuEvent =
   | 'crash'
   | 'feedback'
