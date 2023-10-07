@@ -19,7 +19,6 @@
 </template>
 
 <script>
-import { escape } from 'lodash'
 import { Terminal } from 'xterm'
 import { SerializeAddon } from 'xterm-addon-serialize'
 import { mapGetters } from 'vuex'
