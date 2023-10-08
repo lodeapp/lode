@@ -19,9 +19,6 @@ declare const __static: string
 /** URL to send Electron's crash reports to */
 declare const __CRASH_URL__: string
 
-/** Lode's Universal Analytics property ID */
-declare const __ANALYTICS_ID__: string
-
 /**
  * The currently executing process kind.
  */
