@@ -23,6 +23,7 @@ import { Terminal } from 'xterm'
 import { SerializeAddon } from 'xterm-addon-serialize'
 import { mapGetters } from 'vuex'
 import Icon from '@/components/Icon.vue'
+import { escape } from 'lodash'
 
 export default {
     name: 'Ansi',
@@ -76,7 +77,7 @@ export default {
             setTimeout(() => {
                 const serializeAddon = new SerializeAddon()
                 terminal.loadAddon(serializeAddon)
-                terminal.write(this.content, () => {
+                terminal.write(escape(this.content), () => {
                     this.html = serializeAddon.serializeAsHTML({
                         includeGlobalBackground: true
                     })
