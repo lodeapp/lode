@@ -19,8 +19,8 @@
 </template>
 
 <script>
-import { Terminal } from 'xterm'
-import { SerializeAddon } from 'xterm-addon-serialize'
+import { Terminal } from '@xterm/xterm'
+import { SerializeAddon } from '@xterm/addon-serialize'
 import { mapGetters } from 'vuex'
 import Icon from '@/components/Icon.vue'
 import { escape } from 'lodash'
