@@ -45,6 +45,9 @@
     "@primer/css": "^20.5.1",
     "@primer/octicons": "^17.9.0",
     "@sentry/electron": "^2.5.1",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/addon-serialize": "^0.13.0",
+    "@xterm/xterm": "^5.5.0",
     "ansi-to-html": "^0.7.2",
     "bottleneck": "^2.13.0",
     "compare-versions": "^5.0.1",
@@ -80,9 +83,6 @@
     "vuex": "^4.0.0",
     "winston": "^3.1.0",
     "winston-daily-rotate-file": "^3.3.3",
-    "@xterm/xterm": "^5.5.0",
-    "@xterm/addon-fit": "^0.10.0",
-    "@xterm/addon-serialize": "^0.13.0",
     "xterm-theme": "^1.1.0"
   },
   "devDependencies": {
@@ -122,7 +122,7 @@
     "cypress": "^11.0.1",
     "del": "^3.0.0",
     "electron": "^26.3.0",
-    "electron-builder": "^24.6.4",
+    "electron-builder": "^24.13.3",
     "electron-devtools-installer": "^3.2.0",
     "eslint": "^7.26.0",
     "eslint-plugin-vue": "^7.9.0",
