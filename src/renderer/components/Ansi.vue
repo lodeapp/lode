@@ -86,11 +86,14 @@ export default {
             })
         },
         clipboard () {
-            Lode.copyToClipboard(
-                this.showRaw
-                    ? this.content
-                    : this.$el.querySelector('.parsed').innerText
-            )
+            try {
+                Lode.copyToClipboard(
+                    this.showRaw
+                        ? this.content.trim()
+                        : this.$el.querySelector('.parsed').innerText.trim()
+                )
+            } catch (_) {
+            }
         }
     }
 }
