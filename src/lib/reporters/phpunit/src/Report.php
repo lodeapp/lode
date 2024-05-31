@@ -76,6 +76,13 @@ class Report
     protected $order = null;
 
     /**
+     * The reporter's console helper.
+     *
+     * @var \LodeApp\PHPUnit\Console
+     */
+    protected $console = null;
+
+    /**
      * Create a new Lode report class.
      *
      * @param \PHPUnit\Framework\Test $test
