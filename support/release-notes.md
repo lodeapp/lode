@@ -3,4 +3,6 @@ New:
   - Allow frameworks to process test result feedback messages
 Changed:
   - Improved feedback on which process architecture Lode is running in
-  - Upgrade to Electron v18
+  - Upgrade to Electron v26
+Fixed:
+  - Issue with PHPUnit when running on PHP 8.2 or later

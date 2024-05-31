@@ -1,6 +1,6 @@
 const Path = require('path')
 const Fs = require('fs-extra')
-const builder = require('../electron-builder.json')
+const builder = require('../electron-builder.js')
 const chalk = require('chalk')
 
 const releaseNotesPath = Path.join(__dirname, `../${builder.directories.buildResources}/release-notes.md`)
