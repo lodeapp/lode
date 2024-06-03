@@ -49,9 +49,8 @@
 
 .status {
     > .indicator {
-        background-color: theme-color("idle");
+        background-color: var(--color-status-idle);
         border-radius: 100%;
-        box-shadow: 0 0 0 4px color.adjust(theme-color("idle"), $alpha: -.6);
         display: inline-block;
         height: 14px;
         position: relative;
@@ -91,30 +90,30 @@
 
     &.status--passed {
         > .indicator {
-            background-color: theme-color("passed");
-            box-shadow: 0 0 0 4px theme-color("passed", 200);
+            background-color: var(--color-status-passed);
+            box-shadow: 0 0 0 4px var(--color-status-passed-down-2);
         }
     }
 
     &.status--failed {
         > .indicator {
             background-color: var(--color-danger-fg);
-            box-shadow: 0 0 0 4px theme-color("failed", 200);
+            box-shadow: 0 0 0 4px var(--color-status-failed-down-3);
         }
     }
 
     &.status--incomplete {
         > .indicator {
-            background-color: theme-color("incomplete");
-            box-shadow: 0 0 0 4px theme-color("incomplete", 200);
+            background-color: var(--color-status-incomplete);
+            box-shadow: 0 0 0 4px var(--color-status-incomplete-down-3);
         }
     }
 
     &.status--warning,
     &.status--missing {
         > .indicator {
-            background-color: theme-color("warning");
-            box-shadow: 0 0 0 4px theme-color("warning", 200);
+            background-color: var(--color-status-warning);
+            box-shadow: 0 0 0 4px var(--color-status-warning-down-3);
 
             i {
                 color: $white;
@@ -125,20 +124,26 @@
 
     &.status--partial {
         > .indicator {
-            @include striped("partial");
-
-            box-shadow: 0 0 0 4px theme-color("partial", 400);
+            background:
+                repeating-linear-gradient(
+                    -55deg,
+                    var(--color-status-partial),
+                    var(--color-status-partial) 3px,
+                    var(--color-status-partial-up-1) 3px,
+                    var(--color-status-partial-up-1) 6px
+                );
+            box-shadow: 0 0 0 4px var(--color-status-partial-down-3);
         }
     }
 
     &.status--queued {
         > .indicator {
-            background-color: theme-color("queued");
+            background-color: var(--color-status-queued);
             box-shadow: 0 0 0 4px transparent;
 
             .spinner {
-                border-color: theme-color("queued", 200);
-                border-left-color: theme-color("queued", 400);
+                border-color: var(--color-status-queued);
+                border-left-color: var(--color-status-queued-up-2);
             }
         }
     }
@@ -146,25 +151,25 @@
     &.status--empty {
         > .indicator {
             background-color: $white;
-            box-shadow: 0 0 0 4px theme-color("idle", 300);
+            box-shadow: 0 0 0 4px var(--color-status-idle-down-1);
 
             i {
-                color: theme-color("idle", "step", 200);
+                color: var(--color-status-idle-up-2);
             }
         }
     }
 
     &.status--idle {
         > .indicator {
-            background-color: theme-color("idle", 500);
-            box-shadow: 0 0 0 4px theme-color("idle", 300);
+            background-color: var(--color-status-idle-up-1);
+            box-shadow: 0 0 0 4px var(--color-status-idle-down-1);
         }
     }
 
     &.status--error {
         > .indicator {
             background-color: var(--color-danger-fg);
-            box-shadow: 0 0 0 4px theme-color("failed", 200);
+            box-shadow: 0 0 0 4px var(--color-status-error-down-2);
 
             i {
                 color: $white;
@@ -177,7 +182,6 @@
     &.status--refreshing,
     &.status--running {
         > .indicator {
-            background-color: theme-color("idle", 300);
             box-shadow: 0 0 0 4px transparent;
         }
     }

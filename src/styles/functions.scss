@@ -6,36 +6,6 @@
 @use "sass:map";
 @use "sass:string";
 
-@function palette($color, $intensity: "500") {
-    @if type-of($intensity) != string {
-        $intensity: to-string($intensity);
-    }
-
-    @return map.get(map.get($palette, #{$color}), $intensity);
-}
-
-@function theme-color($key: "selected", $intensity: "default", $step: 0) {
-    @if $intensity == "default" {
-        $intensity: map.get(map.get($status-colors, $key), "default");
-    }
-
-    @if $intensity == "step" {
-        $intensity: to-number(map.get(map.get($status-colors, $key), "default")) + to-number($step);
-
-        @if $intensity > 900 {
-            $intensity: 900;
-        }
-
-        @if $intensity < 0 {
-            $intensity: "000";
-        }
-    }
-
-    $color: map.get(map.get($status-colors, $key), "color");
-
-    @return palette($color, $intensity);
-}
-
 ///
 /// Casts a number into a string
 ///

@@ -60,7 +60,7 @@
             z-index: 3;
 
             &::after {
-                color: theme-color("selected", 600);
+                color: var(--color-status-selected-up-2);
                 content: "●";
                 display: block;
                 position: relative;
@@ -154,14 +154,14 @@
     &.status--passed {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color("passed");
+            border-color: var(--color-status-passed);
         }
 
         > .header {
             .status {
-                background-color: theme-color("passed");
-                border-color: color.adjust(theme-color("passed"), $lightness: -10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("passed", 200);
+                background-color: var(--color-status-passed);
+                border-color: var(--color-status-passed-border);
+                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-passed-down-2);
             }
         }
     }
@@ -175,8 +175,8 @@
         > .header {
             .status {
                 background-color: var(--color-danger-fg);
-                border-color: color.adjust(theme-color("failed"), $lightness: -15%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("failed", 200);
+                border-color: var(--color-status-failed-border);
+                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-failed-down-3);
             }
         }
     }
@@ -185,14 +185,14 @@
     &.status--skipped {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color("incomplete");
+            border-color: var(--color-status-incomplete);
         }
 
         > .header {
             .status {
-                background-color: theme-color("incomplete");
-                border-color: color.adjust(theme-color("incomplete"), $lightness: -14%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("incomplete", 300);
+                background-color: var(--color-status-incomplete);
+                border-color: var(--color-status-incomplete-border);
+                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-incomplete-down-2);
             }
         }
     }
@@ -201,14 +201,14 @@
     &.status--missing {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color("warning");
+            border-color: var(--color-status-warning);
         }
 
         > .header {
             .status {
-                background-color: theme-color("warning");
-                border-color: color.adjust(theme-color("warning"), $lightness: -5%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("warning", 300);
+                background-color: var(--color-status-warning);
+                border-color: var(--color-status-warning-border);
+                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-warning-down-2);
 
                 i {
                     color: $white;
@@ -220,15 +220,21 @@
     &.status--partial {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color("partial");
+            border-color: var(--color-status-partial);
         }
 
         > .header {
             .status {
-                @include striped("partial");
-
-                border-color: color.adjust(theme-color("partial"), $lightness: -10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("partial", 400);
+                background:
+                    repeating-linear-gradient(
+                        -55deg,
+                        var(--color-status-partial),
+                        var(--color-status-partial) 3px,
+                        var(--color-status-partial-up-1) 3px,
+                        var(--color-status-partial-up-1) 6px
+                    );
+                border-color: var(--color-status-partial-border);
+                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-partial-down-3);
             }
         }
     }
@@ -236,17 +242,17 @@
     &.status--empty {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color("idle");
+            border-color: var(--color-status-idle);
         }
 
         > .header {
             .status {
-                background-color: theme-color("idle", 200);
-                border-color: theme-color("idle");
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("idle", 200);
+                background-color: var(--color-status-idle-down-2);
+                border-color: var(--color-status-idle);
+                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-idle-down-2);
 
                 &::before {
-                    border-left: 1px solid theme-color("idle");
+                    border-left: 1px solid var(--color-status-idle);
                     content: "";
                     display: block;
                     height: calc(100% + 10px);
@@ -264,14 +270,14 @@
     &.status--running {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color("queued");
+            border-color: var(--color-status-queued);
         }
 
         > .header {
             .status {
-                background-color: theme-color("queued");
-                border-color: color.adjust(theme-color("queued"), $lightness: -3%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("queued", 100);
+                background-color: var(--color-status-queued);
+                border-color: var(--color-status-queued-border);
+                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-queued-down-1);
             }
         }
     }
@@ -279,14 +285,14 @@
     &.status--idle {
         > .seam::before,
         > .seam::after {
-            border-color: theme-color("idle");
+            border-color: var(--color-status-idle);
         }
 
         > .header {
             .status {
-                background-color: theme-color("idle");
-                border-color: color.adjust(theme-color("idle"), $lightness: -3%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("idle", 200);
+                background-color: var(--color-status-idle);
+                border-color: var(--color-status-idle-border);
+                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-idle-down-2);
             }
         }
     }
@@ -299,9 +305,9 @@
 
         > .header {
             .status {
-                background-color: theme-color("failed", 400);
-                border-color: color.adjust(theme-color("failed"), $lightness: -10%);
-                box-shadow: var(--status-soft-border-width) 0 0 0 theme-color("failed", 200);
+                background-color: var(--color-status-error);
+                border-color: var(--color-status-error-border);
+                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-error-down-2);
 
                 i {
                     color: $white;
@@ -332,8 +338,8 @@
     &.is-child-active {
         > .header {
             > .status {
-                border-right-color: theme-color("selected");
-                box-shadow: 4px 0 0 0 $blue-300;
+                border-right-color: var(--color-status-selected);
+                box-shadow: 4px 0 0 0 var(--color-scale-blue-3);
             }
         }
     }
@@ -344,7 +350,7 @@
     &.has-children:focus {
         > .header {
             > .header-inner {
-                background-color: theme-color("selected", 100);
+                background-color: var(--color-status-selected-down-3);
 
                 > .filename {
                     > .dir {

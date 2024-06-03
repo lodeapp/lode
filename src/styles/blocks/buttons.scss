@@ -45,13 +45,13 @@ button,
 
     // Our primary button is blue, not green
     &.btn-primary {
-        background: $blue-400;
-        border-color: $blue-500;
+        background: var(--color-scale-blue-4);
+        border-color: var(--color-scale-blue-5);
         color: $white;
 
         &:hover {
-            background: $blue-400;
-            border-color: $blue-500;
+            background: var(--color-scale-blue-4);
+            border-color: var(--color-scale-blue-5);
         }
 
         &:active {
@@ -73,19 +73,7 @@ button,
 
         > .Counter {
             background-color: $white;
-            color: $blue-400;
-        }
-    }
-
-    &.btn-danger {
-        color: $red-600;
-
-        &:hover {
-            color: $red-600;
-        }
-
-        &:disabled {
-            color: color.adjust($red-600, $alpha: -.6);
+            color: var(--color-scale-blue-4);
         }
     }
 }
@@ -95,7 +83,7 @@ button,
 
     &.more-actions {
         border-radius: 2px !important;
-        color: $gray-500;
+        color: var(--color-scale-gray-5);
         height: 100%;
         min-width: 15px;
         padding: 0 6px;

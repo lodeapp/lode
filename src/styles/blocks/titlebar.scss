@@ -1,7 +1,7 @@
 .titlebar {
     background-color: var(--titlebar-background-color);
     border-bottom: 1px solid var(--color-sidebar-border);
-    color: $black;
+    color: var(--color-fg-default);
     display: block;
     flex: 0 0 auto;
     height: var(--titlebar-height);
@@ -141,7 +141,7 @@
 }
 
 .titlebar-backdrop {
-    background-color: $black;
+    background-color: var(--color-fg-default);
     bottom: 0;
     height: calc(100% - var(--titlebar-height));
     left: 0;

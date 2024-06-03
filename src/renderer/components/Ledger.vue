@@ -9,10 +9,9 @@
             <span>{{ selected }}</span>
             {{ $string.plural('selected|selected', selected) }}
         </span>
-        <template v-for="(count, status) in ledger">
+        <template v-for="(count, status) in ledger" :key="status">
             <span
                 v-if="count > 0 || isActive(status)"
-                :key="status"
                 class="Label Label--outline"
                 :class="[`Label--${status}`, isActive(status) ? 'is-active' : '']"
                 @click="toggle(status)"

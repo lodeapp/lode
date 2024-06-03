@@ -18,9 +18,9 @@
         }
 
         code {
-            background-color: $blue-100;
+            background-color: var(--color-scale-blue-1);
             border-radius: 2px;
-            color: $blue-800;
+            color: var(--color-scale-blue-8);
             padding: 1px 5px;
             word-break: break-all;
         }

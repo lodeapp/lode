@@ -108,8 +108,8 @@
                         &.status--passed {
                             > .indicator {
                                 box-shadow:
-                                    0 0 0 4px theme-color("passed", 200),
-                                    0 0 0 5px rgba($color: theme-color("passed", 100), $alpha: 75%);
+                                    0 0 0 4px var(--color-status-passed-down-2),
+                                    0 0 0 5px var(--color-status-passed-halo);
                             }
                         }
 
@@ -117,8 +117,8 @@
                         &.status--empty {
                             > .indicator {
                                 box-shadow:
-                                    0 0 0 4px theme-color("idle", 400),
-                                    0 0 0 5px rgba($color: theme-color("idle", 200), $alpha: 75%);
+                                    0 0 0 4px var(--color-status-idle),
+                                    0 0 0 5px var(--color-status-idle-halo);
                             }
                         }
 
@@ -126,8 +126,8 @@
                         &.status--error {
                             > .indicator {
                                 box-shadow:
-                                    0 0 0 4px theme-color("failed", 200),
-                                    0 0 0 5px rgba($color: theme-color("failed", 100), $alpha: 75%);
+                                    0 0 0 4px var(--color-status-error-down-2),
+                                    0 0 0 5px var(--color-status-failed-halo),;
                             }
                         }
 
@@ -135,30 +135,30 @@
                         &.status--missing {
                             > .indicator {
                                 box-shadow:
-                                    0 0 0 4px theme-color("warning", 200),
-                                    0 0 0 5px rgba($color: theme-color("warning", 100), $alpha: 75%);
+                                    0 0 0 4px var(--color-status-warning-down-3),
+                                    0 0 0 5px var(--color-status-warning-halo);
                             }
                         }
 
                         &.status--incomplete {
                             > .indicator {
                                 box-shadow:
-                                    0 0 0 4px theme-color("incomplete", 200),
-                                    0 0 0 5px rgba($color: theme-color("incomplete", 100), $alpha: 75%);
+                                    0 0 0 4px var(--color-status-incomplete-down-3),
+                                    0 0 0 5px var(--color-status-incomplete-halo);
                             }
                         }
 
                         &.status--partial {
                             > .indicator {
                                 box-shadow:
-                                    0 0 0 4px theme-color("partial", 400),
-                                    0 0 0 5px rgba($color: theme-color("partial", 200), $alpha: 75%);
+                                    0 0 0 4px var(--color-status-partial-down-3),
+                                    0 0 0 5px var(--color-status-partial-halo);
                             }
                         }
 
                         &.status--queued {
                             > .indicator {
-                                box-shadow: 0 0 0 5px rgba($color: theme-color("idle", 100), $alpha: 75%);
+                                box-shadow: 0 0 0 5px var(--color-status-queued-halo);
                             }
                         }
                     }
