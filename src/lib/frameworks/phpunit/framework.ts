@@ -210,7 +210,7 @@ export class PHPUnit extends Framework {
      */
     public processFeedbackText (text: string): string {
         // @TODO: Offload to separate class that parses and replaces strings.
-        if (text.match(/^Failed asserting that '(.+)' matches JSON string "(.|\s)+"./gim)) {
+        if (text && text.match(/^Failed asserting that '(.+)' matches JSON string "(.|\s)+"./gim)) {
             // ...
         }
 
