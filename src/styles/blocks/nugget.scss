@@ -60,7 +60,7 @@
             z-index: 3;
 
             &::after {
-                color: var(--color-status-selected-up-2);
+                color: var(--color-status-queued-up-3);
                 content: "●";
                 display: block;
                 position: relative;
@@ -169,12 +169,12 @@
     &.status--failed {
         > .seam::before,
         > .seam::after {
-            border-color: var(--color-danger-fg);
+            border-color: var(--color-status-failed);
         }
 
         > .header {
             .status {
-                background-color: var(--color-danger-fg);
+                background-color: var(--color-status-failed);
                 border-color: var(--color-status-failed-border);
                 box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-failed-down-3);
             }
@@ -300,7 +300,7 @@
     &.status--error {
         > .seam::before,
         > .seam::after {
-            border-color: var(--color-danger-fg);
+            border-color: var(--color-status-failed);
         }
 
         > .header {

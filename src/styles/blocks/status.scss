@@ -73,10 +73,10 @@
 
         .spinner {
             animation: rotate .6s infinite linear;
-            border-bottom: .75em solid rgb(153 153 153 / 40%);
-            border-left: .75em solid rgb(100 100 100 / 90%);
-            border-right: .75em solid rgb(153 153 153 / 40%);
-            border-top: .75em solid rgb(153 153 153 / 40%);
+            border-bottom: .75em solid var(--color-status-spinner-border);
+            border-left: .75em solid var(--color-status-spinner-border-contrast);
+            border-right: .75em solid var(--color-status-spinner-border);
+            border-top: .75em solid var(--color-status-spinner-border);
             display: block;
             font-size: 2px;
             left: -3px;
@@ -97,12 +97,13 @@
 
     &.status--failed {
         > .indicator {
-            background-color: var(--color-danger-fg);
+            background-color: var(--color-status-failed);
             box-shadow: 0 0 0 4px var(--color-status-failed-down-3);
         }
     }
 
-    &.status--incomplete {
+    &.status--incomplete,
+    &.status--skipped {
         > .indicator {
             background-color: var(--color-status-incomplete);
             box-shadow: 0 0 0 4px var(--color-status-incomplete-down-3);
@@ -168,7 +169,7 @@
 
     &.status--error {
         > .indicator {
-            background-color: var(--color-danger-fg);
+            background-color: var(--color-status-failed);
             box-shadow: 0 0 0 4px var(--color-status-error-down-2);
 
             i {

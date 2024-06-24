@@ -52,15 +52,15 @@
         // Selected
         "status-selected-down-3": (
             light: #dfefff,
-            dark: #dfefff,
+            dark: #004da4,
         ),
         "status-selected-down-2": (
             light: #bbdaff,
-            dark: #bbdaff,
+            dark: #005cc5,
         ),
         "status-selected-down-1": (
             light: #79b8ff,
-            dark: #79b8ff,
+            dark: #0366d6,
         ),
         "status-selected": (
             light: #2188ff,
@@ -68,57 +68,61 @@
         ),
         "status-selected-up-1": (
             light: #0366d6,
-            dark: #0366d6,
+            dark: #79b8ff,
         ),
         "status-selected-up-2": (
             light: #005cc5,
-            dark: #005cc5,
+            dark: #bbdaff,
         ),
         // Passed
+        "status-passed-down-3": (
+            light: #b1ebd0,
+            dark: #2b5742,
+        ),
         "status-passed-down-2": (
             light: #b1ebd0,
-            dark: #b1ebd0,
+            dark: #40785d,
         ),
         "status-passed-down-1": (
             light: #80deb3,
-            dark: #80deb3,
+            dark: #38936a,
         ),
         "status-passed": (
             light: #58d39b,
-            dark: #58d39b,
+            dark: #3dab79,
         ),
         "status-passed-up-1": (
             light: #31b87a,
-            dark: #31b87a,
+            dark: #31d78c,
         ),
         "status-passed-up-2": (
             light: #2aa06a,
-            dark: #2aa06a,
+            dark: #22e48d,
         ),
         "status-passed-border": (
             light: color.adjust(#58d39b, $lightness: -10%),
-            dark: color.adjust(#58d39b, $lightness: -10%),
+            dark: #4fbb8a,
         ),
         "status-passed-halo": (
             light: rgba($color: #d5f3e5, $alpha: 75%),
-            dark: rgba($color: #d5f3e5, $alpha: 75%),
+            dark: rgb(80 80 80 / 75%),
         ),
         // Incomplete
         "status-incomplete-down-3": (
             light: #fff29c,
-            dark: #fff29c,
+            dark: #756529,
         ),
         "status-incomplete-down-2": (
             light: #ffea7f,
-            dark: #ffea7f,
+            dark: #8d772b,
         ),
         "status-incomplete-down-1": (
             light: #ffdf5d,
-            dark: #ffdf5d,
+            dark: #cfa725,
         ),
         "status-incomplete": (
             light: #ffd33d,
-            dark: #ffd33d,
+            dark: #e3b727,
         ),
         "status-incomplete-up-1": (
             light: #f9c513,
@@ -138,11 +142,11 @@
         ),
         "status-incomplete-border": (
             light: color.adjust(#ffd33d, $lightness: -14%),
-            dark: color.adjust(#ffd33d, $lightness: -14%),
+            dark: color.adjust(#e3b727, $lightness: 14%),
         ),
         "status-incomplete-halo": (
             light: rgba($color: #fdf7ce, $alpha: 75%),
-            dark: rgba($color: #fdf7ce, $alpha: 75%),
+            dark: rgb(80 80 80 / 75%),
         ),
         // Warning
         "status-warning-down-3": (
@@ -175,12 +179,12 @@
         ),
         "status-warning-halo": (
             light: rgba($color: #ffebda, $alpha: 75%),
-            dark: rgba($color: #ffebda, $alpha: 75%),
+            dark: rgb(80 80 80 / 75%),
         ),
         // Failed
         "status-failed-down-3": (
             light: #fdaeb7,
-            dark: #fdaeb7,
+            dark: #934851,
         ),
         "status-failed-down-2": (
             light: #f97583,
@@ -192,7 +196,7 @@
         ),
         "status-failed": (
             light: #f7434c,
-            dark: #f7434c,
+            dark: #ca484e,
         ),
         "status-failed-up-1": (
             light: #f6212b,
@@ -204,54 +208,53 @@
         ),
         "status-failed-border": (
             light: color.adjust(#f7434c, $lightness: -15%),
-            dark: color.adjust(#f7434c, $lightness: -15%),
+            dark: #e2656b,
         ),
         "status-failed-halo": (
             light: rgba($color: #ffdce0, $alpha: 75%),
-            dark: rgba($color: #ffdce0, $alpha: 75%),
+            dark: rgb(80 80 80 / 75%),
         ),
         // Idle
         "status-idle-down-2": (
             light: #ececec,
-            dark: #ececec,
+            dark: #383c42,
         ),
         "status-idle-down-1": (
             light: #e3e3e3,
-            dark: #e3e3e3,
+            dark: #474c53,
         ),
         "status-idle": (
             light: #ced4da,
-            dark: #ced4da,
-            // dark: #373f4b,
+            dark: #474c53,
         ),
         "status-idle-up-1": (
             light: #adb5bd,
-            dark: #adb5bd,
+            dark: #545a63,
         ),
         "status-idle-up-2": (
             light: #6c757d,
-            dark: #6c757d,
+            dark: #737b87,
         ),
         "status-idle-up-3": (
             light: #495057,
-            dark: #495057,
+            dark: #8993a2,
         ),
         "status-idle-border": (
             light: color.adjust(#ced4da, $lightness: -3%),
-            dark: color.adjust(#ced4da, $lightness: -3%),
+            dark: #5f6367,
         ),
         "status-idle-halo": (
             light: rgba($color: #ececec, $alpha: 75%),
-            dark: rgba($color: #ececec, $alpha: 75%),
+            dark: rgb(80 80 80 / 75%),
         ),
         // Queued
         "status-queued-down-1": (
             light: #dfefff,
-            dark: #dfefff,
+            dark: #4c6f93,
         ),
         "status-queued": (
             light: #bbdaff,
-            dark: #bbdaff,
+            dark: #78a6db,
         ),
         "status-queued-up-1": (
             light: #79b8ff,
@@ -259,19 +262,19 @@
         ),
         "status-queued-up-2": (
             light: #2188ff,
-            dark: #2188ff,
+            dark: #a8ccf5,
         ),
         "status-queued-up-3": (
             light: #0366d6,
-            dark: #0366d6,
+            dark: #c2ddfb,
         ),
         "status-queued-border": (
             light: color.adjust(#bbdaff, $lightness: -3%),
-            dark: color.adjust(#bbdaff, $lightness: -3%),
+            dark: #7eb8ff,
         ),
         "status-queued-halo": (
             light: rgba($color: #f0f0f0, $alpha: 75%),
-            dark: rgba($color: #f0f0f0, $alpha: 75%),
+            dark: rgb(80 80 80 / 75%),
         ),
         // Partial
         "status-partial-down-3": (
@@ -300,7 +303,7 @@
         ),
         "status-partial-halo": (
             light: rgba($color: #fff29c, $alpha: 75%),
-            dark: rgba($color: #fff29c, $alpha: 75%),
+            dark: rgb(80 80 80 / 75%),
         ),
         // Error
         "status-error-down-2": (
@@ -315,6 +318,14 @@
             light: color.adjust(#f7434c, $lightness: -10%),
             dark: color.adjust(#f7434c, $lightness: -10%),
         ),
+        "status-spinner-border": (
+            light: rgb(153 153 153 / 40%),
+            dark: rgb(153 153 153 / 40%),
+        ),
+        "status-spinner-border-contrast": (
+            light: rgb(100 100 100 / 90%),
+            dark: rgb(195 195 195 / 90%),
+        )
     )
 );
 
