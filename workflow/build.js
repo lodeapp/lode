@@ -13,14 +13,19 @@ build()
 
 function build () {
     del.sync(['dist/*', '!.gitkeep'])
-    pack(mainConfig)
-    pack(preloadConfig)
-    pack(rendererConfig)
+    pack(mainConfig, 'main')
+    pack(preloadConfig, 'preload')
+    pack(rendererConfig, 'renderer')
 }
 
-function pack (config) {
+function pack (config, input) {
     return new Promise((resolve, reject) => {
         config.mode = process.env.NODE_ENV === 'development' ? 'development' : 'production'
+        config.plugins = [...config.plugins, new webpack.ProgressPlugin({
+            handler (percentage, msg) {
+                console.log(`${input}/${msg}: ${(percentage * 100).toFixed()}%`)
+            }
+        })]
         webpack(config, (err, stats) => {
             if (err) reject(err.stack || err)
             else if (stats.hasErrors()) {
