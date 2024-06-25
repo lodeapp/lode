@@ -16,7 +16,7 @@
     "icons": "node workflow/icons.js",
     "licenses": "node workflow/licenses.js",
     "decipher": "node workflow/decipher.js",
-    "pack:lode": "node workflow/build.js",
+    "pack:lode": "node --max-old-space-size=6144 workflow/build.js -p",
     "pack:jest": "cross-env NODE_ENV=production webpack --mode production --progress --config workflow/reporters/webpack.jest.config.js",
     "pack:phpunit": "node workflow/reporters/phpunit.js",
     "pack:reporters": "yarn run pack:jest && yarn run pack:phpunit",
