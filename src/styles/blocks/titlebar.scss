@@ -141,7 +141,7 @@
 }
 
 .titlebar-backdrop {
-    background-color: var(--color-fg-default);
+    background-color: var(--primary-background-color);
     bottom: 0;
     height: calc(100% - var(--titlebar-height));
     left: 0;
@@ -157,7 +157,7 @@
 
 .titlebar-active {
     .titlebar-backdrop {
-        opacity: .4;
+        opacity: .6;
     }
 }
 
