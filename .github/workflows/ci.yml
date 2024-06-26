@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
         os: [macOS-latest, windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
@@ -95,7 +95,7 @@ jobs:
     needs: test
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
         os: [macOS-latest, windows-latest, ubuntu-latest]
 
     steps:
