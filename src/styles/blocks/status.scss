@@ -171,7 +171,7 @@
     &.status--error {
         > .indicator {
             background-color: var(--color-status-failed);
-            box-shadow: 0 0 0 4px var(--color-status-error-down-2);
+            box-shadow: 0 0 0 4px var(--color-status-failed-down-3);
 
             i {
                 color: $white;

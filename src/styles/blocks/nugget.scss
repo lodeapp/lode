@@ -306,9 +306,9 @@
 
         > .header {
             .status {
-                background-color: var(--color-status-error);
-                border-color: var(--color-status-error-border);
-                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-error-down-2);
+                background-color: var(--color-status-failed);
+                border-color: var(--color-status-failed-border);
+                box-shadow: var(--status-soft-border-width) 0 0 0 var(--color-status-failed-down-3);
 
                 i {
                     color: $white;
@@ -319,8 +319,6 @@
 
     &.is-active {
         > .header {
-            background-color: var(--color-item-active-bg);
-
             > .header-inner {
                 background-color: var(--color-item-active-bg);
                 color: var(--color-item-active-fg);
@@ -353,10 +351,18 @@
             > .header-inner {
                 background-color: var(--color-status-selected-down-3);
 
+                @include dark {
+                    background-color: var(--color-item-active-bg);
+                }
+
                 > .filename {
                     > .dir {
                         // Give a slight readability boost to discreet text.
                         color: var(--color-fg-subtle);
+
+                        @include dark {
+                            color: var(--color-fg-default);
+                        }
                     }
                 }
             }

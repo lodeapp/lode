@@ -48,6 +48,10 @@
             background-color: var(--color-status-selected) !important;
             border-color: var(--color-status-selected-down-3);
             color: var(--secondary-background-color);
+
+            @include dark {
+                border-color: var(--color-status-selected);
+            }
         }
     }
 
@@ -95,6 +99,10 @@
             background-color: var(--color-danger-fg) !important;
             border-color: var(--color-status-failed-up-2);
             color: var(--secondary-background-color);
+
+            @include dark {
+                border-color: var(--color-danger-fg);
+            }
         }
     }
 
@@ -103,10 +111,21 @@
         border-color: var(--color-status-queued-up-2);
         color: var(--color-status-queued-up-2);
 
+        @include dark {
+            border-color: var(--color-status-queued);
+            color: var(--color-status-queued);
+        }
+
         &.is-active {
             background-color: var(--color-status-queued-up-2) !important;
             border-color: var(--color-status-queued-up-3);
             color: var(--secondary-background-color);
+
+            @include dark {
+                background-color: var(--color-status-queued) !important;
+                border-color: var(--color-status-queued);
+                color: var(--secondary-background-color);
+            }
         }
     }
 
