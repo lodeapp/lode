@@ -114,6 +114,12 @@
         text-align: center;
         top: 14px;
 
+        @include dark {
+            border-color: var(--color-status-queued);
+            box-shadow: 0 0 0 4px color.adjust($blue-400, $alpha: -.6);
+            color: var(--color-status-queued);
+        }
+
         &::before {
             content: counters(framework, "");
         }
@@ -124,6 +130,12 @@
             border: 1px solid var(--color-scale-yellow-7);
             box-shadow: 0 0 0 4px color.adjust($yellow-500, $alpha: -.7);
             color: var(--color-scale-yellow-8);
+
+            @include dark {
+                border-color: var(--color-status-incomplete-up-2);
+                box-shadow: 0 0 0 4px color.adjust($yellow-500, $alpha: -.8);
+                color: var(--color-status-incomplete-up-3);
+            }
         }
     }
 

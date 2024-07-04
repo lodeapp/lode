@@ -152,7 +152,7 @@
 
     &.status--empty {
         > .indicator {
-            background-color: $white;
+            background-color: var(--color-canvas-default);
             box-shadow: 0 0 0 4px var(--color-status-idle-down-1);
 
             i {

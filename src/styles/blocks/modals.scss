@@ -215,7 +215,7 @@
     }
 
     .modal-help {
-        background-color: var(--color-scale-blue-1);
+        background-color: var(--color-sidebar-accent);
         border-top: 1px solid var(--color-scale-blue-3);
         box-shadow: inset 0 -4px 0 color.adjust($blue-300, $alpha: -.8);
         display: flex;
@@ -223,11 +223,20 @@
         padding: var(--spacing-double);
         user-select: text;
 
+        @include dark {
+            border-top: 1px solid var(--color-scale-blue-7);
+            box-shadow: inset 0 -4px 0 color.adjust($blue-700, $alpha: -.8);
+        }
+
         i {
             color: var(--color-scale-blue-6);
             margin-right: 10px;
             min-width: 20px;
             text-align: center;
+
+            @include dark {
+                color: var(--color-fg-default);
+            }
         }
 
         p {
