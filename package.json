@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "Lode",
-  "version": "0.35.0",
+  "version": "0.36.0",
   "author": "Tomas Buteler <info@lode.run>",
   "description": "A universal GUI for unit testing",
   "license": "MIT",
@@ -69,6 +69,7 @@
     "overlayscrollbars": "^1.7.1",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
+    "semver": "^7.6.2",
     "sha1-es": "^1.8.2",
     "shell-env": "^2.2.0",
     "shell-escape": "^0.2.0",

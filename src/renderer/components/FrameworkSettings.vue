@@ -64,7 +64,7 @@
                     >
                 </dd>
             </dl>
-            <dl v-if="fields.type === 'phpunit'">
+            <dl v-if="['phpunit', 'phpunit-10'].includes(fields.type)">
                 <dt>
                     <label>Autoload path</label>
                 </dt>
