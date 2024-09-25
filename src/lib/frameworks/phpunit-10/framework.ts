@@ -141,9 +141,10 @@ export class PHPUnit10 extends Framework {
             // Sometimes writing to stdout will fail (on remote machines?). If we
             // can ever figure out why, we should revert back to default.
             '--stderr',
-            '--color=always'
-            // @TODO: restore
-            // '--no-output'
+            '--color=always',
+            '--order-by',
+            'default',
+            '--no-output'
         ]
 
         if (__DEV__) {

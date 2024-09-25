@@ -26,16 +26,24 @@ final class Extension implements BaseExtension
         $reporter = new LodeReporter($configuration, $printer);
 
         $subscribers = [
+            new Subscriber\ApplicationFinishedSubscriber($reporter),
             new Subscriber\TestConsideredRiskySubscriber($reporter),
-            new Subscriber\TestPhpunitWarningTriggeredSubscriber($reporter),
-            new Subscriber\TestPhpunitDeprecationTriggeredSubscriber($reporter),
+            new Subscriber\TestDeprecationTriggeredSubscriber($reporter),
             new Subscriber\TestErroredSubscriber($reporter),
-            new Subscriber\TestExecutionFinishedSubscriber($reporter),
-            new Subscriber\TestExecutionStartedSubscriber($reporter),
+            new Subscriber\TestErrorTriggeredSubscriber($reporter),
             new Subscriber\TestFailedSubscriber($reporter),
+            new Subscriber\TestFinishedSubscriber($reporter),
             new Subscriber\TestMarkedIncompleteSubscriber($reporter),
+            new Subscriber\TestNoticeTriggeredSubscriber($reporter),
             new Subscriber\TestPassedSubscriber($reporter),
+            new Subscriber\TestPhpDeprecationTriggeredSubscriber($reporter),
+            new Subscriber\TestPhpNoticeTriggeredSubscriber($reporter),
+            new Subscriber\TestPhpunitDeprecationTriggeredSubscriber($reporter),
+            new Subscriber\TestPhpunitErrorTriggeredSubscriber($reporter),
+            new Subscriber\TestPhpunitWarningTriggeredSubscriber($reporter),
+            new Subscriber\TestPhpWarningTriggeredSubscriber($reporter),
             new Subscriber\TestSkippedSubscriber($reporter),
+            new Subscriber\TestSuiteStartedSubscriber($reporter),
             new Subscriber\TestWarningTriggeredSubscriber($reporter),
         ];
 

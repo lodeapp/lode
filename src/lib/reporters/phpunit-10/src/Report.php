@@ -8,7 +8,6 @@ use PHPUnit\Event\Code\ComparisonFailure;
 use PHPUnit\Event\Code\Test;
 use PHPUnit\Event\Code\Throwable;
 use PHPUnit\Event\Telemetry\Duration;
-use PHPUnit\Framework\WarningTestCase;
 use ReflectionClass;
 
 class Report
@@ -39,6 +38,11 @@ class Report
     private float $duration = 0;
 
     /**
+     * The number of assertions of this report.
+     */
+    private int $assertions = 0;
+
+    /**
      * Whether this report is the last of a given suite.
      */
     private bool $isLast = false;
@@ -59,12 +63,7 @@ class Report
     public function __construct(private Test $test, private Status $status = Status::IDLE)
     {
         $this->class = $test->className();
-        if ($this->isWarning()) {
-            $original = $this->getWarningClass();
-            if ($original) {
-                $this->class = $original;
-            }
-        }
+
         $this->reflection = new ReflectionClass($this->class);
 
         $this->console = Lode::make(Console::class);
@@ -90,12 +89,29 @@ class Report
         return $this;
     }
 
+    public function setStatus(Status $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
     /**
      * Set the total duration of this report
      */
     public function setDuration(Duration $duration): self
     {
         $this->duration = round(($duration->nanoseconds() ?: 1) / 1000); // In milliseconds
+
+        return $this;
+    }
+
+    /**
+     * Set the number of assertions for this report.
+     */
+    public function setAssertions(int $assertions): self
+    {
+        $this->assertions = $assertions;
 
         return $this;
     }
@@ -141,15 +157,15 @@ class Report
      */
     public function getName(): string
     {
-        $name = $this->test->name();
-        if ($this->isWarning()) {
-            $original = $this->getWarningName();
-            if ($original) {
-                $name = $original;
-            }
-        }
+        return $this->test->name();
+    }
 
-        return $name;
+    /**
+     * Get this report's identifier.
+     */
+    public function getId(): string
+    {
+        return sha1($this->getFileName().$this->getName());
     }
 
     /**
@@ -157,13 +173,11 @@ class Report
      */
     public function hydrateTest(): array
     {
-        $name = $this->name();
-
         return $this->transformContainer([
-            'id' => sha1($this->getFileName().$name),
-            'name' => $name,
-            'displayName' => $this->transformName($name),
-            'status' => 'idle',
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'displayName' => $this->transformName($this->getName()),
+            'status' => $this->status->value,
             'feedback' => [],
             'console' => [],
             'params' => '',
@@ -185,7 +199,7 @@ class Report
             'meta' => Util::compact([
                 'n' => $this->order,
                 'class' => $this->getClass(),
-                // 'groups' => $this->test->getGroups(),
+                'groups' => [],
             ]),
         ]);
     }
@@ -195,8 +209,7 @@ class Report
      */
     public function isWarning(): bool
     {
-        // @TODO: refactor
-        return $this->test instanceof WarningTestCase;
+        return $this->status === Status::WARNING;
     }
 
     /**
@@ -213,7 +226,7 @@ class Report
     public function render(): array
     {
         $current = array_merge($this->hydrateTest(), [
-            'status' => $this->status,
+            'status' => $this->status->value,
             'feedback' => $this->throwable
                 ? (new Feedback($this->throwable, $this->comparison))->render()
                 : null,
@@ -226,15 +239,12 @@ class Report
                 : '',
             'stats' => [
                 'duration' => $this->duration,
+                'assertions' => $this->assertions,
             ],
             'isLast' => $this->isLast,
         ]);
 
-        return $this->hydrateSuite(
-            $this->isWarning() && $this->isEmpty()
-            ? []
-            : [$current]
-        );
+        return $this->hydrateSuite([$current]);
     }
 
     /**

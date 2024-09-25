@@ -42,10 +42,17 @@ class LodeReporter
     private array $issues = [];
 
     /**
+     * The stored outcome reports.
+     */
+    private array $outcomes = [];
+
+    /**
      * Create a new Lode reporter instance.
      */
-    public function __construct(private Configuration $configuration, private Printer $printer)
+    public function __construct(private Configuration $configuration, private $printer = null)
     {
+        $this->printer = Printer::standardError();
+
         // Since we have no way of natively listing all tests and
         // columns setting is of no use, define an arbitrary
         // number which will signify our custom command.
@@ -61,25 +68,25 @@ class LodeReporter
      * hijack this function to print them immediately,
      * then abort execution.
      */
-    public function startTestSuite(TestSuite $suite): void
+    public function startTestSuite(TestSuite $suite): bool
     {
         $files = 0;
+
         // Before starting, compile a detailed list of all the tests we'll run.
         // This helps us output pointers regarding the progress of each test group.
         foreach ($suite->tests()->getIterator() as $test) {
             $report = new Report($test);
             $filename = $report->getFileName();
 
-            // Only add if it suite doesn't already exist.
+
             if (!isset($this->all[$filename])) {
                 $files++;
                 $report->setOrder($files);
                 $this->all[$filename] = $report->hydrateSuite([]);
             }
 
-            // Only add if it test doesn't already exist.
             if (array_search($report->getName(), array_column($this->all[$filename]['tests'], 'name')) === false) {
-                if ($report->isWarning() && $report->isEmpty()) {
+                if ($report->isEmpty()) {
                     continue;
                 }
 
@@ -92,8 +99,10 @@ class LodeReporter
         if ($this->listTests) {
             $this->progress(array_values($this->all));
             $this->printEndDelimiter();
-            exit;
+            return false;
         }
+
+        return true;
     }
 
     /**
@@ -102,21 +111,22 @@ class LodeReporter
     public function handleEvent(Event $event): void
     {
         match (get_class($event)) {
-            Test\Errored::class => $this->handleOutcomeEvent($event),
-            Test\Failed::class => $this->handleOutcomeEvent($event),
-            Test\MarkedIncomplete::class => $this->handleOutcomeEvent($event),
-            Test\Passed::class => $this->handleOutcomeEvent($event),
-            Test\Skipped::class => $this->handleOutcomeEvent($event),
-            Test\ConsideredRisky::class => $this->handleIssueEvent($event),
+            Test\ConsideredRisky::class => $this->handleOutcomeEvent($event),
             Test\DeprecationTriggered::class => $this->handleIssueEvent($event),
+            Test\Errored::class => $this->handleOutcomeEvent($event),
             Test\ErrorTriggered::class => $this->handleIssueEvent($event),
+            Test\Failed::class => $this->handleOutcomeEvent($event),
+            Test\Finished::class => $this->handleFinishedEvent($event),
+            Test\MarkedIncomplete::class => $this->handleOutcomeEvent($event),
             Test\NoticeTriggered::class => $this->handleIssueEvent($event),
+            Test\Passed::class => $this->handleOutcomeEvent($event),
             Test\PhpDeprecationTriggered::class => $this->handleIssueEvent($event),
             Test\PhpNoticeTriggered::class => $this->handleIssueEvent($event),
             Test\PhpunitDeprecationTriggered::class => $this->handleIssueEvent($event),
             Test\PhpunitErrorTriggered::class => $this->handleIssueEvent($event),
             Test\PhpunitWarningTriggered::class => $this->handleIssueEvent($event),
             Test\PhpWarningTriggered::class => $this->handleIssueEvent($event),
+            Test\Skipped::class => $this->handleOutcomeEvent($event),
             Test\WarningTriggered::class => $this->handleIssueEvent($event),
         };
     }
@@ -126,7 +136,19 @@ class LodeReporter
      */
     private function handleOutcomeEvent(Event $event): void
     {
+        if ($this->listTests) {
+            return;
+        }
+
         $report = new Report($event->test(), Status::fromEvent($event));
+
+        if (isset($this->issues[$report->getFileName()]) && $event->test()->isTestMethod()) {
+            $issues = array_filter($this->issues[$report->getFileName()]['tests'], fn (array $test) => $test['name'] === $event->test()->methodName());
+
+            if (count($issues)) {
+                $report->setStatus(Status::from(reset($issues)['status']));
+            }
+        }
 
         if (method_exists($event, 'throwable')) {
             $report->withException($event->throwable());
@@ -136,24 +158,7 @@ class LodeReporter
             $report->withComparison($event->comparisonFailure());
         }
 
-        $report->setDuration($event->telemetryInfo()->durationSincePrevious());
-
-        $filename = $report->getFileName();
-        if (isset($this->all[$filename]) && isset($this->all[$filename]['tests'])) {
-            $values = array_values(array_slice($this->all[$filename]['tests'], -1));
-            $last = isset($values[0]) ? $values[0] : false;
-            if ($last && isset($last['name']) && $last['name'] === $report->getName()) {
-                $report->setIsLast(true);
-            }
-        }
-
-        $filenames = array_keys($this->all);
-        $n = array_search($filename, $filenames);
-        if ($n !== false) {
-            $report->setOrder($n + 1);
-        }
-
-        $this->progress($report->render());
+        $this->outcomes[$report->getId()] = $report;
     }
 
     /**
@@ -162,7 +167,54 @@ class LodeReporter
     private function handleIssueEvent(Event $event): void
     {
         $report = new Report($event->test(), Status::fromEvent($event));
-        // $this->progress($report->render());
+
+        // If test run hasn't started yet, we'll store the issue report for later.
+        if (! count($this->all)) {
+            if (isset($this->issues[$report->getFileName()])) {
+                $this->issues[$report->getFileName()]['tests'][] = $report->hydrateTest();
+                return;
+            }
+
+            $this->issues[$report->getFileName()] = $report->hydrateSuite([
+                $report->hydrateTest()
+            ]);
+        }
+    }
+
+    /**
+     * Handle a PHPUnit finished event.
+     */
+    private function handleFinishedEvent(Test\Finished $event): void
+    {
+        if ($this->listTests) {
+            return;
+        }
+
+        $report = new Report($event->test());
+
+        if (isset($this->outcomes[$report->getId()])) {
+            $report = $this->outcomes[$report->getId()];
+            $report->setDuration($event->telemetryInfo()->durationSincePrevious());
+            $report->setAssertions($event->numberOfAssertionsPerformed());
+
+            $filename = $report->getFileName();
+            if (isset($this->all[$filename]) && isset($this->all[$filename]['tests'])) {
+                $values = array_values(array_slice($this->all[$filename]['tests'], -1));
+                $last = isset($values[0]) ? $values[0] : false;
+                if ($last && isset($last['name']) && $last['name'] === $report->getName()) {
+                    $report->setIsLast(true);
+                }
+            }
+
+            $filenames = array_keys($this->all);
+            $n = array_search($filename, $filenames);
+            if ($n !== false) {
+                $report->setOrder($n + 1);
+            }
+
+            $this->progress($report->render());
+            unset($this->outcomes[$report->getId()]);
+        }
     }
 
     /**
@@ -238,6 +290,8 @@ class LodeReporter
     {
         $this->write('}REPORT>>>');
         $this->writeNewLine();
+
+        $this->printer->flush();
     }
 
     /**

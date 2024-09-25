@@ -1,2 +1,2 @@
-Changed:
-  - Dark theme styling improvements
+New:
+  - Preliminary support for PHPUnit 10+
