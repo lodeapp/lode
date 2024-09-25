@@ -18,7 +18,7 @@ it('can make a new framework', async () => {
     // Persists id
     expect(framework.id).toBe('42')
     // Hydrates with default options, including proprietary and OS-specific
-    expect(framework.name).toBe('PHPUnit')
+    expect(framework.name).toBe('PHPUnit (Legacy)')
     expect(framework.proprietary).toEqual({
         autoloadPath: ''
     })
