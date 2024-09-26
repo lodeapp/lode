@@ -335,6 +335,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             },
             ...this.getDefaults()
         }
+
         return {
             ...defaults,
             ...options

@@ -113,6 +113,7 @@ export default {
         })
 
         this.parseFrameworks()
+
         if (this.scan) {
             this.handleScan()
         }

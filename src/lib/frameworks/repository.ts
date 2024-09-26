@@ -221,8 +221,13 @@ export class Repository extends ProjectEventEmitter implements IRepository {
             dot: true,
             sync: true
         })
+
         return new Promise(async (resolve, reject) => {
-            const frameworks: Array<FrameworkOptions | false> = await Promise.all(Frameworks.map(framework => {
+            const frameworks: Array<FrameworkOptions | false> = await Promise.all(Frameworks.map(async framework => {
+                console.log(framework, await framework.spawnForDirectory({
+                    path: this.path,
+                    files: glob.found
+                }))
                 return framework.spawnForDirectory({
                     path: this.path,
                     files: glob.found
@@ -235,6 +240,7 @@ export class Repository extends ProjectEventEmitter implements IRepository {
                     scanStatus: 'pending'
                 }
             }))
+
             this.scanning = false
         })
     }

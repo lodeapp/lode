@@ -352,11 +352,12 @@ const app = createApp({
             )
         },
         async scanRepositories (repositories, n) {
-            // Scan repository and queue the following one the modal callback.
+            // Scan repository and queue the following ones on the modal callback.
             this.repositoryScan(repositories[n], () => {
                 if ((n + 1) >= repositories.length) {
                     return
                 }
+
                 this.scanRepositories(repositories, (n + 1))
             })
         },

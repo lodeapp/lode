@@ -6,17 +6,18 @@ import { ParsedRepository } from '@lib/frameworks/repository'
 import { FrameworkOptions, FrameworkDefaults, Framework, FrameworkReloadOutcome } from '@lib/frameworks/framework'
 import { ISuiteResult, ISuite, Suite } from '@lib/frameworks/suite'
 import { ITest } from '@lib/frameworks/test'
-import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
+import { PHPUnit10Suite } from '@lib/frameworks/phpunit-10/suite'
 import { FrameworkValidator } from '@lib/frameworks/validator'
 import { FrameworkSort } from '@lib/frameworks/sort'
+import { castArray } from 'lodash'
 
-export class PHPUnit extends Framework {
+export class PHPUnit10 extends Framework {
     public readonly canToggleTests: boolean = true
 
     static readonly defaults: FrameworkDefaults = {
         all: {
-            name: 'PHPUnit (Legacy)',
-            type: 'phpunit',
+            name: 'PHPUnit',
+            type: 'phpunit-10',
             command: './vendor/bin/phpunit',
             path: '',
             proprietary: {
@@ -33,14 +34,14 @@ export class PHPUnit extends Framework {
 
     // Suites are defined in the parent constructor (albeit a different class),
     // so we'll just inherit the default value from it (or risk overriding it).
-    public suites!: Array<PHPUnitSuite>
+    public suites!: Array<PHPUnit10Suite>
 
     /**
      * The class of suite we use for this framework. Overrides the default
      * with a PHPUnit-specific suite class.
      */
     protected suiteClass (): typeof Suite {
-        return PHPUnitSuite
+        return PHPUnit10Suite
     }
 
     /**
@@ -51,43 +52,26 @@ export class PHPUnit extends Framework {
      */
     public static async spawnForDirectory (repository: ParsedRepository): Promise<FrameworkOptions | false> {
         return new Promise((resolve, reject) => {
-            const fallback = () => {
-                // Cheapest way to check is the PHPUnit XML config file.
-                if (repository.files.includes('phpunit.xml') || repository.files.includes('phpunit.xml.dist')) {
-                    resolve(this.hydrate())
-                    return
-                }
-
-                // If no config file exists, check for binary inside dependencies.
-                Fs.access(Path.join(repository.path, 'vendor/bin/phpunit'), error => {
-                    resolve(error ? false : this.hydrate())
-                })
-            }
-
-            // First, we'll try to determine wether PHPUnit exists in a non-legacy version.
             Fs.readFile(Path.join(repository.path, 'vendor/phpunit/phpunit/composer.json'), {}, (error: Error, data: Buffer) => {
                 if (error) {
-                    fallback()
-                    return
+                    resolve(false)
                 }
 
                 try {
                     const composer = JSON.parse(data.toString('utf8'))
 
                     if (
-                        semver.lt(
+                        semver.gte(
                             semver.coerce(composer.extra['branch-alias']['dev-main']) || semver.coerce(composer.extra['branch-alias']['dev-master']) || '0.0.0',
                             '10.0.0'
                         )
                     ) {
                         resolve(this.hydrate())
                     }
-
-                    resolve(false)
                 } catch (_) {
                 }
 
-                fallback()
+                resolve(false)
             })
         })
     }
@@ -114,12 +98,13 @@ export class PHPUnit extends Framework {
             this.spawn(['--columns=42'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
                     try {
-                        Promise.all(report.map((result: ISuiteResult) => {
+                        Promise.all(castArray(report).map((result: ISuiteResult) => {
                             return this.makeSuite(this.hydrateSuiteResult(result), true)
                         })).then(() => {
                             resolve('success')
                         })
                     } catch (error) {
+                        console.log({ error })
                         this.stop()
                         reject('The PHPUnit package returned unexpected results.')
                     }
@@ -157,15 +142,14 @@ export class PHPUnit extends Framework {
             // can ever figure out why, we should revert back to default.
             '--stderr',
             '--color=always',
-            '--printer',
-            '\\LodeApp\\PHPUnit\\LodeReporter'
+            '--order-by',
+            'default',
+            '--no-output'
         ]
 
         if (__DEV__) {
             args.push(
-                '-d',
-                'display_errors=on',
-                '--verbose'
+                '--display-errors'
             )
         }
 
@@ -182,7 +166,7 @@ export class PHPUnit extends Framework {
         const args: Array<string> = ['--filter']
         const filters: Array<string> = []
         suites.forEach((suite: ISuite) => {
-            const suiteClass = (suite as PHPUnitSuite).getClassName()
+            const suiteClass = (suite as PHPUnit10Suite).getClassName()
             const selected = suite.tests.filter((test: ITest) => selectTests ? test.selected : true)
             if (selected.length !== suite.tests.length) {
                 // If not running all tests from suite, filter each one
@@ -241,7 +225,7 @@ export class PHPUnit extends Framework {
      */
     public processFeedbackText (text: string): string {
         // @TODO: Offload to separate class that parses and replaces strings.
-        if (text && text.match(/^Failed asserting that '(.+)' matches JSON string "(.|\s)+"./gim)) {
+        if (text && text.match(/^Failed asserting that '(.+)' matches JSON string "[^"]+"./gim)) {
             // ...
         }
 
@@ -258,7 +242,7 @@ export class PHPUnit extends Framework {
             error = error.toString()
         }
 
-        if ((new RegExp('Cannot open file .*\/bootstrap\.php', 'gi')).test(error)) {
+        if ((new RegExp('Cannot open bootstrap script .*\/bootstrap\\.php', 'gi')).test(error)) {
             return 'If your PHPUnit tests run in a remote machine, make sure to toggle that in your framework settings and set the absolute path to the repository inside the remote machine.'
         }
 
