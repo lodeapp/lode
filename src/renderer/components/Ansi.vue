@@ -90,7 +90,11 @@ export default {
                 Lode.copyToClipboard(
                     this.showRaw
                         ? this.content.trim()
-                        : this.$el.querySelector('.parsed').innerText.trim()
+                        : this.$el.querySelector('.parsed').innerText
+                            .split('\n')
+                            .map(line => line.trimEnd())
+                            .filter(line => line !== '')
+                            .join('\n')
                 )
             } catch (_) {
             }
