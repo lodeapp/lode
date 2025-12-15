@@ -19,14 +19,11 @@ export default {
     },
     methods: {
         relativePath (path) {
-            return path
+            if (!this.rootPath || !path.startsWith('/')) {
+                return path
+            }
 
-            // @TODO: figure out why path doesn't work (i.e. is `undefined`)
-            // if (!this.rootPath || !path.startsWith('/')) {
-            //     return path
-            // }
-
-            // return Path.relative(this.rootPath, path)
+            return Path.relative(this.rootPath, path)
         },
         absoluteLocalPath (file) {
             return Path.join(this.repositoryPath, this.relativePath(file))
