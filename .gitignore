@@ -13,5 +13,4 @@ coverage
 tests/playwright/.init-bundle.js
 tests/playwright/test-results
 tests/playwright/playwright-report
-
 .claude/settings.local.json
