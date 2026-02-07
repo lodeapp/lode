@@ -8,21 +8,21 @@ export class Menu {
     protected menu: Electron.Menu | null = null
     protected options: object = {}
     protected template: Array<Electron.MenuItemConstructorOptions> = []
-    protected beforeCallbacks: Array<Function> = []
-    protected afterCallbacks: Array<Function> = []
+    protected beforeCallbacks: Array<() => void> = []
+    protected afterCallbacks: Array<() => void> = []
 
-    constructor (webContents: Electron.WebContents) {
+    constructor(webContents: Electron.WebContents) {
         this.window = ApplicationWindow.getFromWebContents(webContents)!
     }
 
-    add (item: Electron.MenuItemConstructorOptions): this {
+    add(item: Electron.MenuItemConstructorOptions): this {
         this.template.push(item)
         return this
     }
 
-    addIf (
-        condition: boolean | Function,
-        item: Electron.MenuItemConstructorOptions
+    addIf(
+        condition: boolean | (() => boolean),
+        item: Electron.MenuItemConstructorOptions,
     ): this {
         if (condition) {
             this.add(item)
@@ -30,50 +30,50 @@ export class Menu {
         return this
     }
 
-    addMultiple (items: Array<Electron.MenuItemConstructorOptions>): this {
+    addMultiple(items: Array<Electron.MenuItemConstructorOptions>): this {
         items.forEach((item: Electron.MenuItemConstructorOptions) => {
             this.add(item)
         })
         return this
     }
 
-    separator (properties = {}): this {
+    separator(properties = {}): this {
         this.add({
             ...properties,
-            type: 'separator'
+            type: 'separator',
         })
         return this
     }
 
-    before (callback: Function): this {
+    before(callback: () => void): this {
         this.beforeCallbacks.push(callback)
         return this
     }
 
-    after (callback: Function): this {
+    after(callback: () => void): this {
         this.afterCallbacks.push(callback)
         return this
     }
 
-    attachTo (rect: DOMRect | undefined, padding: boolean = true): this {
+    attachTo(rect: DOMRect | undefined, padding: boolean = true): this {
         if (rect) {
             const { x, y, height } = rect
             this.options = {
                 ...this.options,
                 ...{
                     x: Math.ceil(x),
-                    y: Math.ceil(y + height + (padding ? 7 : 0))
-                }
+                    y: Math.ceil(y + height + (padding ? 7 : 0)),
+                },
             }
         }
         return this
     }
 
-    async build (): Promise<this> {
+    async build(): Promise<this> {
         this.menu = Base.buildFromTemplate(this.template)
 
         if (this.beforeCallbacks.length) {
-            this.beforeCallbacks.forEach(callback => {
+            this.beforeCallbacks.forEach((callback) => {
                 this.menu!.on('menu-will-show', () => {
                     callback()
                 })
@@ -81,7 +81,7 @@ export class Menu {
         }
 
         if (this.afterCallbacks.length) {
-            this.afterCallbacks.forEach(callback => {
+            this.afterCallbacks.forEach((callback) => {
                 this.menu!.on('menu-will-close', () => {
                     callback()
                 })
@@ -92,7 +92,7 @@ export class Menu {
         return this
     }
 
-    async open (options?: object): Promise<this> {
+    async open(options?: object): Promise<this> {
         if (!this.built) {
             await this.build()
         }
@@ -100,27 +100,28 @@ export class Menu {
         this.menu!.popup({
             ...this.options,
             ...{ window: this.window.getChild() },
-            ...(options || {})
+            ...(options || {}),
         })
         return this
     }
 
-    public getTemplate (): Array<Electron.MenuItemConstructorOptions> {
+    public getTemplate(): Array<Electron.MenuItemConstructorOptions> {
         return this.template
     }
 
-    public emit (name: MenuEvent, properties?: any): void {
+    public emit(name: MenuEvent, properties?: any): void {
         this.window.sendMenuEvent({ name, properties })
     }
 
-    public async openFile (path: string): Promise<void> {
+    public async openFile(path: string): Promise<void> {
         try {
             await File.open(path)
-        } catch (error: any) {
+        }
+        catch (error: any) {
             log.error(`Error while trying to open file in path: '${path}'`, error)
             this.window.send('error', [
                 'Unable to open file in an external program. Please check you have a program associated with this file extension.',
-                'The following path was attempted: `' + path + '`'
+                `The following path was attempted: \`${path}\``,
             ])
         }
     }

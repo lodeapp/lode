@@ -1,3 +1,25 @@
+<script>
+import Modal from '@/components/modals/mixins/modal'
+
+export default {
+    name: 'Licenses',
+    mixins: [Modal],
+    data() {
+        return {
+            terms: '',
+        }
+    },
+    async created() {
+        this.terms = await Lode.ipc.invoke('terms')
+    },
+    methods: {
+        openLink(event) {
+            this.$root.openExternal(event.target.href)
+        },
+    },
+}
+</script>
+
 <template>
     <Modal title="Terms and Conditions">
         <div class="terms">
@@ -16,25 +38,3 @@
         </template>
     </Modal>
 </template>
-
-<script>
-import Modal from '@/components/modals/mixins/modal'
-
-export default {
-    name: 'Licenses',
-    mixins: [Modal],
-    data () {
-        return {
-            terms: ''
-        }
-    },
-    async created () {
-        this.terms = await Lode.ipc.invoke('terms')
-    },
-    methods: {
-        openLink (event) {
-            this.$root.openExternal(event.target.href)
-        }
-    }
-}
-</script>

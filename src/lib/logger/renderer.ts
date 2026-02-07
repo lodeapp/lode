@@ -1,27 +1,27 @@
-import { LogLevel } from './levels'
+import type { LogLevel } from './levels'
 import { formatLogMessage } from './format'
 
 const g = globalThis as any
 
-function log (level: LogLevel, message: string | object, error?: Error) {
-    Lode.ipc.send('log', level, '[renderer]: ' + formatLogMessage(message, error))
+function log(level: LogLevel, message: string | object, error?: Error) {
+    Lode.ipc.send('log', level, `[renderer]: ${formatLogMessage(message, error)}`)
 }
 
 g.log = {
-    error (message: string | object, error?: Error) {
+    error(message: string | object, error?: Error) {
         log('error', message, error)
         console.error(formatLogMessage(message, error))
     },
-    warn (message: string | object, error?: Error) {
+    warn(message: string | object, error?: Error) {
         log('warn', message, error)
         console.warn(formatLogMessage(message, error))
     },
-    info (message: string | object, error?: Error) {
+    info(message: string | object, error?: Error) {
         log('info', message, error)
         console.info(formatLogMessage(message, error))
     },
-    debug (message: string | object, error?: Error) {
+    debug(message: string | object, error?: Error) {
         log('debug', message, error)
         console.debug(formatLogMessage(message, error))
-    }
+    },
 } as ILogger

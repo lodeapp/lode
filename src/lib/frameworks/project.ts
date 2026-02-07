@@ -1,20 +1,22 @@
-import * as Fs from 'fs'
-import { v4 as uuid } from 'uuid'
-import { findIndex, fromPairs, omit } from 'lodash'
-import { ApplicationWindow } from '@main/application-window'
-import { state } from '@lib/state'
-import { Project as ProjectState } from '@lib/state/project'
+import type { FrameworkWithContext, IFramework } from '@lib/frameworks/framework'
+import type { Nugget } from '@lib/frameworks/nugget'
+import type { ProgressLedger } from '@lib/frameworks/progress'
+import type { IRepository, RepositoryOptions } from '@lib/frameworks/repository'
+import type { FrameworkStatus } from '@lib/frameworks/status'
+import type { Project as ProjectState } from '@lib/state/project'
+import type { ApplicationWindow } from '@main/application-window'
+import * as Fs from 'node:fs'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
-import { FrameworkStatus, parseFrameworkStatus } from '@lib/frameworks/status'
-import { ProgressLedger } from '@lib/frameworks/progress'
-import { RepositoryOptions, IRepository, Repository } from '@lib/frameworks/repository'
-import { FrameworkWithContext, IFramework } from '@lib/frameworks/framework'
-import { Nugget } from '@lib/frameworks/nugget'
+import { Repository } from '@lib/frameworks/repository'
+import { parseFrameworkStatus } from '@lib/frameworks/status'
+import { state } from '@lib/state'
+import { findIndex, fromPairs, omit } from 'lodash'
+import { v4 as uuid } from 'uuid'
 
 /**
  * The minimal options to identify a project by.
  */
-export type ProjectIdentifier = {
+export interface ProjectIdentifier {
     id?: string
     name?: string
 }
@@ -22,7 +24,7 @@ export type ProjectIdentifier = {
 /**
  * The models currently active in a project
  */
-export type ProjectActiveIdentifiers = {
+export interface ProjectActiveIdentifiers {
     framework: string | null
     repository: string | null
 }
@@ -30,12 +32,12 @@ export type ProjectActiveIdentifiers = {
 /**
  * The models currently active in a project
  */
-export type ProjectActiveModels = {
+export interface ProjectActiveModels {
     framework: IFramework | null
     repository: IRepository | null
 }
 
-export type ProjectEntities = {
+export interface ProjectEntities {
     project: IProject
     repository: IRepository
     framework: IFramework
@@ -46,7 +48,7 @@ export type ProjectEntities = {
 /**
  * Options to instantiate a Project with.
  */
-export type ProjectOptions = {
+export interface ProjectOptions {
     id?: string
     name?: string
     active?: ProjectActiveIdentifiers
@@ -60,32 +62,32 @@ export interface IProject extends ProjectEventEmitter {
     status: FrameworkStatus
     selected: boolean
 
-    getId (): string
-    getIdentifier(): ProjectIdentifier
-    start (): void
-    refresh (): void
-    stop (): Promise<any>
-    reset (): Promise<any>
-    isReady (): boolean
-    isRunning (): boolean
-    isRefreshing (): boolean
-    isBusy (): boolean
-    empty (): boolean
-    render (): ProjectOptions
-    persist (): ProjectOptions
-    save (): void
-    updateOptions (options: ProjectOptions): void
-    delete (): Promise<void>
-    addRepository (options: RepositoryOptions): Promise<IRepository>
-    removeRepository (id: string): void
-    getActive (): ProjectActiveModels
-    setActiveFramework (framework: ProjectActiveIdentifiers['framework']): void
-    getRepositoryById (id: string): IRepository | undefined
-    getContextByFrameworkId (id: string): FrameworkWithContext | undefined
-    getEmptyRepositories (): Array<IRepository>
-    getProgressLedger (): ProgressLedger
-    getProgress (): number
-    emitRepositoriesToRenderer (): void
+    getId: () => string
+    getIdentifier: () => ProjectIdentifier
+    start: () => void
+    refresh: () => void
+    stop: () => Promise<any>
+    reset: () => Promise<any>
+    isReady: () => boolean
+    isRunning: () => boolean
+    isRefreshing: () => boolean
+    isBusy: () => boolean
+    empty: () => boolean
+    render: () => ProjectOptions
+    persist: () => ProjectOptions
+    save: () => void
+    updateOptions: (options: ProjectOptions) => void
+    delete: () => Promise<void>
+    addRepository: (options: RepositoryOptions) => Promise<IRepository>
+    removeRepository: (id: string) => void
+    getActive: () => ProjectActiveModels
+    setActiveFramework: (framework: ProjectActiveIdentifiers['framework']) => void
+    getRepositoryById: (id: string) => IRepository | undefined
+    getContextByFrameworkId: (id: string) => FrameworkWithContext | undefined
+    getEmptyRepositories: () => Array<IRepository>
+    getProgressLedger: () => ProgressLedger
+    getProgress: () => number
+    emitRepositoriesToRenderer: () => void
 }
 
 export class Project extends ProjectEventEmitter implements IProject {
@@ -103,7 +105,7 @@ export class Project extends ProjectEventEmitter implements IProject {
     protected initialRepositoryCount = 0
     protected initialRepositoryReady = 0
 
-    constructor (window: ApplicationWindow, identifier: ProjectIdentifier) {
+    constructor(window: ApplicationWindow, identifier: ProjectIdentifier) {
         super(window)
         this.id = identifier.id || uuid()
         this.state = state.project({ ...identifier, id: this.id })
@@ -114,7 +116,7 @@ export class Project extends ProjectEventEmitter implements IProject {
         this.initialRepositoryCount = (options.repositories || []).length
         this.hasRepositories = this.initialRepositoryCount > 0
         this.active = options.active || {
-            framework: null
+            framework: null,
         }
 
         // If options include repositories already (i.e. persisted state), add them.
@@ -129,24 +131,24 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Get this project's id.
      */
-    public getId (): string {
+    public getId(): string {
         return this.id
     }
 
     /**
      * Get this project's identifier object.
      */
-    public getIdentifier (): ProjectIdentifier {
+    public getIdentifier(): ProjectIdentifier {
         return {
             id: this.id,
-            name: this.name
+            name: this.name,
         }
     }
 
     /**
      * Run all of this project's repositories.
      */
-    public start (): void {
+    public start(): void {
         this.repositories.forEach((repository: IRepository) => {
             repository.start()
         })
@@ -155,7 +157,7 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Refresh all of this project's repositories.
      */
-    public refresh (): void {
+    public refresh(): void {
         this.repositories.forEach((repository: IRepository) => {
             repository.refresh()
         })
@@ -164,7 +166,7 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Stop any repository in this project that might be running.
      */
-    public async stop (): Promise<any> {
+    public async stop(): Promise<any> {
         return Promise.all(this.repositories.map((repository: IRepository) => {
             return repository.stop()
         }))
@@ -173,7 +175,7 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Reset this project's state.
      */
-    public async reset (): Promise<any> {
+    public async reset(): Promise<any> {
         return Promise.all(this.repositories.map((repository: IRepository) => {
             return repository.reset()
         }))
@@ -182,28 +184,28 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Whether this project is ready.
      */
-    public isReady (): boolean {
+    public isReady(): boolean {
         return this.ready
     }
 
     /**
      * Whether this project is running.
      */
-    public isRunning (): boolean {
+    public isRunning(): boolean {
         return this.repositories.some((repository: IRepository) => repository.isRunning())
     }
 
     /**
      * Whether this project is refreshing.
      */
-    public isRefreshing (): boolean {
+    public isRefreshing(): boolean {
         return this.repositories.some((repository: IRepository) => repository.isRefreshing())
     }
 
     /**
      * Whether this project is busy.
      */
-    public isBusy (): boolean {
+    public isBusy(): boolean {
         return this.repositories.some((repository: IRepository) => repository.isBusy())
     }
 
@@ -212,36 +214,36 @@ export class Project extends ProjectEventEmitter implements IProject {
      * This is used for layout purposes, so it's not enough to just rely on
      * an "empty" status, because they will render different calls-to-action.
      */
-    public empty (): boolean {
+    public empty(): boolean {
         return !this.hasRepositories
     }
 
     /**
      * Prepares the project for sending out to renderer process.
      */
-    public render (): ProjectOptions {
+    public render(): ProjectOptions {
         return {
             id: this.id,
             name: this.name,
             active: this.active,
-            status: this.status
+            status: this.status,
         }
     }
 
     /**
      * Prepares the project for persistence.
      */
-    public persist (): ProjectOptions {
+    public persist(): ProjectOptions {
         return omit({
             ...this.render(),
-            repositories: this.repositories.map(repository => repository.persist())
+            repositories: this.repositories.map(repository => repository.persist()),
         }, 'status')
     }
 
     /**
      * Save this project in the persistent store.
      */
-    public save (): void {
+    public save(): void {
         this.state.save(this.persist())
     }
 
@@ -250,7 +252,7 @@ export class Project extends ProjectEventEmitter implements IProject {
      *
      * @param options The new set of options.
      */
-    public updateOptions (options: ProjectOptions): void {
+    public updateOptions(options: ProjectOptions): void {
         // Currently only the name is editable
         this.name = options.name || ''
         state.updateProject({ id: this.id, name: this.name })
@@ -260,10 +262,10 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Delete this project.
      */
-    public async delete (): Promise<void> {
+    public async delete(): Promise<void> {
         await this.stop()
         return new Promise((resolve, reject) => {
-            Fs.rmdir(this.state.getPath(), { recursive: true }, error => {
+            Fs.rmdir(this.state.getPath(), { recursive: true }, (error) => {
                 if (error) {
                     reject(error)
                     return
@@ -276,14 +278,14 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * A function to run when a child repository changes its status.
      */
-    protected statusListener () {
+    protected statusListener() {
         this.updateStatus(parseFrameworkStatus(this.repositories.map(repository => repository.status)))
     }
 
     /**
      * A function to run when a child repository changes its state (i.e. runs, stops, etc).
      */
-    protected stateListener (): void {
+    protected stateListener(): void {
         const isBusy = this.isBusy()
         this.state.set('busy', isBusy)
         this.emit('busy', isBusy)
@@ -305,21 +307,21 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * A function to run when a child repository changes.
      */
-    protected changeListener (): void {
+    protected changeListener(): void {
         this.save()
     }
 
     /**
      * A function to run when a child repository progresses.
      */
-    protected progressListener (): void {
+    protected progressListener(): void {
         this.emit('progress', this.getProgress())
     }
 
     /**
      * Prepare the project for parsed state.
      */
-    protected onParsed (): void {
+    protected onParsed(): void {
         this.parsed = true
         if (!this.initialRepositoryCount) {
             this.onReady()
@@ -330,7 +332,7 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Prepare the project for ready state.
      */
-    protected onReady (): void {
+    protected onReady(): void {
         // Ready event will only trigger once.
         if (this.ready) {
             return
@@ -346,7 +348,7 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Listener for when a child framework is ready.
      */
-    protected onRepositoryReady (): void {
+    protected onRepositoryReady(): void {
         this.initialRepositoryReady++
         if (this.initialRepositoryReady >= this.initialRepositoryCount) {
             this.onReady()
@@ -359,7 +361,7 @@ export class Project extends ProjectEventEmitter implements IProject {
      *
      * @param to The status we're updating to.
      */
-    protected updateStatus (to?: FrameworkStatus): void {
+    protected updateStatus(to?: FrameworkStatus): void {
         if (typeof to === 'undefined') {
             to = parseFrameworkStatus(this.repositories.map(repository => repository.status))
         }
@@ -377,7 +379,7 @@ export class Project extends ProjectEventEmitter implements IProject {
      *
      * @param repositories The repositories to add to this project.
      */
-    protected async loadRepositories (repositories: Array<RepositoryOptions>): Promise<void> {
+    protected async loadRepositories(repositories: Array<RepositoryOptions>): Promise<void> {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 Promise.all(repositories.map((repository: RepositoryOptions) => {
@@ -395,7 +397,7 @@ export class Project extends ProjectEventEmitter implements IProject {
      *
      * @param options The options with which to instantiate the new repository.
      */
-    public async addRepository (options: RepositoryOptions): Promise<IRepository> {
+    public async addRepository(options: RepositoryOptions): Promise<IRepository> {
         return new Promise((resolve, reject) => {
             const repository = new Repository(this.window, options)
             repository
@@ -416,7 +418,7 @@ export class Project extends ProjectEventEmitter implements IProject {
      *
      * @param id The id of the repository to remove.
      */
-    public removeRepository (id: string): void {
+    public removeRepository(id: string): void {
         const index = findIndex(this.repositories, repository => repository.getId() === id)
         if (index > -1) {
             this.repositories[index].removeAllListeners()
@@ -432,7 +434,7 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Get the project's active models.
      */
-    public getActive (): ProjectActiveModels {
+    public getActive(): ProjectActiveModels {
         // If an active framework is set, attempt to return it, if it still exists.
         if (this.active.framework) {
             let framework
@@ -441,7 +443,7 @@ export class Project extends ProjectEventEmitter implements IProject {
                 if (framework) {
                     return {
                         framework,
-                        repository: this.repositories[i]
+                        repository: this.repositories[i],
                     }
                 }
             }
@@ -453,21 +455,21 @@ export class Project extends ProjectEventEmitter implements IProject {
             if (this.repositories[i].frameworks.length) {
                 return {
                     framework: this.repositories[i].frameworks[0],
-                    repository: this.repositories[i]
+                    repository: this.repositories[i],
                 }
             }
         }
 
         return {
             framework: null,
-            repository: null
+            repository: null,
         }
     }
 
     /**
      * Set the project's active framework.
      */
-    public setActiveFramework (framework: ProjectActiveIdentifiers['framework']): void {
+    public setActiveFramework(framework: ProjectActiveIdentifiers['framework']): void {
         this.active.framework = framework
     }
 
@@ -476,7 +478,7 @@ export class Project extends ProjectEventEmitter implements IProject {
      *
      * @param id The id of the repository to retrieve.
      */
-    public getRepositoryById (id: string): IRepository | undefined {
+    public getRepositoryById(id: string): IRepository | undefined {
         const index = findIndex(this.repositories, repository => repository.getId() === id)
         if (index > -1) {
             return this.repositories[index]
@@ -490,38 +492,36 @@ export class Project extends ProjectEventEmitter implements IProject {
      *
      * @param id The id of the framework to retrieve.
      */
-    public getContextByFrameworkId (id: string): FrameworkWithContext | undefined {
+    public getContextByFrameworkId(id: string): FrameworkWithContext | undefined {
         const map: { [key: string]: [number, number] } = fromPairs(
             this.repositories
                 .map(
                     (repository, i) => repository.frameworks.map(
-                        (framework, j) => [framework.getId(), [i, j]]
-                    )
+                        (framework, j) => [framework.getId(), [i, j]],
+                    ),
                 )
-                .flat()
+                .flat(),
         )
 
         if (map[id]) {
             return {
                 repository: this.repositories[map[id][0]],
-                framework: this.repositories[map[id][0]].frameworks[map[id][1]]
+                framework: this.repositories[map[id][0]].frameworks[map[id][1]],
             }
         }
-
-        return
     }
 
     /**
      * Get an array of repositories without frameworks.
      */
-    public getEmptyRepositories (): Array<IRepository> {
+    public getEmptyRepositories(): Array<IRepository> {
         return this.repositories.filter((repository: IRepository) => repository.empty())
     }
 
     /**
      * Return the project's progress ledger.
      */
-    public getProgressLedger (): ProgressLedger {
+    public getProgressLedger(): ProgressLedger {
         return this.repositories.reduce((ledger: ProgressLedger, reopsitory: IRepository) => {
             const reopsitoryLedger: ProgressLedger = reopsitory.getProgressLedger()
             ledger.run += reopsitoryLedger.run
@@ -529,14 +529,14 @@ export class Project extends ProjectEventEmitter implements IProject {
             return ledger
         }, {
             run: 0,
-            total: 0
+            total: 0,
         })
     }
 
     /**
      * Return the project's progress.
      */
-    public getProgress (): number {
+    public getProgress(): number {
         const ledger = this.getProgressLedger()
         return ledger.total ? ledger.run / ledger.total : -1
     }
@@ -544,7 +544,7 @@ export class Project extends ProjectEventEmitter implements IProject {
     /**
      * Send project's repositories to the renderer process.
      */
-    public emitRepositoriesToRenderer (): void {
+    public emitRepositoriesToRenderer(): void {
         this.emitToRenderer(`${this.id}:repositories`, this.repositories.map((repository: IRepository) => repository.render()))
     }
 }

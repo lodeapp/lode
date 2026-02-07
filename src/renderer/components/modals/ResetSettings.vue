@@ -1,8 +1,19 @@
+<script>
+import Confirm from '@/components/modals/mixins/confirm'
+
+export default {
+    name: 'ResetSettings',
+    mixins: [Confirm],
+}
+</script>
+
 <template>
     <Modal>
         <template #header>
             <Icon symbol="stop" class="type--error" />
-            <h3 class="modal-title">Reset Settings</h3>
+            <h3 class="modal-title">
+                Reset Settings
+            </h3>
         </template>
         <div>
             <p>Are you sure you want to erase your saved settings? You will have to add all projects and repositories again.</p>
@@ -20,12 +31,3 @@
         </template>
     </Modal>
 </template>
-
-<script>
-import Confirm from '@/components/modals/mixins/confirm'
-
-export default {
-    name: 'ResetSettings',
-    mixins: [Confirm]
-}
-</script>

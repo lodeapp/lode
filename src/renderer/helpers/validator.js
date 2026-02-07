@@ -6,26 +6,26 @@ export default class Validator {
      * Whether the current instance is valid.
      * @param ValidationErrors errors
      */
-    constructor (errors) {
+    constructor(errors) {
         this.errors = errors || {}
     }
 
-    refresh (errors) {
+    refresh(errors) {
         this.errors = errors || {}
     }
 
     /**
      * Whether the current instance is valid.
      */
-    isValid () {
+    isValid() {
         return this.hasErrors()
     }
 
     /**
      * Reset errors in the current instance.
      */
-    reset (fields) {
-        Object.keys(this.errors).forEach(key => {
+    reset(fields) {
+        Object.keys(this.errors).forEach((key) => {
             if (!fields || fields.includes(key)) {
                 this.errors[key] = []
             }
@@ -37,10 +37,10 @@ export default class Validator {
      *
      * @param key The key to check for errors.
      */
-    hasErrors (key) {
+    hasErrors(key) {
         if (typeof key === 'undefined') {
             let hasErrors = true
-            Object.keys(this.errors).forEach(key => {
+            Object.keys(this.errors).forEach((key) => {
                 if (this.errors[key].length > 0) {
                     hasErrors = false
                 }
@@ -56,7 +56,7 @@ export default class Validator {
      *
      * @param key The key to get errors from.
      */
-    getErrors (key) {
+    getErrors(key) {
         if (!this.hasErrors(key)) {
             return ''
         }

@@ -1,29 +1,29 @@
+import { applicationMenu } from '@main/menu'
 import { app, dialog } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import { applicationMenu } from '@main/menu'
 
 export class Updater {
     protected startup = true
     protected downloading = false
     protected downloaded = false
 
-    constructor () {
+    constructor() {
         autoUpdater.autoDownload = false
         autoUpdater.logger = log
         autoUpdater.checkForUpdates()
-            .catch(error => {
+            .catch((error) => {
                 log.error(error)
             })
 
         autoUpdater.on('checking-for-update', () => {
             applicationMenu.setOptions({
-                isCheckingForUpdate: true
+                isCheckingForUpdate: true,
             })
         })
 
         autoUpdater.on('update-available', (info) => {
             applicationMenu.setOptions({
-                isCheckingForUpdate: false
+                isCheckingForUpdate: false,
             })
 
             // If this is the startup run and an update is available,
@@ -39,7 +39,7 @@ export class Updater {
                 type: 'info',
                 message: 'A new version of Lode is available',
                 detail: `Lode ${info.version} is now available — you have ${app.getVersion()}. Would you like to download it now?`,
-                buttons: ['Download Update', 'Cancel']
+                buttons: ['Download Update', 'Cancel'],
             }).then(({ response }) => {
                 if (response === 0) {
                     this.download()
@@ -49,7 +49,7 @@ export class Updater {
 
         autoUpdater.on('update-not-available', (info) => {
             applicationMenu.setOptions({
-                isCheckingForUpdate: false
+                isCheckingForUpdate: false,
             })
             if (this.startup) {
                 this.startup = false
@@ -60,13 +60,13 @@ export class Updater {
                 type: 'info',
                 message: 'You’re up-to-date!',
                 detail: `Lode ${app.getVersion()} is currently the newest version available.`,
-                buttons: ['OK']
+                buttons: ['OK'],
             })
         })
 
         autoUpdater.on('error', (_) => {
             applicationMenu.setOptions({
-                isCheckingForUpdate: false
+                isCheckingForUpdate: false,
             })
             if (this.startup) {
                 this.startup = false
@@ -80,13 +80,13 @@ export class Updater {
             this.downloaded = true
             applicationMenu.setOptions({
                 isDownloadingUpdate: false,
-                hasDownloadedUpdate: true
+                hasDownloadedUpdate: true,
             })
             dialog.showMessageBox({
                 type: 'info',
                 message: 'Ready to Install',
                 detail: `Lode ${info.version} has been download and is ready to install. You are required to restart the app.`,
-                buttons: ['Install and Relaunch', 'Cancel']
+                buttons: ['Install and Relaunch', 'Cancel'],
             }).then(({ response }) => {
                 if (response === 0) {
                     autoUpdater.quitAndInstall()
@@ -95,10 +95,10 @@ export class Updater {
         })
     }
 
-    protected download (): void {
+    protected download(): void {
         this.downloading = true
         applicationMenu.setOptions({
-            isDownloadingUpdate: true
+            isDownloadingUpdate: true,
         })
         autoUpdater.downloadUpdate()
     }

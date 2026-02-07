@@ -1,15 +1,15 @@
 export default {
     namespaced: true,
     state: {
-        lastActive: ''
+        lastActive: '',
     },
     mutations: {
-        SET_LAST_ACTIVE (state, payload) {
+        SET_LAST_ACTIVE(state, payload) {
             state.lastActive = payload
         },
-        CLEAR (state) {
+        CLEAR(state) {
             state.lastActive = ''
-        }
+        },
     },
     actions: {
         setLastActive: ({ commit }, tab) => {
@@ -17,11 +17,11 @@ export default {
         },
         clear: ({ commit }) => {
             commit('CLEAR')
-        }
+        },
     },
     getters: {
-        lastActive: state => {
+        lastActive: (state) => {
             return state.lastActive
-        }
-    }
+        },
+    },
 }

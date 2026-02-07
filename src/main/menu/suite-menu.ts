@@ -1,10 +1,10 @@
-import { Menu } from '@main/menu'
+import type { ISuite } from '@lib/frameworks/suite'
 import { File } from '@main/file'
+import { Menu } from '@main/menu'
 import { clipboard } from 'electron'
-import { ISuite } from '@lib/frameworks/suite'
 
 export class SuiteMenu extends Menu {
-    constructor (suite: ISuite, webContents: Electron.WebContents) {
+    constructor(suite: ISuite, webContents: Electron.WebContents) {
         super(webContents)
 
         const filePath = suite.getFilePath()
@@ -16,7 +16,7 @@ export class SuiteMenu extends Menu {
                 label: __DARWIN__ ? 'Filter this Item' : 'Filter this item',
                 click: () => {
                     this.emit('filter', `"${suite.getRelativePath()}"`)
-                }
+                },
             })
             .add({
                 id: 'filter-and-run',
@@ -25,7 +25,7 @@ export class SuiteMenu extends Menu {
                     this.emit('filter', `"${suite.getRelativePath()}"`)
                     suite.getFramework().setFilter('keyword', `"${suite.getRelativePath()}"`)
                     suite.getFramework().start()
-                }
+                },
             })
             .separator()
             .add({
@@ -36,7 +36,7 @@ export class SuiteMenu extends Menu {
                 click: () => {
                     clipboard.writeText(filePath)
                 },
-                enabled: File.exists(filePath)
+                enabled: File.exists(filePath),
             })
             .add({
                 id: 'copy-relative',
@@ -46,7 +46,7 @@ export class SuiteMenu extends Menu {
                 click: () => {
                     clipboard.writeText(relativePath)
                 },
-                enabled: File.exists(filePath)
+                enabled: File.exists(filePath),
             })
             .addIf(!!remoteFilePath, {
                 id: 'copy-remote',
@@ -55,13 +55,13 @@ export class SuiteMenu extends Menu {
                     : 'Copy Remote file path',
                 click: () => {
                     clipboard.writeText(remoteFilePath)
-                }
+                },
             })
             .separator({
                 // If we don't declare `before`, this separator
                 // somehow gets overridden by the custom suite's
                 // context menu (if it uses `before`, like PHPUnit's).
-                before: ['reveal']
+                before: ['reveal'],
             })
             .add({
                 id: 'reveal',
@@ -73,7 +73,7 @@ export class SuiteMenu extends Menu {
                 click: () => {
                     File.reveal(filePath)
                 },
-                enabled: File.exists(filePath)
+                enabled: File.exists(filePath),
             })
             .add({
                 id: 'open',
@@ -83,7 +83,7 @@ export class SuiteMenu extends Menu {
                 click: () => {
                     this.openFile(filePath)
                 },
-                enabled: suite.canBeOpened()
+                enabled: suite.canBeOpened(),
             })
             .addMultiple(suite.contextMenu())
             .separator()
@@ -95,7 +95,7 @@ export class SuiteMenu extends Menu {
                     suite.resetMeta()
                     suite.getFramework().refresh()
                 },
-                enabled: !!suite.getMeta()
+                enabled: !!suite.getMeta(),
             })
     }
 }

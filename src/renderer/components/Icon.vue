@@ -1,19 +1,19 @@
 <script>
-import { h } from 'vue'
 import octicons from '@primer/octicons'
+import { h } from 'vue'
 
 export default {
     name: 'Icon',
     props: {
         symbol: {
             type: String,
-            required: true
-        }
+            required: true,
+        },
     },
-    render () {
+    render() {
         return h('i', {
-            innerHTML: octicons[this.symbol].toSVG()
+            innerHTML: octicons[this.symbol].toSVG(),
         })
-    }
+    },
 }
 </script>

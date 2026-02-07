@@ -1,34 +1,34 @@
-import '@lib/logger/renderer'
-
-import { createApp, h } from 'vue'
-import store from './store'
 import { isArray, isEmpty } from 'lodash'
 
-// Styles
-import '../styles/app.scss'
-
-// Plugins
-import Alerts from './plugins/alerts'
-import Code from './plugins/code'
-import Input from './plugins/input'
-import Modals from './plugins/modals'
-import Strings from './plugins/strings'
-import Durations from './plugins/durations'
-import Unproxy from './plugins/unproxy'
-
-// Directives
-import Markdown from './directives/markdown'
-
+import { createApp, h } from 'vue'
 // Global / recursive components
 import App from '@/components/App.vue'
 import Icon from '@/components/Icon.vue'
+
 import Nugget from '@/components/Nugget.vue'
+
+// Directives
+import Markdown from './directives/markdown'
+// Plugins
+import Alerts from './plugins/alerts'
+import Code from './plugins/code'
+import Durations from './plugins/durations'
+import Input from './plugins/input'
+import Modals from './plugins/modals'
+import Strings from './plugins/strings'
+
+import Unproxy from './plugins/unproxy'
+
+import store from './store'
+import '@lib/logger/renderer'
+// Styles
+import '../styles/app.scss'
 
 const app = createApp({
     components: {
-        App
+        App,
     },
-    data () {
+    data() {
         return {
             version: '',
             arch: '',
@@ -39,10 +39,10 @@ const app = createApp({
             supportsThemes: false,
             loading: true,
             project: null,
-            menu: null
+            menu: null,
         }
     },
-    created () {
+    created() {
         Lode.ipc
             .on('did-finish-load', (event, properties) => {
                 this.setTheme(properties.theme)
@@ -118,7 +118,7 @@ const app = createApp({
                 this.$alert.show({
                     type: 'error',
                     message,
-                    help
+                    help,
                 })
             })
             .on('menu-event', async (event, { name, properties }) => {
@@ -156,7 +156,7 @@ const app = createApp({
                     case 'framework-remove':
                         this.frameworkRemove(properties)
                         break
-                    case 'filter':
+                    case 'filter': {
                         const filter = app._container.querySelector('[type="search"]')
                         filter.focus()
                         if (properties) {
@@ -164,6 +164,7 @@ const app = createApp({
                             filter.dispatchEvent(new Event('input'))
                         }
                         break
+                    }
                     case 'select-all':
                         this.selectAll()
                         break
@@ -181,7 +182,7 @@ const app = createApp({
                     case 'log-settings':
                         log.info({
                             ...await Lode.ipc.invoke('log-settings'),
-                            vuex: store.getters['settings/value']()
+                            vuex: store.getters['settings/value'](),
                         })
                         break
                     case 'log-renderer-state':
@@ -196,19 +197,19 @@ const app = createApp({
                 }
             })
     },
-    mounted () {
-        document.ondragover = e => {
+    mounted() {
+        document.ondragover = (e) => {
             if (e.dataTransfer != null) {
                 e.dataTransfer.dropEffect = store.getters['modals/hasModals'] ? 'none' : 'copy'
             }
             e.preventDefault()
         }
 
-        document.ondrop = e => {
+        document.ondrop = (e) => {
             e.preventDefault()
         }
 
-        document.body.ondrop = e => {
+        document.body.ondrop = (e) => {
             if (store.getters['modals/hasModals']) {
                 return
             }
@@ -220,25 +221,25 @@ const app = createApp({
         }
     },
     methods: {
-        setTheme (theme) {
+        setTheme(theme) {
             document.documentElement.setAttribute('data-color-mode', theme)
             this.$store.commit('theme/SET', theme)
         },
-        mapStatuses (project) {
+        mapStatuses(project) {
             const mapTests = (nugget, statuses) => {
-                (nugget.tests || []).forEach(test => {
+                (nugget.tests || []).forEach((test) => {
                     statuses[test.id] = null
                     mapTests(test, statuses)
                 })
             }
             const statuses = {
-                [project.id]: null
+                [project.id]: null,
             }
-            project.repositories.forEach(repository => {
+            project.repositories.forEach((repository) => {
                 statuses[repository.id] = null
-                repository.frameworks.forEach(framework => {
+                repository.frameworks.forEach((framework) => {
                     statuses[framework.id] = null
-                    framework.suites.forEach(suite => {
+                    framework.suites.forEach((suite) => {
                         statuses[suite.file] = null
                         mapTests(suite, statuses)
                     })
@@ -247,7 +248,7 @@ const app = createApp({
 
             return statuses
         },
-        loadProject (project) {
+        loadProject(project) {
             this.$store.commit('filters/RESET')
             this.project = !isEmpty(project) ? project : null
             this.refreshApplicationMenu()
@@ -258,12 +259,12 @@ const app = createApp({
                 Lode.ipc.on(`${this.project.id}:status:index`, this.projectStatusListener)
             }
         },
-        projectStatusListener (event, to, from) {
+        projectStatusListener(event, to, from) {
             this.project.status = to
         },
-        async projectAdd () {
+        async projectAdd() {
             this.$modal.confirm('EditProject', { add: true })
-                .then(identifier => {
+                .then((identifier) => {
                     Lode.ipc.once('project-ready', () => {
                         this.repositoryAdd()
                     })
@@ -271,9 +272,9 @@ const app = createApp({
                 })
                 .catch(() => {})
         },
-        async projectEdit () {
+        async projectEdit() {
             this.$modal.confirm('EditProject')
-                .then(async options => {
+                .then(async (options) => {
                     options = await Lode.ipc.invoke('project-update', options)
                     this.project = options || null
 
@@ -284,7 +285,7 @@ const app = createApp({
                 })
                 .catch(() => {})
         },
-        async projectRemove () {
+        async projectRemove() {
             this.$modal.confirm('RemoveProject')
                 .then(async () => {
                     const switchTo = await Lode.ipc.invoke('project-remove', this.project.id)
@@ -292,7 +293,7 @@ const app = createApp({
                 })
                 .catch(() => {})
         },
-        projectSwitch (projectId) {
+        projectSwitch(projectId) {
             // Clicking on current project shouldn't have any effect.
             if (projectId === this.project.id) {
                 // Windows will uncheck the project regardless of it being
@@ -308,7 +309,7 @@ const app = createApp({
                     ? false
                     : this.setting('confirm.switchProject')
             }, 'ConfirmSwitchProject')
-                .then(disableConfirm => {
+                .then((disableConfirm) => {
                     if (disableConfirm) {
                         this.updateSetting('confirm.switchProject', false)
                     }
@@ -322,7 +323,7 @@ const app = createApp({
                     }
                 })
         },
-        handleProjectSwitch (identifier) {
+        handleProjectSwitch(identifier) {
             // Before switching, remove project listeners
             if (this.project) {
                 Lode.ipc.removeAllListeners(`${this.project.id}:status:index`)
@@ -332,7 +333,7 @@ const app = createApp({
             store.commit('context/CLEAR')
             Lode.ipc.send('project-switch', identifier)
         },
-        repositoryAdd (directories) {
+        repositoryAdd(directories) {
             if (!isArray(directories)) {
                 directories = null
             }
@@ -345,13 +346,13 @@ const app = createApp({
                 })
                 .catch(() => {})
         },
-        async scanEmptyRepositories () {
+        async scanEmptyRepositories() {
             this.scanRepositories(
                 await Lode.ipc.invoke('project-empty-repositories'),
-                0
+                0,
             )
         },
-        async scanRepositories (repositories, n) {
+        async scanRepositories(repositories, n) {
             // Scan repository and queue the following ones on the modal callback.
             this.repositoryScan(repositories[n], () => {
                 if ((n + 1) >= repositories.length) {
@@ -361,7 +362,7 @@ const app = createApp({
                 this.scanRepositories(repositories, (n + 1))
             })
         },
-        async repositoryScan (repository, callback = null) {
+        async repositoryScan(repository, callback = null) {
             const exists = await this.repositoryExists(repository)
             if (!exists) {
                 if (callback) {
@@ -372,17 +373,17 @@ const app = createApp({
 
             this.$modal.open('ManageFrameworks', {
                 repository,
-                scan: true
+                scan: true,
             }, callback)
         },
-        repositoryManage ({ repository, framework }) {
+        repositoryManage({ repository, framework }) {
             this.$modal.open('ManageFrameworks', {
                 repository,
                 scan: false,
-                framework
+                framework,
             })
         },
-        repositoryRemove (repository) {
+        repositoryRemove(repository) {
             this.$modal.confirm('RemoveRepository', { repository })
                 .then(() => {
                     this.onModelRemove(repository.id)
@@ -390,72 +391,72 @@ const app = createApp({
                 })
                 .catch(() => {})
         },
-        async repositoryLocate (repository) {
+        async repositoryLocate(repository) {
             return await Lode.ipc.invoke('repository-locate', repository.id)
         },
-        async repositoryExists (repository) {
+        async repositoryExists(repository) {
             return await Lode.ipc.invoke('repository-exists', repository.id)
         },
-        async frameworkRemove (framework) {
+        async frameworkRemove(framework) {
             this.$modal.confirm('RemoveFramework', { framework })
                 .then(() => {
                     this.handleFrameworkRemove(framework.id)
                 })
                 .catch(() => {})
         },
-        handleFrameworkRemove (frameworkId) {
+        handleFrameworkRemove(frameworkId) {
             this.onModelRemove(frameworkId)
             Lode.ipc.send('framework-remove', frameworkId)
         },
-        handleAppRunningInTranslation () {
+        handleAppRunningInTranslation() {
             this.$modal.confirmIf(this.setting('confirm.runningUnderTranslation'), 'RunningUnderTranslation')
-                .then(disableConfirm => {
+                .then((disableConfirm) => {
                     if (disableConfirm) {
                         this.updateSetting('confirm.runningUnderTranslation', false)
                     }
                 })
                 .catch(() => {})
         },
-        setting (key) {
+        setting(key) {
             return store.getters['settings/value'](key)
         },
-        updateSetting (key, value) {
+        updateSetting(key, value) {
             Lode.ipc.send('settings-update', key, value)
         },
-        updateSettings (settings = {}) {
+        updateSettings(settings = {}) {
             store.replaceState({
                 ...store.state,
-                settings
+                settings,
             })
         },
-        refreshApplicationMenu () {
+        refreshApplicationMenu() {
             Lode.ipc.send('menu-refresh')
         },
-        openExternal (link) {
+        openExternal(link) {
             Lode.openExternal(link)
         },
-        selectAll () {
+        selectAll() {
             const event = new CustomEvent('select-all', {
                 bubbles: true,
-                cancelable: true
+                cancelable: true,
             })
 
             if (document.activeElement.dispatchEvent(event)) {
                 Lode.ipc.send('select-all')
             }
         },
-        crash () {
+        crash() {
             window.setImmediate(() => {
                 throw new Error('Boomtown!')
             })
         },
-        onModelRemove (modelId) {
+        onModelRemove(modelId) {
             store.dispatch('context/onRemove', modelId)
-        }
+        },
     },
-    render () {
+    render() {
         return h(App)
-    }
+    },
 })
 
 // Register plugins

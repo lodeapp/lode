@@ -1,33 +1,33 @@
-import Bottleneck from 'bottleneck'
 import { state } from '@lib/state'
+import Bottleneck from 'bottleneck'
 
 export interface IQueue {
-    add (job: any): void
-    stop (): void
+    add: (job: any) => void
+    stop: () => void
 }
 
 class Queue implements IQueue {
     protected limiter: Bottleneck
 
-    constructor () {
+    constructor() {
         this.limiter = new Bottleneck({
-            maxConcurrent: state.get('concurrency')
+            maxConcurrent: state.get('concurrency'),
         })
 
         // Listen for config changes on concurrency to update the limiter
         state.on('set:concurrency', (value: number) => {
             this.limiter.updateSettings({
-                maxConcurrent: value
+                maxConcurrent: value,
             })
         })
     }
 
-    public add (job: any): void {
+    public add(job: any): void {
         const wrapped = this.limiter.wrap(job)
         wrapped()
     }
 
-    public stop (): void {
+    public stop(): void {
         this.limiter.stop()
     }
 }

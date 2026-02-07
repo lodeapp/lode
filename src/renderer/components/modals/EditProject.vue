@@ -1,3 +1,41 @@
+<script>
+import Confirm from '@/components/modals/mixins/confirm'
+
+export default {
+    name: 'EditProject',
+    mixins: [Confirm],
+    props: {
+        add: {
+            type: Boolean,
+            default: null,
+        },
+    },
+    data() {
+        return {
+            name: this.add ? '' : this.$root.project.name,
+        }
+    },
+    computed: {
+        hasProjects() {
+            return (this.$root.setting('projects') || []).length
+        },
+    },
+    methods: {
+        handleSubmit(event) {
+            if (!this.name) {
+                return
+            }
+            this.submit()
+        },
+        submit() {
+            this.confirm({
+                name: this.name,
+            })
+        },
+    },
+}
+</script>
+
 <template>
     <Modal
         :title="add ? 'Add project' : 'Edit project'"
@@ -8,10 +46,10 @@
                 <dt><label for="project-name">Project name</label></dt>
                 <dd>
                     <input
-                        type="text"
                         id="project-name"
-                        class="form-control input-block input-sm"
                         v-model="name"
+                        type="text"
+                        class="form-control input-block input-sm"
                         placeholder="Project name"
                     >
                 </dd>
@@ -29,41 +67,3 @@
         </template>
     </Modal>
 </template>
-
-<script>
-import Confirm from '@/components/modals/mixins/confirm'
-
-export default {
-    name: 'EditProject',
-    mixins: [Confirm],
-    props: {
-        add: {
-            type: Boolean,
-            default: null
-        }
-    },
-    data () {
-        return {
-            name: this.add ? '' : this.$root.project.name
-        }
-    },
-    computed: {
-        hasProjects () {
-            return (this.$root.setting('projects') || []).length
-        }
-    },
-    methods: {
-        handleSubmit (event) {
-            if (!this.name) {
-                return
-            }
-            this.submit()
-        },
-        submit () {
-            this.confirm({
-                name: this.name
-            })
-        }
-    }
-}
-</script>

@@ -10,5 +10,5 @@ for (const path in moduleFiles) {
 
 export default createStore({
     modules,
-    strict: true
+    strict: true,
 })

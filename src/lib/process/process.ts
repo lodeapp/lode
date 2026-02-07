@@ -1,24 +1,28 @@
-import kill from 'tree-kill'
-import stripAnsi from 'strip-ansi'
-import { EventEmitter } from 'events'
-import * as Path from 'path'
+import type { ErrorWithCode } from '@lib/process/errors'
+import type { SSHOptions } from '@lib/process/ssh'
+import type { ChildProcess } from 'node:child_process'
+import { Buffer } from 'node:buffer'
+import { spawn } from 'node:child_process'
+import { EventEmitter } from 'node:events'
+import * as Path from 'node:path'
+import { ProcessError } from '@lib/process/errors'
+import { BufferedSearch } from '@lib/process/search'
+import { SSH } from '@lib/process/ssh'
 import * as Fs from 'fs-extra'
 import { compact, flattenDeep, get } from 'lodash'
-import { spawn, ChildProcess } from 'child_process'
-import { SSHOptions, SSH } from '@lib/process/ssh'
-import { BufferedSearch } from '@lib/process/search'
-import { ErrorWithCode, ProcessError } from '@lib/process/errors'
+import stripAnsi from 'strip-ansi'
+import kill from 'tree-kill'
 
 export type ProcessId = string | number
 
-export type ProcessOptions = {
+export interface ProcessOptions {
     command: string
     args: Array<string>
     path: string
     forceRunner?: string | null
     ssh?: boolean
-    sshOptions?: SSHOptions,
-    platform?: NodeJS.Platform,
+    sshOptions?: SSHOptions
+    platform?: NodeJS.Platform
     env?: IProcessEnvironment
 }
 
@@ -27,9 +31,9 @@ export interface IProcessEnvironment {
 }
 
 export interface IProcess extends EventEmitter {
-    getId (): ProcessId | undefined
-    stop (): void
-    owns (command: string): boolean
+    getId: () => ProcessId | undefined
+    stop: () => void
+    owns: (command: string) => boolean
 }
 
 export class DefaultProcess extends EventEmitter implements IProcess {
@@ -55,7 +59,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     protected process?: ChildProcess
     protected platform?: NodeJS.Platform
 
-    constructor (options: ProcessOptions) {
+    constructor(options: ProcessOptions) {
         super()
 
         // Create a new multi-line search object to parse delimiters
@@ -102,8 +106,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         // in the future (i.e. don't split if in quotes or something).
         this.args = this.spawnArguments(
             compact(
-                flattenDeep(((this.command as any).split(' ')).concat(options.args!))
-            ) || []
+                flattenDeep(((this.command as any).split(' ')).concat(options.args!)),
+            ) || [],
         )
 
         if (!this.args.length) {
@@ -114,7 +118,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         if (options.ssh) {
             this.binary = 'ssh'
             this.args = (new SSH(options.sshOptions)).commandArgs(this.args)
-        } else {
+        }
+        else {
             this.binary = this.args.shift()!
         }
 
@@ -131,8 +136,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                 NODE_ENV: 'test',
                 // Ensure ANSI color is supported
                 FORCE_COLOR: 3,
-                ...options.env
-            })
+                ...options.env,
+            }),
         })
 
         spawnedProcess.stdout.setEncoding('utf8')
@@ -146,7 +151,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * Return the array of arguments with which to spawn the child process.
      * This is a chance for runners to influence how arguments are passed.
      */
-    protected spawnArguments (args: Array<string>): Array<string> {
+    protected spawnArguments(args: Array<string>): Array<string> {
         return args
     }
 
@@ -154,7 +159,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * Return the env object with which to spawn the child process.
      * This is a chance for runners to influence the process environment.
      */
-    protected spawnEnv (env: IProcessEnvironment): IProcessEnvironment {
+    protected spawnEnv(env: IProcessEnvironment): IProcessEnvironment {
         return env
     }
 
@@ -163,9 +168,9 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param process The child process to add listeners to.
      */
-    protected addListeners (process: ChildProcess): void {
+    protected addListeners(process: ChildProcess): void {
         process.on('close', (...args) => this.onClose(...args))
-        process.on('error', (err) => this.onError(err as ErrorWithCode))
+        process.on('error', err => this.onError(err as ErrorWithCode))
         process.stdout!.on('data', (...args) => this.onData(...args))
         process.stderr!.on('data', (...args) => this.onData(...args))
     }
@@ -173,7 +178,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     /**
      * Get this process's unique id.
      */
-    public getId (): ProcessId | undefined {
+    public getId(): ProcessId | undefined {
         if (__DEV__ && process.env.FROM_FILE) {
             // If we're re-processing from a file, generate a hash from the filename.
             return Array.from(process.env.FROM_FILE).reduce((s, c) => Math.imul(31, s) + c.charCodeAt(0) | 0, 0)
@@ -186,7 +191,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param err The error we're attempting to handle.
      */
-    protected onError (err: ErrorWithCode): void {
+    protected onError(err: ErrorWithCode): void {
         log.debug('Process error', err)
 
         // If the error's code is a string then it means the code isn't the
@@ -208,13 +213,14 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * @param code The exit code that triggered the process closing.
      * @param signal The signal string that triggered the process closing.
      */
-    protected onClose (code: number | null, signal: string | null): void {
+    protected onClose(code: number | null, signal: string | null): void {
         log.debug(['Process closing.', JSON.stringify({ code, signal })].join(' '))
 
-        if (this.process && this.process.killed || this.killed) {
+        if ((this.process && this.process.killed) || this.killed) {
             log.debug('Process killed.')
             this.emit('killed', { process: this })
-        } else if (code === 0 || (this.reports && this.reportClosed)) {
+        }
+        else if (code === 0 || (this.reports && this.reportClosed)) {
             // If exit code was non-zero but we were running a report that finished
             // successfully, ignore the error, assuming it relates to a failure in the
             // tests for which we'll give appropriate feedback in the interface.
@@ -222,9 +228,10 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             this.emit('success', {
                 process: this,
                 lines: this.getLines(),
-                rawLines: this.getRawLines()
+                rawLines: this.getRawLines(),
             })
-        } else {
+        }
+        else {
             // If process errored out but did not emit an error event, we'll
             // compose it from the chunks we received.
             if (!this.error) {
@@ -244,12 +251,12 @@ export class DefaultProcess extends EventEmitter implements IProcess {
 
         if (this.writeToFile) {
             Fs.writeFileSync(
-                Path.join(Path.join(__dirname, 'debug'), 'log-' + Math.floor(new Date().getTime() / 1000) + '.json'),
+                Path.join(Path.join(__dirname, 'debug'), `log-${Math.floor(new Date().getTime() / 1000)}.json`),
                 JSON.stringify({
                     error: this.error.toString(),
                     process: this.toString(),
-                    env: Object.keys(process.env)
-                }, null, 4)
+                    env: Object.keys(process.env),
+                }, null, 4),
             )
         }
 
@@ -264,7 +271,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param rawChunk The chunk of data we're about to process.
      */
-    protected onData (rawChunk: string): void {
+    protected onData(rawChunk: string): void {
         const chunk = rawChunk
 
         if (this.writeToFile) {
@@ -283,11 +290,11 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             // Only add to buffer if it's full or partial base64 string, as some reporters
             // might occasionally output stray content. We're not testing for well-formed
             // base64 strings at this point, because they could've been truncated.
-            if ((/^[A-Za-z0-9\/\+=\(\)]+$/im).test(chunk)) {
+            if ((/^[A-Z0-9/+=()]+$/im).test(chunk)) {
                 this.reportBuffer += chunk
                 // Test if buffer is now a complete report and, if so, extract it
                 if ((/\((?:(?!\)).)+\)/).test(this.reportBuffer)) {
-                    this.reportBuffer = this.reportBuffer.replace(/\s*({\s*)?\((?:(?!\)).)+\)\s*}?/g, (match, offset, string) => {
+                    this.reportBuffer = this.reportBuffer.replace(/\s*(\{\s*)?\((?:(?!\)).)+\)\s*\}?/g, (match, offset, string) => {
                         let report
                         try {
                             // Attempt to parse the match into a report. If parsing fails,
@@ -295,7 +302,8 @@ export class DefaultProcess extends EventEmitter implements IProcess {
                             // it's not a proper base64 string and it should be added to the
                             // remaining output at the end of the process.
                             report = JSON.parse(Buffer.from(match.match(/\((.+)\)/)![1], 'base64').toString('utf8'))
-                        } catch (SyntaxError) {
+                        }
+                        catch (SyntaxError) {
                             log.warn(`Error parsing report match: ${match}.`)
                             this.chunks.push(chunk)
                             return ''
@@ -330,21 +338,21 @@ export class DefaultProcess extends EventEmitter implements IProcess {
     /**
      * Get all lines received from the output stream, clear of Ansi escape codes.
      */
-    protected getLines (): Array<string> {
+    protected getLines(): Array<string> {
         return this.chunks.join('\n').split('\n').map(chunk => stripAnsi(chunk))
     }
 
     /**
      * Get all lines received from the output stream, unprocessed
      */
-    protected getRawLines (): Array<string> {
+    protected getRawLines(): Array<string> {
         return this.chunks.join('\n').split('\n')
     }
 
     /**
      * Kill this process.
      */
-    public stop (): void {
+    public stop(): void {
         this.killed = true
         if (this.process) {
             kill(<number> this.process.pid)
@@ -357,7 +365,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      * @param code The exit code with which to close the process.
      * @param signal The signal string with which to close the process.
      */
-    public close (code: number, signal: string | null): void {
+    public close(code: number, signal: string | null): void {
         this.onClose(code, signal)
     }
 
@@ -367,14 +375,14 @@ export class DefaultProcess extends EventEmitter implements IProcess {
      *
      * @param command The command that could match a given runner.
      */
-    public owns (command: string): boolean {
+    public owns(command: string): boolean {
         return true
     }
 
     /**
      * The string representation of this process.
      */
-    public toString (): string {
+    public toString(): string {
         return JSON.stringify({
             id: this.getId(),
             command: this.command,
@@ -387,7 +395,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             reports: this.reports,
             reportClosed: this.reportClosed,
             exitCode: this.exitCode,
-            exitSignal: this.exitSignal
+            exitSignal: this.exitSignal,
         })
     }
 }

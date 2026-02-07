@@ -1,35 +1,29 @@
-<template>
-    <section class="scrollable">
-        <slot></slot>
-    </section>
-</template>
-
 <script>
 import { get } from 'lodash'
 import OverlayScrollbars from 'overlayscrollbars'
 
 export default {
     name: 'Scrollable',
-    data () {
+    data() {
         return {
             scrollbars: null,
             position: 0,
-            scrolling: false
+            scrolling: false,
         }
     },
-    mounted () {
+    mounted() {
         this.overlayScrollbars()
     },
-    updated () {
+    updated() {
         this.position = get(this.scrollbars.scroll(), 'position.y')
         this.scrollbars.destroy()
         this.overlayScrollbars()
     },
-    beforeUnmount () {
+    beforeUnmount() {
         this.scrollbars.destroy()
     },
     methods: {
-        addShadow () {
+        addShadow() {
             // Manipulate DOM directly for shadow display, otherwise we risk
             // re-rendering the Vue component, which will re-instantiate the
             // scrollbar plugin and cause jitter when scrolling to and from
@@ -39,18 +33,18 @@ export default {
             shadow.classList.add('shadow')
             this.$el.prepend(shadow)
         },
-        removeShadow () {
+        removeShadow() {
             if (this.$el.querySelector('.shadow')) {
                 this.$el.querySelector('.shadow').remove()
             }
         },
-        overlayScrollbars () {
+        overlayScrollbars() {
             this.scrollbars = OverlayScrollbars(this.$el, {
                 sizeAutoCapable: false,
                 scrollbars: {
                     autoHide: 'leave',
                     autoHideDelay: 5,
-                    clickScrolling: true
+                    clickScrolling: true,
                 },
                 callbacks: {
                     onScroll: (event, test) => {
@@ -61,14 +55,20 @@ export default {
                             return
                         }
                         this.removeShadow()
-                    }
-                }
+                    },
+                },
             })
             this.scrollbars.scroll(this.position)
             if (this.position > 0) {
                 this.addShadow()
             }
-        }
-    }
+        },
+    },
 }
 </script>
+
+<template>
+    <section class="scrollable">
+        <slot></slot>
+    </section>
+</template>

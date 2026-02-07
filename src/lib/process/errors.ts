@@ -1,4 +1,4 @@
-import { IProcess } from '@lib/process/process'
+import type { IProcess } from '@lib/process/process'
 
 /**
  * An error with a code number property.
@@ -19,7 +19,7 @@ export class ProcessError extends Error implements ErrorWithCode {
      *
      * @param process The process to set to.
      */
-    public setProcess (process: IProcess): this {
+    public setProcess(process: IProcess): this {
         this.process = process.toString()
         return this
     }
@@ -30,7 +30,7 @@ export class ProcessError extends Error implements ErrorWithCode {
      *
      * @param process The process to set to.
      */
-    public getProcess (): object | undefined {
+    public getProcess(): object | undefined {
         return this.process ? JSON.parse(this.process) : undefined
     }
 
@@ -39,7 +39,7 @@ export class ProcessError extends Error implements ErrorWithCode {
      *
      * @param code The error code we're setting.
      */
-    public setCode (code?: string | number | null): this {
+    public setCode(code?: string | number | null): this {
         this.code = code
         return this
     }
@@ -47,7 +47,7 @@ export class ProcessError extends Error implements ErrorWithCode {
     /**
      * Transform this error to a string.
      */
-    public toString (): string {
+    public toString(): string {
         return this.message
     }
 }

@@ -1,19 +1,19 @@
+import type { IFramework } from '@lib/frameworks/framework'
+import type { IRepository } from '@lib/frameworks/repository'
 import { Menu } from '@main/menu'
-import { IRepository } from '@lib/frameworks/repository'
-import { IFramework } from '@lib/frameworks/framework'
 
 export class FrameworkMenu extends Menu {
-    constructor (
+    constructor(
         repository: IRepository | null,
         framework: IFramework | null,
-        webContents: Electron.WebContents
+        webContents: Electron.WebContents,
     ) {
         super(webContents)
 
         this
             .addIf(!!framework, {
                 label: framework ? framework!.getDisplayName() : '',
-                enabled: false
+                enabled: false,
             })
             .add({
                 label: __DARWIN__ ? 'Refresh Framework' : 'Refresh framework',
@@ -21,7 +21,7 @@ export class FrameworkMenu extends Menu {
                     framework!.refresh()
                 },
                 accelerator: 'CmdOrCtrl+Shift+R',
-                enabled: !!framework
+                enabled: !!framework,
             })
             .add({
                 label: __DARWIN__ ? 'Run Framework' : 'Run framework',
@@ -29,7 +29,7 @@ export class FrameworkMenu extends Menu {
                     framework!.start()
                 },
                 accelerator: 'CmdOrCtrl+R',
-                enabled: !!framework
+                enabled: !!framework,
             })
             .add({
                 label: __DARWIN__ ? 'Stop Framework' : 'Stop framework',
@@ -37,7 +37,7 @@ export class FrameworkMenu extends Menu {
                     framework!.stop()
                 },
                 accelerator: 'CmdOrCtrl+Esc',
-                enabled: !!framework
+                enabled: !!framework,
             })
             .separator()
             .add({
@@ -46,7 +46,7 @@ export class FrameworkMenu extends Menu {
                     this.emit('filter')
                 },
                 accelerator: 'CmdOrCtrl+F',
-                enabled: !!framework
+                enabled: !!framework,
             })
             .separator()
             .add({
@@ -54,10 +54,10 @@ export class FrameworkMenu extends Menu {
                 click: () => {
                     this.emit('repository-manage', {
                         repository: repository!.render(),
-                        framework: framework!.render()
+                        framework: framework!.render(),
                     })
                 },
-                enabled: !!repository && !!framework
+                enabled: !!repository && !!framework,
             })
             .separator()
             .add({
@@ -66,8 +66,7 @@ export class FrameworkMenu extends Menu {
                     this.emit('framework-remove', framework!.render())
                 },
                 accelerator: 'CmdOrCtrl+Backspace',
-                enabled: !!framework
+                enabled: !!framework,
             })
     }
 }
-

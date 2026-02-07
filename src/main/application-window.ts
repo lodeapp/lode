@@ -1,11 +1,12 @@
-import * as Path from 'path'
-import { get } from 'lodash'
-import { app, ipcMain, BrowserWindow, nativeTheme } from 'electron'
+import type { ProjectIdentifier, ProjectOptions } from '@lib/frameworks/project'
+import * as Path from 'node:path'
+import { Project } from '@lib/frameworks/project'
 import { getResourceDirectory } from '@lib/helpers/paths'
-import { supportsSystemThemeChanges } from '@lib/themes'
 import { state } from '@lib/state'
-import { ProjectIdentifier, ProjectOptions, Project } from '@lib/frameworks/project'
+import { supportsSystemThemeChanges } from '@lib/themes'
 import { applicationMenu } from '@main/menu'
+import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { get } from 'lodash'
 
 let windowStateKeeper: any | null = null
 
@@ -23,7 +24,7 @@ export class ApplicationWindow {
 
     protected events = 0
 
-    public constructor (identifier: ProjectIdentifier | null) {
+    public constructor(identifier: ProjectIdentifier | null) {
         if (!windowStateKeeper) {
             // `electron-window-state` requires Electron's `screen` module, which can
             // only be required after the app has emitted `ready`. So require it lazily.
@@ -33,7 +34,7 @@ export class ApplicationWindow {
         // Load saved window state, if any
         const savedWindowState = windowStateKeeper({
             defaultHeight: this.minHeight,
-            defaultWidth: this.minWidth
+            defaultWidth: this.minWidth,
         })
 
         // Initial window options
@@ -55,18 +56,20 @@ export class ApplicationWindow {
                 nodeIntegration: false,
                 contextIsolation: true,
                 safeDialogs: true,
-                preload: Path.resolve(getResourceDirectory(), 'preload.js')
+                preload: Path.resolve(getResourceDirectory(), 'preload.js'),
             },
             acceptFirstMouse: true,
             vibrancy: 'under-window',
-            transparent: false
+            transparent: false,
         }
 
         if (__DARWIN__) {
             windowOptions.titleBarStyle = 'hiddenInset'
-        } else if (__WIN32__) {
+        }
+        else if (__WIN32__) {
             windowOptions.frame = false
-        } else if (__LINUX__) {
+        }
+        else if (__LINUX__) {
             windowOptions.icon = Path.join(__static, 'icons/1024x1024.png')
         }
 
@@ -91,7 +94,7 @@ export class ApplicationWindow {
         })
     }
 
-    public static init (identifier: ProjectIdentifier | null): ApplicationWindow {
+    public static init(identifier: ProjectIdentifier | null): ApplicationWindow {
         const window = new this(identifier)
 
         // Store parent in window manager
@@ -103,7 +106,8 @@ export class ApplicationWindow {
                 log.info('Window is busy. Attempting teardown of pending processes.')
                 try {
                     await window.getProject()!.stop()
-                } catch (_) {}
+                }
+                catch (_) {}
             }
             app.quit()
         })
@@ -111,17 +115,17 @@ export class ApplicationWindow {
         return window
     }
 
-    public static getFromWebContents (webContents: Electron.WebContents): ApplicationWindow | null {
+    public static getFromWebContents(webContents: Electron.WebContents): ApplicationWindow | null {
         const child = BrowserWindow.fromWebContents(webContents)
         return child ? windows[child.id] : null
     }
 
-    public static getProjectFromWebContents (webContents: Electron.WebContents): Project | null {
+    public static getProjectFromWebContents(webContents: Electron.WebContents): Project | null {
         const window = this.getFromWebContents(webContents)
         return window ? window.getProject() : null
     }
 
-    protected load () {
+    protected load() {
         this.window.webContents.once('did-finish-load', () => {
             if (process.env.NODE_ENV === 'development') {
                 this.window.webContents.openDevTools()
@@ -141,7 +145,7 @@ export class ApplicationWindow {
                 fullscreen: this.window.isFullScreen(),
                 version: app.getVersion(),
                 arch: process.arch,
-                nodeVersion: process.versions.node
+                nodeVersion: process.versions.node,
             })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
         })
@@ -168,24 +172,24 @@ export class ApplicationWindow {
         this.window.loadURL(
             process.env.NODE_ENV === 'development'
                 ? (process.env.ELECTRON_RENDERER_URL || 'http://localhost:9080')
-                : `file://${__dirname}/index.html`
+                : `file://${Path.join(__dirname, 'index.html')}`,
         )
     }
 
-    public send (event: string, args: Array<any> = []) {
+    public send(event: string, args: Array<any> = []) {
         this.events++
         this.window.webContents.send(event, ...args)
     }
 
-    public reload () {
+    public reload() {
         this.window.reload()
     }
 
-    public onClosed (fn: (event: any) => void) {
+    public onClosed(fn: (event: any) => void) {
         this.window.on('closed', fn)
     }
 
-    public setProject (identifier: ProjectIdentifier): void {
+    public setProject(identifier: ProjectIdentifier): void {
         // Instantiate new project from identifier. If it does not yet exist
         // in the store, it'll be created.
         this.project = new Project(this, identifier)
@@ -201,7 +205,7 @@ export class ApplicationWindow {
             .on('progress', this.updateProgress.bind(this))
     }
 
-    public onReady (): void {
+    public onReady(): void {
         this.ready = true
         this.refreshSettings()
         // If project and window are ready, send to renderer, otherwise wait for
@@ -212,69 +216,69 @@ export class ApplicationWindow {
         }
     }
 
-    public canReceiveEvents (): boolean {
+    public canReceiveEvents(): boolean {
         return !this.closed
     }
 
-    public getChild (): BrowserWindow {
+    public getChild(): BrowserWindow {
         return this.window
     }
 
-    public getWebContents (): Electron.WebContents {
+    public getWebContents(): Electron.WebContents {
         return this.window.webContents
     }
 
-    public getProject (): Project | null {
+    public getProject(): Project | null {
         return this.project
     }
 
-    public getProjectOptions (): ProjectOptions {
+    public getProjectOptions(): ProjectOptions {
         return this.project ? this.project.render() : {}
     }
 
-    public async projectReady (): Promise<void> {
+    public async projectReady(): Promise<void> {
         await this.project!.reset()
         this.window.webContents.send('project-ready', this.getProjectOptions())
         this.refreshActiveFramework()
         this.refreshSettings()
     }
 
-    public onProjectLoadingFailure (id: string): void {
+    public onProjectLoadingFailure(id: string): void {
         this.window.webContents.send('project-loading-failed', id)
     }
 
-    public refreshActiveFramework (): void {
+    public refreshActiveFramework(): void {
         if (this.project) {
             const { framework, repository } = this.project.getActive()
             this.send('framework-active', [
                 framework ? framework.getId() : null,
-                repository ? repository.render() : null
+                repository ? repository.render() : null,
             ])
         }
     }
 
-    protected refreshSettings (): void {
+    protected refreshSettings(): void {
         this.send('settings-updated', [state.get()])
     }
 
-    protected updateProgress (progress: number): void {
+    protected updateProgress(progress: number): void {
         if (this.canReceiveEvents()) {
             // If project progress has reached 100%, disable the progress bar.
             this.window.setProgressBar(progress === 1 ? -1 : progress)
         }
     }
 
-    public isBusy (): boolean {
+    public isBusy(): boolean {
         return !!this.project && this.project.isBusy()
     }
 
-    public clear (): void {
+    public clear(): void {
         this.project = null
         this.refreshSettings()
         this.send('clear')
     }
 
-    public sendMenuEvent (properties: any) {
+    public sendMenuEvent(properties: any) {
         this.window.show()
         this.window.webContents.send('menu-event', properties)
     }

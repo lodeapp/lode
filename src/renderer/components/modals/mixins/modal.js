@@ -2,12 +2,12 @@ import Modal from '@/components/modals/Modal.vue'
 
 export default {
     components: {
-        Modal
+        Modal,
     },
     emits: ['hide'],
     methods: {
-        close () {
+        close() {
             this.$emit('hide')
-        }
-    }
+        },
+    },
 }

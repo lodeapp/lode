@@ -1,9 +1,9 @@
-import { Menu } from '@main/menu'
 import { File } from '@main/file'
+import { Menu } from '@main/menu'
 import { clipboard } from 'electron'
 
 export class FileMenu extends Menu {
-    constructor (filePath: string, webContents: Electron.WebContents) {
+    constructor(filePath: string, webContents: Electron.WebContents) {
         super(webContents)
 
         this
@@ -17,7 +17,7 @@ export class FileMenu extends Menu {
                 click: () => {
                     File.reveal(filePath)
                 },
-                enabled: File.exists(filePath)
+                enabled: File.exists(filePath),
             })
             .add({
                 id: 'copy',
@@ -27,7 +27,7 @@ export class FileMenu extends Menu {
                 click: () => {
                     clipboard.writeText(filePath)
                 },
-                enabled: File.exists(filePath)
+                enabled: File.exists(filePath),
             })
             .add({
                 id: 'open',
@@ -37,7 +37,7 @@ export class FileMenu extends Menu {
                 click: () => {
                     File.open(filePath)
                 },
-                enabled: File.isSafe(filePath) && File.exists(filePath)
+                enabled: File.isSafe(filePath) && File.exists(filePath),
             })
     }
 }

@@ -1,50 +1,55 @@
-import '@lib/crash/reporter'
-import '@lib/logger/main'
+import type {
+    FrameworkFilter,
+    FrameworkOptions,
+    IFramework,
+} from '@lib/frameworks/framework'
+import type { Nugget } from '@lib/frameworks/nugget'
 
-import Fs from 'fs'
-import Path from 'path'
-import { isEmpty, identity, pickBy } from 'lodash'
-import { app, BrowserWindow, clipboard, dialog, ipcMain, nativeTheme, shell } from 'electron'
-import {
-    applicationMenu,
-    Menu as ContextMenu,
-    ProjectMenu,
-    RepositoryMenu,
-    FrameworkMenu,
-    SuiteMenu,
-    TestMenu,
-    FileMenu
-} from '@main/menu'
-import { ApplicationWindow } from '@main/application-window'
-import { Updater } from '@main/updater'
-import { LogLevel } from '@lib/logger/levels'
-import { mergeEnvFromShell } from '@lib/process/shell'
-import { initializeTheme, ThemeName } from '@lib/themes'
-import { state } from '@lib/state'
-import { log as writeLog } from '@lib/logger'
-import {
-    ProjectIdentifier,
+import type {
+    IProject,
     ProjectActiveIdentifiers,
     ProjectEntities,
+    ProjectIdentifier,
     ProjectOptions,
-    IProject
 } from '@lib/frameworks/project'
-import { IRepository } from '@lib/frameworks/repository'
+import type { IRepository } from '@lib/frameworks/repository'
+import type { ISuite } from '@lib/frameworks/suite'
+import type { ITest } from '@lib/frameworks/test'
+import type {
+    PotentialFrameworkOptions,
+    PotentialRepositoryOptions,
+} from '@lib/frameworks/validator'
+import type { LogLevel } from '@lib/logger/levels'
+import type { ThemeName } from '@lib/themes'
+import type {
+    Menu as ContextMenu,
+} from '@main/menu'
+import Fs from 'node:fs'
+import Path from 'node:path'
 import { Frameworks } from '@lib/frameworks'
 import {
-    FrameworkOptions,
-    FrameworkFilter,
-    IFramework
-} from '@lib/frameworks/framework'
-import { Nugget } from '@lib/frameworks/nugget'
-import { ISuite } from '@lib/frameworks/suite'
-import { ITest } from '@lib/frameworks/test'
-import {
-    PotentialRepositoryOptions,
-    RepositoryValidator,
     FrameworkValidator,
-    PotentialFrameworkOptions
+    RepositoryValidator,
 } from '@lib/frameworks/validator'
+import { log as writeLog } from '@lib/logger'
+import { mergeEnvFromShell } from '@lib/process/shell'
+import { state } from '@lib/state'
+import { initializeTheme } from '@lib/themes'
+import { ApplicationWindow } from '@main/application-window'
+import {
+    applicationMenu,
+    FileMenu,
+    FrameworkMenu,
+    ProjectMenu,
+    RepositoryMenu,
+    SuiteMenu,
+    TestMenu,
+} from '@main/menu'
+import { Updater } from '@main/updater'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, nativeTheme, shell } from 'electron'
+import { identity, isEmpty, pickBy } from 'lodash'
+import '@lib/crash/reporter'
+import '@lib/logger/main'
 
 let currentWindow: ApplicationWindow | null = null
 
@@ -53,64 +58,58 @@ mergeEnvFromShell()
 
 // Set `__static` path to static files in production
 if (!__DEV__) {
-    (global as any).__static = Path.join(__dirname, '/static').replace(/\\/g, '\\\\')
+    (globalThis as any).__static = Path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-function getProject (event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent): IProject {
+function getProject(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent): IProject {
     return ApplicationWindow.getProjectFromWebContents(event.sender)!
 }
 
-function getRepository (event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, repositoryId: string): Promise<IRepository> {
-    return new Promise(async (resolve, reject) => {
-        const project: IProject = getProject(event)
-        const repository: IRepository = project.getRepositoryById(repositoryId)!
-        if (repository) {
-            resolve(repository!)
-            return
-        }
-        log.error(`Error while getting repository ${repositoryId}.`)
-        reject()
-    })
+async function getRepository(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, repositoryId: string): Promise<IRepository> {
+    const project: IProject = getProject(event)
+    const repository: IRepository = project.getRepositoryById(repositoryId)!
+    if (repository) {
+        return repository!
+    }
+    log.error(`Error while getting repository ${repositoryId}.`)
+    throw new Error(`Error while getting repository ${repositoryId}.`)
 }
 
-function entities (
+async function entities(
     event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent,
     frameworkId: string,
-    identifiers: Array<string> = []
+    identifiers: Array<string> = [],
 ): Promise<ProjectEntities> {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const project: IProject = getProject(event)
-            const context = project.getContextByFrameworkId(frameworkId)
-            if (context) {
-                const { repository, framework } = context
-                const entities = { project, repository, framework }
+    try {
+        const project: IProject = getProject(event)
+        const context = project.getContextByFrameworkId(frameworkId)
+        if (context) {
+            const { repository, framework } = context
+            const entities = { project, repository, framework }
 
-                if (!identifiers.length) {
-                    resolve(entities)
-                    return
-                }
-                let nugget: Nugget | undefined
-                const nuggets: Array<Nugget> = []
-                do {
-                    // First nugget is always a suite, all others are tests.
-                    nugget = nugget ? nugget.findTest(identifiers.shift()!) : framework.getSuiteById(identifiers.shift()!)
-                    if (!nugget) {
-                        throw Error
-                    }
-                    nuggets.push(nugget)
-                    if (!nugget.expanded) {
-                        await nugget.toggleExpanded(true, false)
-                    }
-                } while (identifiers.length > 0)
-
-                resolve({ ...entities, nuggets, nugget })
-                return
+            if (!identifiers.length) {
+                return entities
             }
-        } catch (_) {}
-        log.error(`Unable to find requested entities '${JSON.stringify({ frameworkId, identifiers })}'`)
-        reject()
-    })
+            let nugget: Nugget | undefined
+            const nuggets: Array<Nugget> = []
+            do {
+                // First nugget is always a suite, all others are tests.
+                nugget = nugget ? nugget.findTest(identifiers.shift()!) : framework.getSuiteById(identifiers.shift()!)
+                if (!nugget) {
+                    throw new Error('Nugget not found')
+                }
+                nuggets.push(nugget)
+                if (!nugget.expanded) {
+                    await nugget.toggleExpanded(true, false)
+                }
+            } while (identifiers.length > 0)
+
+            return { ...entities, nuggets, nugget }
+        }
+    }
+    catch (_) {}
+    log.error(`Unable to find requested entities '${JSON.stringify({ frameworkId, identifiers })}'`)
+    throw new Error(`Unable to find requested entities '${JSON.stringify({ frameworkId, identifiers })}'`)
 }
 
 app
@@ -121,8 +120,7 @@ app
 
         if (!__DEV__) {
             // Start auto-updating process.
-            new Updater()
-            return
+            const _updater = new Updater()
         }
     })
 
@@ -171,13 +169,15 @@ ipcMain
             if (identifier && !isEmpty(pickBy(identifier, identity))) {
                 window.setProject(identifier)
                 state.set('currentProject', window.getProject()!.getId())
-            } else {
+            }
+            else {
                 window.clear()
             }
             if (project) {
                 project.stop()
             }
-        } catch (error) {
+        }
+        catch (error) {
             if (project) {
                 window.setProject(project.getIdentifier())
                 if (identifier && identifier.id) {
@@ -210,7 +210,7 @@ ipcMain
     })
     .on('framework-add', async (event: Electron.IpcMainEvent, repositoryId: string, options: FrameworkOptions) => {
         const repository: IRepository = await getRepository(event, repositoryId)
-        repository.addFramework(options).then(framework => {
+        repository.addFramework(options).then((framework) => {
             framework.refresh()
         })
         repository.emitFrameworksToRenderer()
@@ -227,7 +227,7 @@ ipcMain
         entities(event, frameworkId).then(async ({ repository, framework }) => {
             await framework.updateOptions({
                 ...options,
-                repositoryPath: repository.getPath()
+                repositoryPath: repository.getPath(),
             })
             repository.emitFrameworksToRenderer()
             event.sender.send('framework-options-updated', framework.render())
@@ -293,7 +293,8 @@ ipcMain
                 if (nuggets.length === 1) {
                     new SuiteMenu((nuggets.pop() as ISuite), event.sender)
                         .open()
-                } else {
+                }
+                else {
                     new TestMenu((nuggets.shift() as ISuite), (nuggets.pop() as ITest), event.sender)
                         .open()
                 }
@@ -303,7 +304,7 @@ ipcMain
     .on('open-test', async (event: Electron.IpcMainEvent, frameworkId: string, identifiers: Array<string>) => {
         entities(event, frameworkId, identifiers).then(({ nuggets }) => {
             if (nuggets && nuggets.length) {
-                const suite = (nuggets.shift() as ISuite)
+                const suite = nuggets.shift() as ISuite
 
                 if (!suite || !suite.canBeOpened()) {
                     return
@@ -361,13 +362,13 @@ ipcMain
 ipcMain
     .handle('project-add-repositories-menu', async (event: Electron.IpcMainInvokeEvent) => {
         return (await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
-            properties: ['openDirectory', 'multiSelections']
+            properties: ['openDirectory', 'multiSelections'],
         })).filePaths
     })
 
 ipcMain
     .handle('project-context-menu', async (event: Electron.IpcMainInvokeEvent): Promise<void> => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             new ProjectMenu(getProject(event), event.sender)
                 .after(() => {
                     resolve()
@@ -379,7 +380,7 @@ ipcMain
 ipcMain
     .handle('repository-add', async (event: Electron.IpcMainInvokeEvent, paths: Array<string>) => {
         const project: IProject = getProject(event)
-        const repositories = await Promise.all(paths.map(path => {
+        const repositories = await Promise.all(paths.map((path) => {
             return project.addRepository({ path })
         }))
         project.emitRepositoriesToRenderer()
@@ -416,7 +417,7 @@ ipcMain
 ipcMain
     .handle('repository-context-menu', async (event: Electron.IpcMainInvokeEvent, repositoryId: string): Promise<void> => {
         const repository: IRepository = await getRepository(event, repositoryId)
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             new RepositoryMenu(repository, event.sender)
                 .after(() => {
                     resolve()
@@ -427,10 +428,10 @@ ipcMain
 
 ipcMain
     .handle('framework-types', async (event: Electron.IpcMainInvokeEvent) => {
-        return Frameworks.map(framework => {
+        return Frameworks.map((framework) => {
             return {
                 ...framework.getDefaults(),
-                instructions: framework.instructions()
+                instructions: framework.instructions(),
             }
         })
     })
@@ -446,7 +447,7 @@ ipcMain
         const { framework } = await entities(event, frameworkId)
         return {
             ledger: framework.getLedger(),
-            status: framework.getStatusMap()
+            status: framework.getStatusMap(),
         }
     })
 
@@ -461,7 +462,7 @@ ipcMain
     .handle('framework-autoload-path-menu', async (event: Electron.IpcMainInvokeEvent, defaultPath: string) => {
         return (await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
             properties: ['openFile'],
-            defaultPath
+            defaultPath,
         })).filePaths
     })
 
@@ -469,7 +470,7 @@ ipcMain
     .handle('framework-tests-path-menu', async (event: Electron.IpcMainInvokeEvent, defaultPath: string) => {
         return (await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
             properties: ['createDirectory', 'openDirectory'],
-            defaultPath
+            defaultPath,
         })).filePaths
     })
 
@@ -477,14 +478,14 @@ ipcMain
     .handle('framework-identity-menu', async (event: Electron.IpcMainInvokeEvent) => {
         return (await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
             properties: ['openFile', 'showHiddenFiles'],
-            message: 'Choose a custom SSH key file to use with this connection.\nNote that ~/.ssh/id_rsa and identities defined in your SSH configuration are included by default.'
+            message: 'Choose a custom SSH key file to use with this connection.\nNote that ~/.ssh/id_rsa and identities defined in your SSH configuration are included by default.',
         })).filePaths
     })
 
 ipcMain
     .handle('framework-context-menu', async (event: Electron.IpcMainInvokeEvent, frameworkId: string, rect?: DOMRect): Promise<void> => {
         const { repository, framework } = await entities(event, frameworkId)
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             new FrameworkMenu(repository, framework, event.sender)
                 .attachTo(rect)
                 .after(() => {
@@ -505,10 +506,11 @@ ipcMain
                 nugget: nugget!.render(false),
                 results: {
                     ...(nugget as ITest)!.getResult(),
-                    'suite-console': (nuggets![0] as ISuite).getConsole()
-                }
+                    'suite-console': (nuggets![0] as ISuite).getConsole(),
+                },
             }
-        } catch (_) {
+        }
+        catch (_) {
             // If any entity is not found while trying to load a test, assume
             // something's been removed and force the user to select one again.
             return {}
@@ -528,7 +530,7 @@ ipcMain
 
 ipcMain
     .handle('file-context-menu', async (event: Electron.IpcMainInvokeEvent, filePath: string): Promise<void> => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             new FileMenu(filePath, event.sender)
                 .after(() => {
                     resolve()
@@ -567,7 +569,7 @@ ipcMain
         const projectState = state.project({ id: project.getId() })
         return {
             object: projectState.get(),
-            string: JSON.stringify(projectState.get())
+            string: JSON.stringify(projectState.get()),
         }
     })
 
@@ -575,6 +577,6 @@ ipcMain
     .handle('log-settings', async (event: Electron.IpcMainInvokeEvent) => {
         return {
             object: state.get(),
-            string: JSON.stringify(state.get())
+            string: JSON.stringify(state.get()),
         }
     })

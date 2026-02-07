@@ -1,14 +1,14 @@
-import * as Path from 'path'
-import * as Fs from 'fs'
-import isUncPath from 'is-unc-path'
-import { RepositoryOptions } from '@lib/frameworks/repository'
-import { FrameworkOptions } from '@lib/frameworks/framework'
+import type { FrameworkOptions } from '@lib/frameworks/framework'
+import type { RepositoryOptions } from '@lib/frameworks/repository'
+import * as Fs from 'node:fs'
+import * as Path from 'node:path'
 import { getFrameworkByType } from '@lib/frameworks'
+import isUncPath from 'is-unc-path'
 
 /**
  * The required format for validation errors.
  */
-export type ValidationErrors = { [index: string]: Array<string> }
+export interface ValidationErrors { [index: string]: Array<string> }
 
 /**
  * Potential repository options (i.e. not necessarily valid).
@@ -42,7 +42,7 @@ export class Validator {
      *
      * @param data The data to validate.
      */
-    public validate (data: object): void {
+    public validate(data: object): void {
         this.reset()
     }
 
@@ -51,10 +51,11 @@ export class Validator {
      *
      * @param path The path to check.
      */
-    public isDirectory (path: string): boolean {
+    public isDirectory(path: string): boolean {
         try {
             return Fs.statSync(path).isDirectory()
-        } catch (error: any) {
+        }
+        catch (error: any) {
             if (error.code === 'ENOENT') {
                 return false
             }
@@ -67,10 +68,11 @@ export class Validator {
      *
      * @param path The path to check.
      */
-    public isFile (path: string): boolean {
+    public isFile(path: string): boolean {
         try {
             return Fs.statSync(path).isFile()
-        } catch (error: any) {
+        }
+        catch (error: any) {
             if (error.code === 'ENOENT') {
                 return false
             }
@@ -81,15 +83,15 @@ export class Validator {
     /**
      * Whether the current instance is valid.
      */
-    public isValid (): boolean {
+    public isValid(): boolean {
         return this.hasErrors()
     }
 
     /**
      * Reset errors in the current instance.
      */
-    public reset (fields?: Array<string>): void {
-        Object.keys(this.errors).forEach(key => {
+    public reset(fields?: Array<string>): void {
+        Object.keys(this.errors).forEach((key) => {
             if (!fields || fields.includes(key)) {
                 this.errors[key] = []
             }
@@ -101,10 +103,10 @@ export class Validator {
      *
      * @param key The key to check for errors.
      */
-    public hasErrors (key?: string): boolean {
+    public hasErrors(key?: string): boolean {
         if (typeof key === 'undefined') {
             let hasErrors = true
-            Object.keys(this.errors).forEach(key => {
+            Object.keys(this.errors).forEach((key) => {
                 if (this.errors[key].length > 0) {
                     hasErrors = false
                 }
@@ -120,7 +122,7 @@ export class Validator {
      *
      * @param key The key to get errors from.
      */
-    public getErrors (key?: string): ValidationErrors|Array<string>|null {
+    public getErrors(key?: string): ValidationErrors | Array<string> | null {
         if (!key) {
             return this.errors
         }
@@ -135,10 +137,10 @@ export class Validator {
     /**
      * Whether the current instance has any errors for the given key.
      *
-     * @param path The error key.
-     * @param path The error message to add.
+     * @param key The error key.
+     * @param message The error message to add.
      */
-    public addError (key: string, message: string): void {
+    public addError(key: string, message: string): void {
         if (typeof this.errors[key] === 'undefined') {
             this.errors[key] = []
         }
@@ -153,11 +155,11 @@ export class Validator {
 export class RepositoryValidator extends Validator {
     protected existing: Array<string>
 
-    constructor (existing: Array<string>) {
+    constructor(existing: Array<string>) {
         super()
         this.existing = existing
         this.errors = {
-            path: []
+            path: [],
         }
     }
 
@@ -166,16 +168,19 @@ export class RepositoryValidator extends Validator {
      *
      * @param options The repository options to validate.
      */
-    public validate (options: PotentialRepositoryOptions): this {
+    public validate(options: PotentialRepositoryOptions): this {
         super.validate(options)
 
         if (!options.path) {
             this.addError('path', 'Please enter a repository path.')
-        } else if (__WIN32__ && isUncPath(options.path)) {
+        }
+        else if (__WIN32__ && isUncPath(options.path)) {
             this.addError('path', 'UNC paths are not supported.')
-        } else if (!this.isDirectory(options.path)) {
+        }
+        else if (!this.isDirectory(options.path)) {
             this.addError('path', 'Please enter a valid repository directory.')
-        } else if (this.existing.includes(options.path)) {
+        }
+        else if (this.existing.includes(options.path)) {
             this.addError('path', 'The project already contains this repository.')
         }
 
@@ -189,7 +194,7 @@ export class RepositoryValidator extends Validator {
 export class FrameworkValidator extends Validator {
     public readonly repositoryPath: string
 
-    constructor (repositoryPath: string) {
+    constructor(repositoryPath: string) {
         super()
         this.errors = {
             name: [],
@@ -199,7 +204,7 @@ export class FrameworkValidator extends Validator {
             sshHost: [],
             sshUser: [],
             sshPort: [],
-            sshIdentity: []
+            sshIdentity: [],
         }
         this.repositoryPath = repositoryPath
     }
@@ -209,7 +214,7 @@ export class FrameworkValidator extends Validator {
      *
      * @param options The framework options to validate.
      */
-    public validate (options: PotentialFrameworkOptions): this {
+    public validate(options: PotentialFrameworkOptions): this {
         super.validate(options)
 
         if (!options.name) {
@@ -218,8 +223,9 @@ export class FrameworkValidator extends Validator {
 
         if (!options.type) {
             this.addError('type', 'Please select a framework type.')
-        } else if (!getFrameworkByType(options.type)) {
-            this.addError('type', 'Framework type "' + options.type + '" is invalid.')
+        }
+        else if (!getFrameworkByType(options.type)) {
+            this.addError('type', `Framework type "${options.type}" is invalid.`)
         }
 
         if (!options.command) {
@@ -229,13 +235,14 @@ export class FrameworkValidator extends Validator {
         if (options.path) {
             if (Path.isAbsolute(options.path)) {
                 this.addError('path', 'Please enter a path relative to the repository directory.')
-            } else if (!this.isDirectory(Path.join(this.repositoryPath, options.path))) {
+            }
+            else if (!this.isDirectory(Path.join(this.repositoryPath, options.path))) {
                 this.addError('path', 'Please enter a valid directory relative to the repository directory.')
             }
         }
 
         if (options.sshPort) {
-            if (!String(options.sshPort).match(/^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/)) {
+            if (!String(options.sshPort).match(/^(\d{1,4}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/)) {
                 this.addError('sshPort', 'Please enter a valid port number.')
             }
         }

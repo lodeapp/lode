@@ -1,12 +1,12 @@
 import highlight from 'highlight.js/lib/core'
 import diff from 'highlight.js/lib/languages/diff'
-import php from 'highlight.js/lib/languages/php'
 import javascript from 'highlight.js/lib/languages/javascript'
 import json from 'highlight.js/lib/languages/json'
+import php from 'highlight.js/lib/languages/php'
 import xml from 'highlight.js/lib/languages/xml'
 
 export default class Code {
-    constructor () {
+    constructor() {
         this.highlighter = highlight
         this.highlighter.registerLanguage('xml', xml)
         this.highlighter.registerLanguage('json', json)
@@ -17,18 +17,18 @@ export default class Code {
         this.code = null
     }
 
-    install (app) {
+    install(app) {
         app.config.globalProperties.$code = this
     }
 
-    removeIndent (code) {
+    removeIndent(code) {
         const indents = code.match(/^[^\S\n\r]*(?=\S)/gm)
 
         if (!indents || !indents[0].length) {
             return code
         }
 
-        indents.sort(function (a, b) {
+        indents.sort((a, b) => {
             return a.length - b.length
         })
 
@@ -36,14 +36,14 @@ export default class Code {
             return code
         }
 
-        return code.replace(RegExp('^' + indents[0], 'gm'), '')
+        return code.replace(new RegExp(`^${indents[0]}`, 'gm'), '')
     }
 
-    normalize (code) {
+    normalize(code) {
         return this.removeIndent(code.replace(/\s*?$/gm, ''))
     }
 
-    asString (code) {
+    asString(code) {
         if (!code) {
             return ''
         }
@@ -53,22 +53,22 @@ export default class Code {
             : this.normalize(code)
     }
 
-    highlight (code, language) {
+    highlight(code, language) {
         code = this.asString(code)
         return language ? this.highlighter.highlight(code, { language }) : this.highlighter.highlightAuto(code)
     }
 
-    lines (code, line = 1, highlight = false) {
-        line = parseInt(line)
+    lines(code, line = 1, highlight = false) {
+        line = Number.parseInt(line)
         if (highlight) {
-            highlight = parseInt(highlight)
+            highlight = Number.parseInt(highlight)
         }
         // Wrap code in empty starting and ending lines, so that we can have
         // padding and still be able to highlight first and last lines with the
         // same height as all other lines.
-        return `<table class="has-lines"><tr><td class="line-number"></td><td class="blob"></td></tr><tr${line === highlight ? ' class="highlight"' : ''}><td class="line-number">${line}</td><td class="blob">` + code.replace(/\n/g, () => {
+        return `<table class="has-lines"><tr><td class="line-number"></td><td class="blob"></td></tr><tr${line === highlight ? ' class="highlight"' : ''}><td class="line-number">${line}</td><td class="blob">${code.replace(/\n/g, () => {
             line++
             return `</td></tr>\n<tr${line === highlight ? ' class="highlight"' : ''}><td class="line-number">${line}</td><td class="blob">`
-        }) + '</td></tr><tr><td class="line-number"></td><td class="blob"></td></tr></table>'
+        })}</td></tr><tr><td class="line-number"></td><td class="blob"></td></tr></table>`
     }
 }

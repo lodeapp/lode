@@ -1,5 +1,5 @@
-import { YarnProcess } from './yarn'
 import { NpmProcess } from './npm'
+import { YarnProcess } from './yarn'
 
 export { YarnProcess }
 export { NpmProcess }

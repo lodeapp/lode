@@ -1,15 +1,17 @@
-import * as Path from 'path'
-import * as Fs from 'fs-extra'
-import semver from 'semver'
-import { unpacked, loc } from '@lib/helpers/paths'
-import { ParsedRepository } from '@lib/frameworks/repository'
-import { FrameworkOptions, FrameworkDefaults, Framework, FrameworkReloadOutcome } from '@lib/frameworks/framework'
-import { ISuiteResult, ISuite, Suite } from '@lib/frameworks/suite'
-import { ITest } from '@lib/frameworks/test'
+import type { FrameworkDefaults, FrameworkOptions, FrameworkReloadOutcome } from '@lib/frameworks/framework'
+import type { ParsedRepository } from '@lib/frameworks/repository'
+import type { FrameworkSort } from '@lib/frameworks/sort'
+import type { ISuite, ISuiteResult, Suite } from '@lib/frameworks/suite'
+import type { ITest } from '@lib/frameworks/test'
+import type { FrameworkValidator } from '@lib/frameworks/validator'
+import type { Buffer } from 'node:buffer'
+import * as Path from 'node:path'
+import { Framework } from '@lib/frameworks/framework'
 import { PHPUnit10Suite } from '@lib/frameworks/phpunit-10/suite'
-import { FrameworkValidator } from '@lib/frameworks/validator'
-import { FrameworkSort } from '@lib/frameworks/sort'
+import { loc, unpacked } from '@lib/helpers/paths'
+import * as Fs from 'fs-extra'
 import { castArray } from 'lodash'
+import semver from 'semver'
 
 export class PHPUnit10 extends Framework {
     public readonly canToggleTests: boolean = true
@@ -21,12 +23,12 @@ export class PHPUnit10 extends Framework {
             command: './vendor/bin/phpunit',
             path: '',
             proprietary: {
-                autoloadPath: ''
-            }
+                autoloadPath: '',
+            },
         },
         win32: {
-            command: 'php vendor/phpunit/phpunit/phpunit'
-        }
+            command: 'php vendor/phpunit/phpunit/phpunit',
+        },
     }
 
     // Set PHPUnit's default sort order
@@ -40,7 +42,7 @@ export class PHPUnit10 extends Framework {
      * The class of suite we use for this framework. Overrides the default
      * with a PHPUnit-specific suite class.
      */
-    protected suiteClass (): typeof Suite {
+    protected suiteClass(): typeof Suite {
         return PHPUnit10Suite
     }
 
@@ -50,7 +52,7 @@ export class PHPUnit10 extends Framework {
      *
      * @param repository The parsed repository to test.
      */
-    public static async spawnForDirectory (repository: ParsedRepository): Promise<FrameworkOptions | false> {
+    public static async spawnForDirectory(repository: ParsedRepository): Promise<FrameworkOptions | false> {
         return new Promise((resolve, reject) => {
             Fs.readFile(Path.join(repository.path, 'vendor/phpunit/phpunit/composer.json'), {}, (error: Error, data: Buffer) => {
                 if (error) {
@@ -63,12 +65,13 @@ export class PHPUnit10 extends Framework {
                     if (
                         semver.gte(
                             semver.coerce(composer.extra['branch-alias']['dev-main']) || semver.coerce(composer.extra['branch-alias']['dev-master']) || '0.0.0',
-                            '10.0.0'
+                            '10.0.0',
                         )
                     ) {
                         resolve(this.hydrate())
                     }
-                } catch (_) {
+                }
+                catch (_) {
                 }
 
                 resolve(false)
@@ -79,7 +82,7 @@ export class PHPUnit10 extends Framework {
     /**
      * Prepare this framework for running.
      */
-    protected async assemble (): Promise<void> {
+    protected async assemble(): Promise<void> {
         super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
@@ -93,7 +96,7 @@ export class PHPUnit10 extends Framework {
     /**
      * Reload this framework's suites and tests.
      */
-    protected reload (): Promise<FrameworkReloadOutcome> {
+    protected reload(): Promise<FrameworkReloadOutcome> {
         return new Promise((resolve, reject) => {
             this.spawn(['--columns=42'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
@@ -103,10 +106,11 @@ export class PHPUnit10 extends Framework {
                         })).then(() => {
                             resolve('success')
                         })
-                    } catch (error) {
+                    }
+                    catch (error) {
                         console.log({ error })
                         this.stop()
-                        reject('The PHPUnit package returned unexpected results.')
+                        reject(new Error('The PHPUnit package returned unexpected results.'))
                     }
                 })
                 .on('success', () => {
@@ -117,7 +121,7 @@ export class PHPUnit10 extends Framework {
                 .on('killed', () => {
                     resolve('killed')
                 })
-                .on('error', error => {
+                .on('error', (error) => {
                     reject(error)
                 })
         })
@@ -126,7 +130,7 @@ export class PHPUnit10 extends Framework {
     /**
      * The command arguments for running this framework.
      */
-    protected runArgs (): Array<string> {
+    protected runArgs(): Array<string> {
         const root = (this.runsInRemote ? this.getRemotePath() : this.repositoryPath)
         const autoload = Path.join(root, loc(this.proprietary.autoloadPath || 'vendor/autoload.php'))
         const args = [
@@ -144,12 +148,12 @@ export class PHPUnit10 extends Framework {
             '--color=always',
             '--order-by',
             'default',
-            '--no-output'
+            '--no-output',
         ]
 
         if (__DEV__) {
             args.push(
-                '--display-errors'
+                '--display-errors',
             )
         }
 
@@ -162,7 +166,7 @@ export class PHPUnit10 extends Framework {
      * @param suites The suites selected to run.
      * @param selectTests Whether to check for selected tests, or run the entire suite.
      */
-    protected runSelectiveArgs (suites: Array<ISuite>, selectTests: boolean): Array<string> {
+    protected runSelectiveArgs(suites: Array<ISuite>, selectTests: boolean): Array<string> {
         const args: Array<string> = ['--filter']
         const filters: Array<string> = []
         suites.forEach((suite: ISuite) => {
@@ -173,7 +177,8 @@ export class PHPUnit10 extends Framework {
                 selected.forEach((test: ITest) => {
                     filters.push(`${suiteClass}::${test.getName()}$`)
                 })
-            } else {
+            }
+            else {
                 filters.push(suiteClass)
             }
         })
@@ -191,7 +196,7 @@ export class PHPUnit10 extends Framework {
      *
      * @param suites The suites whose progress we're setting up to measure.
      */
-    protected calculateProgressTotalForSuites (suites: Array<ISuite>): number {
+    protected calculateProgressTotalForSuites(suites: Array<ISuite>): number {
         return suites.reduce((acc, suite: ISuite) => {
             // Return the children count, or 1 if suite is empty, as it will
             // and progress counted regardless of it having children or not.
@@ -202,7 +207,7 @@ export class PHPUnit10 extends Framework {
     /**
      * Validate PHPUnit specific options.
      */
-    public static validate (validator: FrameworkValidator, options: any): void {
+    public static validate(validator: FrameworkValidator, options: any): void {
         const autoload = options.proprietary.autoloadPath
         if (autoload) {
             if (Path.isAbsolute(autoload) || !validator.isFile(Path.join(validator.repositoryPath, autoload))) {
@@ -214,7 +219,7 @@ export class PHPUnit10 extends Framework {
     /**
      * Provide setup instructions for using Lode with PHPUnit.
      */
-    public static instructions (): string {
+    public static instructions(): string {
         return ''
     }
 
@@ -223,7 +228,7 @@ export class PHPUnit10 extends Framework {
      *
      * @param text The feedback text to be processed by the framework.
      */
-    public processFeedbackText (text: string): string {
+    public processFeedbackText(text: string): string {
         // @TODO: Offload to separate class that parses and replaces strings.
         if (text && text.match(/^Failed asserting that '(.+)' matches JSON string "[^"]+"./gim)) {
             // ...
@@ -237,12 +242,12 @@ export class PHPUnit10 extends Framework {
      *
      * @param error The error to be parsed for troubleshooting.
      */
-    protected troubleshoot (error: Error | string): string {
+    protected troubleshoot(error: Error | string): string {
         if (error instanceof Error) {
             error = error.toString()
         }
 
-        if ((new RegExp('Cannot open bootstrap script .*\/bootstrap\\.php', 'gi')).test(error)) {
+        if (/Cannot open bootstrap script .*\/bootstrap\.php/i.test(error)) {
             return 'If your PHPUnit tests run in a remote machine, make sure to toggle that in your framework settings and set the absolute path to the repository inside the remote machine.'
         }
 

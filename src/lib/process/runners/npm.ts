@@ -1,5 +1,6 @@
+import type { IProcess, IProcessEnvironment } from '@lib/process/process'
+import { DefaultProcess } from '@lib/process/process'
 import { compact, concat, drop } from 'lodash'
-import { IProcessEnvironment, IProcess, DefaultProcess } from '@lib/process/process'
 
 export class NpmProcess extends DefaultProcess implements IProcess {
     static readonly type: string = 'npm'
@@ -9,8 +10,8 @@ export class NpmProcess extends DefaultProcess implements IProcess {
      *
      * @param command The command we're checking to match an NPM runner.
      */
-    public static owns (command: string): boolean {
-        return command.toLowerCase().search(/\bnpm(\.cmd)?(?!\.) run\b/) > -1
+    public static owns(command: string): boolean {
+        return command.toLowerCase().search(/\bnpm(\.cmd)? run\b/) > -1
     }
 
     /**
@@ -19,7 +20,7 @@ export class NpmProcess extends DefaultProcess implements IProcess {
      * will enforce that syntax. We also need to patch the binary path for
      * Windows environments.
      */
-    protected spawnArguments (args: Array<string>): Array<string> {
+    protected spawnArguments(args: Array<string>): Array<string> {
         if (!args.length) {
             return args
         }
@@ -42,13 +43,13 @@ export class NpmProcess extends DefaultProcess implements IProcess {
     /**
      * Return the env object with which to spawn the child process.
      */
-    protected spawnEnv (env: IProcessEnvironment): IProcessEnvironment {
+    protected spawnEnv(env: IProcessEnvironment): IProcessEnvironment {
         return {
             ...env,
             ...{
                 // Disable npm update notifier
-                NO_UPDATE_NOTIFIER: 1
-            }
+                NO_UPDATE_NOTIFIER: 1,
+            },
         }
     }
 }

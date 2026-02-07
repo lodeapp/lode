@@ -3,22 +3,22 @@ import { last } from 'lodash'
 export default {
     namespaced: true,
     state: {
-        modals: []
+        modals: [],
     },
     mutations: {
-        ADD (state, name) {
+        ADD(state, name) {
             state.modals.push(name)
         },
-        REMOVE (state) {
+        REMOVE(state) {
             state.modals.pop()
         },
-        CLEAR (state) {
+        CLEAR(state) {
             state.modals = []
-        }
+        },
     },
     actions: {
         open: ({ state, commit, dispatch, getters }, name) => {
-            if (!getters['isOpen'](name)) {
+            if (!getters.isOpen(name)) {
                 commit('ADD', name)
                 dispatch('change')
             }
@@ -37,17 +37,17 @@ export default {
                 return
             }
             document.body.classList.remove('modal-open')
-        }
+        },
     },
     getters: {
-        isOpen: state => name => {
+        isOpen: state => (name) => {
             return last(state.modals) === name
         },
-        hasModals: state => {
+        hasModals: (state) => {
             return state.modals.length > 0
         },
-        modals: state => {
+        modals: (state) => {
             return state.modals
-        }
-    }
+        },
+    },
 }

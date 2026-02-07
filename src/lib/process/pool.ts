@@ -1,4 +1,4 @@
-import { ProcessId, IProcess } from '@lib/process/process'
+import type { IProcess, ProcessId } from '@lib/process/process'
 
 /**
  * A pool of running processes.
@@ -12,7 +12,7 @@ class ProcessPool {
      * @param process The process being pooled.
      * @param id An optional id with which process will be added to the pool.
      */
-    public add (process: IProcess, id?: ProcessId): void {
+    public add(process: IProcess, id?: ProcessId): void {
         // If id was given, we'll use it, otherwise we'll
         // try to get it from the process itself.
         if (!id) {
@@ -37,14 +37,14 @@ class ProcessPool {
      *
      * @param id The id of the process trying to be found.
      */
-    public findProcess (id: ProcessId): IProcess | undefined {
+    public findProcess(id: ProcessId): IProcess | undefined {
         return this.processes[id]
     }
 
     /**
      * Remove a process from the pool by its id.
      */
-    public remove (id: ProcessId): void {
+    public remove(id: ProcessId): void {
         if (typeof this.processes[id] !== 'undefined') {
             delete this.processes[id]
         }
@@ -53,8 +53,8 @@ class ProcessPool {
     /**
      * Clear the process pool.
      */
-    public clear (): void {
-        Object.keys(this.processes).forEach(id => {
+    public clear(): void {
+        Object.keys(this.processes).forEach((id) => {
             this.remove(id)
         })
     }

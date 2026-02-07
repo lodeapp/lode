@@ -1,14 +1,14 @@
-import sha1 from 'sha1-es'
+import latinize from 'latinize'
 import { truncate } from 'lodash'
 import markdown from 'markdown-it'
-import latinize from 'latinize'
+import sha1 from 'sha1-es'
 import Translation from './translation'
 
 export default class Strings {
     protected locale: string
     protected translator: Translation
 
-    constructor (locale = 'en-US') {
+    constructor(locale = 'en-US') {
         this.locale = locale
         this.translator = new Translation(this.locale)
     }
@@ -16,7 +16,7 @@ export default class Strings {
     /**
      * Generates a random string of 15 characters
      */
-    public random (): string {
+    public random(): string {
         let text = ''
         const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
         for (let i = 0; i < 15; i++) {
@@ -30,7 +30,7 @@ export default class Strings {
      *
      * @param string The string to convert to ASCII
      */
-    public ascii (string: string): string {
+    public ascii(string: string): string {
         return latinize(string)
     }
 
@@ -39,9 +39,9 @@ export default class Strings {
      *
      * @param string The string to convert to Markdown
      */
-    public markdown (string: string): string {
+    public markdown(string: string): string {
         return markdown({
-            typographer: true
+            typographer: true,
         }).renderInline(string)
     }
 
@@ -51,10 +51,10 @@ export default class Strings {
      * @param string The string to convert to Markdown
      * @param breaks Whether to convert line breaks into br
      */
-    public markdownBlock (string: string, breaks = true): string {
+    public markdownBlock(string: string, breaks = true): string {
         return markdown({
             breaks,
-            typographer: true
+            typographer: true,
         }).render(string)
     }
 
@@ -67,13 +67,13 @@ export default class Strings {
      * @param length Maximum length of the resulting string
      * @param options Additional truncation options
      */
-    public truncate (string: string, length = 140, options: any): string {
+    public truncate(string: string, length = 140, options: any): string {
         return truncate(string, {
             ...{
                 length,
-                omission: '…'
+                omission: '…',
             },
-            ...options
+            ...options,
         })
     }
 
@@ -84,9 +84,9 @@ export default class Strings {
      * @param string The string to compose
      * @param replacements The replacements to use when composing the string
      */
-    public set (string: string, ...replacements: Array<any>): string {
+    public set(string: string, ...replacements: Array<any>): string {
         const replace = typeof replacements[0] === 'object' ? replacements[0] : replacements
-        return string.replace(/:(\d+|[a-z]+)/gi, function (match, index) {
+        return string.replace(/:(\d+|[a-z]+)/gi, (match, index) => {
             return typeof replace[index] !== 'undefined' ? replace[index] : match
         })
     }
@@ -100,7 +100,7 @@ export default class Strings {
      * @param strings The pipe-separated list of strings representing plural forms
      * @param amount The amount for which to render a pluralized string
      */
-    public plural (strings: string, amount: number): string {
+    public plural(strings: string, amount: number): string {
         return this.set(this.translator.getPlural(strings, amount), { n: amount })
     }
 
@@ -110,7 +110,7 @@ export default class Strings {
      *
      * @param object The object to convert to a string, if applicable
      */
-    public from (object: string | object): string {
+    public from(object: string | object): string {
         if (typeof object === 'string') {
             return object
         }

@@ -1,7 +1,7 @@
 /**
  * A ledger of run progress.
  */
-export type ProgressLedger = {
-    run: number,
+export interface ProgressLedger {
+    run: number
     total: number
 }

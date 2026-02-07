@@ -1,8 +1,9 @@
-export * from './application-menu'
+/* eslint-disable perfectionist/sort-exports -- Base class must be exported first to avoid circular dependency */
 export * from './menu'
+export * from './application-menu'
+export * from './file-menu'
+export * from './framework-menu'
 export * from './project-menu'
 export * from './repository-menu'
-export * from './framework-menu'
 export * from './suite-menu'
 export * from './test-menu'
-export * from './file-menu'

@@ -1,10 +1,11 @@
-import * as Path from 'path'
+import type { FrameworkDefaults, FrameworkOptions, FrameworkReloadOutcome } from '@lib/frameworks/framework'
+import type { ParsedRepository } from '@lib/frameworks/repository'
+import type { ISuite } from '@lib/frameworks/suite'
+import * as Path from 'node:path'
+import { Framework } from '@lib/frameworks/framework'
+import { loc, posix, unpacked } from '@lib/helpers/paths'
 import * as Fs from 'fs-extra'
 import { get } from 'lodash'
-import { unpacked, loc, posix } from '@lib/helpers/paths'
-import { ParsedRepository } from '@lib/frameworks/repository'
-import { FrameworkOptions, FrameworkDefaults, Framework, FrameworkReloadOutcome } from '@lib/frameworks/framework'
-import { ISuite } from '@lib/frameworks/suite'
 
 export class Jest extends Framework {
     static readonly defaults: FrameworkDefaults = {
@@ -13,8 +14,8 @@ export class Jest extends Framework {
             type: 'jest',
             command: 'yarn test',
             path: '',
-            proprietary: {}
-        }
+            proprietary: {},
+        },
     }
 
     /**
@@ -23,7 +24,7 @@ export class Jest extends Framework {
      *
      * @param repository The parsed repository to test.
      */
-    public static async spawnForDirectory (repository: ParsedRepository): Promise<FrameworkOptions | false> {
+    public static async spawnForDirectory(repository: ParsedRepository): Promise<FrameworkOptions | false> {
         // Use repository's package.json to determine whether Jest exists or not.
         if (repository.files.includes('package.json')) {
             const pkg = await Fs.readJson(Path.join(repository.path, 'package.json'), { throws: false }) || {}
@@ -33,13 +34,14 @@ export class Jest extends Framework {
                 for (const script in scripts) {
                     // Test for whole-word "jest". Should match "jest" shorthand
                     // and also "./node_modules/jest/bin/jest.js", etc.
-                    if (scripts[script].search(/(?<![^\/\\\s])\bjest\b(\.js)?(?!\.)/i) > -1) {
+                    if (scripts[script].search(/(?<![^/\\\s])jest\b(\.js)?(?!\.)/i) > -1) {
                         return this.hydrate({
-                            command: `yarn ${script}`
+                            command: `yarn ${script}`,
                         })
                     }
                 }
-            } catch (Error) {
+            }
+            catch (Error) {
                 // Fail silently, just don't detect Jest.
             }
 
@@ -56,7 +58,7 @@ export class Jest extends Framework {
     /**
      * Prepare this framework for running.
      */
-    protected async assemble (): Promise<void> {
+    protected async assemble(): Promise<void> {
         super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
@@ -69,7 +71,7 @@ export class Jest extends Framework {
     /**
      * Reload this framework's suites and tests.
      */
-    protected reload (): Promise<FrameworkReloadOutcome> {
+    protected reload(): Promise<FrameworkReloadOutcome> {
         return new Promise((resolve, reject) => {
             this.spawn(['--listTests', '--forceExit'])
                 .on('success', ({ lines }) => {
@@ -78,18 +80,19 @@ export class Jest extends Framework {
                         lines.filter((file: string) => this.fileInPath(file))
                             .map((file: string) => this.makeSuite(this.hydrateSuiteResult({
                                 file,
-                                testsLoaded: false
+                                testsLoaded: false,
                             })))
                         resolve('success')
-                    } catch (error) {
+                    }
+                    catch (error) {
                         this.stop()
-                        reject('The Jest package returned unexpected results.')
+                        reject(new Error('The Jest package returned unexpected results.'))
                     }
                 })
                 .on('killed', () => {
                     resolve('killed')
                 })
-                .on('error', error => {
+                .on('error', (error) => {
                     reject(error)
                 })
         })
@@ -98,7 +101,7 @@ export class Jest extends Framework {
     /**
      * The command arguments for running this framework.
      */
-    protected runArgs (): Array<string> {
+    protected runArgs(): Array<string> {
         const args = [
             '--verbose=false', // This is required for console to "buffer"
             '--forceExit',
@@ -109,7 +112,7 @@ export class Jest extends Framework {
                 ? Path.join(this.getRemotePath(), loc('.lode/jest/index.js'))
                 : process.env.NODE_ENV === 'development'
                     ? Path.join(__static, loc('./reporters/jest/index.js'))
-                    : unpacked(Path.join(__static, loc('./reporters/jest/index.js')))
+                    : unpacked(Path.join(__static, loc('./reporters/jest/index.js'))),
         ]
 
         if (__DEV__) {
@@ -125,7 +128,7 @@ export class Jest extends Framework {
      * @param suites The suites selected to run.
      * @param selectTests Whether to check for selected tests, or run the entire suite.
      */
-    protected runSelectiveArgs (suites: Array<ISuite>, selectTests: boolean): Array<string> {
+    protected runSelectiveArgs(suites: Array<ISuite>, selectTests: boolean): Array<string> {
         const args: Array<string> = []
 
         suites.forEach((suite: ISuite) => {
@@ -140,7 +143,7 @@ export class Jest extends Framework {
     /**
      * Provide setup instructions for using Lode with Jest.
      */
-    public static instructions (): string {
+    public static instructions(): string {
         return ''
     }
 
@@ -149,7 +152,7 @@ export class Jest extends Framework {
      *
      * @param error The error to be parsed for troubleshooting.
      */
-    protected troubleshoot (error: Error | string): string {
+    protected troubleshoot(error: Error | string): string {
         if (error instanceof Error) {
             error = error.toString()
         }

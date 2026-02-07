@@ -1,19 +1,19 @@
-import { compact } from 'lodash'
-import { ensureDir } from 'fs-extra'
-import { app, ipcMain, Menu, shell } from 'electron'
-import { autoUpdater } from 'electron-updater'
+import type { IFramework } from '@lib/frameworks/framework'
+import type { IProject, ProjectIdentifier } from '@lib/frameworks/project'
+import type { IRepository } from '@lib/frameworks/repository'
+import type { ApplicationWindow } from '@main/application-window'
 import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
-import { Menu as ContextMenu, ProjectMenu, FrameworkMenu } from '@main/menu'
-import { ApplicationWindow } from '@main/application-window'
-import { ProjectIdentifier, IProject } from '@lib/frameworks/project'
-import { IRepository } from '@lib/frameworks/repository'
-import { IFramework } from '@lib/frameworks/framework'
+import { Menu as ContextMenu, FrameworkMenu, ProjectMenu } from '@main/menu'
+import { app, ipcMain, Menu, shell } from 'electron'
+import { autoUpdater } from 'electron-updater'
+import { ensureDir } from 'fs-extra'
+import { compact } from 'lodash'
 
 type ClickHandler = (
     menuItem: Electron.MenuItem,
     browserWindow: Electron.BrowserWindow | undefined,
-    event: Electron.KeyboardEvent
+    event: Electron.KeyboardEvent,
 ) => void
 
 enum ZoomDirection {
@@ -28,11 +28,11 @@ class ApplicationMenu {
     protected window: ApplicationWindow | null = null
 
     protected options: {
-        project: IProject | null,
+        project: IProject | null
         repository: IRepository | null
-        framework: IFramework | null,
-        isCheckingForUpdate: boolean,
-        isDownloadingUpdate: boolean,
+        framework: IFramework | null
+        isCheckingForUpdate: boolean
+        isDownloadingUpdate: boolean
         hasDownloadedUpdate: boolean
     } = {
         project: null,
@@ -40,14 +40,14 @@ class ApplicationMenu {
         framework: null,
         isCheckingForUpdate: false,
         isDownloadingUpdate: false,
-        hasDownloadedUpdate: false
+        hasDownloadedUpdate: false,
     }
 
     protected menus: {
         [key: string]: ContextMenu
     } = {}
 
-    protected render (): void {
+    protected render(): void {
         this.template = []
 
         const separator: Electron.MenuItemConstructorOptions = { type: 'separator' }
@@ -63,31 +63,31 @@ class ApplicationMenu {
                 ? 'Downloading Update'
                 : (hasDownloadedUpdate ? 'Restart and Install Update' : 'Check for Updates…'),
             enabled: !isCheckingForUpdate && !isDownloadingUpdate && !__DEV__,
-            click () {
+            click() {
                 if (hasDownloadedUpdate) {
                     autoUpdater.quitAndInstall()
                 }
                 autoUpdater.checkForUpdates()
-            }
+            },
         }
 
         if (__DARWIN__) {
             this.addSection('Lode', new ContextMenu(this.window!.getWebContents())
                 .add({
                     label: 'About Lode',
-                    click: emit('show-about')
+                    click: emit('show-about'),
                 })
                 .add(updater)
                 .separator()
                 .add({
                     label: 'Preferences…',
                     accelerator: 'CmdOrCtrl+,',
-                    click: emit('show-preferences')
+                    click: emit('show-preferences'),
                 })
                 .separator()
                 .add({
                     role: 'services',
-                    submenu: []
+                    submenu: [],
                 })
                 .separator()
                 .add({ role: 'hide' })
@@ -95,46 +95,46 @@ class ApplicationMenu {
                 .add({ role: 'unhide' })
                 .separator()
                 .add({
-                    role: 'quit'
-                })
-            )
+                    role: 'quit',
+                }))
         }
 
         this.addSection('&File', new ContextMenu(this.window!.getWebContents())
             .add({
                 label: __DARWIN__ ? 'New Project' : 'New project',
                 accelerator: 'CmdOrCtrl+N',
-                click: emit('project-add')
+                click: emit('project-add'),
             })
             .add({
                 label: __DARWIN__ ? 'Switch Project' : 'Switch project',
                 enabled: projects && projects.length > 1,
-                submenu: projects && projects.length > 1 ? projects.map(project => {
-                    return {
-                        label: project.name,
-                        type: 'checkbox',
-                        checked: !!currentProject && currentProject.id === project.id,
-                        click: emit('project-switch', project.id, (menuItem: Electron.MenuItem) => {
-                            // Don't toggle the item, unless it's the current project,
-                            // as the switch might still be cancelled by the user. If
-                            // switch project is confirmed, menu will be rebuilt anyway.
-                            menuItem.checked = !!currentProject && currentProject.id === project.id
+                submenu: projects && projects.length > 1
+                    ? projects.map((project) => {
+                            return {
+                                label: project.name,
+                                type: 'checkbox',
+                                checked: !!currentProject && currentProject.id === project.id,
+                                click: emit('project-switch', project.id, (menuItem: Electron.MenuItem) => {
+                                // Don't toggle the item, unless it's the current project,
+                                // as the switch might still be cancelled by the user. If
+                                // switch project is confirmed, menu will be rebuilt anyway.
+                                    menuItem.checked = !!currentProject && currentProject.id === project.id
+                                }),
+                            }
                         })
-                    }
-                }) : undefined
+                    : undefined,
             })
             .addIf(!__DARWIN__, separator)
             .addIf(!__DARWIN__, {
                 label: 'Options…',
                 accelerator: 'CmdOrCtrl+,',
-                click: emit('show-preferences')
+                click: emit('show-preferences'),
             })
             .addIf(!__DARWIN__, separator)
             .addIf(!__DARWIN__, {
                 role: 'quit',
-                accelerator: 'Alt+F4'
-            })
-        )
+                accelerator: 'Alt+F4',
+            }))
 
         this.addSection('&Edit', new ContextMenu(this.window!.getWebContents())
             .add({ role: 'undo', label: 'Undo' })
@@ -146,31 +146,30 @@ class ApplicationMenu {
             .add({
                 label: 'Select all',
                 accelerator: 'CmdOrCtrl+A',
-                click: emit('select-all')
-            })
-        )
+                click: emit('select-all'),
+            }))
 
         this.addSection('&View', new ContextMenu(this.window!.getWebContents())
             .add({
                 label: __DARWIN__ ? 'Toggle Full Screen' : 'Toggle &full screen',
                 role: 'togglefullscreen',
-                accelerator: __DARWIN__ ? undefined : 'F11'
+                accelerator: __DARWIN__ ? undefined : 'F11',
             })
             .separator()
             .add({
                 label: __DARWIN__ ? 'Reset Zoom' : 'Reset zoom',
                 accelerator: 'CmdOrCtrl+0',
-                click: zoom(ZoomDirection.Reset)
+                click: zoom(ZoomDirection.Reset),
             })
             .add({
                 label: __DARWIN__ ? 'Zoom In' : 'Zoom in',
                 accelerator: 'CmdOrCtrl+=',
-                click: zoom(ZoomDirection.In)
+                click: zoom(ZoomDirection.In),
             })
             .add({
                 label: __DARWIN__ ? 'Zoom Out' : 'Zoom out',
                 accelerator: 'CmdOrCtrl+-',
-                click: zoom(ZoomDirection.Out)
+                click: zoom(ZoomDirection.Out),
             })
             .separator()
             .add({
@@ -180,23 +179,22 @@ class ApplicationMenu {
                 accelerator: (() => {
                     return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
                 })(),
-                click (item: any, focusedWindow: Electron.BrowserWindow | undefined) {
+                click(item: any, focusedWindow: Electron.BrowserWindow | undefined) {
                     if (focusedWindow) {
                         focusedWindow.webContents.toggleDevTools()
                     }
-                }
-            })
-        )
+                },
+            }))
 
         this.addSection('&Project', new ProjectMenu(
             this.options.project,
-            this.window!.getWebContents()
+            this.window!.getWebContents(),
         ))
 
         this.addSection('F&ramework', new FrameworkMenu(
             this.options.repository,
             this.options.framework,
-            this.window!.getWebContents()
+            this.window!.getWebContents(),
         ))
 
         if (__DEV__) {
@@ -204,25 +202,25 @@ class ApplicationMenu {
                 .add({
                     label: '&Reload',
                     accelerator: 'CmdOrCtrl+Shift+0',
-                    click (item: any, focusedWindow: Electron.BrowserWindow | undefined) {
+                    click(item: any, focusedWindow: Electron.BrowserWindow | undefined) {
                         if (focusedWindow) {
                             focusedWindow.reload()
                         }
                     },
-                    visible: __DEV__
+                    visible: __DEV__,
                 })
                 .separator()
                 .add({
                     label: __DARWIN__ ? 'Log Project' : 'Log project',
-                    click: emit('log-project')
+                    click: emit('log-project'),
                 })
                 .add({
                     label: __DARWIN__ ? 'Log Settings' : 'Log settings',
-                    click: emit('log-settings')
+                    click: emit('log-settings'),
                 })
                 .add({
                     label: __DARWIN__ ? 'Log Renderer State' : 'Log renderer state',
-                    click: emit('log-renderer-state')
+                    click: emit('log-renderer-state'),
                 })
                 .separator()
                 .add({
@@ -231,29 +229,28 @@ class ApplicationMenu {
                         : __WIN32__
                             ? 'Show user data folder in Explorer'
                             : 'Show user data folder in your File Manager',
-                    click () {
+                    click() {
                         const path = app.getPath('userData')
                         ensureDir(path)
                             .then(() => {
                                 shell.openPath(path)
                             })
-                            .catch(error => {
+                            .catch((error) => {
                                 log.error('Failed to opened logs directory from menu.', error)
                             })
-                    }
+                    },
                 })
                 .separator()
                 .add({
                     label: 'Crash main process',
-                    click () {
+                    click() {
                         throw new Error('Boomtown!')
-                    }
+                    },
                 })
                 .add({
                     label: 'Crash renderer process',
-                    click: emit('crash')
-                })
-            )
+                    click: emit('crash'),
+                }))
         }
 
         if (__DARWIN__) {
@@ -264,31 +261,31 @@ class ApplicationMenu {
                     { role: 'zoom' },
                     { role: 'close' },
                     separator,
-                    { role: 'front' }
-                ]
+                    { role: 'front' },
+                ],
             })
         }
 
         const helpItems = [
             {
                 label: __DARWIN__ ? 'Report Issue' : 'Report issue',
-                click () {
+                click() {
                     shell.openExternal(
-                        'https://github.com/lodeapp/lode/issues/new/choose'
+                        'https://github.com/lodeapp/lode/issues/new/choose',
                     ).catch(err => log.error('Failed opening issue creation page', err))
-                }
+                },
             },
             {
                 label: __DARWIN__ ? 'Contact Support' : 'Contact support',
-                click: emit('feedback')
+                click: emit('feedback'),
             },
             {
                 label: __DARWIN__ ? 'Show Documentation' : 'Show documentation',
-                click () {
+                click() {
                     shell.openExternal(
-                        'https://lode.run/documentation/'
+                        'https://lode.run/documentation/',
                     ).catch(err => log.error('Failed opening documentation page', err))
-                }
+                },
             },
             separator,
             {
@@ -300,72 +297,72 @@ class ApplicationMenu {
                             : __WIN32__
                                 ? 'Show logs in Explorer'
                                 : 'Show logs in your File Manager',
-                        click () {
+                        click() {
                             const path = getLogDirectoryPath()
                             ensureDir(path)
                                 .then(() => {
                                     shell.openPath(path)
                                 })
-                                .catch(error => {
+                                .catch((error) => {
                                     log.error('Failed to opened logs directory from menu.', error)
                                 })
-                        }
+                        },
                     },
                     {
                         label: __DARWIN__ ? 'Reset Settings…' : 'Reset settings…',
-                        click: emit('settings-reset')
-                    }
-                ]
-            }
+                        click: emit('settings-reset'),
+                    },
+                ],
+            },
         ]
 
         if (__DARWIN__) {
             this.template.push({
                 role: 'help',
-                submenu: helpItems
+                submenu: helpItems,
             })
-        } else {
+        }
+        else {
             this.addSection('&Help', new ContextMenu(this.window!.getWebContents())
                 .add({
                     label: 'About Lode',
-                    click: emit('show-about')
+                    click: emit('show-about'),
                 })
                 .add(updater)
                 .separator()
-                .addMultiple(helpItems)
-            )
+                .addMultiple(helpItems))
         }
 
         Menu.setApplicationMenu(Menu.buildFromTemplate(this.template))
     }
 
-    protected addSection (label: string, menu: ContextMenu): void {
+    protected addSection(label: string, menu: ContextMenu): void {
         this.menus[label] = menu
         this.template.push({
             label,
-            submenu: menu.getTemplate()
+            submenu: menu.getTemplate(),
         })
     }
 
-    public build (window: ApplicationWindow | null): Promise<Array<Electron.MenuItemConstructorOptions>> {
+    public build(window: ApplicationWindow | null): Promise<Array<Electron.MenuItemConstructorOptions>> {
         this.setWindow(window)
         const project = window ? window.getProject() : null
         return this.setOptions({
             ...this.options,
             ...project ? project.getActive() : {},
-            project
+            project,
         })
     }
 
-    public setWindow (window: ApplicationWindow | null): void {
+    public setWindow(window: ApplicationWindow | null): void {
         this.window = window
     }
 
-    public setOptions (options: any): Promise<Array<Electron.MenuItemConstructorOptions>> {
+    public setOptions(options: any): Promise<Array<Electron.MenuItemConstructorOptions>> {
         return new Promise((resolve, reject) => {
             this.options = {
                 ...this.options,
-                ...options
+                ...options,
             }
             // Rebuild after options are updated.
             this.render()
@@ -373,17 +370,17 @@ class ApplicationMenu {
         })
     }
 
-    public getTemplate (): Array<Electron.MenuItemConstructorOptions> {
+    public getTemplate(): Array<Electron.MenuItemConstructorOptions> {
         return this.template
     }
 
-    public getSections (): Array<string> {
-        return compact(this.template.map(item => {
+    public getSections(): Array<string> {
+        return compact(this.template.map((item) => {
             return item.label || ''
         }))
     }
 
-    public getSection (label: string): ContextMenu {
+    public getSection(label: string): ContextMenu {
         return this.menus[label]
     }
 }
@@ -392,11 +389,12 @@ class ApplicationMenu {
  * Utility function returning a Click event handler which, when invoked, emits
  * the provided menu event over IPC.
  */
-function emit (name: MenuEvent, properties?: any, callback?: Function): ClickHandler {
+function emit(name: MenuEvent, properties?: any, callback?: ClickHandler): ClickHandler {
     return (menuItem, window, event) => {
         if (window) {
             window.webContents.send('menu-event', { name, properties })
-        } else {
+        }
+        else {
             ipcMain.emit('menu-event', { name, properties })
         }
 
@@ -414,7 +412,7 @@ const ZoomOutFactors = ZoomInFactors.slice().reverse()
  * Returns the element in the array that's closest to the value parameter. Note
  * that this function will throw if passed an empty array.
  */
-function findClosestValue (arr: Array<number>, value: number) {
+function findClosestValue(arr: Array<number>, value: number) {
     return arr.reduce((previous, current) => {
         return Math.abs(current - value) < Math.abs(previous - value)
             ? current
@@ -426,7 +424,7 @@ function findClosestValue (arr: Array<number>, value: number) {
  * Figure out the next zoom level for the given direction and alert the renderer
  * about a change in zoom factor if necessary.
  */
-function zoom (direction: ZoomDirection): ClickHandler {
+function zoom(direction: ZoomDirection): ClickHandler {
     return (menuItem, window) => {
         if (!window) {
             return
@@ -437,7 +435,8 @@ function zoom (direction: ZoomDirection): ClickHandler {
         if (direction === ZoomDirection.Reset) {
             webContents.setZoomFactor(1)
             webContents.send('zoom-factor-changed', 1)
-        } else {
+        }
+        else {
             const rawZoom: number = webContents.getZoomFactor()
             const zoomFactors = direction === ZoomDirection.In ? ZoomInFactors : ZoomOutFactors
 

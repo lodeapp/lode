@@ -1,3 +1,34 @@
+<script>
+import { isArray } from 'lodash'
+import Collapsible from '@/components/Collapsible.vue'
+import Filename from '@/components/Filename.vue'
+import HasFile from '@/components/mixins/HasFile'
+import Snippet from '@/components/Snippet.vue'
+
+export default {
+    name: 'Trace',
+    components: {
+        Collapsible,
+        Filename,
+        Snippet,
+    },
+    mixins: [
+        HasFile,
+    ],
+    props: {
+        trace: {
+            type: Array,
+            required: true,
+        },
+    },
+    computed: {
+        isNested() {
+            return this.trace.length && this.trace[0] && isArray(this.trace[0])
+        },
+    },
+}
+</script>
+
 <template>
     <div class="trace" :class="{ 'trace-group': isNested }">
         <template v-if="isNested">
@@ -42,34 +73,3 @@
         </template>
     </div>
 </template>
-
-<script>
-import { isArray } from 'lodash'
-import Collapsible from '@/components/Collapsible.vue'
-import Filename from '@/components/Filename.vue'
-import Snippet from '@/components/Snippet.vue'
-import HasFile from '@/components/mixins/HasFile'
-
-export default {
-    name: 'Trace',
-    components: {
-        Collapsible,
-        Filename,
-        Snippet
-    },
-    mixins: [
-        HasFile
-    ],
-    props: {
-        trace: {
-            type: Array,
-            required: true
-        }
-    },
-    computed: {
-        isNested () {
-            return this.trace.length && this.trace[0] && isArray(this.trace[0])
-        }
-    }
-}
-</script>

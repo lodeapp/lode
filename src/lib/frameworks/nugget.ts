@@ -1,9 +1,10 @@
-import { debounce, find, flatten, isArray, pickBy } from 'lodash'
+import type { IFramework } from '@lib/frameworks/framework'
+import type { Status } from '@lib/frameworks/status'
+import type { ISuiteResult } from '@lib/frameworks/suite'
+import type { ITest, ITestResult } from '@lib/frameworks/test'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
-import { IFramework } from '@lib/frameworks/framework'
-import { ISuiteResult } from '@lib/frameworks/suite'
-import { ITest, ITestResult } from '@lib/frameworks/test'
-import { Status, parseStatus } from '@lib/frameworks/status'
+import { parseStatus } from '@lib/frameworks/status'
+import { debounce, find, flatten, isArray, pickBy } from 'lodash'
 
 /**
  * Nuggets are the testable elements inside a repository
@@ -22,7 +23,7 @@ export abstract class Nugget extends ProjectEventEmitter {
 
     protected updateCountsListener: _.DebouncedFunc<(nugget: Nugget, toggle: boolean) => Promise<void>>
 
-    constructor (framework: IFramework) {
+    constructor(framework: IFramework) {
         super(framework.getApplicationWindow())
         this.framework = framework
         this.updateCountsListener = debounce(this.updateSelectedCounts.bind(this), 50)
@@ -31,33 +32,33 @@ export abstract class Nugget extends ProjectEventEmitter {
     /**
      * Get the nugget's id.
      */
-    public abstract getId (): string
+    public abstract getId(): string
 
     /**
      * Prepares the test for sending out to renderer process.
      *
      * @param status Which status to recursively set on tests. False will persist current status.
      */
-    public abstract render (status?: Status | false): ISuiteResult | ITestResult;
+    public abstract render(status?: Status | false): ISuiteResult | ITestResult
 
     /**
      * Instantiate a new test.
      *
      * @param result The test result with which to instantiate a new test.
      */
-    protected abstract newTest (result: ITestResult): ITest
+    protected abstract newTest(result: ITestResult): ITest
 
     /**
      * Get this nugget's tests' results, if any.
      */
-    public getTestResults (): Array<ITestResult> {
+    public getTestResults(): Array<ITestResult> {
         return this.result.tests || []
     }
 
     /**
      * Count this nugget's children.
      */
-    public countChildren (): number {
+    public countChildren(): number {
         return this.bloomed
             ? this.tests.length
             : this.getTestResults().length
@@ -66,7 +67,7 @@ export abstract class Nugget extends ProjectEventEmitter {
     /**
      * Whether this nugget has children.
      */
-    public hasChildren (): boolean {
+    public hasChildren(): boolean {
         return this.countChildren() > 0
     }
 
@@ -76,7 +77,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      * @param result The result object that will be persisted.
      * @param status Which status to recursively set on tests. False will persist current status.
      */
-    protected defaults (result: ITestResult, status: Status | false = 'idle'): ITestResult {
+    protected defaults(result: ITestResult, status: Status | false = 'idle'): ITestResult {
         return (pickBy({
             id: result.id,
             name: result.name,
@@ -88,8 +89,8 @@ export abstract class Nugget extends ProjectEventEmitter {
             params: result.params,
             stats: result.stats,
             // ...
-            tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status))
-        }, property => {
+            tests: (result.tests || []).map((test: ITestResult) => this.defaults(test, status)),
+        }, (property) => {
             return isArray(property) ? property.length : !!property
         }) as any)
     }
@@ -99,7 +100,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param id The identifier of the test to try to find.
      */
-    public findTest (id: string): ITest | undefined {
+    public findTest(id: string): ITest | undefined {
         return find(this.tests, test => test.getId() === id)
     }
 
@@ -109,7 +110,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      * @param result The test result with which to instantiate a new test.
      * @param force Whether to bypass looking for the test in the nugget's current children.
      */
-    protected makeTest (result: ITestResult, force = false): ITest {
+    protected makeTest(result: ITestResult, force = false): ITest {
         let test: ITest | undefined | boolean = force ? false : this.findTest(result.id)
         if (!test) {
             test = this.newTest(result)
@@ -124,7 +125,7 @@ export abstract class Nugget extends ProjectEventEmitter {
     /**
      * Trigger an update of this nugget's selected count.
      */
-    protected async updateSelectedCounts (): Promise<void> {
+    protected async updateSelectedCounts(): Promise<void> {
         const total = this.tests.length
         const selectedChildren = this.tests.filter(test => test.selected).length
         const partial = selectedChildren > 0 && total > 0 && total > selectedChildren
@@ -139,7 +140,8 @@ export abstract class Nugget extends ProjectEventEmitter {
         // Update whether this nugget should be selected or not, based on children
         if (selectedChildren && !this.selected) {
             this.toggleSelected(true, false)
-        } else if (!selectedChildren && this.selected) {
+        }
+        else if (!selectedChildren && this.selected) {
             this.toggleSelected(false, false)
         }
     }
@@ -150,7 +152,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      * @param tests An array of test results.
      * @param cleanup Whether to clean obsolete tests after debriefing. Can be overridden by the method's logic.
      */
-    protected async debriefTests (tests: Array<ITestResult>, cleanup: boolean): Promise<void> {
+    protected async debriefTests(tests: Array<ITestResult>, cleanup: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
             // Attempt to find out if this is the last test to run.
             //
@@ -194,7 +196,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param cleanup Whether we should clean-up idle children (i.e. obsolete)
      */
-    protected async afterDebrief (cleanup: boolean): Promise<void> {
+    protected async afterDebrief(cleanup: boolean): Promise<void> {
         if (cleanup) {
             this.cleanTestsByStatus('queued')
             if (!this.expanded) {
@@ -212,8 +214,8 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param status The status by which to clean the tests.
      */
-    protected cleanTestsByStatus (status: Status): void {
-        this.tests = this.tests.filter(test => {
+    protected cleanTestsByStatus(status: Status): void {
+        this.tests = this.tests.filter((test) => {
             return test.getStatus() !== status
         })
     }
@@ -225,7 +227,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param result The test result we're extracting the status from
      */
-    protected getRecursiveStatus (result: ITestResult): Status {
+    protected getRecursiveStatus(result: ITestResult): Status {
         if (!result.status) {
             result.status = parseStatus((result.tests || []).map((test: ITestResult) => this.getRecursiveStatus(test)))
         }
@@ -237,7 +239,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param to The status we're updating to.
      */
-    protected updateStatus (to?: Status): void {
+    protected updateStatus(to?: Status): void {
         if (typeof to === 'undefined') {
             const statuses = this.bloomed
                 ? this.tests.map((test: ITest) => test.getStatus())
@@ -253,14 +255,14 @@ export abstract class Nugget extends ProjectEventEmitter {
     /**
      * Get this nugget's status.
      */
-    public getStatus (): Status {
+    public getStatus(): Status {
         return this.framework.getNuggetStatus(this.getId())
     }
 
     /**
      * Whether the nugget can run tests selectively.
      */
-    public canToggleTests (): boolean {
+    public canToggleTests(): boolean {
         return false
     }
 
@@ -270,18 +272,19 @@ export abstract class Nugget extends ProjectEventEmitter {
      * @param toggle Whether it should be toggled on or off. Leave blank for inverting toggle.
      * @param cascade Whether toggling should apply to nugget's children.
      */
-    public async toggleSelected (toggle?: boolean, cascade?: boolean): Promise<void> {
+    public async toggleSelected(toggle?: boolean, cascade?: boolean): Promise<void> {
         this.selected = typeof toggle === 'undefined' ? !this.selected : toggle
 
         // Selected nuggets should always bloom its tests.
         if (this.selected) {
             await this.bloom()
-        } else if (!this.expanded) {
+        }
+        else if (!this.expanded) {
             await this.wither()
         }
 
         if (this.canToggleTests() && cascade !== false) {
-            this.tests.forEach(test => {
+            this.tests.forEach((test) => {
                 test.toggleSelected(this.selected, true)
             })
         }
@@ -296,17 +299,18 @@ export abstract class Nugget extends ProjectEventEmitter {
      * @param toggle Whether it should be expanded or collapsed. Leave blank for inverting toggle.
      * @param cascade Whether toggling should apply to nugget's children.
      */
-    public async toggleExpanded (toggle?: boolean, cascade?: boolean): Promise<void> {
+    public async toggleExpanded(toggle?: boolean, cascade?: boolean): Promise<void> {
         this.expanded = typeof toggle === 'undefined' ? !this.expanded : toggle
 
         if (this.expanded) {
             await this.bloom()
-        } else {
+        }
+        else {
             await this.wither()
         }
 
         if (cascade !== false) {
-            this.tests.forEach(test => {
+            this.tests.forEach((test) => {
                 test.toggleExpanded(this.expanded)
             })
         }
@@ -315,7 +319,7 @@ export abstract class Nugget extends ProjectEventEmitter {
     /**
      * Make the test objects nested to this nugget.
      */
-    protected async bloom (): Promise<void> {
+    protected async bloom(): Promise<void> {
         if (this.bloomed) {
             return
         }
@@ -332,7 +336,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      * Destroy the test objects nested to this nugget, leaving only the static
      * JSON structure with which to build them again.
      */
-    protected async wither (): Promise<void> {
+    protected async wither(): Promise<void> {
         if (!this.bloomed) {
             return
         }
@@ -350,40 +354,40 @@ export abstract class Nugget extends ProjectEventEmitter {
      *
      * @param fresh The freshness state to set.
      */
-    public setFresh (fresh: boolean): void {
+    public setFresh(fresh: boolean): void {
         this.fresh = fresh
     }
 
     /**
      * Get the freshness state of a nugget.
      */
-    public isFresh (): boolean {
+    public isFresh(): boolean {
         return this.fresh
     }
 
     /**
      * Send all tests to renderer process.
      */
-    public async emitTestsToRenderer (): Promise<void> {
+    public async emitTestsToRenderer(): Promise<void> {
         if (!this.bloomed) {
             await this.bloom()
         }
 
         this.emitToRenderer(
             `${this.getId()}:framework-tests`,
-            this.tests.map((test: ITest) => test.render(false))
+            this.tests.map((test: ITest) => test.render(false)),
         )
     }
 
     /**
      * Get the ids of this nuggets and its children.
      */
-    protected getRecursiveNuggetIds (result: ITestResult): Array<string> {
+    protected getRecursiveNuggetIds(result: ITestResult): Array<string> {
         return flatten([
             result.id,
             ...(result.tests || []).map((test: ITestResult) => {
                 return this.getRecursiveNuggetIds(test)
-            })
+            }),
         ])
     }
 
@@ -391,7 +395,7 @@ export abstract class Nugget extends ProjectEventEmitter {
      * A chance for nuggets to append items to the context menus of
      * their representation in the renderer.
      */
-    public contextMenu (): Array<Electron.MenuItemConstructorOptions> {
+    public contextMenu(): Array<Electron.MenuItemConstructorOptions> {
         return []
     }
 }

@@ -14,6 +14,6 @@ export const Frameworks = [Jest, PHPUnit10, PHPUnit]
  *
  * @param type The slug representing the framework type.
  */
-export function getFrameworkByType (type: string): typeof Jest | typeof PHPUnit10 | typeof PHPUnit | undefined {
+export function getFrameworkByType(type: string): typeof Jest | typeof PHPUnit10 | typeof PHPUnit | undefined {
     return find(Frameworks, framework => framework.getDefaults().type === type)
 }

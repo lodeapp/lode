@@ -3,27 +3,27 @@ import { uniq } from 'lodash'
 /**
  * Possible statuses for tests.
  */
-export type Status =
-    | 'queued'
-    | 'running'
-    | 'passed'
-    | 'failed'
-    | 'incomplete'
-    | 'skipped'
-    | 'warning'
-    | 'partial'
-    | 'empty'
-    | 'idle'
-    | 'error'
+export type Status
+    = | 'queued'
+        | 'running'
+        | 'passed'
+        | 'failed'
+        | 'incomplete'
+        | 'skipped'
+        | 'warning'
+        | 'partial'
+        | 'empty'
+        | 'idle'
+        | 'error'
 
 /**
  * Possible statuses for frameworks.
  */
-export type FrameworkStatus =
-    | Status
-    | 'refreshing'
-    | 'loading'
-    | 'missing'
+export type FrameworkStatus
+    = | Status
+        | 'refreshing'
+        | 'loading'
+        | 'missing'
 
 /**
  * A ledger of statuses.
@@ -35,7 +35,7 @@ export type StatusLedger = {
 /**
  * A map of ids and their statuses.
  */
-export type StatusMap = {
+export interface StatusMap {
     [key: string]: Status
 }
 
@@ -57,7 +57,7 @@ export const labels = {
     running: 'Running',
     skipped: 'Skipped',
     stopped: 'Stopped',
-    warning: 'Warning'
+    warning: 'Warning',
 }
 
 /**
@@ -65,7 +65,7 @@ export const labels = {
  *
  * @param components An array of statuses with which to compute the final one.
  */
-export function parseStatus (components: Array<Status>): Status {
+export function parseStatus(components: Array<Status>): Status {
     // If no components were found, or every component is of status 'empty',
     // parent should be marked and 'empty', too.
     if (!components.length || components.every(component => component === 'empty')) {
@@ -128,7 +128,7 @@ export function parseStatus (components: Array<Status>): Status {
  *
  * @param components An array of statuses with which to compute the final one.
  */
-export function parseFrameworkStatus (components: Array<FrameworkStatus>): FrameworkStatus {
+export function parseFrameworkStatus(components: Array<FrameworkStatus>): FrameworkStatus {
     if (!components.length || components.every(component => component === 'empty')) {
         return 'empty'
     }

@@ -1,5 +1,6 @@
+import type { IProcess } from '@lib/process/process'
+import { DefaultProcess } from '@lib/process/process'
 import { concat } from 'lodash'
-import { IProcess, DefaultProcess } from '@lib/process/process'
 
 export class YarnProcess extends DefaultProcess implements IProcess {
     static readonly type: string = 'yarn'
@@ -9,7 +10,7 @@ export class YarnProcess extends DefaultProcess implements IProcess {
      *
      * @param command The command we're checking to match a Yarn runner.
      */
-    public static owns (command: string): boolean {
+    public static owns(command: string): boolean {
         return command.toLowerCase().search(/\byarn(\.js|\.cmd)?(?!\.)\b/) > -1
     }
 
@@ -17,7 +18,7 @@ export class YarnProcess extends DefaultProcess implements IProcess {
      * Return the array of arguments with which to spawn the child process.
      * We need to patch the Yarn binary path for Windows environments.
      */
-    protected spawnArguments (args: Array<string>): Array<string> {
+    protected spawnArguments(args: Array<string>): Array<string> {
         if (!args.length) {
             return args
         }

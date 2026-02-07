@@ -1,26 +1,29 @@
-import * as Path from 'path'
+import type { ProgressLedger } from '@lib/frameworks/progress'
+import type { IRepository, ParsedRepository } from '@lib/frameworks/repository'
+import type { FrameworkSort } from '@lib/frameworks/sort'
+import type { FrameworkStatus, Status, StatusLedger, StatusMap } from '@lib/frameworks/status'
+import type { ISuite, ISuiteResult } from '@lib/frameworks/suite'
+import type { FrameworkValidator } from '@lib/frameworks/validator'
+import type { IProcess, ProcessId } from '@lib/process/process'
+import type { SSHOptions } from '@lib/process/ssh'
+import type { ApplicationWindow } from '@main/application-window'
+import * as Path from 'node:path'
+import { ProjectEventEmitter } from '@lib/frameworks/emitter'
+import { sortDirection } from '@lib/frameworks/sort'
+import { parseStatus } from '@lib/frameworks/status'
+import { Suite } from '@lib/frameworks/suite'
+import { ProcessFactory } from '@lib/process/factory'
+import pool from '@lib/process/pool'
+import { queue } from '@lib/process/queue'
 import * as Fs from 'fs-extra'
+import fuzzy from 'fuzzysearch'
 import { chunk, debounce, find, findIndex, get, omit, orderBy, trim, trimStart } from 'lodash'
 import { v4 as uuid } from 'uuid'
-import fuzzy from 'fuzzysearch'
-import { ApplicationWindow } from '@main/application-window'
-import { ProcessId, IProcess } from '@lib/process/process'
-import { ProcessFactory } from '@lib/process/factory'
-import { queue } from '@lib/process/queue'
-import { ProjectEventEmitter } from '@lib/frameworks/emitter'
-import { IRepository, ParsedRepository } from '@lib/frameworks/repository'
-import { Suite, ISuite, ISuiteResult } from '@lib/frameworks/suite'
-import { FrameworkStatus, Status, StatusLedger, StatusMap, parseStatus } from '@lib/frameworks/status'
-import { ProgressLedger } from '@lib/frameworks/progress'
-import { FrameworkSort, sortDirection } from '@lib/frameworks/sort'
-import { FrameworkValidator } from '@lib/frameworks/validator'
-import { SSHOptions } from '@lib/process/ssh'
-import pool from '@lib/process/pool'
 
 /**
  * Framework object with repository context
  */
-export type FrameworkWithContext = {
+export interface FrameworkWithContext {
     repository: IRepository
     framework: IFramework
 }
@@ -33,7 +36,7 @@ export type FrameworkReloadOutcome = 'success' | 'killed' | 'empty'
 /**
  * A list of test suites.
  */
-export type SuiteList = {
+export interface SuiteList {
     suites: Array<ISuite>
 }
 
@@ -45,7 +48,7 @@ export type FrameworkFilter = 'keyword' | 'status' | 'group'
 /**
  * Options to instantiate a Framework with.
  */
-export type FrameworkOptions = {
+export interface FrameworkOptions {
     id?: string
     name: string
     type: string
@@ -72,7 +75,7 @@ export type FrameworkOptions = {
 /**
  * An object to declare default framework options.
  */
-export type FrameworkDefaults = {
+export interface FrameworkDefaults {
     all: FrameworkOptions
     darwin?: object
     win32?: object
@@ -88,47 +91,47 @@ export interface IFramework extends ProjectEventEmitter {
     path: string
     repositoryPath: string
     fullPath: string
-    runsInRemote: boolean,
+    runsInRemote: boolean
     remotePath: string | null
     status: FrameworkStatus
     readonly canToggleTests: boolean
 
-    getId (): string
-    getDisplayName (): string
-    getRemotePath (): string
-    getFullRemotePath (): string
-    start (): void
-    refresh (): void
-    stop (): Promise<any>
-    reset (): Promise<any>
-    isRunning (): boolean
-    isRefreshing (): boolean
-    isBusy (): boolean
-    empty (): boolean
-    count (): number
-    render (): FrameworkOptions
-    persist (): FrameworkOptions
-    save (): void
-    updateOptions (options: FrameworkOptions): Promise<void>
-    setActive (active: boolean): void
-    isActive (): boolean
-    isSelective (): boolean
-    getAllSuites (): Array<ISuite>
-    getSuites (): Array<ISuite>
-    getSuiteById (id: string): ISuite | undefined
-    getSelected (): SuiteList
-    emitSuitesToRenderer (): void
-    setFilter (filter: FrameworkFilter, value: Array<string> | string | null): void
-    getFilter (filter: FrameworkFilter): Array<string> | string | null
-    hasFilters (): boolean
-    resetFilters (): void
-    getLedger (): StatusLedger
-    getStatusMap (): StatusMap
-    getNuggetStatus (id: string): Status
-    setNuggetStatus (id: string, to: Status, from: Status, updateLedger: boolean): void
-    getProgressLedger (): ProgressLedger
-    resetProgressLedger (): void
-    processFeedbackText (text: string): string
+    getId: () => string
+    getDisplayName: () => string
+    getRemotePath: () => string
+    getFullRemotePath: () => string
+    start: () => void
+    refresh: () => void
+    stop: () => Promise<any>
+    reset: () => Promise<any>
+    isRunning: () => boolean
+    isRefreshing: () => boolean
+    isBusy: () => boolean
+    empty: () => boolean
+    count: () => number
+    render: () => FrameworkOptions
+    persist: () => FrameworkOptions
+    save: () => void
+    updateOptions: (options: FrameworkOptions) => Promise<void>
+    setActive: (active: boolean) => void
+    isActive: () => boolean
+    isSelective: () => boolean
+    getAllSuites: () => Array<ISuite>
+    getSuites: () => Array<ISuite>
+    getSuiteById: (id: string) => ISuite | undefined
+    getSelected: () => SuiteList
+    emitSuitesToRenderer: () => void
+    setFilter: (filter: FrameworkFilter, value: Array<string> | string | null) => void
+    getFilter: (filter: FrameworkFilter) => Array<string> | string | null
+    hasFilters: () => boolean
+    resetFilters: () => void
+    getLedger: () => StatusLedger
+    getStatusMap: () => StatusMap
+    getNuggetStatus: (id: string) => Status
+    setNuggetStatus: (id: string, to: Status, from: Status, updateLedger: boolean) => void
+    getProgressLedger: () => ProgressLedger
+    resetProgressLedger: () => void
+    processFeedbackText: (text: string) => string
 }
 
 /**
@@ -157,14 +160,15 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     protected process?: ProcessId
     protected running: Array<Promise<void>> = []
     protected killed = false
-    protected queue: { [index: string]: Function } = {}
+    protected queue: { [index: string]: (...args: any[]) => any } = {}
 
     protected ready = false
     protected suites: Array<ISuite> = []
     protected selective = false
     protected selected: SuiteList = {
-        suites: []
+        suites: [],
     }
+
     protected maxSelective = 200
     protected initialSuiteCount = 0
     protected initialSuiteReady = 0
@@ -174,8 +178,9 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     protected filters: { [key in FrameworkFilter]: Array<string> | string | null } = {
         keyword: null,
         status: null,
-        group: null
+        group: null,
     }
+
     protected sort!: FrameworkSort
     protected ledger: StatusLedger = {
         queued: 0,
@@ -188,19 +193,21 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         partial: 0,
         empty: 0,
         idle: 0,
-        error: 0
+        error: 0,
     }
+
     protected statuses: { [key: string]: Status } = {}
     protected progressLedger: ProgressLedger = {
         run: 0,
-        total: 0
+        total: 0,
     }
+
     protected emitLedgerToRenderer: _.DebouncedFunc<() => Promise<void>>
 
     static readonly defaults?: FrameworkDefaults
     static readonly sortDefault: FrameworkSort = 'name'
 
-    constructor (window: ApplicationWindow, options: FrameworkOptions) {
+    constructor(window: ApplicationWindow, options: FrameworkOptions) {
         super(window)
 
         // Debounce sending ledger and status to renderer
@@ -221,7 +228,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param options The options to build the framework with.
      */
-    protected async build (options: FrameworkOptions): Promise<void> {
+    protected async build(options: FrameworkOptions): Promise<void> {
         this.id = options.id || uuid()
         this.name = options.name
         this.type = options.type
@@ -240,7 +247,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         // Usage of `this.constructor` means that we can allow individual framework
         // implementations to override the static properties with their own defaults.
         this.proprietary = options.proprietary || {
-            ...(this.constructor as typeof Framework).getDefaults().proprietary
+            ...(this.constructor as typeof Framework).getDefaults().proprietary,
         }
         this.active = options.active || false
         this.sort = options.sort || (this.constructor as typeof Framework).sortDefault
@@ -252,7 +259,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Prepare this framework for running.
      */
-    protected async assemble (): Promise<void> {
+    protected async assemble(): Promise<void> {
         this.emit('state')
         this.emit('assembled')
         log.debug(`Assembled ${this.name}`)
@@ -261,14 +268,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Prepare this framework for running.
      */
-    protected injectPath (): string {
+    protected injectPath(): string {
         return Path.join(this.repositoryPath, '.lode', this.type)
     }
 
     /**
      * Clean-up after running a process for this framework.
      */
-    protected async disassemble (): Promise<void> {
+    protected async disassemble(): Promise<void> {
         if (this.runsInRemote) {
             try {
                 await Fs.remove(this.injectPath())
@@ -276,7 +283,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 if (!files.length) {
                     await Fs.remove(Path.join(this.repositoryPath, '.lode'))
                 }
-            } catch (error) {
+            }
+            catch (error) {
                 // Fail silently if folder is not found
                 // or can't be removed.
             }
@@ -289,7 +297,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * The command arguments for running this framework.
      */
-    protected abstract runArgs (): Array<string>
+    protected abstract runArgs(): Array<string>
 
     /**
      * The command arguments for running this framework selectively.
@@ -297,12 +305,12 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param suites The suites selected to run.
      * @param selectTests Whether to check for selected tests, or run the entire suite.
      */
-    protected abstract runSelectiveArgs (suites: Array<ISuite>, selectTests: boolean): Array<string>
+    protected abstract runSelectiveArgs(suites: Array<ISuite>, selectTests: boolean): Array<string>
 
     /**
      * Reload this framework's suites and tests.
      */
-    protected abstract reload (): Promise<FrameworkReloadOutcome>
+    protected abstract reload(): Promise<FrameworkReloadOutcome>
 
     /**
      * Test the given files for framework existence and return appropriate
@@ -313,7 +321,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param repository The parsed repository to test.
      */
-    public static async spawnForDirectory (repository: ParsedRepository): Promise<FrameworkOptions | false> {
+    public static async spawnForDirectory(repository: ParsedRepository): Promise<FrameworkOptions | false> {
         return false
     }
 
@@ -322,7 +330,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param options An potentially partial framework options object.
      */
-    public static hydrate (options?: object): FrameworkOptions {
+    public static hydrate(options?: object): FrameworkOptions {
         options = options || {}
         const defaults = {
             ...{
@@ -331,18 +339,18 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 command: '',
                 path: '',
                 runsInRemote: false,
-                proprietary: {}
+                proprietary: {},
             },
-            ...this.getDefaults()
+            ...this.getDefaults(),
         }
 
         return {
             ...defaults,
-            ...options
+            ...options,
         }
     }
 
-    public static getDefaults (): FrameworkOptions {
+    public static getDefaults(): FrameworkOptions {
         return {
             ...{
                 name: '',
@@ -350,17 +358,17 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 command: '',
                 path: '',
                 runsInRemote: false,
-                proprietary: {}
+                proprietary: {},
             },
             ...(get(this.defaults, 'all', {})),
-            ...(get(this.defaults, process.platform, {}))
+            ...(get(this.defaults, process.platform, {})),
         }
     }
 
     /**
      * Prepares the framework for sending out to renderer process.
      */
-    public render (): FrameworkOptions {
+    public render(): FrameworkOptions {
         return {
             id: this.id,
             name: this.name,
@@ -378,24 +386,24 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             proprietary: this.proprietary,
             sort: this.getSort(),
             selected: this.getSelected().suites.length,
-            canToggleTests: this.canToggleTests
+            canToggleTests: this.canToggleTests,
         }
     }
 
     /**
      * Prepares the framework for persistence.
      */
-    public persist (): FrameworkOptions {
+    public persist(): FrameworkOptions {
         return omit({
             ...this.render(),
-            suites: this.suites.map((suite: ISuite) => suite.persist())
+            suites: this.suites.map((suite: ISuite) => suite.persist()),
         }, 'status', 'selective')
     }
 
     /**
      * Save this framework in the persistent store.
      */
-    public save (): void {
+    public save(): void {
         this.emit('save')
     }
 
@@ -404,11 +412,11 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param options The new set of options to build the framework with.
      */
-    public async updateOptions (options: FrameworkOptions): Promise<void> {
-        const initChanged = options.command !== this.command ||
-            this.runsInRemote !== options.runsInRemote ||
-            this.sshHost !== options.sshHost ||
-            this.repositoryPath !== options.repositoryPath
+    public async updateOptions(options: FrameworkOptions): Promise<void> {
+        const initChanged = options.command !== this.command
+            || this.runsInRemote !== options.runsInRemote
+            || this.sshHost !== options.sshHost
+            || this.repositoryPath !== options.repositoryPath
 
         // If framework doesn't run in remote, reset
         // SSH options, lest they linger inadvertently.
@@ -422,7 +430,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         // Rebuild the options, except id (if not enforced) and suites.
         await this.build({
             ...options,
-            ...{ id: options.id || this.id || uuid() }
+            ...{ id: options.id || this.id || uuid() },
         })
 
         if (initChanged) {
@@ -440,14 +448,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Get this framework's id.
      */
-    public getId (): string {
+    public getId(): string {
         return this.id
     }
 
     /**
      * Get this framework's display name.
      */
-    public getDisplayName (): string {
+    public getDisplayName(): string {
         return this.name
     }
 
@@ -455,14 +463,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Get this framework's remote path, if any, forcibly prefixing
      * it with a slash as they are used as root paths.
      */
-    public getRemotePath (): string {
-        return this.remotePath ? '/' + trimStart(this.remotePath, '/') : ''
+    public getRemotePath(): string {
+        return this.remotePath ? `/${trimStart(this.remotePath, '/')}` : ''
     }
 
     /**
      * Get this framework's full remote path, if any, including the tests path.
      */
-    public getFullRemotePath (): string {
+    public getFullRemotePath(): string {
         if (!this.getRemotePath()) {
             return ''
         }
@@ -474,7 +482,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param to The status we're updating to.
      */
-    protected updateStatus (to?: FrameworkStatus): void {
+    protected updateStatus(to?: FrameworkStatus): void {
         if (typeof to === 'undefined') {
             to = parseStatus(this.suites.map(suite => suite.getStatus()))
         }
@@ -490,14 +498,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Run this framework's test suites, either fully or selectively.
      */
-    protected async handleRun (): Promise<void> {
+    protected async handleRun(): Promise<void> {
         await this.assemble()
         if (this.selective || this.hasFilters()) {
             return this.runSelective()
                 .then(() => {
                     this.disassemble()
                 })
-                .catch(error => {
+                .catch((error) => {
                     this.onError(error)
                 })
         }
@@ -505,7 +513,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             .then(() => {
                 this.disassemble()
             })
-            .catch(error => {
+            .catch((error) => {
                 this.onError(error)
             })
     }
@@ -514,7 +522,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Stop any processes that apply to this framework. This can include
      * running, refreshing or cancelling any queued jobs.
      */
-    public async stop (): Promise<void> {
+    public async stop(): Promise<void> {
         // Returned promise is being chained and will always fulfill,
         // so we need to instantiate it with <void> on Typescript 4.1+
         return new Promise<void>((resolve, reject) => {
@@ -551,7 +559,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 this.emit('change', this)
                 log.debug(`Stopping ${this.name}`)
             })
-            .catch(error => {
+            .catch((error) => {
                 this.killed = false
                 this.onError(error)
             })
@@ -560,49 +568,49 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Reset this framework's state.
      */
-    public async reset (): Promise<any> {
+    public async reset(): Promise<any> {
         this.resetFilters()
     }
 
     /**
      * Whether this framework is running.
      */
-    public isRunning (): boolean {
+    public isRunning(): boolean {
         return this.status === 'running'
     }
 
     /**
      * Whether this framework is refreshing.
      */
-    public isRefreshing (): boolean {
+    public isRefreshing(): boolean {
         return this.status === 'refreshing'
     }
 
     /**
      * Whether this framework is busy.
      */
-    public isBusy (): boolean {
+    public isBusy(): boolean {
         return this.isRunning() || this.isRefreshing() || this.status === 'queued'
     }
 
     /**
      * How many suites the framework currently has.
      */
-    public count (): number {
+    public count(): number {
         return this.suites.length
     }
 
     /**
      * Whether this framework has any suites.
      */
-    public empty (): boolean {
+    public empty(): boolean {
         return this.count() === 0
     }
 
     /**
      * Run all suites inside this framework.
      */
-    protected async run (): Promise<void> {
+    protected async run(): Promise<void> {
         this.rebuildStatusMap('queued')
         this.rebuildLedger()
 
@@ -631,11 +639,12 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                                 this.afterRun()
                             }
                             resolve()
-                        }).catch(error => {
+                        })
+                        .catch((error) => {
                             reject(error)
                         })
                 })
-                .catch(error => {
+                .catch((error) => {
                     // Rejecting the Promise is enough to bubble the error
                     // up the chain, as we're already catching it on @handleRun
                     reject(error)
@@ -647,7 +656,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Run this framework selectively (i.e. only run suites that have been
      * selected by the user).
      */
-    protected async runSelective (): Promise<void> {
+    protected async runSelective(): Promise<void> {
         const suites = this.selective ? this.selected.suites : this.getSuites()
 
         // If we're running filtered matches and all suites match, just
@@ -656,8 +665,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             return this.run()
         }
 
-        suites.forEach(suite => {
-            suite.getNuggetIds(this.selective).forEach(id => {
+        suites.forEach((suite) => {
+            suite.getNuggetIds(this.selective).forEach((id) => {
                 this.statuses[id] = 'queued'
             })
         })
@@ -677,29 +686,28 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                     }
                     return ''
                 })
-            }, Promise.resolve('success'))
-                .then((outcome: string) => {
-                    if (outcome !== 'killed') {
-                        this.afterRun()
-                    }
-                    resolve()
-                }).catch(error => {
-                    reject(error)
-                })
+            }, Promise.resolve('success')).then((outcome: string) => {
+                if (outcome !== 'killed') {
+                    this.afterRun()
+                }
+                resolve()
+            }).catch((error) => {
+                reject(error)
+            })
         })
     }
 
     /**
      * Refresh the list of suites inside this framework.
      */
-    protected async handleRefresh (): Promise<void> {
+    protected async handleRefresh(): Promise<void> {
         await this.assemble()
         this.updateStatus('refreshing')
-        this.suites.forEach(suite => {
+        this.suites.forEach((suite) => {
             suite.setFresh(false)
         })
         return this.reload()
-            .then(outcome => {
+            .then((outcome) => {
                 if (outcome !== 'killed') {
                     this.afterRefresh()
                     this.updateStatus()
@@ -707,7 +715,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 }
                 this.disassemble()
             })
-            .catch(error => {
+            .catch((error) => {
                 this.onError(error)
             })
     }
@@ -723,17 +731,18 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param args The arguments to run the report process with.
      */
-    protected async report (args: Array<string>): Promise<string> {
+    protected async report(args: Array<string>): Promise<string> {
         return new Promise((resolve, reject) => {
             this.spawn(args)
                 .on('report', ({ report }) => {
                     this.progress()
                     try {
                         if (typeof report === 'string') {
-                            throw Error('Report was malformed.')
+                            throw new TypeError('Report was malformed.')
                         }
                         this.running.push(this.debriefSuite(report))
-                    } catch (error: any) {
+                    }
+                    catch (error: any) {
                         this.emit('error', error)
                         this.emitToRenderer(`${this.id}:error`, error.toString(), this.troubleshoot(error))
                         log.error('Failed to debrief suite results.', error)
@@ -747,7 +756,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 .on('killed', () => {
                     resolve('killed')
                 })
-                .on('error', error => {
+                .on('error', (error) => {
                     reject(error)
                 })
         })
@@ -756,15 +765,15 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * A function that runs after a framework has been refreshed.
      */
-    protected afterRefresh (): void {
+    protected afterRefresh(): void {
         this.cleanStaleSuites()
         // After a full refresh, emit tests from expanded nuggets recursively
         // to the renderer process.
         this.suites.filter(suite => suite.expanded)
-            .forEach(suite => {
+            .forEach((suite) => {
                 suite.emitTestsToRenderer()
                 suite.tests.filter(test => test.expanded)
-                    .forEach(test => {
+                    .forEach((test) => {
                         test.emitTestsToRenderer()
                     })
             })
@@ -774,17 +783,18 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * A function that runs after a framework has been run, either fully or
      * selectively.
      */
-    protected afterRun (): void {
+    protected afterRun(): void {
         // If a selected suite didn't run, mark their status as "error".
         if (this.selective) {
-            this.selected.suites.forEach(suite => {
-                suite.getNuggetIds(true).forEach(id => {
-                    if (['queued', 'running'].indexOf(this.statuses[id]) > -1) {
+            this.selected.suites.forEach((suite) => {
+                suite.getNuggetIds(true).forEach((id) => {
+                    if (['queued', 'running'].includes(this.statuses[id])) {
                         this.statuses[id] = 'error'
                     }
                 })
             })
-        } else {
+        }
+        else {
             // Suites which remain queued after a run are stale
             // and should be removed.
             let nuggets: Array<string> = []
@@ -800,7 +810,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             // Reset status when removing nuggets
             Object.keys(this.statuses)
                 .filter(id => !nuggets.includes(id))
-                .forEach(id => {
+                .forEach((id) => {
                     delete this.statuses[id]
                 })
 
@@ -815,7 +825,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Clean currently loaded suites that are not marked as "fresh".
      */
-    protected cleanStaleSuites (): void {
+    protected cleanStaleSuites(): void {
         let nuggets: Array<string> = []
         this.suites = this.suites.filter((suite: ISuite) => {
             if (!suite.isFresh()) {
@@ -829,7 +839,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         // Reset status when removing nuggets
         Object.keys(this.statuses)
             .filter(id => !nuggets.includes(id))
-            .forEach(id => {
+            .forEach((id) => {
                 delete this.statuses[id]
             })
 
@@ -842,7 +852,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param suite The suite being removed.
      */
-    protected onSuiteRemove (suite: ISuite): void {
+    protected onSuiteRemove(suite: ISuite): void {
         suite.removeAllListeners()
         this.updateSelected(suite)
     }
@@ -852,7 +862,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param error The error to be handled
      */
-    protected onError (error: Error): void {
+    protected onError(error: Error): void {
         this.idleQueued()
         this.updateStatus('error')
         this.emit('error', error)
@@ -864,13 +874,13 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Reset all previously queued suites.
      */
-    protected idleQueued (): void {
+    protected idleQueued(): void {
         const suites = this.selective ? this.selected.suites : this.suites
-        suites.forEach(suite => {
+        suites.forEach((suite) => {
             const nuggets = suite.getNuggetIds(this.selective)
             nuggets.shift()
-            nuggets.forEach(id => {
-                if (['queued', 'running'].indexOf(this.getNuggetStatus(id)) > -1) {
+            nuggets.forEach((id) => {
+                if (['queued', 'running'].includes(this.getNuggetStatus(id))) {
                     this.statuses[id] = 'idle'
                 }
             })
@@ -887,7 +897,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param args The arguments to spawn the process with.
      */
-    protected spawn (args: Array<string>): IProcess {
+    protected spawn(args: Array<string>): IProcess {
         const process = ProcessFactory.make({
             command: this.command,
             args,
@@ -899,8 +909,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 user: this.sshUser,
                 port: this.sshPort,
                 identity: this.sshIdentity,
-                path: this.getRemotePath()
-            }
+                path: this.getRemotePath(),
+            },
         })
 
         this.process = process.getId()
@@ -915,14 +925,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param partial The suite's run results
      */
-    protected hydrateSuiteResult (partial: ISuiteResult): ISuiteResult {
+    protected hydrateSuiteResult(partial: ISuiteResult): ISuiteResult {
         return partial
     }
 
     /**
      * The class of suite we use for this framework.
      */
-    protected suiteClass (): typeof Suite {
+    protected suiteClass(): typeof Suite {
         return Suite
     }
 
@@ -931,7 +941,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param result The standardised suite results.
      */
-    protected newSuite (result: ISuiteResult): ISuite {
+    protected newSuite(result: ISuiteResult): ISuite {
         const SuiteClass = this.suiteClass()
         return new SuiteClass(this, result)
     }
@@ -942,7 +952,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param file The filename of the suite being searched.
      */
-    protected findSuite (file: string): ISuite | undefined {
+    protected findSuite(file: string): ISuite | undefined {
         return find(this.suites, { file })
     }
 
@@ -953,34 +963,33 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param result An object representing a suite's test results.
      * @param rebuild Whether to rebuild the tests inside the suite, regardless of them being built already.
      */
-    protected async makeSuite (result: ISuiteResult, rebuild = false): Promise<ISuite> {
-        return new Promise(async (resolve, reject) => {
-            let suite: ISuite | undefined = this.findSuite(result.file)
+    protected async makeSuite(result: ISuiteResult, rebuild = false): Promise<ISuite> {
+        let suite: ISuite | undefined = this.findSuite(result.file)
 
-            if (!suite) {
-                suite = this.newSuite(result)
-                suite.on('selected', this.updateSelected.bind(this))
-                this.suites.push(suite)
-            } else if (rebuild) {
-                await suite.rebuildTests(result)
-            }
+        if (!suite) {
+            suite = this.newSuite(result)
+            suite.on('selected', this.updateSelected.bind(this))
+            this.suites.push(suite)
+        }
+        else if (rebuild) {
+            await suite.rebuildTests(result)
+        }
 
-            // Mark suite as freshly made before returning,
-            // in case we need to clear out stale ones.
-            suite.setFresh(true)
+        // Mark suite as freshly made before returning,
+        // in case we need to clear out stale ones.
+        suite.setFresh(true)
 
-            this.onSuiteReady()
-            resolve(suite)
-        })
+        this.onSuiteReady()
+        return suite
     }
 
     /**
      * Clear the framework's suites.
      */
-    protected resetSuites (): void {
+    protected resetSuites(): void {
         this.suites = []
         this.selected = {
-            suites: []
+            suites: [],
         }
         this.selective = false
         this.rebuildStatusMap()
@@ -990,7 +999,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Prepare the framework for ready state.
      */
-    protected onReady (): void {
+    protected onReady(): void {
         // Ready event will only trigger once.
         if (this.ready) {
             return
@@ -1004,7 +1013,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Listener for when a child suite is ready.
      */
-    protected onSuiteReady (): void {
+    protected onSuiteReady(): void {
         this.initialSuiteReady++
     }
 
@@ -1013,7 +1022,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param suites The suites to add to this project.
      */
-    protected async loadSuites (suites: Array<ISuiteResult>): Promise<void> {
+    protected async loadSuites(suites: Array<ISuiteResult>): Promise<void> {
         return new Promise((resolve, reject) => {
             Promise.all(suites.map((result: ISuiteResult) => {
                 // Hydrate results in case schema has changed from previously saved state
@@ -1032,7 +1041,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param file The path of the file being checked.
      */
-    protected fileInPath (file: string): boolean {
+    protected fileInPath(file: string): boolean {
         return file.startsWith(this.runsInRemote ? this.getRemotePath() : this.fullPath)
     }
 
@@ -1042,10 +1051,10 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param path The full path whose presence we're trying to check
      * @param file The file which potentially holds a portion of the given path.
      */
-    protected pathInFile (path: string, file: string): string {
+    protected pathInFile(path: string, file: string): string {
         return trim(path, '/').split('/').reduce((found: string, directory: string) => {
-            if (file.startsWith(found + directory + '/')) {
-                found += directory + '/'
+            if (file.startsWith(`${found + directory}/`)) {
+                found += `${directory}/`
                 return found
             }
             return ''
@@ -1057,11 +1066,12 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param suite The suite which triggered this update.
      */
-    protected updateSelected (suite: ISuite): void {
+    protected updateSelected(suite: ISuite): void {
         const index = findIndex(this.selected.suites, selected => selected.getId() === suite.getId())
         if (suite.selected && index === -1) {
             this.selected.suites.push(suite)
-        } else if (index > -1) {
+        }
+        else if (index > -1) {
             this.selected.suites.splice(index, 1)
         }
 
@@ -1075,7 +1085,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param to The new status of a suite inside this framework.
      * @param from The old status of a suite inside this framework, if any.
      */
-    protected updateLedger (to: Status | null, from: Status): void {
+    protected updateLedger(to: Status | null, from: Status): void {
         if (to) {
             this.ledger[to]!++
         }
@@ -1087,14 +1097,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Rebuild the status ledger
      */
-    protected rebuildLedger (): void {
+    protected rebuildLedger(): void {
         // Reset ledger before starting
         for (const key of Object.keys(this.ledger)) {
             this.ledger[<Status>key] = 0
         }
 
         // Iterate through suites and update each ledger status
-        this.suites.forEach(suite => {
+        this.suites.forEach((suite) => {
             this.ledger[suite.getStatus()]++
         })
         this.emitLedgerToRenderer()
@@ -1103,17 +1113,17 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Return the framework's status ledger.
      */
-    public getLedger (): StatusLedger {
+    public getLedger(): StatusLedger {
         return this.ledger
     }
 
     /**
      * Rebuild the status map.
      */
-    protected rebuildStatusMap (status: Status = 'idle'): void {
+    protected rebuildStatusMap(status: Status = 'idle'): void {
         this.statuses = {}
         this.suites.forEach((suite: ISuite) => {
-            suite.getNuggetIds(false).forEach(id => {
+            suite.getNuggetIds(false).forEach((id) => {
                 this.statuses[id] = status
             })
         })
@@ -1122,21 +1132,21 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Return the framework's status map.
      */
-    public getStatusMap (): StatusMap {
+    public getStatusMap(): StatusMap {
         return this.statuses
     }
 
     /**
      * Return the status of a nugget from this framework.
      */
-    public getNuggetStatus (id: string): Status {
+    public getNuggetStatus(id: string): Status {
         return get(this.statuses, id, 'idle')
     }
 
     /**
      * Set the status of a nugget from this framework.
      */
-    public setNuggetStatus (id: string, to: Status, from: Status, updateLedger: boolean): void {
+    public setNuggetStatus(id: string, to: Status, from: Status, updateLedger: boolean): void {
         this.statuses[id] = to
         if (updateLedger) {
             this.updateLedger(to, from)
@@ -1148,7 +1158,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Progress the ledger by one unit.
      */
-    protected progress (): void {
+    protected progress(): void {
         this.progressLedger.run++
         this.emit('progress')
     }
@@ -1158,7 +1168,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param suites The suites whose progress we're setting up to measure.
      */
-    protected measureProgressForSuites (suites: Array<ISuite>): void {
+    protected measureProgressForSuites(suites: Array<ISuite>): void {
         this.updateProgressLedger(0, this.calculateProgressTotalForSuites(suites))
         this.emit('measuring', this.progressLedger)
     }
@@ -1170,7 +1180,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param suites The suites whose progress we're setting up to measure.
      */
-    protected calculateProgressTotalForSuites (suites: Array<ISuite>): number {
+    protected calculateProgressTotalForSuites(suites: Array<ISuite>): number {
         return suites.length
     }
 
@@ -1180,7 +1190,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param run The number of suites already run.
      * @param total The total number of suites to mark progress of.
      */
-    protected updateProgressLedger (run: number, total?: number): void {
+    protected updateProgressLedger(run: number, total?: number): void {
         this.progressLedger.run = run
         if (typeof total !== 'undefined') {
             this.progressLedger.total = total
@@ -1190,14 +1200,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Return the framework's progress ledger.
      */
-    public getProgressLedger (): ProgressLedger {
+    public getProgressLedger(): ProgressLedger {
         return this.progressLedger
     }
 
     /**
      * Reset the framework's progress ledger.
      */
-    public resetProgressLedger (): void {
+    public resetProgressLedger(): void {
         this.updateProgressLedger(0, 0)
     }
 
@@ -1206,7 +1216,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param partial The suite's run results (potentially incomplete)
      */
-    protected async debriefSuite (partial: ISuiteResult): Promise<void> {
+    protected async debriefSuite(partial: ISuiteResult): Promise<void> {
         return new Promise((resolve, reject) => {
             const result: ISuiteResult = this.hydrateSuiteResult(partial)
             this.makeSuite(result).then((suite: ISuite) => {
@@ -1223,7 +1233,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param suite The test suite being checked for needing clean-up.
      */
-    protected shouldCleanup (suite: ISuite): boolean {
+    protected shouldCleanup(suite: ISuite): boolean {
         if (!this.selective) {
             return true
         }
@@ -1235,7 +1245,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Queue a run job with a unique id. This let's us cancel the job
      * if it's not yet executed simply by clearing the internal queue object.
      */
-    public start (): void {
+    public start(): void {
         // Only queue job if no other is queued or currently running
         if (this.isBusy() || Object.keys(this.queue).length > 0) {
             return
@@ -1248,7 +1258,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         // Progress should be measured from a framework being queued,
         // rather than it actually being run.
         this.measureProgressForSuites(
-            this.selective ? this.selected.suites : (this.hasFilters() ? this.getSuites() : this.suites)
+            this.selective ? this.selected.suites : (this.hasFilters() ? this.getSuites() : this.suites),
         )
     }
 
@@ -1256,7 +1266,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Queue a `refresh` job with a unique id.
      * See @start for more info.
      */
-    public refresh (): void {
+    public refresh(): void {
         // Only queue job if no other is queued or currently running
         if (this.isBusy() || Object.keys(this.queue).length > 0) {
             return
@@ -1275,7 +1285,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param id The unique id of the job to run.
      */
-    protected handleQueued (id: string): Function {
+    protected handleQueued(id: string): (...args: any[]) => any {
         if (typeof this.queue[id] === 'undefined') {
             log.debug(`Queued job with id ${id} was cancelled before execution.`)
             return () => Promise.resolve()
@@ -1293,7 +1303,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param active The active state to set.
      */
-    public setActive (active: boolean): void {
+    public setActive(active: boolean): void {
         this.active = active
         this.emit('change', this)
     }
@@ -1301,21 +1311,21 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Get the active state of a framework.
      */
-    public isActive (): boolean {
+    public isActive(): boolean {
         return this.active
     }
 
     /**
      * Whether the framework has any selected suites.
      */
-    public isSelective (): boolean {
+    public isSelective(): boolean {
         return this.selective
     }
 
     /**
      * Get all the framework's suites in active sort order.
      */
-    public getAllSuites (): Array<ISuite> {
+    public getAllSuites(): Array<ISuite> {
         return this.sortSuites(this.suites)
     }
 
@@ -1323,12 +1333,12 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Get the framework's suites, considering active filters
      * and sort order.
      */
-    public getSuites (): Array<ISuite> {
+    public getSuites(): Array<ISuite> {
         if (!this.hasFilters()) {
             return this.getAllSuites()
         }
 
-        const exact = this.filters.keyword && (this.filters.keyword as string).match(/^[\'\"].+[\'\"]$/g)
+        const exact = this.filters.keyword && (this.filters.keyword as string).match(/^['"].+['"]$/g)
         const keyword = this.getFilterKeyword()
         return this.sortSuites(this.suites.filter((suite: ISuite) => {
             let match = true
@@ -1336,20 +1346,21 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                 if (exact) {
                     // Exact searches require filtering string to be contained
                     // within a suite's file path.
-                    match = suite.getFilePath().toUpperCase().indexOf(keyword) > -1
-                } else {
+                    match = suite.getFilePath().toUpperCase().includes(keyword)
+                }
+                else {
                     match = fuzzy(keyword, suite.getDisplayName().toUpperCase())
                 }
             }
             if (this.filters.status) {
                 // Only match if this hasn't been previously filtered out.
                 match = match && !(
-                    this.filters.status.indexOf(suite.getStatus()) === -1 &&
-                    (this.filters.status.indexOf('selected') === -1 || !suite.selected) &&
+                    !this.filters.status.includes(suite.getStatus())
+                    && (!this.filters.status.includes('selected') || !suite.selected)
                     // Don't exclude queued or running suites, otherwise running
                     // a matched status filter would automatically dissolve
                     // all matches once it starts.
-                    ['queued', 'running'].indexOf(suite.getStatus()) === -1
+                    && !['queued', 'running'].includes(suite.getStatus())
                 )
             }
 
@@ -1371,7 +1382,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param id The unique id of the suite to get.
      */
-    public getSuiteById (id: string): ISuite | undefined {
+    public getSuiteById(id: string): ISuite | undefined {
         const index = findIndex(this.suites, suite => suite.getId() === id)
         if (index > -1) {
             return this.suites[index]
@@ -1382,27 +1393,27 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Get the framework's selected suites.
      */
-    public getSelected (): SuiteList {
+    public getSelected(): SuiteList {
         return this.selected
     }
 
     /**
      * Send current suites to renderer process.
      */
-    public emitSuitesToRenderer (): void {
+    public emitSuitesToRenderer(): void {
         this.emitToRenderer(
             `${this.id}:refreshed`,
             this.getSuites().map((suite: ISuite) => suite.render(false)),
-            this.count()
+            this.count(),
         )
     }
 
     /**
      * Set a filter for this framework.
      */
-    public setFilter (
+    public setFilter(
         filter: FrameworkFilter,
-        value: Array<string> | string | null
+        value: Array<string> | string | null,
     ): void {
         this.filters[filter] = Array.isArray(value) ? (value.length ? value : null) : value
         this.emitSuitesToRenderer()
@@ -1411,25 +1422,25 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Get the value of a framework filter.
      */
-    public getFilter (filter: FrameworkFilter): Array<string> | string | null {
+    public getFilter(filter: FrameworkFilter): Array<string> | string | null {
         return this.filters[filter]
     }
 
     /**
      * Whether the framework has any filters currently active.
      */
-    public hasFilters (): boolean {
+    public hasFilters(): boolean {
         return Object.values(this.filters).some(value => !!value)
     }
 
     /**
      * Reset all filters for this framework.
      */
-    public resetFilters (): void {
+    public resetFilters(): void {
         this.filters = {
             keyword: null,
             status: null,
-            group: null
+            group: null,
         }
         this.emitSuitesToRenderer()
     }
@@ -1439,7 +1450,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * path sections not shown in the interface), and processed in a way that
      * that be processes by the filtering routine.
      */
-    protected getFilterKeyword (): string | null {
+    protected getFilterKeyword(): string | null {
         if (!this.filters.keyword) {
             return null
         }
@@ -1453,7 +1464,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
         const embeddedPath: string = this.pathInFile(this.fullPath, keyword)
         if (this.runsInRemote && remoteEmbeddedPath) {
             keyword = Path.relative(remoteEmbeddedPath, keyword)
-        } else if (embeddedPath) {
+        }
+        else if (embeddedPath) {
             keyword = Path.relative(embeddedPath, keyword)
         }
 
@@ -1463,7 +1475,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
     /**
      * Get the current sort option for this framework.
      */
-    protected getSort (): FrameworkSort {
+    protected getSort(): FrameworkSort {
         return (this.constructor as typeof Framework).sortDefault
     }
 
@@ -1472,11 +1484,11 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param suites The suites to sort
      */
-    protected sortSuites (suites: Array<ISuite>): Array<ISuite> {
+    protected sortSuites(suites: Array<ISuite>): Array<ISuite> {
         return orderBy(
             suites,
             (suite: ISuite) => this.sortProperty(suite, this.sort),
-            sortDirection(this.sort, false)
+            sortDirection(this.sort, false),
         )
     }
 
@@ -1486,7 +1498,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * @param suite The suites to get the property from.
      * @param sort The sorting option to enforce on the suite.
      */
-    protected sortProperty (suite: ISuite, sort?: FrameworkSort): string | number | null {
+    protected sortProperty(suite: ISuite, sort?: FrameworkSort): string | number | null {
         switch (sort) {
             case 'framework':
                 return suite.getRunningOrder()
@@ -1501,14 +1513,14 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Validate framework specific options. This is meant to be overridden
      * by specific framework implementations (e.g. PHPUnit).
      */
-    public static validate (validator: FrameworkValidator, options: any): void {
+    public static validate(validator: FrameworkValidator, options: any): void {
         // For generic framework validation see @lib/frameworks/validator.
     }
 
     /**
      * Provide setup instructions for using Lode with a testing framework.
      */
-    public static instructions (): string {
+    public static instructions(): string {
         return ''
     }
 
@@ -1520,7 +1532,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param text The feedback text to be processed by the framework.
      */
-    public processFeedbackText (text: string): string {
+    public processFeedbackText(text: string): string {
         return text
     }
 
@@ -1537,7 +1549,7 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      *
      * @param error The error to be parsed for troubleshooting.
      */
-    protected troubleshoot (error: Error | string): string {
+    protected troubleshoot(error: Error | string): string {
         if (error instanceof Error) {
             error = error.toString()
         }

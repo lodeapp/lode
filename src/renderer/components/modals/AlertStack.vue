@@ -1,3 +1,66 @@
+<script>
+import { get } from 'lodash'
+import { mapGetters } from 'vuex'
+import Ansi from '@/components/Ansi.vue'
+import Modal from '@/components/modals/mixins/modal'
+
+export default {
+    name: 'AlertStack',
+    components: {
+        Ansi,
+    },
+    mixins: [Modal],
+    data() {
+        return {
+            index: 0,
+        }
+    },
+    computed: {
+        current() {
+            return this.alerts[this.index]
+        },
+        message() {
+            return get(this.current, 'message')
+        },
+        error() {
+            return get(this.current, 'error')
+        },
+        help() {
+            return get(this.current, 'help')
+        },
+        type() {
+            return get(this.current, 'type', 'error')
+        },
+        title() {
+            const title = get(this.current, 'title')
+            if (title) {
+                return title
+            }
+            switch (this.type) {
+                case 'error':
+                    return 'Error'
+                default:
+                    return 'Alert'
+            }
+        },
+        isLast() {
+            return this.index === (this.alerts.length - 1)
+        },
+        ...mapGetters({
+            alerts: 'alert/alerts',
+        }),
+    },
+    methods: {
+        next() {
+            this.index++
+        },
+        previous() {
+            this.index--
+        },
+    },
+}
+</script>
+
 <template>
     <Modal :help="help" :class="[alerts.length > 1 ? 'modal--paged' : '']">
         <template #header>
@@ -8,7 +71,9 @@
             </button>
         </template>
         <div :key="$string.from(current)">
-            <p v-markdown>{{ message }}</p>
+            <p v-markdown>
+                {{ message }}
+            </p>
             <Ansi v-if="error" :content="error" />
         </div>
         <template #footer>
@@ -48,66 +113,3 @@
         </template>
     </Modal>
 </template>
-
-<script>
-import { get } from 'lodash'
-import { mapGetters } from 'vuex'
-import Ansi from '@/components/Ansi.vue'
-import Modal from '@/components/modals/mixins/modal'
-
-export default {
-    name: 'AlertStack',
-    components: {
-        Ansi
-    },
-    mixins: [Modal],
-    data () {
-        return {
-            index: 0
-        }
-    },
-    computed: {
-        current () {
-            return this.alerts[this.index]
-        },
-        message () {
-            return get(this.current, 'message')
-        },
-        error () {
-            return get(this.current, 'error')
-        },
-        help () {
-            return get(this.current, 'help')
-        },
-        type () {
-            return get(this.current, 'type', 'error')
-        },
-        title () {
-            const title = get(this.current, 'title')
-            if (title) {
-                return title
-            }
-            switch (this.type) {
-                case 'error':
-                    return 'Error'
-                default:
-                    return 'Alert'
-            }
-        },
-        isLast () {
-            return this.index === (this.alerts.length - 1)
-        },
-        ...mapGetters({
-            alerts: 'alert/alerts'
-        })
-    },
-    methods: {
-        next () {
-            this.index++
-        },
-        previous () {
-            this.index--
-        }
-    }
-}
-</script>

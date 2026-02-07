@@ -1,6 +1,6 @@
-import * as Path from 'path'
+import * as Path from 'node:path'
 
-export function getResourceDirectory (): string {
+export function getResourceDirectory(): string {
     return __DEV__
         ? Path.join(process.cwd(), 'dist')
         : Path.join(process.resourcesPath, 'app.asar.unpacked', 'dist')
@@ -14,9 +14,9 @@ export function getResourceDirectory (): string {
  *
  * @param loc The path to process.
  */
-export function unpacked (loc: string): string {
+export function unpacked(loc: string): string {
     const s = Path.sep
-    return loc.replace(/[\\\/]?\bapp\.asar\b[\\\/]?/, `${s}app.asar.unpacked${s}`)
+    return loc.replace(/[\\/]?\bapp\.asar\b[\\/]?/, `${s}app.asar.unpacked${s}`)
 }
 
 /**
@@ -26,7 +26,7 @@ export function unpacked (loc: string): string {
  *
  * @param loc The path to process.
  */
-export function loc (loc: string): string {
+export function loc(loc: string): string {
     return loc.split('/').join(Path.sep)
 }
 
@@ -36,6 +36,6 @@ export function loc (loc: string): string {
  *
  * @param loc The path to process.
  */
-export function posix (loc: string): string {
+export function posix(loc: string): string {
     return loc.split(Path.sep).join('/')
 }

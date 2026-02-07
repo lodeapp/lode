@@ -1,8 +1,8 @@
-import Fs from 'fs'
-import * as Url from 'url'
-import * as Path from 'path'
-import { pathExistsSync } from 'fs-extra'
+import Fs from 'node:fs'
+import * as Path from 'node:path'
+import * as Url from 'node:url'
 import { shell } from 'electron'
+import { pathExistsSync } from 'fs-extra'
 
 export class File {
     protected static restricted = ['.cmd', '.exe', '.bat', '.sh']
@@ -12,9 +12,9 @@ export class File {
      *
      * @param extension The extension to check
      */
-    public static isExtensionSafe (extension: string): boolean {
+    public static isExtensionSafe(extension: string): boolean {
         if (__WIN32__) {
-            return this.restricted.indexOf(extension.toLowerCase()) === -1
+            return !this.restricted.includes(extension.toLowerCase())
         }
         return true
     }
@@ -24,7 +24,7 @@ export class File {
      *
      * @param path The path of the file to check
      */
-    public static exists (path: string): boolean {
+    public static exists(path: string): boolean {
         return pathExistsSync(path)
     }
 
@@ -33,7 +33,7 @@ export class File {
      *
      * @param path The path of the file to check
      */
-    public static isSafe (path: string): boolean {
+    public static isSafe(path: string): boolean {
         return this.isExtensionSafe(Path.extname(path))
     }
 
@@ -42,7 +42,7 @@ export class File {
      *
      * @param path The path to open
      */
-    public static async open (path: string): Promise<void> {
+    public static async open(path: string): Promise<void> {
         if (this.isSafe(path)) {
             return shell.openExternal(`file://${path}`)
         }
@@ -53,7 +53,7 @@ export class File {
      *
      * @param path The path to be revealed
      */
-    public static reveal (path: string): void {
+    public static reveal(path: string): void {
         Fs.stat(path, (err, stats) => {
             if (err) {
                 log.error(`Unable to find file at '${path}'`, err)
@@ -62,7 +62,8 @@ export class File {
 
             if (!__DARWIN__ && stats.isDirectory()) {
                 this.openDirectorySafe(path)
-            } else {
+            }
+            else {
                 shell.showItemInFolder(path)
             }
         })
@@ -77,18 +78,19 @@ export class File {
      *
      * @param path The directory to open
      */
-    public static openDirectorySafe (path: string): void {
+    public static openDirectorySafe(path: string): void {
         if (__DARWIN__) {
             const directoryURL = Url.format({
                 pathname: path,
                 protocol: 'file:',
-                slashes: true
+                slashes: true,
             })
 
             shell
                 .openExternal(directoryURL)
                 .catch(err => log.error(`Failed to open directory (${path})`, err))
-        } else {
+        }
+        else {
             shell.openPath(path)
         }
     }

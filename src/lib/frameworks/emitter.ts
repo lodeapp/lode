@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events'
-import { ApplicationWindow } from '@main/application-window'
+import type { ApplicationWindow } from '@main/application-window'
+import { EventEmitter } from 'node:events'
 
 /**
  * A special event emitter that can also emit events
@@ -8,7 +8,7 @@ import { ApplicationWindow } from '@main/application-window'
 export class ProjectEventEmitter extends EventEmitter {
     protected window: ApplicationWindow
 
-    constructor (window: ApplicationWindow) {
+    constructor(window: ApplicationWindow) {
         super()
         this.window = window
     }
@@ -16,7 +16,7 @@ export class ProjectEventEmitter extends EventEmitter {
     /**
      * Emit an event to the renderer process.
      */
-    protected emitToRenderer (event: string, ...args: any[]): void {
+    protected emitToRenderer(event: string, ...args: any[]): void {
         if (this.window.canReceiveEvents()) {
             this.window.send(event, args)
         }
@@ -25,7 +25,7 @@ export class ProjectEventEmitter extends EventEmitter {
     /**
      * Get the emitter's application window.
      */
-    public getApplicationWindow (): ApplicationWindow {
+    public getApplicationWindow(): ApplicationWindow {
         return this.window
     }
 }

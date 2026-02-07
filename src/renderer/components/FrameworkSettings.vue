@@ -1,3 +1,122 @@
+<script>
+import * as Path from 'node:path'
+import { find } from 'lodash'
+
+export default {
+    name: 'FrameworkSettings',
+    props: {
+        repository: {
+            type: Object,
+            required: true,
+        },
+        framework: {
+            type: Object,
+            required: true,
+        },
+        validator: {
+            type: Object,
+            required: true,
+        },
+        availableFrameworks: {
+            type: Array,
+            required: true,
+        },
+        dedicated: {
+            type: Boolean,
+            default: false,
+        },
+    },
+    emits: [
+        'input',
+        'remove',
+    ],
+    data() {
+        return {
+            fields: {
+                name: this.framework.name,
+                type: this.framework.type,
+                command: this.framework.command,
+                path: this.framework.path,
+                runsInRemote: this.framework.runsInRemote,
+                remotePath: this.framework.remotePath,
+                sshHost: this.framework.sshHost,
+                sshUser: this.framework.sshUser,
+                sshPort: this.framework.sshPort,
+                sshIdentity: this.framework.sshIdentity,
+                proprietary: this.framework.proprietary,
+            },
+            expanded: this.dedicated || ['pending', 'removed'].includes(this.framework.scanStatus),
+            instructions: this.framework.scanStatus === 'pending',
+        }
+    },
+    computed: {
+        pending() {
+            return this.framework.scanStatus === 'pending'
+        },
+        removed() {
+            return this.framework.scanStatus === 'removed'
+        },
+        frameworkType() {
+            return find(this.availableFrameworks, ['type', this.fields.type])
+        },
+        currentFrameworkName() {
+            return this.frameworkType ? this.frameworkType.name : ''
+        },
+        currentFrameworkInstructions() {
+            return this.frameworkType ? this.frameworkType.instructions : ''
+        },
+    },
+    watch: {
+        validator: {
+            handler(validator) {
+                if (!validator.isValid()) {
+                    this.expanded = true
+                }
+            },
+            deep: true,
+        },
+        fields: {
+            handler(value) {
+                this.$emit('input', value)
+            },
+            deep: true,
+        },
+    },
+    methods: {
+        async chooseAutoloadPath() {
+            const filePaths = await Lode.ipc.invoke('framework-autoload-path-menu', this.repository.path)
+            if (!filePaths || !filePaths.length) {
+                return
+            }
+
+            this.fields.proprietary.autoloadPath = Path.relative(this.repository.path, filePaths[0])
+            this.validator.reset('autoloadPath')
+        },
+        async chooseTestsPath() {
+            const filePaths = await Lode.ipc.invoke('framework-tests-path-menu', this.repository.path)
+            if (!filePaths || !filePaths.length) {
+                return
+            }
+
+            this.fields.path = Path.relative(this.repository.path, filePaths[0])
+            this.validator.reset('path')
+        },
+        async chooseIdentity() {
+            const filePaths = await Lode.ipc.invoke('framework-identity-menu')
+            if (!filePaths || !filePaths.length) {
+                return
+            }
+
+            this.fields.sshIdentity = filePaths[0]
+            this.validator.reset('sshIdentity')
+        },
+        remove() {
+            this.$emit('remove')
+        },
+    },
+}
+</script>
+
 <template>
     <div
         class="form-group framework-settings"
@@ -6,7 +125,7 @@
             'status--removed': removed,
             'is-dedicated': dedicated,
             'is-expanded': expanded,
-            'is-collapsed': !expanded
+            'is-collapsed': !expanded,
         }"
     >
         <div v-if="expanded">
@@ -24,11 +143,13 @@
                     <label>Name</label>
                 </dt>
                 <dd :class="{ errored: validator.hasErrors('name') }">
-                    <div v-if="validator.hasErrors('name')" class="form-error">{{ validator.getErrors('name') }}</div>
+                    <div v-if="validator.hasErrors('name')" class="form-error">
+                        {{ validator.getErrors('name') }}
+                    </div>
                     <input
+                        v-model="fields.name"
                         type="text"
                         class="form-control input-sm"
-                        v-model="fields.name"
                         placeholder=""
                     >
                 </dd>
@@ -38,14 +159,20 @@
                     <label>Framework</label>
                 </dt>
                 <dd :class="{ errored: validator.hasErrors('type') }">
-                    <div v-if="validator.hasErrors('type')" class="form-error">{{ validator.getErrors('type') }}</div>
-                    <select class="form-control form-select input-sm" v-model="fields.type">
-                        <option value="">Select Test Framework</option>
+                    <div v-if="validator.hasErrors('type')" class="form-error">
+                        {{ validator.getErrors('type') }}
+                    </div>
+                    <select v-model="fields.type" class="form-control form-select input-sm">
+                        <option value="">
+                            Select Test Framework
+                        </option>
                         <option
                             v-for="available in availableFrameworks"
                             :key="available.type"
                             :value="available.type"
-                        >{{ available.name }}</option>
+                        >
+                            {{ available.name }}
+                        </option>
                     </select>
                 </dd>
             </dl>
@@ -54,12 +181,16 @@
                     <label>Command</label>
                 </dt>
                 <dd :class="{ errored: validator.hasErrors('command') }">
-                    <div class="form-help">Commands are run from the repository's root directory.</div>
-                    <div v-if="validator.hasErrors('command')" class="form-error">{{ validator.getErrors('command') }}</div>
+                    <div class="form-help">
+                        Commands are run from the repository's root directory.
+                    </div>
+                    <div v-if="validator.hasErrors('command')" class="form-error">
+                        {{ validator.getErrors('command') }}
+                    </div>
                     <input
+                        v-model="fields.command"
                         type="text"
                         class="form-control input-sm input-monospace"
-                        v-model="fields.command"
                         placeholder=""
                     >
                 </dd>
@@ -69,14 +200,18 @@
                     <label>Autoload path</label>
                 </dt>
                 <dd :class="{ errored: validator.hasErrors('autoloadPath') }">
-                    <div v-if="validator.hasErrors('autoloadPath')" class="form-error">{{ validator.getErrors('autoloadPath') }}</div>
+                    <div v-if="validator.hasErrors('autoloadPath')" class="form-error">
+                        {{ validator.getErrors('autoloadPath') }}
+                    </div>
                     <input
+                        v-model="fields.proprietary.autoloadPath"
                         type="text"
                         class="form-control input-sm"
-                        v-model="fields.proprietary.autoloadPath"
                         placeholder="vendor/autoload.php"
                     >
-                    <button class="btn btn-sm" type="button" @click="chooseAutoloadPath">Choose</button>
+                    <button class="btn btn-sm" type="button" @click="chooseAutoloadPath">
+                        Choose
+                    </button>
                 </dd>
             </dl>
             <dl>
@@ -84,15 +219,21 @@
                     <label>Tests path</label>
                 </dt>
                 <dd :class="{ errored: validator.hasErrors('path') }">
-                    <div class="form-help">Relative to the repository's path.</div>
-                    <div v-if="validator.hasErrors('path')" class="form-error">{{ validator.getErrors('path') }}</div>
+                    <div class="form-help">
+                        Relative to the repository's path.
+                    </div>
+                    <div v-if="validator.hasErrors('path')" class="form-error">
+                        {{ validator.getErrors('path') }}
+                    </div>
                     <input
+                        v-model="fields.path"
                         type="text"
                         class="form-control input-sm"
-                        v-model="fields.path"
                         placeholder="(Optional)"
                     >
-                    <button class="btn btn-sm" type="button" @click="chooseTestsPath">Choose</button>
+                    <button class="btn btn-sm" type="button" @click="chooseTestsPath">
+                        Choose
+                    </button>
                 </dd>
             </dl>
             <dl>
@@ -101,11 +242,11 @@
                 </dt>
                 <dd>
                     <label>
-                        <input type="radio" :value="false" v-model="fields.runsInRemote">
+                        <input v-model="fields.runsInRemote" type="radio" :value="false">
                         No
                     </label>
                     <label>
-                        <input type="radio" :value="true" v-model="fields.runsInRemote">
+                        <input v-model="fields.runsInRemote" type="radio" :value="true">
                         Yes
                     </label>
                 </dd>
@@ -116,12 +257,16 @@
                         <label>Remote repository path</label>
                     </dt>
                     <dd :class="{ errored: validator.hasErrors('remotePath') }">
-                        <div class="form-help">Absolute path to repository inside remote machine.</div>
-                        <div v-if="validator.hasErrors('remotePath')" class="form-error">{{ validator.getErrors('remotePath') }}</div>
+                        <div class="form-help">
+                            Absolute path to repository inside remote machine.
+                        </div>
+                        <div v-if="validator.hasErrors('remotePath')" class="form-error">
+                            {{ validator.getErrors('remotePath') }}
+                        </div>
                         <input
+                            v-model="fields.remotePath"
                             type="text"
                             class="form-control input-sm"
-                            v-model="fields.remotePath"
                             placeholder="(Optional)"
                         >
                     </dd>
@@ -131,11 +276,13 @@
                         <label>SSH Host</label>
                     </dt>
                     <dd :class="{ errored: validator.hasErrors('sshHost') }">
-                        <div v-if="validator.hasErrors('sshHost')" class="form-error">{{ validator.getErrors('sshHost') }}</div>
+                        <div v-if="validator.hasErrors('sshHost')" class="form-error">
+                            {{ validator.getErrors('sshHost') }}
+                        </div>
                         <input
+                            v-model="fields.sshHost"
                             type="text"
                             class="form-control input-sm"
-                            v-model="fields.sshHost"
                             placeholder="(Optional)"
                         >
                     </dd>
@@ -145,11 +292,13 @@
                         <label>SSH User</label>
                     </dt>
                     <dd :class="{ errored: validator.hasErrors('sshUser') }">
-                        <div v-if="validator.hasErrors('sshUser')" class="form-error">{{ validator.getErrors('sshUser') }}</div>
+                        <div v-if="validator.hasErrors('sshUser')" class="form-error">
+                            {{ validator.getErrors('sshUser') }}
+                        </div>
                         <input
+                            v-model="fields.sshUser"
                             type="text"
                             class="form-control input-sm"
-                            v-model="fields.sshUser"
                             placeholder="(Optional)"
                         >
                     </dd>
@@ -159,11 +308,13 @@
                         <label>SSH Port</label>
                     </dt>
                     <dd :class="{ errored: validator.hasErrors('sshPort') }">
-                        <div v-if="validator.hasErrors('sshPort')" class="form-error">{{ validator.getErrors('sshPort') }}</div>
+                        <div v-if="validator.hasErrors('sshPort')" class="form-error">
+                            {{ validator.getErrors('sshPort') }}
+                        </div>
                         <input
+                            v-model="fields.sshPort"
                             type="text"
                             class="form-control input-sm"
-                            v-model="fields.sshPort"
                             placeholder="(Optional)"
                         >
                     </dd>
@@ -173,30 +324,42 @@
                         <label>Identity file</label>
                     </dt>
                     <dd :class="{ errored: validator.hasErrors('sshIdentity') }">
-                        <div class="form-help">If different than `ssh-config` settings.</div>
-                        <div v-if="validator.hasErrors('sshIdentity')" class="form-error">{{ validator.getErrors('sshIdentity') }}</div>
+                        <div class="form-help">
+                            If different than `ssh-config` settings.
+                        </div>
+                        <div v-if="validator.hasErrors('sshIdentity')" class="form-error">
+                            {{ validator.getErrors('sshIdentity') }}
+                        </div>
                         <input
+                            v-model="fields.sshIdentity"
                             type="text"
                             class="form-control input-sm"
-                            v-model="fields.sshIdentity"
                             placeholder="(Optional)"
                         >
-                        <button class="btn btn-sm" type="button" @click="chooseIdentity">Choose</button>
+                        <button class="btn btn-sm" type="button" @click="chooseIdentity">
+                            Choose
+                        </button>
                     </dd>
                 </dl>
             </div>
-            <div class="instructions" v-show="instructions && currentFrameworkInstructions">
+            <div v-show="instructions && currentFrameworkInstructions" class="instructions">
                 <div>
                     <h6>{{ $string.set('How to setup :0 testing with Lode', currentFrameworkName) }}</h6>
-                    <p v-markdown>{{ currentFrameworkInstructions }}</p>
+                    <p v-markdown>
+                        {{ currentFrameworkInstructions }}
+                    </p>
                 </div>
             </div>
             <div v-if="!dedicated" class="form-actions">
                 <button v-if="currentFrameworkInstructions" class="btn btn-outline btn-sm" type="button" @click="instructions = !instructions">
                     <Icon symbol="question" />
                 </button>
-                <button class="btn btn-sm btn-danger" type="button" @click="remove">Remove</button>
-                <button class="btn btn-sm" type="button" @click="expanded = !expanded">Done</button>
+                <button class="btn btn-sm btn-danger" type="button" @click="remove">
+                    Remove
+                </button>
+                <button class="btn btn-sm" type="button" @click="expanded = !expanded">
+                    Done
+                </button>
             </div>
         </div>
         <div v-else @mousedown="expanded = !expanded">
@@ -206,122 +369,3 @@
         </div>
     </div>
 </template>
-
-<script>
-import * as Path from 'path'
-import { find } from 'lodash'
-
-export default {
-    name: 'FrameworkSettings',
-    props: {
-        repository: {
-            type: Object,
-            required: true
-        },
-        framework: {
-            type: Object,
-            required: true
-        },
-        validator: {
-            type: Object,
-            required: true
-        },
-        availableFrameworks: {
-            type: Array,
-            required: true
-        },
-        dedicated: {
-            type: Boolean,
-            default: false
-        }
-    },
-    emits: [
-        'input',
-        'remove'
-    ],
-    data () {
-        return {
-            fields: {
-                name: this.framework.name,
-                type: this.framework.type,
-                command: this.framework.command,
-                path: this.framework.path,
-                runsInRemote: this.framework.runsInRemote,
-                remotePath: this.framework.remotePath,
-                sshHost: this.framework.sshHost,
-                sshUser: this.framework.sshUser,
-                sshPort: this.framework.sshPort,
-                sshIdentity: this.framework.sshIdentity,
-                proprietary: this.framework.proprietary
-            },
-            expanded: this.dedicated || ['pending', 'removed'].includes(this.framework.scanStatus),
-            instructions: this.framework.scanStatus === 'pending'
-        }
-    },
-    computed: {
-        pending () {
-            return this.framework.scanStatus === 'pending'
-        },
-        removed () {
-            return this.framework.scanStatus === 'removed'
-        },
-        frameworkType () {
-            return find(this.availableFrameworks, ['type', this.fields.type])
-        },
-        currentFrameworkName () {
-            return this.frameworkType ? this.frameworkType.name : ''
-        },
-        currentFrameworkInstructions () {
-            return this.frameworkType ? this.frameworkType.instructions : ''
-        }
-    },
-    watch: {
-        validator: {
-            handler (validator) {
-                if (!validator.isValid()) {
-                    this.expanded = true
-                }
-            },
-            deep: true
-        },
-        fields: {
-            handler (value) {
-                this.$emit('input', value)
-            },
-            deep: true
-        }
-    },
-    methods: {
-        async chooseAutoloadPath () {
-            const filePaths = await Lode.ipc.invoke('framework-autoload-path-menu', this.repository.path)
-            if (!filePaths || !filePaths.length) {
-                return
-            }
-
-            this.fields.proprietary.autoloadPath = Path.relative(this.repository.path, filePaths[0])
-            this.validator.reset('autoloadPath')
-        },
-        async chooseTestsPath () {
-            const filePaths = await Lode.ipc.invoke('framework-tests-path-menu', this.repository.path)
-            if (!filePaths || !filePaths.length) {
-                return
-            }
-
-            this.fields.path = Path.relative(this.repository.path, filePaths[0])
-            this.validator.reset('path')
-        },
-        async chooseIdentity () {
-            const filePaths = await Lode.ipc.invoke('framework-identity-menu')
-            if (!filePaths || !filePaths.length) {
-                return
-            }
-
-            this.fields.sshIdentity = filePaths[0]
-            this.validator.reset('sshIdentity')
-        },
-        remove () {
-            this.$emit('remove')
-        }
-    }
-}
-</script>

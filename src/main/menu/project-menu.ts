@@ -1,8 +1,8 @@
+import type { IProject } from '@lib/frameworks/project'
 import { Menu } from '@main/menu'
-import { IProject } from '@lib/frameworks/project'
 
 export class ProjectMenu extends Menu {
-    constructor (project: IProject | null, webContents: Electron.WebContents) {
+    constructor(project: IProject | null, webContents: Electron.WebContents) {
         super(webContents)
 
         this
@@ -12,7 +12,7 @@ export class ProjectMenu extends Menu {
                 click: () => {
                     project!.refresh()
                 },
-                enabled: !!project
+                enabled: !!project,
             })
             .add({
                 label: __DARWIN__ ? 'Run All' : 'Run all',
@@ -20,7 +20,7 @@ export class ProjectMenu extends Menu {
                 click: () => {
                     project!.start()
                 },
-                enabled: !!project
+                enabled: !!project,
             })
             .add({
                 label: __DARWIN__ ? 'Stop All' : 'Stop all',
@@ -28,7 +28,7 @@ export class ProjectMenu extends Menu {
                 click: () => {
                     project!.stop()
                 },
-                enabled: !!project
+                enabled: !!project,
             })
             .separator()
             .add({
@@ -37,7 +37,7 @@ export class ProjectMenu extends Menu {
                 click: () => {
                     this.emit('project-edit')
                 },
-                enabled: !!project
+                enabled: !!project,
             })
             .add({
                 label: __DARWIN__ ? 'Remove Project' : 'Remove project',
@@ -45,7 +45,7 @@ export class ProjectMenu extends Menu {
                 click: () => {
                     this.emit('project-remove')
                 },
-                enabled: !!project
+                enabled: !!project,
             })
             .separator()
             .add({
@@ -54,7 +54,7 @@ export class ProjectMenu extends Menu {
                 click: () => {
                     this.emit('repository-add')
                 },
-                enabled: !!project
+                enabled: !!project,
             })
     }
 }

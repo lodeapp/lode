@@ -3,26 +3,26 @@ import { get } from 'lodash'
 export default {
     namespaced: true,
     state: {
-        status: {}
+        status: {},
     },
     mutations: {
-        SET (state, payload) {
+        SET(state, payload) {
             state.status = {}
             state.status = {
                 ...state.status,
-                ...payload
+                ...payload,
             }
         },
-        UPDATE (state, payload) {
+        UPDATE(state, payload) {
             state.status = {
                 ...state.status,
-                ...payload
+                ...payload,
             }
-        }
+        },
     },
     getters: {
-        nugget: state => nugget => {
+        nugget: state => (nugget) => {
             return get(state.status, nugget, 'idle')
-        }
-    }
+        },
+    },
 }

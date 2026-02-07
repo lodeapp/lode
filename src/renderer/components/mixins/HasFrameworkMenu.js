@@ -1,11 +1,11 @@
 export default {
-    data () {
+    data() {
         return {
-            menuActive: false
+            menuActive: false,
         }
     },
     methods: {
-        onContextMenu () {
+        onContextMenu() {
             let rect
             if (this.$el.querySelector('.more-actions')) {
                 rect = JSON.parse(JSON.stringify(this.$el.querySelector('.more-actions').getBoundingClientRect()))
@@ -19,6 +19,6 @@ export default {
                         button.blur()
                     }
                 })
-        }
-    }
+        },
+    },
 }

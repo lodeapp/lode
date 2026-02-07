@@ -1,26 +1,26 @@
 export default {
     namespaced: true,
     state: {
-        ledger: {}
+        ledger: {},
     },
     mutations: {
-        SET (state, payload) {
+        SET(state, payload) {
             state.ledger = {}
             state.ledger = {
                 ...state.ledger,
-                ...payload
+                ...payload,
             }
         },
-        UPDATE (state, payload) {
+        UPDATE(state, payload) {
             state.ledger = {
                 ...state.ledger,
-                ...payload
+                ...payload,
             }
-        }
+        },
     },
     getters: {
-        ledger: state => {
+        ledger: (state) => {
             return state.ledger
-        }
-    }
+        },
+    },
 }

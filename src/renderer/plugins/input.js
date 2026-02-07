@@ -1,8 +1,9 @@
 export default class Input {
-    install (app) {
+    install(app) {
         app.config.globalProperties.$input = this
     }
-    auxiliaryKeyCodes () {
+
+    auxiliaryKeyCodes() {
         return [
             'Alt',
             'AltLeft',
@@ -33,73 +34,93 @@ export default class Input {
             'Shift',
             'ShiftLeft',
             'ShiftRight',
-            'Tab'
+            'Tab',
         ]
     }
-    isEscapeKey (event) {
+
+    isEscapeKey(event) {
         return event.code === 'Escape'
     }
-    isAltKey (event) {
+
+    isAltKey(event) {
         return event.key === 'Alt'
     }
-    isAuxiliaryKey (event) {
-        return this.auxiliaryKeyCodes().indexOf(event.code) > -1
+
+    isAuxiliaryKey(event) {
+        return this.auxiliaryKeyCodes().includes(event.code)
     }
-    hasModifierKey (event) {
+
+    hasModifierKey(event) {
         return event.ctrlKey || event.metaKey || event.altKey || event.shiftKey
     }
-    hasCmdOrCtrl (event) {
+
+    hasCmdOrCtrl(event) {
         return (__WIN32__ && event.ctrlKey) || (!__WIN32__ && event.metaKey)
     }
-    hasAltKey (event) {
+
+    hasAltKey(event) {
         return event.altKey
     }
-    isCopying (event) {
+
+    isCopying(event) {
         return (event.ctrlKey || event.metaKey) && event.code === 'KeyC'
     }
-    isSelectingAll (event) {
+
+    isSelectingAll(event) {
         return (event.ctrlKey || event.metaKey) && event.code === 'KeyA'
     }
-    isRefreshing (event) {
+
+    isRefreshing(event) {
         return (event.ctrlKey || event.metaKey) && event.code === 'KeyR'
     }
-    isAuxiliaryAction (event) {
+
+    isAuxiliaryAction(event) {
         return this.isCopying(event) || this.isSelectingAll(event) || this.isRefreshing(event)
     }
-    isRightButton (event) {
+
+    isRightButton(event) {
         return event.which === 3 || event.button === 2
     }
-    isNumeral (event) {
+
+    isNumeral(event) {
         return event.code.startsWith('Digit')
     }
-    isCycleForward (event) {
+
+    isCycleForward(event) {
         if (__WIN32__) {
             // Make sure shift-key isn't pressed, as it would overlap with
             // backwards cycle otherwise.
             return (event.code === 'Tab' && event.ctrlKey && !event.shiftKey) || (event.code === 'PageUp' && event.ctrlKey)
-        } else if (event.metaKey) {
+        }
+        else if (event.metaKey) {
             return (event.code === 'BracketRight' && event.shiftKey) || (event.code === 'ArrowRight' && event.altKey)
         }
         return false
     }
-    isCycleBackward (event) {
+
+    isCycleBackward(event) {
         if (__WIN32__) {
             return (event.code === 'Tab' && event.ctrlKey && event.shiftKey) || (event.code === 'PageDown' && event.ctrlKey)
-        } else if (event.metaKey) {
+        }
+        else if (event.metaKey) {
             return (event.code === 'BracketLeft' && event.shiftKey) || (event.code === 'ArrowLeft' && event.altKey)
         }
         return false
     }
-    modifiesContent (event) {
+
+    modifiesContent(event) {
         return !this.isAuxiliaryAction(event) && !this.isAuxiliaryKey(event)
     }
-    isTag (event, tag) {
+
+    isTag(event, tag) {
         return event.target.tagName.toLowerCase() === tag.toLowerCase()
     }
-    isRepeating (event) {
+
+    isRepeating(event) {
         return event.repeat
     }
-    on (event, tag, callback) {
+
+    on(event, tag, callback) {
         event.preventDefault()
         if (this.isTag(event, tag)) {
             callback(event)

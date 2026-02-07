@@ -3,18 +3,18 @@ import app from '@'
 export default {
     namespaced: true,
     state: {
-        alerts: []
+        alerts: [],
     },
     mutations: {
-        ADD (state, payload) {
+        ADD(state, payload) {
             state.alerts.push(payload)
         },
-        REMOVE (state) {
+        REMOVE(state) {
             state.alerts.pop()
         },
-        CLEAR (state) {
+        CLEAR(state) {
             state.alerts = []
-        }
+        },
     },
     actions: {
         show: ({ state, commit }, payload) => {
@@ -30,11 +30,11 @@ export default {
         },
         clear: ({ commit }) => {
             commit('CLEAR')
-        }
+        },
     },
     getters: {
-        alerts: state => {
+        alerts: (state) => {
             return state.alerts
-        }
-    }
+        },
+    },
 }

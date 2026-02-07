@@ -5,7 +5,7 @@ class Preload {
     public readonly copyToClipboard: (string: string) => void
     public readonly openExternal: (link: string) => void
 
-    constructor () {
+    constructor() {
         this.ipc = new Ipc()
 
         this.copyToClipboard = (string: string): void => {

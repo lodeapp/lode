@@ -9,46 +9,46 @@ export default {
         framework: null,
         suitesKey: null,
         nuggets: [],
-        persist: {}
+        persist: {},
     },
     mutations: {
-        ACTIVE (state, payload) {
+        ACTIVE(state, payload) {
             state.active = payload
         },
-        REPOSITORY (state, payload) {
+        REPOSITORY(state, payload) {
             state.repository = clone(payload)
         },
-        FRAMEWORK (state, payload) {
+        FRAMEWORK(state, payload) {
             state.framework = clone(payload)
         },
-        SUITES (state, payload) {
+        SUITES(state, payload) {
             state.suitesKey = app.config.globalProperties.$string.from(payload.map(suite => suite.file))
         },
-        PERSIST_NUGGETS (state) {
+        PERSIST_NUGGETS(state) {
             state.persist[state.active] = state.nuggets
         },
-        SET_NUGGETS (state, payload) {
+        SET_NUGGETS(state, payload) {
             state.nuggets = payload
         },
-        CLEAR_NUGGETS (state) {
+        CLEAR_NUGGETS(state) {
             state.nuggets = []
         },
-        CLEAR (state) {
+        CLEAR(state) {
             state.active = null
             state.repository = null
             state.framework = null
             state.nuggets = []
-        }
+        },
     },
     actions: {
-        async activate ({ state, commit }, { frameworkId, repository }) {
+        async activate({ state, commit }, { frameworkId, repository }) {
             // If there's an active framework, persist active nuggets, if any.
             if (state.active) {
                 commit('PERSIST_NUGGETS')
                 commit('CLEAR_NUGGETS')
             }
             commit('ACTIVE', frameworkId)
-            Lode.ipc.invoke('framework-get', frameworkId).then(framework => {
+            Lode.ipc.invoke('framework-get', frameworkId).then((framework) => {
                 commit('REPOSITORY', repository)
                 commit('FRAMEWORK', framework)
                 // Restore previously persisted nuggets, if applicable
@@ -58,50 +58,51 @@ export default {
             })
             Lode.ipc.send('project-active-framework', frameworkId)
         },
-        onRemove ({ state, commit, dispatch }, modelId) {
+        onRemove({ state, commit, dispatch }, modelId) {
             if (state.repository.id === modelId || state.active === modelId) {
                 commit('CLEAR')
-            } else if (state.nuggets.indexOf(modelId) > -1) {
+            }
+            else if (state.nuggets.includes(modelId)) {
                 commit('CLEAR_NUGGETS')
             }
         },
-        clear ({ commit }) {
+        clear({ commit }) {
             commit('CLEAR')
-        }
+        },
     },
     getters: {
-        active: state => {
+        active: (state) => {
             return state.active
         },
-        repository: state => {
+        repository: (state) => {
             return state.repository
         },
-        framework: state => {
+        framework: (state) => {
             return state.framework
         },
-        nuggets: state => {
+        nuggets: (state) => {
             return state.nuggets
         },
-        test: state => {
+        test: (state) => {
             return last(state.nuggets)
         },
-        suitesKey: state => {
+        suitesKey: (state) => {
             return state.suitesKey
         },
-        inContext: state => id => {
-            return state.nuggets.indexOf(id) > -1
+        inContext: state => (id) => {
+            return state.nuggets.includes(id)
         },
-        rootPath: state => {
+        rootPath: (state) => {
             if (!state.framework || !state.repository) {
                 return ''
             }
             return state.framework.runsInRemote ? state.framework.remotePath : state.repository.path
         },
-        repositoryPath: state => {
+        repositoryPath: (state) => {
             if (!state.repository) {
                 return ''
             }
             return state.repository.path
-        }
-    }
+        },
+    },
 }

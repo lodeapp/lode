@@ -5,35 +5,35 @@ import { OneHalfDark, OneHalfLight } from 'xterm-theme'
 // than CSS variables. So we'll set up the terminal
 // theme as an application state, mutating it when
 // theme changes from main process.
-const getColors = theme => {
+function getColors(theme) {
     if (theme === 'dark') {
         return {
             ...OneHalfDark,
             // Must match var(--secondary-background-color)
-            background: '#22272e'
+            background: '#22272e',
         }
     }
 
     return {
         ...OneHalfLight,
         // Must match var(--secondary-background-color)
-        background: '#f6f8fa'
+        background: '#f6f8fa',
     }
 }
 
 export default {
     namespaced: true,
     state: {
-        colors: {}
+        colors: {},
     },
     mutations: {
-        SET (state, theme) {
+        SET(state, theme) {
             state.colors = getColors(theme)
-        }
+        },
     },
     getters: {
-        colors: state => {
+        colors: (state) => {
             return state.colors
-        }
-    }
+        },
+    },
 }

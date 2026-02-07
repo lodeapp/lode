@@ -2,26 +2,26 @@ import Modal from '@/components/modals/mixins/modal'
 
 export default {
     mixins: [
-        Modal
+        Modal,
     ],
     props: {
         resolve: {
             type: Function,
-            required: true
+            required: true,
         },
         reject: {
             type: Function,
-            required: true
-        }
+            required: true,
+        },
     },
     methods: {
-        confirm (data) {
+        confirm(data) {
             this.resolve(data)
             this.close()
         },
-        cancel () {
+        cancel() {
             this.reject()
             this.close()
-        }
-    }
+        },
+    },
 }

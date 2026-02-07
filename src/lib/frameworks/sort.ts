@@ -12,12 +12,12 @@ export type FrameworkSort = 'framework' | 'name'
 
 export const sortOptions: { [key in FrameworkSort]: string } = {
     framework: 'Running order',
-    name: 'Name'
+    name: 'Name',
 }
 
 export const sortDirections: { [key in FrameworkSort]: SortDirection } = {
     framework: 'asc',
-    name: 'asc'
+    name: 'asc',
 }
 
 /**
@@ -25,7 +25,7 @@ export const sortDirections: { [key in FrameworkSort]: SortDirection } = {
  *
  * @param sort The sort option to map to a display name.
  */
-export function sortDisplayName (sort: FrameworkSort): string {
+export function sortDisplayName(sort: FrameworkSort): string {
     return get(sortOptions, sort, 'Unknown sort')
 }
 
@@ -34,7 +34,7 @@ export function sortDisplayName (sort: FrameworkSort): string {
  *
  * @param direction The direction to return the reverse of.
  */
-export function reverseDirection (direction: SortDirection): SortDirection {
+export function reverseDirection(direction: SortDirection): SortDirection {
     return direction === 'asc' ? 'desc' : 'asc'
 }
 
@@ -44,7 +44,7 @@ export function reverseDirection (direction: SortDirection): SortDirection {
  * @param sort The sort option to map to a direction.
  * @param reverse Whether to reverse the default direction.
  */
-export function sortDirection (sort: FrameworkSort, reverse: boolean): SortDirection {
+export function sortDirection(sort: FrameworkSort, reverse: boolean): SortDirection {
     const direction = get(sortDirections, sort, 'asc')
     return reverse ? reverseDirection(direction) : direction
 }

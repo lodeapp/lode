@@ -1,19 +1,20 @@
 export class BufferedSearch {
     terms: {
         [index: string]: {
-            buffer: string,
+            buffer: string
             matched: boolean
         }
     } = {}
 
-    term (term: string, string: string): boolean {
+    term(term: string, string: string): boolean {
         // Have we started looking for this yet? If not, prepare buffer.
         if (!this.terms[term]) {
             this.terms[term] = {
                 buffer: '',
-                matched: false
+                matched: false,
             }
-        } else if (this.terms[term].matched) {
+        }
+        else if (this.terms[term].matched) {
             return true
         }
 
@@ -40,7 +41,8 @@ export class BufferedSearch {
                 this.terms[term].buffer = ''
                 this.terms[term].matched = false
                 return false
-            } else if (index > 0) {
+            }
+            else if (index > 0) {
                 // If it matches beyond start, discard content preceding match
                 this.terms[term].buffer = this.terms[term].buffer.substring(index)
             }

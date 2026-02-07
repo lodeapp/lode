@@ -1,3 +1,33 @@
+<script>
+import Ansi from '@/components/Ansi.vue'
+import Collapsible from '@/components/Collapsible.vue'
+import HasFile from '@/components/mixins/HasFile'
+import Snippet from '@/components/Snippet.vue'
+
+export default {
+    name: 'Console',
+    components: {
+        Ansi,
+        Collapsible,
+        Snippet,
+    },
+    mixins: [
+        HasFile,
+    ],
+    props: {
+        output: {
+            type: Object,
+            required: true,
+        },
+    },
+    computed: {
+        isLarge() {
+            return this.output.content.length > 10000
+        },
+    },
+}
+</script>
+
 <template>
     <div
         class="console collapsible-group"
@@ -17,37 +47,9 @@
             <Ansi v-if="output.render === 'ansi'" :content="output.content" />
             <Snippet v-else-if="output.render === 'code'" :code="output.content" :language="output.language" />
             <div v-else-if="output.render === 'html'" v-html="output.content"></div>
-            <div v-else>{{ output.content }}</div>
+            <div v-else>
+                {{ output.content }}
+            </div>
         </Collapsible>
     </div>
 </template>
-
-<script>
-import Ansi from '@/components/Ansi.vue'
-import Collapsible from '@/components/Collapsible.vue'
-import Snippet from '@/components/Snippet.vue'
-import HasFile from '@/components/mixins/HasFile'
-
-export default {
-    name: 'Console',
-    components: {
-        Ansi,
-        Collapsible,
-        Snippet
-    },
-    mixins: [
-        HasFile
-    ],
-    props: {
-        output: {
-            type: Object,
-            required: true
-        }
-    },
-    computed: {
-        isLarge () {
-            return this.output.content.length > 10000
-        }
-    }
-}
-</script>

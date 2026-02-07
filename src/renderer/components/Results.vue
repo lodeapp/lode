@@ -1,37 +1,3 @@
-<template>
-    <div class="results" :class="{ blankslate: !activeTest || loading }">
-        <h3 v-if="!activeTest">No test selected</h3>
-        <div v-if="loading" class="loading">
-            <div class="loading-group">
-                <div class="spinner"></div>
-            </div>
-        </div>
-        <div v-if="activeTest && !loading" class="has-status" :class="[`status--${status}`]">
-            <div class="header">
-                <div class="title">
-                    <Indicator :status="status" />
-                    <h2 class="heading">{{ displayName }}</h2>
-                </div>
-                <nav class="breadcrumbs" aria-label="Breadcrumb">
-                    <ol>
-                        <li
-                            v-for="breadcrumb in breadcrumbs"
-                            :key="$string.from(breadcrumb)"
-                            class="breadcrumb-item text-small"
-                        >{{ breadcrumb.relative || breadcrumb.name }}</li>
-                    </ol>
-                </nav>
-            </div>
-            <TestResult
-                :key="$string.from([test, results])"
-                :framework="framework"
-                :results="results"
-                :status="status"
-            />
-        </div>
-    </div>
-</template>
-
 <script>
 import { clone, last } from 'lodash'
 import { mapGetters } from 'vuex'
@@ -42,52 +8,52 @@ export default {
     name: 'Results',
     components: {
         Indicator,
-        TestResult
+        TestResult,
     },
     props: {
         context: {
             type: Array,
-            required: true
-        }
+            required: true,
+        },
     },
-    data () {
+    data() {
         return {
             loading: false,
             breadcrumbs: [],
             framework: {},
             test: {},
-            results: {}
+            results: {},
         }
     },
     computed: {
-        identifier () {
+        identifier() {
             return last(this.context)
         },
-        status () {
+        status() {
             return this.getStatus(this.identifier)
         },
-        displayName () {
+        displayName() {
             return this.test.displayName || this.test.name
         },
         ...mapGetters({
             activeTest: 'context/test',
             suitesKey: 'context/suitesKey',
-            getStatus: 'status/nugget'
-        })
+            getStatus: 'status/nugget',
+        }),
     },
     watch: {
-        status () {
+        status() {
             this.load()
         },
-        suitesKey () {
+        suitesKey() {
             this.load()
-        }
+        },
     },
-    mounted () {
+    mounted() {
         this.load()
     },
     methods: {
-        async load () {
+        async load() {
             if (this.context.length < 3) {
                 return
             }
@@ -107,7 +73,47 @@ export default {
             this.test = nuggets.pop()
             this.results = results
             this.loading = false
-        }
-    }
+        },
+    },
 }
 </script>
+
+<template>
+    <div class="results" :class="{ blankslate: !activeTest || loading }">
+        <h3 v-if="!activeTest">
+            No test selected
+        </h3>
+        <div v-if="loading" class="loading">
+            <div class="loading-group">
+                <div class="spinner"></div>
+            </div>
+        </div>
+        <div v-if="activeTest && !loading" class="has-status" :class="[`status--${status}`]">
+            <div class="header">
+                <div class="title">
+                    <Indicator :status="status" />
+                    <h2 class="heading">
+                        {{ displayName }}
+                    </h2>
+                </div>
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    <ol>
+                        <li
+                            v-for="breadcrumb in breadcrumbs"
+                            :key="$string.from(breadcrumb)"
+                            class="breadcrumb-item text-small"
+                        >
+                            {{ breadcrumb.relative || breadcrumb.name }}
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <TestResult
+                :key="$string.from([test, results])"
+                :framework="framework"
+                :results="results"
+                :status="status"
+            />
+        </div>
+    </div>
+</template>

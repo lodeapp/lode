@@ -1,14 +1,16 @@
-import * as Path from 'path'
+import type { FrameworkDefaults, FrameworkOptions, FrameworkReloadOutcome } from '@lib/frameworks/framework'
+import type { ParsedRepository } from '@lib/frameworks/repository'
+import type { FrameworkSort } from '@lib/frameworks/sort'
+import type { ISuite, ISuiteResult, Suite } from '@lib/frameworks/suite'
+import type { ITest } from '@lib/frameworks/test'
+import type { FrameworkValidator } from '@lib/frameworks/validator'
+import type { Buffer } from 'node:buffer'
+import * as Path from 'node:path'
+import { Framework } from '@lib/frameworks/framework'
+import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
+import { loc, unpacked } from '@lib/helpers/paths'
 import * as Fs from 'fs-extra'
 import semver from 'semver'
-import { unpacked, loc } from '@lib/helpers/paths'
-import { ParsedRepository } from '@lib/frameworks/repository'
-import { FrameworkOptions, FrameworkDefaults, Framework, FrameworkReloadOutcome } from '@lib/frameworks/framework'
-import { ISuiteResult, ISuite, Suite } from '@lib/frameworks/suite'
-import { ITest } from '@lib/frameworks/test'
-import { PHPUnitSuite } from '@lib/frameworks/phpunit/suite'
-import { FrameworkValidator } from '@lib/frameworks/validator'
-import { FrameworkSort } from '@lib/frameworks/sort'
 
 export class PHPUnit extends Framework {
     public readonly canToggleTests: boolean = true
@@ -20,12 +22,12 @@ export class PHPUnit extends Framework {
             command: './vendor/bin/phpunit',
             path: '',
             proprietary: {
-                autoloadPath: ''
-            }
+                autoloadPath: '',
+            },
         },
         win32: {
-            command: 'php vendor/phpunit/phpunit/phpunit'
-        }
+            command: 'php vendor/phpunit/phpunit/phpunit',
+        },
     }
 
     // Set PHPUnit's default sort order
@@ -39,7 +41,7 @@ export class PHPUnit extends Framework {
      * The class of suite we use for this framework. Overrides the default
      * with a PHPUnit-specific suite class.
      */
-    protected suiteClass (): typeof Suite {
+    protected suiteClass(): typeof Suite {
         return PHPUnitSuite
     }
 
@@ -49,7 +51,7 @@ export class PHPUnit extends Framework {
      *
      * @param repository The parsed repository to test.
      */
-    public static async spawnForDirectory (repository: ParsedRepository): Promise<FrameworkOptions | false> {
+    public static async spawnForDirectory(repository: ParsedRepository): Promise<FrameworkOptions | false> {
         return new Promise((resolve, reject) => {
             const fallback = () => {
                 // Cheapest way to check is the PHPUnit XML config file.
@@ -59,7 +61,7 @@ export class PHPUnit extends Framework {
                 }
 
                 // If no config file exists, check for binary inside dependencies.
-                Fs.access(Path.join(repository.path, 'vendor/bin/phpunit'), error => {
+                Fs.access(Path.join(repository.path, 'vendor/bin/phpunit'), (error) => {
                     resolve(error ? false : this.hydrate())
                 })
             }
@@ -77,14 +79,15 @@ export class PHPUnit extends Framework {
                     if (
                         semver.lt(
                             semver.coerce(composer.extra['branch-alias']['dev-main']) || semver.coerce(composer.extra['branch-alias']['dev-master']) || '0.0.0',
-                            '10.0.0'
+                            '10.0.0',
                         )
                     ) {
                         resolve(this.hydrate())
                     }
 
                     resolve(false)
-                } catch (_) {
+                }
+                catch (_) {
                 }
 
                 fallback()
@@ -95,7 +98,7 @@ export class PHPUnit extends Framework {
     /**
      * Prepare this framework for running.
      */
-    protected async assemble (): Promise<void> {
+    protected async assemble(): Promise<void> {
         super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
@@ -109,7 +112,7 @@ export class PHPUnit extends Framework {
     /**
      * Reload this framework's suites and tests.
      */
-    protected reload (): Promise<FrameworkReloadOutcome> {
+    protected reload(): Promise<FrameworkReloadOutcome> {
         return new Promise((resolve, reject) => {
             this.spawn(['--columns=42'].concat(this.runArgs()))
                 .on('report', ({ report }) => {
@@ -119,9 +122,10 @@ export class PHPUnit extends Framework {
                         })).then(() => {
                             resolve('success')
                         })
-                    } catch (error) {
+                    }
+                    catch (error) {
                         this.stop()
-                        reject('The PHPUnit package returned unexpected results.')
+                        reject(new Error('The PHPUnit package returned unexpected results.'))
                     }
                 })
                 .on('success', () => {
@@ -132,7 +136,7 @@ export class PHPUnit extends Framework {
                 .on('killed', () => {
                     resolve('killed')
                 })
-                .on('error', error => {
+                .on('error', (error) => {
                     reject(error)
                 })
         })
@@ -141,7 +145,7 @@ export class PHPUnit extends Framework {
     /**
      * The command arguments for running this framework.
      */
-    protected runArgs (): Array<string> {
+    protected runArgs(): Array<string> {
         const root = (this.runsInRemote ? this.getRemotePath() : this.repositoryPath)
         const autoload = Path.join(root, loc(this.proprietary.autoloadPath || 'vendor/autoload.php'))
         const args = [
@@ -158,14 +162,14 @@ export class PHPUnit extends Framework {
             '--stderr',
             '--color=always',
             '--printer',
-            '\\LodeApp\\PHPUnit\\LodeReporter'
+            '\\LodeApp\\PHPUnit\\LodeReporter',
         ]
 
         if (__DEV__) {
             args.push(
                 '-d',
                 'display_errors=on',
-                '--verbose'
+                '--verbose',
             )
         }
 
@@ -178,7 +182,7 @@ export class PHPUnit extends Framework {
      * @param suites The suites selected to run.
      * @param selectTests Whether to check for selected tests, or run the entire suite.
      */
-    protected runSelectiveArgs (suites: Array<ISuite>, selectTests: boolean): Array<string> {
+    protected runSelectiveArgs(suites: Array<ISuite>, selectTests: boolean): Array<string> {
         const args: Array<string> = ['--filter']
         const filters: Array<string> = []
         suites.forEach((suite: ISuite) => {
@@ -189,7 +193,8 @@ export class PHPUnit extends Framework {
                 selected.forEach((test: ITest) => {
                     filters.push(`${suiteClass}::${test.getName()}$`)
                 })
-            } else {
+            }
+            else {
                 filters.push(suiteClass)
             }
         })
@@ -207,7 +212,7 @@ export class PHPUnit extends Framework {
      *
      * @param suites The suites whose progress we're setting up to measure.
      */
-    protected calculateProgressTotalForSuites (suites: Array<ISuite>): number {
+    protected calculateProgressTotalForSuites(suites: Array<ISuite>): number {
         return suites.reduce((acc, suite: ISuite) => {
             // Return the children count, or 1 if suite is empty, as it will
             // and progress counted regardless of it having children or not.
@@ -218,7 +223,7 @@ export class PHPUnit extends Framework {
     /**
      * Validate PHPUnit specific options.
      */
-    public static validate (validator: FrameworkValidator, options: any): void {
+    public static validate(validator: FrameworkValidator, options: any): void {
         const autoload = options.proprietary.autoloadPath
         if (autoload) {
             if (Path.isAbsolute(autoload) || !validator.isFile(Path.join(validator.repositoryPath, autoload))) {
@@ -230,7 +235,7 @@ export class PHPUnit extends Framework {
     /**
      * Provide setup instructions for using Lode with PHPUnit.
      */
-    public static instructions (): string {
+    public static instructions(): string {
         return ''
     }
 
@@ -239,9 +244,9 @@ export class PHPUnit extends Framework {
      *
      * @param text The feedback text to be processed by the framework.
      */
-    public processFeedbackText (text: string): string {
+    public processFeedbackText(text: string): string {
         // @TODO: Offload to separate class that parses and replaces strings.
-        if (text && text.match(/^Failed asserting that '(.+)' matches JSON string "(.|\s)+"./gim)) {
+        if (text && text.match(/^Failed asserting that '(.+)' matches JSON string "([\s\S])+"./gim)) {
             // ...
         }
 
@@ -253,12 +258,12 @@ export class PHPUnit extends Framework {
      *
      * @param error The error to be parsed for troubleshooting.
      */
-    protected troubleshoot (error: Error | string): string {
+    protected troubleshoot(error: Error | string): string {
         if (error instanceof Error) {
             error = error.toString()
         }
 
-        if ((new RegExp('Cannot open file .*\/bootstrap\.php', 'gi')).test(error)) {
+        if (/Cannot open file .*\/bootstrap\.php/i.test(error)) {
             return 'If your PHPUnit tests run in a remote machine, make sure to toggle that in your framework settings and set the absolute path to the repository inside the remote machine.'
         }
 

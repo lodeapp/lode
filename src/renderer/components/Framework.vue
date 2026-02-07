@@ -1,10 +1,229 @@
+<script>
+import { sortDisplayName } from '@lib/frameworks/sort'
+import { debounce, findIndex, head, isEmpty } from 'lodash'
+import { mapGetters } from 'vuex'
+import Filename from '@/components/Filename.vue'
+import Indicator from '@/components/Indicator.vue'
+import Ledger from '@/components/Ledger.vue'
+import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
+
+export default {
+    name: 'Framework',
+    components: {
+        Filename,
+        Indicator,
+        Ledger,
+    },
+    mixins: [
+        HasFrameworkMenu,
+    ],
+    props: {
+        model: {
+            type: Object,
+            required: true,
+        },
+    },
+    emits: [
+        'activate',
+        'mounted',
+    ],
+    data() {
+        return {
+            suites: [],
+            total: 0,
+            selected: 0,
+            status: this.model.status || 'idle',
+            keyword: this.$store.getters['filters/all'](this.model.id).keyword || '',
+        }
+    },
+    computed: {
+        running() {
+            return this.status === 'running'
+        },
+        refreshing() {
+            return this.status === 'refreshing'
+        },
+        queued() {
+            return this.status === 'queued'
+        },
+        isFiltering() {
+            return !isEmpty(this.filters(this.model.id))
+        },
+        visible() {
+            return this.suites.length
+        },
+        hidden() {
+            return this.total - this.visible
+        },
+        noResults() {
+            return this.hidden === this.total
+        },
+        canToggleTests() {
+            return this.model.canToggleTests
+        },
+        statusFilters() {
+            return this.filters(this.model.id).status || []
+        },
+        sort() {
+            return this.model.sort
+        },
+        displaySort() {
+            return sortDisplayName(this.sort)
+        },
+        ...mapGetters({
+            filters: 'filters/all',
+            getStatus: 'status/nugget',
+        }),
+    },
+    watch: {
+        keyword: debounce(function (keyword) {
+            this.setKeywordFilter(keyword)
+        }, 300),
+    },
+    async mounted() {
+        Lode.ipc
+            .on(`${this.model.id}:ledger`, this.onLedgerEvent)
+            .on(`${this.model.id}:status:list`, this.statusListener)
+            .on(`${this.model.id}:refreshed`, this.onSuitesEvent)
+            .on(`${this.model.id}:selective`, this.onSelectiveEvent)
+
+        const { ledger, status } = await Lode.ipc.invoke('framework-get-ledger', this.model.id)
+        this.$store.commit('ledger/SET', ledger)
+        this.$store.commit('status/SET', status)
+
+        this.getSuites()
+        this.selected = this.model.selected
+    },
+    beforeUnmount() {
+        Lode.ipc
+            .removeAllListeners(`${this.model.id}:ledger`)
+            .removeAllListeners(`${this.model.id}:status:list`)
+            .removeAllListeners(`${this.model.id}:refreshed`)
+            .removeAllListeners(`${this.model.id}:selective`)
+    },
+    methods: {
+        async onLedgerEvent(event, ledger, status) {
+            this.total = Object.values(ledger).reduce((a, b) => a + b, 0)
+            this.$store.commit('ledger/SET', ledger)
+            this.$store.commit('status/SET', status)
+        },
+        getSuites() {
+            Lode.ipc.send('framework-suites', this.model.id)
+        },
+        statusListener(event, to, from) {
+            this.status = to
+        },
+        onSuitesEvent(event, suites, total) {
+            this.suites = suites
+            this.total = total
+            this.$emit('mounted')
+            // If we're not filtering, update the suites' mapping key.
+            if (!this.statusFilters.length) {
+                this.$store.commit('context/SUITES', suites)
+            }
+        },
+        onSelectiveEvent(event, selected) {
+            this.selected = selected
+        },
+        refresh() {
+            // Optimistically set status to "queued".
+            this.status = 'queued'
+            Lode.ipc.send('framework-refresh', this.model.id)
+        },
+        start() {
+            // Optimistically set status to "queued".
+            this.status = 'queued'
+            Lode.ipc.send('framework-start', this.model.id)
+        },
+        stop() {
+            Lode.ipc.send('framework-stop', this.model.id)
+        },
+        updateTotal(total) {
+            this.total = total
+        },
+        onFilter() {
+            const filter = this.$el.querySelector('[type="search"]')
+            if (filter) {
+                filter.focus()
+            }
+        },
+        onCollapseAll() {
+            this.$store.dispatch('expand/collapseAll')
+            Lode.ipc.send('framework-collapse-all', this.model.id)
+        },
+        onChildToggle(context, toggle) {
+            Lode.ipc.send('framework-toggle-child', this.model.id, context, toggle)
+        },
+        onChildSelect(context, selected) {
+            if (selected && !this.selected) {
+                // Optimistically mark the framework as running selectively.
+                // This allows us to show checkboxes on suites
+                this.selected++
+            }
+            Lode.ipc.send('framework-select', this.model.id, context, selected)
+            // If a suite has been deselected, it's possible we'll need to
+            // remove it, in case we're filtering by selected status.
+            if (this.statusFilters.length && !selected) {
+                const file = head(context)
+                this.updateSuitePresence(this.getStatus(file), file, false)
+            }
+        },
+        onChildActivation(context) {
+            this.$emit('activate', context)
+        },
+        onChildStatus(to, from, file, selected) {
+            // If a suite's status no longer fits the current filters, we'll
+            // have to manually exclude it from the list.
+            if (this.statusFilters.length) {
+                this.updateSuitePresence(to, file, selected)
+            }
+        },
+        onChildContextMenu(context) {
+            Lode.ipc.send('nugget-context-menu', this.model.id, context)
+        },
+        onChildOpen(context) {
+            Lode.ipc.send('open-test', this.model.id, context)
+        },
+        updateSuitePresence(status, file, selected) {
+            const index = findIndex(this.suites, ['file', file])
+            if (index > -1) {
+                if (
+                    !this.statusFilters.includes(status)
+                    && !['queued', 'running'].includes(status)
+                    && (!this.statusFilters.includes('selected') || !selected)
+                ) {
+                    this.suites.splice(index, 1)
+                    if (selected) {
+                        this.onChildSelect([file], false)
+                    }
+                }
+            }
+        },
+        setKeywordFilter(keyword) {
+            Lode.ipc.send('framework-filter', this.model.id, 'keyword', keyword)
+            this.$store.commit('filters/SET', {
+                id: this.model.id,
+                filters: {
+                    keyword,
+                },
+            })
+        },
+        resetFilters() {
+            Lode.ipc.send('framework-reset-filters', this.model.id)
+            this.$store.commit('filters/RESET')
+            this.keyword = ''
+        },
+    },
+}
+</script>
+
 <template>
     <div>
         <div
             class="framework has-status"
             :class="[
                 `status--${status}`,
-                selected > 0 ? 'selective' : ''
+                selected > 0 ? 'selective' : '',
             ]"
         >
             <div class="header">
@@ -49,7 +268,9 @@
                                 {{ $string.plural('Run match|Run matches', suites.length) }}
                                 <span class="Counter">{{ suites.length }}</span>
                             </template>
-                            <template v-else>Run</template>
+                            <template v-else>
+                                Run
+                            </template>
                         </button>
                         <button
                             class="btn btn-sm"
@@ -80,10 +301,11 @@
                     </template>
                 </div>
                 <div v-if="total" class="filters search" :class="{ 'is-searching': keyword }">
-                    <button type="button" @click="onFilter" title="Filter items">
+                    <button type="button" title="Filter items" @click="onFilter">
                         <Icon symbol="search" />
                     </button>
                     <input
+                        v-model="keyword"
                         type="search"
                         class="form-control input-block input-sm"
                         placeholder="Filter items"
@@ -91,11 +313,10 @@
                         autocorrect="off"
                         autocapitalize="off"
                         spellcheck="false"
-                        v-model="keyword"
                     >
                 </div>
                 <div v-if="total" class="filters sort">
-                    <button type="button" @click="onCollapseAll" title="Collapse all">
+                    <button type="button" title="Collapse all" @click="onCollapseAll">
                         <Icon symbol="fold" />
                     </button>
                     <span>
@@ -111,8 +332,8 @@
             <div class="children">
                 <Nugget
                     v-for="suite in suites"
-                    class="suite"
                     :key="suite.relative"
+                    class="suite"
                     :model="suite"
                     :running="running"
                     :selectable="true"
@@ -127,9 +348,15 @@
                 </Nugget>
                 <footer v-if="hidden" class="cutoff">
                     <div>
-                        <div v-if="noResults">No results</div>
-                        <div v-else>{{ $string.plural(':n hidden item|:n hidden items', hidden) }}</div>
-                        <button class="btn-link" @click="resetFilters"><strong>Clear filters</strong></button>
+                        <div v-if="noResults">
+                            No results
+                        </div>
+                        <div v-else>
+                            {{ $string.plural(':n hidden item|:n hidden items', hidden) }}
+                        </div>
+                        <button class="btn-link" @click="resetFilters">
+                            <strong>Clear filters</strong>
+                        </button>
                     </div>
                     <span class="zigzag"></span>
                 </footer>
@@ -137,222 +364,3 @@
         </div>
     </div>
 </template>
-
-<script>
-import { debounce, findIndex, head, isEmpty } from 'lodash'
-import { mapGetters } from 'vuex'
-import { sortDisplayName } from '@lib/frameworks/sort'
-import Filename from '@/components/Filename.vue'
-import Indicator from '@/components/Indicator.vue'
-import Ledger from '@/components/Ledger.vue'
-import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
-
-export default {
-    name: 'Framework',
-    components: {
-        Filename,
-        Indicator,
-        Ledger
-    },
-    mixins: [
-        HasFrameworkMenu
-    ],
-    props: {
-        model: {
-            type: Object,
-            required: true
-        }
-    },
-    emits: [
-        'activate',
-        'mounted'
-    ],
-    data () {
-        return {
-            suites: [],
-            total: 0,
-            selected: 0,
-            status: this.model.status || 'idle',
-            keyword: this.$store.getters['filters/all'](this.model.id)['keyword'] || ''
-        }
-    },
-    computed: {
-        running () {
-            return this.status === 'running'
-        },
-        refreshing () {
-            return this.status === 'refreshing'
-        },
-        queued () {
-            return this.status === 'queued'
-        },
-        isFiltering () {
-            return !isEmpty(this.filters(this.model.id))
-        },
-        visible () {
-            return this.suites.length
-        },
-        hidden () {
-            return this.total - this.visible
-        },
-        noResults () {
-            return this.hidden === this.total
-        },
-        canToggleTests () {
-            return this.model.canToggleTests
-        },
-        statusFilters () {
-            return this.filters(this.model.id)['status'] || []
-        },
-        sort () {
-            return this.model.sort
-        },
-        displaySort () {
-            return sortDisplayName(this.sort)
-        },
-        ...mapGetters({
-            filters: 'filters/all',
-            getStatus: 'status/nugget'
-        })
-    },
-    watch: {
-        keyword: debounce(function (keyword) {
-            this.setKeywordFilter(keyword)
-        }, 300)
-    },
-    async mounted () {
-        Lode.ipc
-            .on(`${this.model.id}:ledger`, this.onLedgerEvent)
-            .on(`${this.model.id}:status:list`, this.statusListener)
-            .on(`${this.model.id}:refreshed`, this.onSuitesEvent)
-            .on(`${this.model.id}:selective`, this.onSelectiveEvent)
-
-        const { ledger, status } = await Lode.ipc.invoke('framework-get-ledger', this.model.id)
-        this.$store.commit('ledger/SET', ledger)
-        this.$store.commit('status/SET', status)
-
-        this.getSuites()
-        this.selected = this.model.selected
-    },
-    beforeUnmount () {
-        Lode.ipc
-            .removeAllListeners(`${this.model.id}:ledger`)
-            .removeAllListeners(`${this.model.id}:status:list`)
-            .removeAllListeners(`${this.model.id}:refreshed`)
-            .removeAllListeners(`${this.model.id}:selective`)
-    },
-    methods: {
-        async onLedgerEvent (event, ledger, status) {
-            this.total = Object.values(ledger).reduce((a, b) => a + b, 0)
-            this.$store.commit('ledger/SET', ledger)
-            this.$store.commit('status/SET', status)
-        },
-        getSuites () {
-            Lode.ipc.send('framework-suites', this.model.id)
-        },
-        statusListener (event, to, from) {
-            this.status = to
-        },
-        onSuitesEvent (event, suites, total) {
-            this.suites = suites
-            this.total = total
-            this.$emit('mounted')
-            // If we're not filtering, update the suites' mapping key.
-            if (!this.statusFilters.length) {
-                this.$store.commit('context/SUITES', suites)
-            }
-        },
-        onSelectiveEvent (event, selected) {
-            this.selected = selected
-        },
-        refresh () {
-            // Optimistically set status to "queued".
-            this.status = 'queued'
-            Lode.ipc.send('framework-refresh', this.model.id)
-        },
-        start () {
-            // Optimistically set status to "queued".
-            this.status = 'queued'
-            Lode.ipc.send('framework-start', this.model.id)
-        },
-        stop () {
-            Lode.ipc.send('framework-stop', this.model.id)
-        },
-        updateTotal (total) {
-            this.total = total
-        },
-        onFilter () {
-            const filter = this.$el.querySelector('[type="search"]')
-            if (filter) {
-                filter.focus()
-            }
-        },
-        onCollapseAll () {
-            this.$store.dispatch('expand/collapseAll')
-            Lode.ipc.send('framework-collapse-all', this.model.id)
-        },
-        onChildToggle (context, toggle) {
-            Lode.ipc.send('framework-toggle-child', this.model.id, context, toggle)
-        },
-        onChildSelect (context, selected) {
-            if (selected && !this.selected) {
-                // Optimistically mark the framework as running selectively.
-                // This allows us to show checkboxes on suites
-                this.selected++
-            }
-            Lode.ipc.send('framework-select', this.model.id, context, selected)
-            // If a suite has been deselected, it's possible we'll need to
-            // remove it, in case we're filtering by selected status.
-            if (this.statusFilters.length && !selected) {
-                const file = head(context)
-                this.updateSuitePresence(this.getStatus(file), file, false)
-            }
-        },
-        onChildActivation (context) {
-            this.$emit('activate', context)
-        },
-        onChildStatus (to, from, file, selected) {
-            // If a suite's status no longer fits the current filters, we'll
-            // have to manually exclude it from the list.
-            if (this.statusFilters.length) {
-                this.updateSuitePresence(to, file, selected)
-            }
-        },
-        onChildContextMenu (context) {
-            Lode.ipc.send('nugget-context-menu', this.model.id, context)
-        },
-        onChildOpen (context) {
-            Lode.ipc.send('open-test', this.model.id, context)
-        },
-        updateSuitePresence (status, file, selected) {
-            const index = findIndex(this.suites, ['file', file])
-            if (index > -1) {
-                if (
-                    this.statusFilters.indexOf(status) === -1 &&
-                    ['queued', 'running'].indexOf(status) === -1 &&
-                    (this.statusFilters.indexOf('selected') === -1 || !selected)
-                ) {
-                    this.suites.splice(index, 1)
-                    if (selected) {
-                        this.onChildSelect([file], false)
-                    }
-                }
-            }
-        },
-        setKeywordFilter (keyword) {
-            Lode.ipc.send('framework-filter', this.model.id, 'keyword', keyword)
-            this.$store.commit('filters/SET', {
-                id: this.model.id,
-                filters: {
-                    keyword
-                }
-            })
-        },
-        resetFilters () {
-            Lode.ipc.send('framework-reset-filters', this.model.id)
-            this.$store.commit('filters/RESET')
-            this.keyword = ''
-        }
-    }
-}
-</script>

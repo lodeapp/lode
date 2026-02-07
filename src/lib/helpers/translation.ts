@@ -4,9 +4,9 @@ export default class Translation {
     protected locale: string
     protected intervalRegExp: RegExp
 
-    constructor (locale = 'en-US') {
+    constructor(locale = 'en-US') {
         this.locale = locale
-        this.intervalRegExp = /^[\{\[]([^\[\]\{\}]*)[\}\]]\s?(.*)/
+        this.intervalRegExp = /^[{[]([^[\]{}]*)[}\]]\s?(.*)/
     }
 
     /**
@@ -14,7 +14,7 @@ export default class Translation {
      *
      * @param string The string in which to check intervals
      */
-    protected hasIntervals (string: string): boolean {
+    protected hasIntervals(string: string): boolean {
         return Boolean(string.match(this.intervalRegExp))
     }
 
@@ -25,7 +25,7 @@ export default class Translation {
      * @param string The string from which to extract interval text
      * @param amount The amount to match in the string
      */
-    protected getIntervalString (string: string, amount: number): string {
+    protected getIntervalString(string: string, amount: number): string {
         const strings: Array<string> = string.split('|')
 
         const index = this.getIntervalIndex(strings.map((partial: string) => {
@@ -47,27 +47,27 @@ export default class Translation {
      * @param intervals The available interval strings to match
      * @param amount The amount to match for intervals
      */
-    protected getIntervalIndex (intervals: Array<string>, amount: number): number | false {
+    protected getIntervalIndex(intervals: Array<string>, amount: number): number | false {
         // Clear whitespace and delimiters before starting
         // so we can be more lenient with how translators
         // or developers define their intervals
         const parsed: Array<string | number> = intervals.map((interval: string) => {
-            const range = interval.replace(/[\{\}\[\]\s]+/g, '')
-            return range === '*' || range.indexOf(',') > -1 ? range : parseInt(range)
+            const range = interval.replace(/[{}[\]\s]+/g, '')
+            return range === '*' || range.includes(',') ? range : Number.parseInt(range)
         })
         for (let index = 0; index < parsed.length; index++) {
             // If it's a range, also check for wildcards
-            if (typeof parsed[index] === 'string' && (parsed[index] as string).indexOf(',') > -1) {
+            if (typeof parsed[index] === 'string' && (parsed[index] as string).includes(',')) {
                 const [from, to] = (parsed[index] as string).split(',')
                 if (
-                    (to === '*' && amount >= parseInt(from)) ||
-                    (from === '*' && amount <= parseInt(to)) ||
-                    (amount >= parseInt(from) && amount <= parseInt(to))
+                    (to === '*' && amount >= Number.parseInt(from))
+                    || (from === '*' && amount <= Number.parseInt(to))
+                    || (amount >= Number.parseInt(from) && amount <= Number.parseInt(to))
                 ) {
                     return index
                 }
-            // eslint-disable-next-line eqeqeq
-            } else if (parsed[index] == amount) {
+            }
+            else if (parsed[index] === amount) {
                 return index
             }
         }
@@ -79,10 +79,10 @@ export default class Translation {
      * pipe character), returns the segment which best
      * represents the amount given
      *
-     * @param strings The pipe-separated list of strings representing plural forms
+     * @param string The pipe-separated list of strings representing plural forms
      * @param amount The amount for which to render a pluralized string
      */
-    public getPlural (string: string, amount: string | number): string {
+    public getPlural(string: string, amount: string | number): string {
         if (typeof amount === 'string') {
             amount = Number(amount)
         }

@@ -1,8 +1,67 @@
+<script>
+import { cloneDeep, isArray, reverse } from 'lodash'
+import Ansi from '@/components/Ansi.vue'
+import Diff from '@/components/Diff.vue'
+import MetaTable from '@/components/MetaTable.vue'
+import Trace from '@/components/Trace.vue'
+
+export default {
+    name: 'Feedback',
+    components: {
+        Ansi,
+        Diff,
+        MetaTable,
+        Trace,
+    },
+    props: {
+        content: {
+            type: Object,
+            default() {
+                return {}
+            },
+        },
+    },
+    data() {
+        return {
+            text: null,
+            reverse: false,
+        }
+    },
+    computed: {
+        trace() {
+            if (!this.reverse) {
+                return this.content.trace
+            }
+
+            let trace = cloneDeep(this.content.trace)
+            trace = trace.map((t) => {
+                if (isArray(t)) {
+                    reverse(t)
+                }
+                return t
+            })
+            reverse(trace)
+            return trace
+        },
+    },
+    async created() {
+        this.text = await this.processText(this.content.text)
+    },
+    methods: {
+        async processText(text) {
+            return (await Lode.ipc.invoke('test-feedback-text', text))
+        },
+    },
+}
+</script>
+
 <template>
     <div class="feedback">
         <h4>{{ content.title }}</h4>
         <div class="message">
-            <p v-if="text">{{ text }}</p>
+            <p v-if="text">
+                {{ text }}
+            </p>
             <template v-if="content.ansi">
                 <Ansi :content="content.ansi" />
             </template>
@@ -18,71 +77,16 @@
         </h4>
         <Trace
             v-if="trace && trace.length"
-            :trace="trace"
             :key="$string.from(trace)"
+            :trace="trace"
         />
-        <div class="meta-group" v-if="content.meta">
+        <div v-if="content.meta" class="meta-group">
             <div v-for="(meta, index) in content.meta" :key="index">
-                <h4 class="text-muted">{{ index.replace(/_/g, ' ') }}</h4>
+                <h4 class="text-muted">
+                    {{ index.replace(/_/g, ' ') }}
+                </h4>
                 <MetaTable :object="meta" />
             </div>
         </div>
     </div>
 </template>
-
-<script>
-import { cloneDeep, isArray, reverse } from 'lodash'
-import Ansi from '@/components/Ansi.vue'
-import Diff from '@/components/Diff.vue'
-import MetaTable from '@/components/MetaTable.vue'
-import Trace from '@/components/Trace.vue'
-
-export default {
-    name: 'Feedback',
-    components: {
-        Ansi,
-        Diff,
-        MetaTable,
-        Trace
-    },
-    props: {
-        content: {
-            type: Object,
-            default () {
-                return {}
-            }
-        }
-    },
-    data () {
-        return {
-            text: null,
-            reverse: false
-        }
-    },
-    computed: {
-        trace () {
-            if (!this.reverse) {
-                return this.content.trace
-            }
-
-            let trace = cloneDeep(this.content.trace)
-            trace = trace.map(t => {
-                if (isArray(t)) {
-                    reverse(t)
-                }
-                return t
-            })
-            reverse(trace)
-            return trace
-        }
-    },
-    async created () {
-        this.text = await this.processText(this.content.text)
-    },
-    methods: {
-        async processText (text) {
-            return (await Lode.ipc.invoke('test-feedback-text', text))
-        }
-    }
-}
-</script>

@@ -1,8 +1,0 @@
-/build/**
-/dist/**
-/static/**
-/src/lib/reporters/**
-/src/lib/process/debug/**
-/src/types/**
-/babel.config.js
-/workflow

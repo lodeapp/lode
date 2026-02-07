@@ -1,13 +1,13 @@
-<template>
-    <div class="draggable" @dblclick="maximize"></div>
-</template>
-
 <script>
 export default {
     methods: {
-        maximize () {
+        maximize() {
             Lode.ipc.send('maximize')
-        }
-    }
+        },
+    },
 }
 </script>
+
+<template>
+    <div class="draggable" @dblclick="maximize"></div>
+</template>

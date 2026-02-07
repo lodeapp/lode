@@ -1,20 +1,20 @@
-<template>
-    <span class="duration">{{ formatted }}</span>
-</template>
-
 <script>
 export default {
     name: 'Duration',
     props: {
         ms: {
             type: Number,
-            default: 0
-        }
+            default: 0,
+        },
     },
     computed: {
-        formatted () {
+        formatted() {
             return this.$duration.format(this.ms)
-        }
-    }
+        },
+    },
 }
 </script>
+
+<template>
+    <span class="duration">{{ formatted }}</span>
+</template>

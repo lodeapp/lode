@@ -1,50 +1,50 @@
-<template>
-    <div class="snippet">
-        <button v-if="copy" type="button" class="btn btn-sm" title="Copy to clipboard" @click="clipboard">
-            <Icon symbol="copy" />
-        </button>
-        <pre><code :class="['hljs', activeLanguage]" v-html="snippet"></code></pre>
-    </div>
-</template>
-
 <script>
 export default {
     name: 'Snippet',
     props: {
         code: {
             type: [String, Object],
-            required: true
+            required: true,
         },
         language: {
             type: String,
-            default: ''
+            default: '',
         },
         line: {
             type: [String, Number],
-            default: null
+            default: null,
         },
         copy: {
             type: String,
-            default: ''
-        }
+            default: '',
+        },
     },
     computed: {
-        parsed () {
+        parsed() {
             return this.$code.highlight(this.code, this.language)
         },
-        activeLanguage () {
+        activeLanguage() {
             return this.parsed.language
         },
-        snippet () {
+        snippet() {
             return this.line
                 ? this.$code.lines(this.parsed.value, Object.keys(this.code)[0] || 1, this.line)
                 : this.parsed.value
-        }
+        },
     },
     methods: {
-        clipboard () {
+        clipboard() {
             Lode.copyToClipboard(this.copy)
-        }
-    }
+        },
+    },
 }
 </script>
+
+<template>
+    <div class="snippet">
+        <button v-if="copy" type="button" class="btn btn-sm" title="Copy to clipboard" @click="clipboard">
+            <Icon symbol="copy" />
+        </button>
+        <pre><code class="hljs" :class="[activeLanguage]" v-html="snippet"></code></pre>
+    </div>
+</template>

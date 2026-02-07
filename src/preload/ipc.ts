@@ -30,7 +30,7 @@ export enum AllowedIpcEventMap {
     'select-all',
     'set-theme',
     'settings-reset',
-    'settings-update'
+    'settings-update',
 }
 
 export enum AllowedIpcInvocationMap {
@@ -61,7 +61,7 @@ export enum AllowedIpcInvocationMap {
     'terms',
     'test-get',
     'test-feedback-text',
-    'titlebar-menu'
+    'titlebar-menu',
 }
 
 export type AllowedIpcEvents = keyof typeof AllowedIpcEventMap
@@ -70,11 +70,11 @@ export type AllowedIpcInvocations = keyof typeof AllowedIpcInvocationMap
 export class Ipc {
     public send: any
     public invoke: any
-    public on: Function
-    public once: Function
-    public removeAllListeners: Function
+    public on: (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) => this
+    public once: (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) => this
+    public removeAllListeners: (channel: string) => this
 
-    constructor () {
+    constructor() {
         this.send = this.handleSend.bind(this)
         this.invoke = this.handleInvoke.bind(this)
         this.on = this.handleOn.bind(this)
@@ -82,7 +82,7 @@ export class Ipc {
         this.removeAllListeners = this.handleRemoveAllListeners.bind(this)
     }
 
-    handleSend (channel: AllowedIpcEvents, ...args: any[]): void {
+    handleSend(channel: AllowedIpcEvents, ...args: any[]): void {
         if (typeof AllowedIpcEventMap[channel] === 'undefined') {
             log.error(`Unexpected event sent from renderer: ${channel}`)
             return
@@ -90,25 +90,25 @@ export class Ipc {
         return ipcRenderer.send(channel, ...args)
     }
 
-    handleInvoke (channel: AllowedIpcInvocations, ...args: any[]): Promise<any> {
+    handleInvoke(channel: AllowedIpcInvocations, ...args: any[]): Promise<any> {
         if (typeof AllowedIpcInvocationMap[channel] === 'undefined') {
             log.error(`Unexpected invocation attempted on renderer: ${channel}`)
-            return Promise.reject()
+            return Promise.reject(new Error(`Unexpected invocation attempted on renderer: ${channel}`))
         }
         return ipcRenderer.invoke(channel, ...args)
     }
 
-    handleOn (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
+    handleOn(channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
         ipcRenderer.on(channel, listener)
         return this
     }
 
-    handleOnce (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
+    handleOnce(channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
         ipcRenderer.once(channel, listener)
         return this
     }
 
-    handleRemoveAllListeners (channel: string): this {
+    handleRemoveAllListeners(channel: string): this {
         ipcRenderer.removeAllListeners(channel)
         return this
     }

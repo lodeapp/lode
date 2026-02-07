@@ -1,7 +1,8 @@
-import { find } from 'lodash'
-import { ProcessId, ProcessOptions, IProcess, DefaultProcess } from '@lib/process/process'
-import { Runners } from '@lib/process/runners'
+import type { IProcess, ProcessId, ProcessOptions } from '@lib/process/process'
 import pool from '@lib/process/pool'
+import { DefaultProcess } from '@lib/process/process'
+import { Runners } from '@lib/process/runners'
+import { find } from 'lodash'
 
 export class ProcessFactory {
     /**
@@ -10,7 +11,7 @@ export class ProcessFactory {
      * @param options The options for the process we're making.
      * @param poolId An optional id with which the newly made process will be added to the pool.
      */
-    public static make (options: ProcessOptions, poolId?: ProcessId): IProcess {
+    public static make(options: ProcessOptions, poolId?: ProcessId): IProcess {
         let spawned: IProcess | null = null
 
         if (options.forceRunner) {
@@ -20,7 +21,8 @@ export class ProcessFactory {
             if (Runner) {
                 spawned = new Runner(options)
             }
-        } else {
+        }
+        else {
             // If no runner was specificed, we'll try to determine which runner to
             // use by feeding each of them the command.
             for (let i = 0; i < Runners.length; i++) {
