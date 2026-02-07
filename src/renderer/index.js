@@ -26,6 +26,14 @@ import '@lib/logger/renderer'
 // Styles
 import '../styles/app.scss'
 
+// Connect to standalone Vue DevTools in development mode.
+// Run `npm run devtools` in a separate terminal before starting the app.
+if (__DEV__) {
+    import('@vue/devtools').then(({ devtools }) => {
+        devtools.connect('http://localhost', 8098)
+    })
+}
+
 const app = createApp({
     components: {
         App,
