@@ -1,11 +1,12 @@
 import { createStore } from 'vuex'
 
 // Load all modules automatically
-const context = require.context('@/store/modules', true, /\.js$/)
+const moduleFiles = import.meta.glob('./modules/*.js', { eager: true })
 const modules = {}
-context.keys().forEach((key) => {
-    modules[key.replace(/^\.\/([aA0-zZ9]+)\.js$/, '$1')] = context(key).default
-})
+for (const path in moduleFiles) {
+    const name = path.replace(/^\.\/modules\/(.+)\.js$/, '$1')
+    modules[name] = moduleFiles[path].default
+}
 
 export default createStore({
     modules,

@@ -175,7 +175,7 @@
     "ILogger": false,
     "it": false,
     "ITracker": false,
-    "jest": false,
+    "vi": false,
     "Lode": false,
     "log": false,
     "MenuEvent": false,

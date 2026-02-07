@@ -1,7 +1,7 @@
 import { LogLevel } from './levels'
 import { formatLogMessage } from './format'
 
-const g = global as any
+const g = globalThis as any
 
 function log (level: LogLevel, message: string | object, error?: Error) {
     Lode.ipc.send('log', level, '[renderer]: ' + formatLogMessage(message, error))

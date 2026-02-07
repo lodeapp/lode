@@ -167,7 +167,7 @@ export class ApplicationWindow {
 
         this.window.loadURL(
             process.env.NODE_ENV === 'development'
-                ? `http://localhost:9080`
+                ? (process.env.ELECTRON_RENDERER_URL || 'http://localhost:9080')
                 : `file://${__dirname}/index.html`
         )
     }

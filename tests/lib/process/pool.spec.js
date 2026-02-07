@@ -7,8 +7,8 @@ beforeEach(() => {
 
 it('can pool processes without specifying id', () => {
     const spawned = {
-        getId: jest.fn().mockReturnValue(7),
-        on: jest.fn()
+        getId: vi.fn().mockReturnValue(7),
+        on: vi.fn()
     }
     pool.add(spawned)
     expect(pool.processes[7]).toBe(spawned)
@@ -18,8 +18,8 @@ it('can pool processes without specifying id', () => {
 
 it('does not pool processes if it cannot figure out the process id', () => {
     const spawned = {
-        getId: jest.fn().mockReturnValue(null),
-        on: jest.fn()
+        getId: vi.fn().mockReturnValue(null),
+        on: vi.fn()
     }
     pool.add(spawned)
     expect(pool.processes).toEqual({})
@@ -29,8 +29,8 @@ it('does not pool processes if it cannot figure out the process id', () => {
 
 it('pools processes with a given id', () => {
     const spawned = {
-        getId: jest.fn(),
-        on: jest.fn()
+        getId: vi.fn(),
+        on: vi.fn()
     }
     pool.add(spawned, 11)
     expect(pool.processes[11]).toBe(spawned)
@@ -40,7 +40,7 @@ it('pools processes with a given id', () => {
 
 it('can find process in the current pool', () => {
     const spawned = {
-        on: jest.fn()
+        on: vi.fn()
     }
     pool.add(spawned, 11)
     expect(pool.findProcess(11)).toBe(spawned)

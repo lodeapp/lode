@@ -1,16 +1,16 @@
 import { spawn } from 'child_process'
 import { NpmProcess } from '@lib/process/runners/npm'
 
-jest.mock('child_process', () => ({
-    spawn: jest.fn().mockReturnValue({
-        on: jest.fn(),
+vi.mock('child_process', () => ({
+    spawn: vi.fn().mockReturnValue({
+        on: vi.fn(),
         stdout: {
-            setEncoding: jest.fn(),
-            on: jest.fn()
+            setEncoding: vi.fn(),
+            on: vi.fn()
         },
         stderr: {
-            setEncoding: jest.fn(),
-            on: jest.fn()
+            setEncoding: vi.fn(),
+            on: vi.fn()
         }
     })
 }))

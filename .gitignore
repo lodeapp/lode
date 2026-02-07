@@ -12,4 +12,5 @@ support/icons
 tests/coverage
 tests/cypress/videos
 tests/cypress/screenshots
-yarn-error.log
+
+.claude/settings.local.json

@@ -30,7 +30,7 @@ export default {
     mixins: [Modal],
     data () {
         return {
-            logo: 'static/icons/512x512.png'
+            logo: '/icons/512x512.png'
         }
     },
     computed: {

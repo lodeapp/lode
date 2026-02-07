@@ -60,7 +60,7 @@ export class Jest extends Framework {
         super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
-                ? Path.resolve(__dirname, loc('../../reporters/jest'))
+                ? Path.join(__static, loc('./reporters/jest'))
                 : unpacked(Path.join(__static, loc('./reporters/jest')))
             await Fs.copy(reporter, this.injectPath())
         }
@@ -108,7 +108,7 @@ export class Jest extends Framework {
             this.runsInRemote
                 ? Path.join(this.getRemotePath(), loc('.lode/jest/index.js'))
                 : process.env.NODE_ENV === 'development'
-                    ? Path.resolve(__dirname, loc('../../reporters/jest/index.js'))
+                    ? Path.join(__static, loc('./reporters/jest/index.js'))
                     : unpacked(Path.join(__static, loc('./reporters/jest/index.js')))
         ]
 

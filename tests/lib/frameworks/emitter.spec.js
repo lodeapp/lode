@@ -1,9 +1,9 @@
 import { ApplicationWindow } from '@main/application-window'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 
-jest.mock('@lib/state')
-jest.mock('electron-store')
-jest.mock('@main/application-window')
+vi.mock('@lib/state')
+vi.mock('electron-store')
+vi.mock('@main/application-window')
 
 it('can return the associated application window', async () => {
     const window = new ApplicationWindow()
@@ -13,7 +13,7 @@ it('can return the associated application window', async () => {
 
 it('can emit events to the application window', async () => {
     const window = new ApplicationWindow()
-    window.canReceiveEvents = jest.fn(() => true)
+    window.canReceiveEvents = vi.fn(() => true)
 
     const emitter = new ProjectEventEmitter(window)
 
@@ -30,7 +30,7 @@ it('can emit events to the application window', async () => {
 
 it('does not emit events if the application window is blocking them', async () => {
     const window = new ApplicationWindow()
-    window.canReceiveEvents = jest.fn(() => false)
+    window.canReceiveEvents = vi.fn(() => false)
 
     const emitter = new ProjectEventEmitter(window)
     emitter.emitToRenderer('biscuit')

@@ -18,7 +18,8 @@ export type ProcessOptions = {
     forceRunner?: string | null
     ssh?: boolean
     sshOptions?: SSHOptions,
-    platform?: NodeJS.Platform
+    platform?: NodeJS.Platform,
+    env?: IProcessEnvironment
 }
 
 export interface IProcessEnvironment {
@@ -60,7 +61,7 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         // Create a new multi-line search object to parse delimiters
         this.search = new BufferedSearch()
 
-        // We can re-process stored streams by running `FROM_FILE=${file} yarn dev`.
+        // We can re-process stored streams by running `FROM_FILE=${file} npm run dev`.
         // If set, all processes will output chunks from the stored file.
         if (__DEV__ && process.env.FROM_FILE) {
             process.nextTick(() => {
@@ -127,8 +128,10 @@ export class DefaultProcess extends EventEmitter implements IProcess {
             windowsHide: true,
             env: this.spawnEnv({
                 ...process.env,
+                NODE_ENV: 'test',
                 // Ensure ANSI color is supported
-                FORCE_COLOR: 3
+                FORCE_COLOR: 3,
+                ...options.env
             })
         })
 

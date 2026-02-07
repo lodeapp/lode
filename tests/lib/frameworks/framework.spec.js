@@ -3,12 +3,12 @@ import { ApplicationWindow } from '@main/application-window'
 import { Framework } from '@lib/frameworks/framework'
 import { Suite } from '@lib/frameworks/suite'
 
-jest.mock('@lib/state')
-jest.mock('electron-store')
-jest.mock('@main/application-window')
-jest.mock('@lib/process/queue')
+vi.mock('@lib/state')
+vi.mock('electron-store')
+vi.mock('@main/application-window')
+vi.mock('@lib/process/queue')
 
-jest.useFakeTimers()
+vi.useFakeTimers()
 
 const options = {
     name: 'Hobnobs',
@@ -166,10 +166,10 @@ describe('Framework manipulation', () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
-        framework.emit = jest.fn()
-        framework.reset = jest.fn()
-        framework.resetSuites = jest.fn()
-        framework.refresh = jest.fn()
+        framework.emit = vi.fn()
+        framework.reset = vi.fn()
+        framework.resetSuites = vi.fn()
+        framework.refresh = vi.fn()
 
         await framework.updateOptions({
             command: './bake',
@@ -190,10 +190,10 @@ describe('Framework manipulation', () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
-        framework.emit = jest.fn()
-        framework.reset = jest.fn()
-        framework.resetSuites = jest.fn()
-        framework.refresh = jest.fn()
+        framework.emit = vi.fn()
+        framework.reset = vi.fn()
+        framework.resetSuites = vi.fn()
+        framework.refresh = vi.fn()
 
         await framework.updateOptions({
             command: './eat',
@@ -212,10 +212,10 @@ describe('Framework manipulation', () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
-        framework.emit = jest.fn()
-        framework.reset = jest.fn()
-        framework.resetSuites = jest.fn()
-        framework.refresh = jest.fn()
+        framework.emit = vi.fn()
+        framework.reset = vi.fn()
+        framework.resetSuites = vi.fn()
+        framework.refresh = vi.fn()
 
         await framework.updateOptions({
             command: './bake',
@@ -234,10 +234,10 @@ describe('Framework manipulation', () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
-        framework.emit = jest.fn()
-        framework.reset = jest.fn()
-        framework.resetSuites = jest.fn()
-        framework.refresh = jest.fn()
+        framework.emit = vi.fn()
+        framework.reset = vi.fn()
+        framework.resetSuites = vi.fn()
+        framework.refresh = vi.fn()
 
         await framework.updateOptions({
             command: './bake',
@@ -256,10 +256,10 @@ describe('Framework manipulation', () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
-        framework.emit = jest.fn()
-        framework.reset = jest.fn()
-        framework.resetSuites = jest.fn()
-        framework.refresh = jest.fn()
+        framework.emit = vi.fn()
+        framework.reset = vi.fn()
+        framework.resetSuites = vi.fn()
+        framework.refresh = vi.fn()
 
         await framework.updateOptions({
             command: './bake',
@@ -345,7 +345,7 @@ describe('Framework manipulation', () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
-        framework.emitLedgerToRenderer = jest.fn()
+        framework.emitLedgerToRenderer = vi.fn()
 
         framework.setNuggetStatus('111', 'queued', 'idle', false)
         expect(framework.getNuggetStatus('111')).toBe('queued')
@@ -381,15 +381,15 @@ describe('Framework refreshing', () => {
         // Mock framework assembly, with granular control over when
         // assemble method is resolved.
         let assemble
-        framework.assemble = jest.fn(() => {
+        framework.assemble = vi.fn(() => {
             return new Promise(resolve => {
                 assemble = resolve
             })
         })
-        framework.disassemble = jest.fn()
+        framework.disassemble = vi.fn()
 
         // Mock the reload method, which will only exist on framework implementations (e.g. Jest)
-        framework.reload = jest.fn(() => {
+        framework.reload = vi.fn(() => {
             // Only mark one suite as fresh, so second should be considered stale and removed
             framework.getAllSuites()
                 .filter(suite => suite.getId() === 'isTasty.js')
@@ -427,11 +427,11 @@ describe('Framework refreshing', () => {
 
         // Refreshing should queue the job before running
         framework.refresh()
-        framework.assemble = jest.fn()
-        framework.disassemble = jest.fn()
+        framework.assemble = vi.fn()
+        framework.disassemble = vi.fn()
 
         // Mock reload as returning 'killed' string (i.e. interrupted child process).
-        framework.reload = jest.fn(() => Promise.resolve('killed'))
+        framework.reload = vi.fn(() => Promise.resolve('killed'))
 
         // Run queued refresh
         Object.values(framework.queue)[0]()
@@ -458,14 +458,14 @@ describe('Framework refreshing', () => {
         framework.setNuggetStatus('444', 'passed', 'idle', false)
 
         framework.refresh()
-        framework.assemble = jest.fn()
-        framework.disassemble = jest.fn()
-        framework.emit = jest.fn()
-        framework.emitToRenderer = jest.fn()
+        framework.assemble = vi.fn()
+        framework.disassemble = vi.fn()
+        framework.emit = vi.fn()
+        framework.emitToRenderer = vi.fn()
 
         // Mock reload as returning a rejected promise
         const error = new Error('Boomtown!')
-        framework.reload = jest.fn(() => Promise.reject(error))
+        framework.reload = vi.fn(() => Promise.reject(error))
 
         // Trigger queued refresh
         Object.values(framework.queue)[0]()
@@ -481,7 +481,7 @@ describe('Framework refreshing', () => {
         expect(framework.emit).toHaveBeenCalledWith('error', error)
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(`${framework.id}:error`, 'Error: Boomtown!', '')
 
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
             `${framework.id}:ledger`,
             {
@@ -523,21 +523,21 @@ describe('Framework running', () => {
         expect(framework.isBusy()).toBe(true)
 
         let assemble
-        framework.assemble = jest.fn(() => {
+        framework.assemble = vi.fn(() => {
             return new Promise(resolve => {
                 assemble = resolve
             })
         })
-        framework.disassemble = jest.fn()
-        framework.emit = jest.fn()
-        framework.emitToRenderer = jest.fn()
-        framework.reload = jest.fn(() => {
+        framework.disassemble = vi.fn()
+        framework.emit = vi.fn()
+        framework.emitToRenderer = vi.fn()
+        framework.reload = vi.fn(() => {
             framework.getAllSuites().forEach(suite => suite.setFresh(true))
             return Promise.resolve()
         })
-        framework.runArgs = jest.fn(() => ['hobnobs', 'digestives'])
-        framework.runSelectiveArgs = jest.fn()
-        framework.report = jest.fn(() => {
+        framework.runArgs = vi.fn(() => ['hobnobs', 'digestives'])
+        framework.runSelectiveArgs = vi.fn()
+        framework.report = vi.fn(() => {
             // Simulate nuggets having passed when run
             framework.setNuggetStatus('isTasty.js', 'passed', 'queued', true)
             framework.setNuggetStatus('111', 'passed', 'queued', false)
@@ -571,7 +571,7 @@ describe('Framework running', () => {
         expect(framework.getSuiteById('isNobbly.js')).toBe(undefined)
         expect(framework.status).toBe('passed')
 
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
             `${framework.id}:ledger`,
             {
@@ -605,18 +605,18 @@ describe('Framework running', () => {
         framework.setNuggetStatus('isTasty.js', 'passed', 'idle', true)
 
         framework.start()
-        framework.assemble = jest.fn()
-        framework.disassemble = jest.fn()
-        framework.emit = jest.fn()
-        framework.emitToRenderer = jest.fn()
-        framework.reload = jest.fn(() => {
+        framework.assemble = vi.fn()
+        framework.disassemble = vi.fn()
+        framework.emit = vi.fn()
+        framework.emitToRenderer = vi.fn()
+        framework.reload = vi.fn(() => {
             framework.getAllSuites().forEach(suite => suite.setFresh(true))
             return Promise.resolve()
         })
-        framework.runArgs = jest.fn()
-        framework.runSelectiveArgs = jest.fn()
+        framework.runArgs = vi.fn()
+        framework.runSelectiveArgs = vi.fn()
         const error = new Error('Boomtown!')
-        framework.report = jest.fn(() => Promise.reject(error))
+        framework.report = vi.fn(() => Promise.reject(error))
 
         // Trigger queued run
         Object.values(framework.queue)[0]()
@@ -637,7 +637,7 @@ describe('Framework running', () => {
         expect(framework.emit).toHaveBeenCalledWith('error', error)
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(`${framework.id}:error`, 'Error: Boomtown!', '')
 
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
             `${framework.id}:ledger`,
             {
@@ -673,18 +673,18 @@ describe('Framework running', () => {
         framework.setNuggetStatus('isTasty.js', 'passed', 'idle', true)
 
         framework.start()
-        framework.assemble = jest.fn()
-        framework.disassemble = jest.fn()
-        framework.emit = jest.fn()
-        framework.emitToRenderer = jest.fn()
-        framework.reload = jest.fn(() => {
+        framework.assemble = vi.fn()
+        framework.disassemble = vi.fn()
+        framework.emit = vi.fn()
+        framework.emitToRenderer = vi.fn()
+        framework.reload = vi.fn(() => {
             framework.getAllSuites().forEach(suite => suite.setFresh(true))
             // Simulate reload process being killed
             return Promise.resolve('killed')
         })
-        framework.runArgs = jest.fn()
-        framework.runSelectiveArgs = jest.fn()
-        framework.report = jest.fn()
+        framework.runArgs = vi.fn()
+        framework.runSelectiveArgs = vi.fn()
+        framework.report = vi.fn()
 
         // Trigger queued run
         Object.values(framework.queue)[0]()
@@ -705,7 +705,7 @@ describe('Framework running', () => {
         expect(Object.entries(framework.getStatusMap()).every(([id, status]) => status === 'idle')).toBe(true)
         expect(framework.status).toBe('idle')
 
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
             `${framework.id}:ledger`,
             {
@@ -741,18 +741,18 @@ describe('Framework running', () => {
         framework.setNuggetStatus('isTasty.js', 'passed', 'idle', true)
 
         framework.start()
-        framework.assemble = jest.fn()
-        framework.disassemble = jest.fn()
-        framework.emit = jest.fn()
-        framework.emitToRenderer = jest.fn()
-        framework.reload = jest.fn(() => {
+        framework.assemble = vi.fn()
+        framework.disassemble = vi.fn()
+        framework.emit = vi.fn()
+        framework.emitToRenderer = vi.fn()
+        framework.reload = vi.fn(() => {
             framework.getAllSuites().forEach(suite => suite.setFresh(true))
             const error = new Error('Boomtown!')
             return Promise.reject(error)
         })
-        framework.runArgs = jest.fn()
-        framework.runSelectiveArgs = jest.fn()
-        framework.report = jest.fn()
+        framework.runArgs = vi.fn()
+        framework.runSelectiveArgs = vi.fn()
+        framework.report = vi.fn()
 
         // Trigger queued run
         Object.values(framework.queue)[0]()
@@ -772,7 +772,7 @@ describe('Framework running', () => {
         expect(Object.entries(framework.getStatusMap()).every(([id, status]) => status === 'idle')).toBe(true)
         expect(framework.status).toBe('error')
 
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
             `${framework.id}:ledger`,
             {
@@ -806,9 +806,9 @@ describe('Framework selective running', () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
 
-        framework.run = jest.fn().mockReturnValue('biscuit')
+        framework.run = vi.fn().mockReturnValue('biscuit')
 
-        expect(framework.runSelective()).resolves.toBe('biscuit')
+        await expect(framework.runSelective()).resolves.toBe('biscuit')
         expect(framework.run).toHaveBeenCalledTimes(1)
     })
 
@@ -827,18 +827,18 @@ describe('Framework selective running', () => {
         expect(framework.isBusy()).toBe(true)
 
         let assemble
-        framework.assemble = jest.fn(() => {
+        framework.assemble = vi.fn(() => {
             return new Promise(resolve => {
                 assemble = resolve
             })
         })
-        framework.disassemble = jest.fn()
-        framework.emit = jest.fn()
-        framework.emitToRenderer = jest.fn()
-        framework.reload = jest.fn()
-        framework.runArgs = jest.fn()
-        framework.runSelectiveArgs = jest.fn(() => ['hobnobs', 'digestives'])
-        framework.report = jest.fn(() => {
+        framework.disassemble = vi.fn()
+        framework.emit = vi.fn()
+        framework.emitToRenderer = vi.fn()
+        framework.reload = vi.fn()
+        framework.runArgs = vi.fn()
+        framework.runSelectiveArgs = vi.fn(() => ['hobnobs', 'digestives'])
+        framework.report = vi.fn(() => {
             // Simulate nuggets having passed when run
             framework.setNuggetStatus('isTasty.js', 'passed', 'queued', true)
             framework.setNuggetStatus('111', 'passed', 'queued', false)
@@ -878,7 +878,7 @@ describe('Framework selective running', () => {
         expect(framework.getNuggetStatus('isNobbly.js')).toBe('idle')
         expect(framework.status).toBe('partial')
 
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
             `${framework.id}:ledger`,
             {
@@ -920,14 +920,14 @@ describe('Framework selective running', () => {
         expect(Object.values(framework.queue)[0]).toBeInstanceOf(Function)
         expect(framework.isBusy()).toBe(true)
 
-        framework.assemble = jest.fn()
-        framework.disassemble = jest.fn()
-        framework.emit = jest.fn()
-        framework.emitToRenderer = jest.fn()
-        framework.runSelectiveArgs = jest.fn()
+        framework.assemble = vi.fn()
+        framework.disassemble = vi.fn()
+        framework.emit = vi.fn()
+        framework.emitToRenderer = vi.fn()
+        framework.runSelectiveArgs = vi.fn()
         // Report doesn't do anything, to simulate selected suite not being
         // affected by the reporting process.
-        framework.report = jest.fn(() => Promise.resolve())
+        framework.report = vi.fn(() => Promise.resolve())
 
         // Trigger queued run
         Object.values(framework.queue)[0]()
@@ -943,7 +943,7 @@ describe('Framework selective running', () => {
         expect(framework.getNuggetStatus('isNobbly.js')).toBe('idle')
         expect(framework.status).toBe('error')
 
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
             `${framework.id}:ledger`,
             {
@@ -979,13 +979,13 @@ describe('Framework selective running', () => {
         await suite.toggleSelected()
 
         framework.start()
-        framework.assemble = jest.fn()
-        framework.disassemble = jest.fn()
-        framework.emit = jest.fn()
-        framework.emitToRenderer = jest.fn()
-        framework.runSelectiveArgs = jest.fn()
+        framework.assemble = vi.fn()
+        framework.disassemble = vi.fn()
+        framework.emit = vi.fn()
+        framework.emitToRenderer = vi.fn()
+        framework.runSelectiveArgs = vi.fn()
         const error = new Error('Boomtown!')
-        framework.report = jest.fn(() => Promise.reject(error))
+        framework.report = vi.fn(() => Promise.reject(error))
 
         // Run queued refresh
         Object.values(framework.queue)[0]()
@@ -1004,7 +1004,7 @@ describe('Framework selective running', () => {
         expect(framework.emit).toHaveBeenCalledWith('error', error)
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(`${framework.id}:error`, 'Error: Boomtown!', '')
 
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(framework.emitToRenderer).toHaveBeenLastCalledWith(
             `${framework.id}:ledger`,
             {

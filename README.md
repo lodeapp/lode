@@ -18,28 +18,28 @@ Lode currently supports the following testing frameworks:
 To run it locally, you must first clone this repository and run the following commands:
 
 ```sh
-yarn install
-yarn dev
+npm install
+npm run dev
 ```
 
 Afterwards, to build an application package for the current platform, run the following:
 
 ```sh
-yarn build
+npm run build
 ```
 
 Alternatively, you can pack and execute the application directly, which is useful to debug issues that might not occur in development mode. Note that because production state is encrypted, the existing development state will not work:
 
 ```sh
-yarn simulate
+npm run simulate
 ```
 
 The Lode codebase has two sets of tests: [Jest](https://jestjs.io/) for the main process and [Cypress](https://www.cypress.io/) for the renderer process.
 
 ```sh
-yarn test           # Jest tests
-yarn test:cypress   # Cypress tests
-yarn cypress        # Open the Cypress application
+npm test              # Jest tests
+npm run test:cypress  # Cypress tests
+npm run cypress       # Open the Cypress application
 ```
 
 Because the Lode application enforces [context isolation](https://www.electronjs.org/docs/tutorial/context-isolation#context-isolation), we are able to run renderer process without the need for Node.js APIs, and since Electron's API is access through the preload scripts using a centralized `Lode` object, we can easily mock their behavior for testing with Cypress.

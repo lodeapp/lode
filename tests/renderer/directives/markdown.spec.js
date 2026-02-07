@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { config, mount } from '@vue/test-utils'
 import Markdown from '@/directives/markdown'
 import Strings from '@/plugins/strings'

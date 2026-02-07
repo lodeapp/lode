@@ -2,7 +2,9 @@
 
 const Path = require('node:path')
 const { exec } = require('child_process')
+const { createServer } = require('vite')
 let callbackId = null
+let server = null
 
 const teardown = (code = 0) => {
     if (callbackId) {
@@ -11,6 +13,9 @@ const teardown = (code = 0) => {
             // throw if it no longer exists
             process.kill(-callbackId)
         } catch (_) {}
+    }
+    if (server) {
+        server.close()
     }
     process.exit(code)
 }
@@ -30,7 +35,25 @@ process.on('SIGINT', () => {
     teardown()
 })
 
-const startRenderer = require('./runners').startRenderer
+const startRenderer = async () => {
+    server = await createServer({
+        root: Path.resolve(__dirname, '../src/renderer'),
+        server: {
+            port: 9080
+        },
+        resolve: {
+            alias: {
+                '@': Path.resolve(__dirname, '../src/renderer'),
+                '@lib': Path.resolve(__dirname, '../src/lib'),
+                '@main': Path.resolve(__dirname, '../src/main')
+            }
+        }
+    })
+
+    await server.listen()
+    console.log('Renderer dev server ready on http://localhost:9080')
+}
+
 startRenderer().then(() => {
     const callback = exec(
         process.argv[2] === 'open'

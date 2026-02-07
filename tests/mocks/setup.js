@@ -1,4 +1,4 @@
-global.log = {
+globalThis.log = {
     debug: () => {},
     info: () => {},
     warn: () => {},

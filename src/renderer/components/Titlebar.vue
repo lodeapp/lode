@@ -3,7 +3,7 @@
         <div class="titlebar-drag"></div>
         <ul class="titlebar-menu">
             <li class="titlebar-logo">
-                <img src="static/icons/gem.svg">
+                <img src="/icons/gem.svg">
             </li>
             <li v-for="item in menu" :key="item">
                 <button

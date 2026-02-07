@@ -1,6 +1,6 @@
 import * as Path from 'node:path'
 import { defineConfig } from 'cypress'
-import webpackPreprocessor from '@cypress/webpack-preprocessor'
+import { build } from 'esbuild'
 
 export default defineConfig({
     e2e: {
@@ -20,31 +20,26 @@ export default defineConfig({
         scrollBehavior: false,
         waitForAnimations: false,
         setupNodeEvents (on, config) {
-            on('file:preprocessor', webpackPreprocessor({
-                webpackOptions: {
-                    module: {
-                        rules: [
-                            {
-                                test: /\.ts?$/,
-                                loader: 'ts-loader',
-                                exclude: /node_modules/
-                            },
-                            {
-                                test: /\.js$/,
-                                use: 'babel-loader',
-                                exclude: /node_modules/
-                            }
-                        ]
+            on('file:preprocessor', async (file) => {
+                const outfile = file.outputPath
+                await build({
+                    entryPoints: [file.filePath],
+                    outfile,
+                    bundle: true,
+                    platform: 'node',
+                    format: 'cjs',
+                    sourcemap: true,
+                    define: {
+                        'process.env.NODE_ENV': '"development"'
                     },
-                    resolve: {
-                        alias: {
-                            '@preload': Path.join(__dirname, '../../src/preload'),
-                            'electron': Path.join(__dirname, '../mocks/electron.js')
-                        },
-                        extensions: ['.js', '.ts']
+                    resolveExtensions: ['.ts', '.js'],
+                    alias: {
+                        '@preload': Path.join(__dirname, '../../src/preload'),
+                        'electron': Path.join(__dirname, '../mocks/electron.js')
                     }
-                }
-            }))
+                })
+                return outfile
+            })
         }
     }
 })

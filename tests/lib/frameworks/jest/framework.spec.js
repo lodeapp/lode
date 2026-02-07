@@ -1,10 +1,12 @@
 import * as Fs from 'fs-extra'
 import { Jest } from '@lib/frameworks/jest/framework'
 
-jest.mock('fs-extra')
-jest.mock('@lib/state')
-jest.mock('electron-store')
-jest.mock('@main/application-window')
+vi.mock('fs-extra', () => ({
+    readJson: vi.fn()
+}))
+vi.mock('@lib/state')
+vi.mock('electron-store')
+vi.mock('@main/application-window')
 
 it('does not spawn Jest framework for empty repository', async () => {
     expect(await Jest.spawnForDirectory({ files: [] })).toBe(false)

@@ -99,7 +99,7 @@ export class PHPUnit extends Framework {
         super.assemble()
         if (this.runsInRemote) {
             const reporter = process.env.NODE_ENV === 'development'
-                ? Path.resolve(__dirname, loc(`../../reporters/${this.type}`))
+                ? Path.join(__static, loc(`./reporters/${this.type}`))
                 : unpacked(Path.join(__static, loc(`./reporters/${this.type}`)))
 
             await Fs.copy(reporter, this.injectPath())
@@ -151,7 +151,7 @@ export class PHPUnit extends Framework {
             this.runsInRemote
                 ? Path.join(this.getRemotePath(), loc(`.lode/${this.type}/bootstrap.php`))
                 : process.env.NODE_ENV === 'development'
-                    ? Path.resolve(__dirname, loc(`../../reporters/${this.type}/bootstrap.php`))
+                    ? Path.join(__static, loc(`./reporters/${this.type}/bootstrap.php`))
                     : unpacked(Path.join(__static, loc(`./reporters/${this.type}/bootstrap.php`))),
             // Sometimes writing to stdout will fail (on remote machines?). If we
             // can ever figure out why, we should revert back to default.

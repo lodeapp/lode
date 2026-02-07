@@ -4,17 +4,17 @@ import { NpmProcess } from '@lib/process/runners/npm'
 import { YarnProcess } from '@lib/process/runners/yarn'
 import pool from '@lib/process/pool'
 
-jest.mock('@lib/process/pool')
-jest.mock('child_process', () => ({
-    spawn: jest.fn().mockReturnValue({
-        on: jest.fn(),
+vi.mock('@lib/process/pool')
+vi.mock('child_process', () => ({
+    spawn: vi.fn().mockReturnValue({
+        on: vi.fn(),
         stdout: {
-            setEncoding: jest.fn(),
-            on: jest.fn()
+            setEncoding: vi.fn(),
+            on: vi.fn()
         },
         stderr: {
-            setEncoding: jest.fn(),
-            on: jest.fn()
+            setEncoding: vi.fn(),
+            on: vi.fn()
         }
     })
 }))

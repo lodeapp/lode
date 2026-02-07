@@ -1,12 +1,13 @@
+// @vitest-environment jsdom
 import { config, shallowMount } from '@vue/test-utils'
-import TestInformation from '@/components/TestInformation'
+import TestInformation from '@/components/TestInformation.vue'
 import Strings from '@/plugins/strings'
 
 config.global.plugins = [new Strings()]
 
 const RealDate = Date.now
 beforeAll(() => {
-    global.Date.now = jest.fn(() => new Date('2020-12-01T14:49:00').getTime())
+    global.Date.now = vi.fn(() => new Date('2020-12-01T14:49:00').getTime())
 })
 afterAll(() => {
     global.Date.now = RealDate

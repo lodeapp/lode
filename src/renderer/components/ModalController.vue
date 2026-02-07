@@ -18,11 +18,12 @@
 import { mapGetters } from 'vuex'
 
 // Load all components from modals directory
-const context = require.context('@/components/modals', true, /\.vue$/)
+const modalFiles = import.meta.glob('./modals/**/*.vue', { eager: true })
 const Modals = {}
-context.keys().forEach((key) => {
-    Modals[key.replace(/^\.\/([aA0-zZ9]+)\.vue$/, '$1')] = context(key).default
-})
+for (const path in modalFiles) {
+    const name = path.replace(/^\.\/modals\/(.+)\.vue$/, '$1')
+    Modals[name] = modalFiles[path].default
+}
 
 export default {
     name: 'ModalController',

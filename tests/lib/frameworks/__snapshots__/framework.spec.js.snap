@@ -1,14 +1,14 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Framework manipulation can format a framework to use in the renderer process 1`] = `
-Object {
+exports[`Framework manipulation > can format a framework to use in the renderer process 1`] = `
+{
   "active": false,
   "canToggleTests": false,
   "command": "./bake",
   "id": StringMatching /\\^\\[0-9a-f\\]\\{8\\}-\\[0-9a-f\\]\\{4\\}-\\[0-5\\]\\[0-9a-f\\]\\{3\\}-\\[089ab\\]\\[0-9a-f\\]\\{3\\}-\\[0-9a-f\\]\\{12\\}\\$/i,
   "name": "Hobnobs",
   "path": "tests",
-  "proprietary": Object {},
+  "proprietary": {},
   "remotePath": "",
   "runsInRemote": false,
   "selected": 0,
@@ -22,15 +22,15 @@ Object {
 }
 `;
 
-exports[`Framework manipulation can persist a framework in a store 1`] = `
-Object {
+exports[`Framework manipulation > can persist a framework in a store 1`] = `
+{
   "active": false,
   "canToggleTests": false,
   "command": "./bake",
   "id": StringMatching /\\^\\[0-9a-f\\]\\{8\\}-\\[0-9a-f\\]\\{4\\}-\\[0-5\\]\\[0-9a-f\\]\\{3\\}-\\[089ab\\]\\[0-9a-f\\]\\{3\\}-\\[0-9a-f\\]\\{12\\}\\$/i,
   "name": "Hobnobs",
   "path": "tests",
-  "proprietary": Object {},
+  "proprietary": {},
   "remotePath": "",
   "runsInRemote": false,
   "selected": 0,
@@ -39,27 +39,27 @@ Object {
   "sshIdentity": null,
   "sshPort": null,
   "sshUser": null,
-  "suites": Array [
-    Object {
+  "suites": [
+    {
       "file": "isTasty.js",
-      "meta": Object {},
-      "tests": Array [
-        Object {
+      "meta": {},
+      "tests": [
+        {
           "id": "111",
           "name": "tastes sweet",
           "status": "idle",
         },
-        Object {
+        {
           "id": "222",
           "name": "tastes oaty",
           "status": "idle",
-          "tests": Array [
-            Object {
+          "tests": [
+            {
               "id": "333",
               "name": "has many oats",
               "status": "idle",
             },
-            Object {
+            {
               "id": "444",
               "name": "has jumbo oats",
               "status": "idle",
@@ -69,11 +69,11 @@ Object {
       ],
       "testsLoaded": true,
     },
-    Object {
+    {
       "file": "isNobbly.js",
-      "meta": Object {},
-      "tests": Array [
-        Object {
+      "meta": {},
+      "tests": [
+        {
           "id": "555",
           "name": "has lumps",
           "status": "idle",

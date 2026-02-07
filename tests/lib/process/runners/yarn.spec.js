@@ -1,21 +1,21 @@
 import { spawn } from 'child_process'
 import { YarnProcess } from '@lib/process/runners/yarn'
 
-jest.mock('child_process', () => ({
-    spawn: jest.fn().mockReturnValue({
-        on: jest.fn(),
+vi.mock('child_process', () => ({
+    spawn: vi.fn().mockReturnValue({
+        on: vi.fn(),
         stdout: {
-            setEncoding: jest.fn(),
-            on: jest.fn()
+            setEncoding: vi.fn(),
+            on: vi.fn()
         },
         stderr: {
-            setEncoding: jest.fn(),
-            on: jest.fn()
+            setEncoding: vi.fn(),
+            on: vi.fn()
         }
     })
 }))
 
-it('owns relevant commands', (done) => {
+it('owns relevant commands', () => {
     expect(YarnProcess.owns('yarn tests')).toBe(true)
     expect(YarnProcess.owns('yarn run tests')).toBe(true)
     expect(YarnProcess.owns('npm run test')).toBe(false)
@@ -28,7 +28,6 @@ it('owns relevant commands', (done) => {
     expect(YarnProcess.owns('iyarn.cmd tests')).toBe(false)
     expect(YarnProcess.owns('iyarn.js tests')).toBe(false)
     expect(YarnProcess.owns('npm.cmd run tests')).toBe(false)
-    done()
 })
 
 it('fails when called with empty command', () => {

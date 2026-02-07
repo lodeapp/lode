@@ -2,9 +2,9 @@ import { ApplicationWindow } from '@main/application-window'
 import { FrameworkFactory } from '@lib/frameworks/factory'
 import { PHPUnit } from '@lib/frameworks/phpunit/framework'
 
-jest.mock('@lib/state')
-jest.mock('electron-store')
-jest.mock('@main/application-window')
+vi.mock('@lib/state')
+vi.mock('electron-store')
+vi.mock('@main/application-window')
 
 it('can make a new framework', async () => {
     const window = new ApplicationWindow()

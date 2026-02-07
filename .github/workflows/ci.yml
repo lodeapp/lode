@@ -37,38 +37,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Get yarn cache directory
-        run: echo "yarn_dir=$(yarn cache dir)" >> $GITHUB_ENV
-
-      - name: Get yarn cache directory (Windows)
-        if: matrix.os == 'windows-latest'
-        run: echo "yarn_dir=$(yarn cache dir)" >> $env:GITHUB_ENV
-
-      - name: Cache yarn dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.yarn_dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-yarn-
+          cache: 'npm'
 
       - name: Install dependencies
-        run: yarn --prefer-offline --network-timeout 100000
+        run: npm ci
 
       - name: Lint styles
-        run: yarn lint:styles
+        run: npm run lint:styles
 
       - name: Lint scripts
-        run: yarn lint --quiet
+        run: npm run lint -- --quiet
 
       - name: Check Typescript
-        run: yarn tsc
+        run: npm run tsc
 
       - name: Unit test
-        run: yarn test
+        run: npm test
 
       - name: Cypress test
-        run: yarn test:cypress --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
+        run: npm run test:cypress -- --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Save Cypress results
         uses: actions/upload-artifact@v4
@@ -80,7 +67,7 @@ jobs:
             tests/cypress/videos
 
       - name: Build
-        run: yarn build
+        run: npm run build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -105,9 +92,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
       - name: Install dependencies
-        run: yarn --prefer-offline --network-timeout 100000
+        run: npm ci
 
       - name: Release
-        run: yarn release
+        run: npm run release
