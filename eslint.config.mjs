@@ -50,8 +50,6 @@ export default antfu(
                 beforeAll: 'readonly',
                 beforeEach: 'readonly',
                 context: 'readonly',
-                cy: 'readonly',
-                Cypress: 'readonly',
                 describe: 'readonly',
                 expect: 'readonly',
                 it: 'readonly',

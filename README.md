@@ -34,15 +34,15 @@ Alternatively, you can pack and execute the application directly, which is usefu
 npm run simulate
 ```
 
-The Lode codebase has two sets of tests: [Jest](https://jestjs.io/) for the main process and [Cypress](https://www.cypress.io/) for the renderer process.
+The Lode codebase has two sets of tests: [Jest](https://jestjs.io/) for the main process and [Playwright](https://playwright.dev/) for the renderer process.
 
 ```sh
-npm test              # Jest tests
-npm run test:cypress  # Cypress tests
-npm run cypress       # Open the Cypress application
+npm test # Unit tests
+npm run test:e2e # Playwright E2E tests
+npm run test:playwright # Open the Playwright UI
 ```
 
-Because the Lode application enforces [context isolation](https://www.electronjs.org/docs/tutorial/context-isolation#context-isolation), we are able to run renderer process without the need for Node.js APIs, and since Electron's API is access through the preload scripts using a centralized `Lode` object, we can easily mock their behavior for testing with Cypress.
+Because the Lode application enforces [context isolation](https://www.electronjs.org/docs/tutorial/context-isolation#context-isolation), we are able to run the renderer process without the need for Node.js APIs, and since Electron's API is accessed through the preload scripts using a centralized `Lode` object, we can easily mock their behavior for testing with Playwright.
 
 If you're just getting started with Electron development, I would strongly recommend adhering to context isolation. Not only it's essential for a secure application, it also gives you a clear boundary for testing the main and renderer processes separately, as Lode does.
 
