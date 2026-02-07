@@ -120,7 +120,8 @@ app
 
         if (!__DEV__) {
             // Start auto-updating process.
-            const _updater = new Updater()
+            // eslint-disable-next-line no-new -- Updater is instantiated for its side effects (auto-update)
+            new Updater()
         }
     })
 

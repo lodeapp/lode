@@ -8,7 +8,7 @@ env:
   CSC_KEY_PASSWORD: ${{ secrets.MACOSDEVELOPERCERTIFICATE_PASSWORD }}
   CSC_LINK: ${{ secrets.MACOSDEVELOPERCERTIFICATE_BASE64 }}
   CSC_FOR_PULL_REQUEST: true
-  CYPRESS_VERIFY_TIMEOUT: 100000
+
   FORCE_COLOR: 3
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,17 +54,20 @@ jobs:
       - name: Unit test
         run: npm test
 
-      - name: Cypress test
-        run: npm run test:cypress -- --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
-      - name: Save Cypress results
+      - name: E2E test
+        run: npm run test:e2e
+
+      - name: Save Playwright results
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: cypress-${{ matrix.os }}
+          name: playwright-${{ matrix.os }}
           path: |
-            tests/cypress/screenshots
-            tests/cypress/videos
+            tests/playwright/test-results/
+            tests/playwright/playwright-report/
 
       - name: Build
         run: npm run build

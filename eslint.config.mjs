@@ -50,8 +50,6 @@ export default antfu(
                 beforeAll: 'readonly',
                 beforeEach: 'readonly',
                 context: 'readonly',
-                cy: 'readonly',
-                Cypress: 'readonly',
                 describe: 'readonly',
                 expect: 'readonly',
                 it: 'readonly',
@@ -76,6 +74,7 @@ export default antfu(
             'ts/no-require-imports': 'off',
             'ts/no-empty-function': 'off',
             'ts/no-inferrable-types': 'off',
+            'style/quote-props': ['error', 'as-needed'],
         },
     },
     {
