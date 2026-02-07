@@ -21,9 +21,7 @@ const config = {
         gatekeeperAssess: false,
         entitlements: './support/entitlements.mac.plist',
         entitlementsInherit: './support/entitlements.mac.plist',
-        notarize: process.env.NOTARIZE !== 'false'
-            ? { teamId: process.env.APPLE_TEAM_ID }
-            : false,
+        notarize: process.env.NOTARIZE !== 'false',
         target: [
             {
                 target: 'zip',
@@ -64,7 +62,6 @@ const config = {
         }
     },
     win: {
-        publisherName: ['Tomas Buteler'],
         icon: 'build/icons/512x512.png',
         target: [
             {
