@@ -4,8 +4,11 @@
 
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit",
+        "source.fixAll.stylelint": "explicit",
         "source.organizeImports": "never"
     },
+
+    "stylelint.validate": ["css", "scss"],
 
     "eslint.rules.customizations": [
         { "rule": "style/*", "severity": "off", "fixable": true },
