@@ -27,9 +27,9 @@ export default {
             }
 
             return pickBy({
-                'diff': this.formatDiff(get(this.content, '@', '')),
-                'actual': get(this.content, '+', ''),
-                'expected': get(this.content, '-', ''),
+                diff: this.formatDiff(get(this.content, '@', '')),
+                actual: get(this.content, '+', ''),
+                expected: get(this.content, '-', ''),
                 'expected-partial': get(this.content, 'q', ''),
             }, identity)
         },
@@ -47,9 +47,9 @@ export default {
         },
         partName(key) {
             return get({
-                'diff': 'Difference',
-                'actual': '<span class="text-mono">+++</span> Actual',
-                'expected': '<span class="text-mono">---</span> Expected',
+                diff: 'Difference',
+                actual: '<span class="text-mono">+++</span> Actual',
+                expected: '<span class="text-mono">---</span> Expected',
                 'expected-partial': '<span class="text-mono">---</span> Expected (partial)',
             }, key, '')
         },
