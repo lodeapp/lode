@@ -1,5 +1,6 @@
 import * as Path from 'node:path'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useContextStore } from '@/stores/context'
 import Filename from '@/components/Filename.vue'
 
 export default {
@@ -12,10 +13,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters({
-            rootPath: 'context/rootPath',
-            repositoryPath: 'context/repositoryPath',
-        }),
+        ...mapState(useContextStore, ['rootPath', 'repositoryPath']),
     },
     methods: {
         relativePath(path) {

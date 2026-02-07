@@ -2,7 +2,8 @@
 import { SerializeAddon } from '@xterm/addon-serialize'
 import { Terminal } from '@xterm/xterm'
 import { escape } from 'lodash'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useThemeStore } from '@/stores/theme'
 import Icon from '@/components/Icon.vue'
 
 export default {
@@ -27,9 +28,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters({
-            colors: 'theme/colors',
-        }),
+        ...mapState(useThemeStore, ['colors']),
     },
     watch: {
         colors() {

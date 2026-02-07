@@ -19,7 +19,12 @@ import Strings from './plugins/strings'
 
 import Unproxy from './plugins/unproxy'
 
-import store from './store'
+import { createPinia } from 'pinia'
+import { useContextStore } from './stores/context'
+import { useFiltersStore } from './stores/filters'
+import { useModalsStore } from './stores/modals'
+import { useSettingsStore } from './stores/settings'
+import { useThemeStore } from './stores/theme'
 import '@lib/logger/renderer'
 // Styles
 import '../styles/app.scss'
@@ -182,11 +187,11 @@ const app = createApp({
                     case 'log-settings':
                         log.info({
                             ...await Lode.ipc.invoke('log-settings'),
-                            vuex: store.getters['settings/value'](),
+                            pinia: useSettingsStore().value(),
                         })
                         break
                     case 'log-renderer-state':
-                        log.info(store.state)
+                        log.info(useSettingsStore().$state)
                         break
                     case 'crash':
                         this.crash()
@@ -200,7 +205,7 @@ const app = createApp({
     mounted() {
         document.ondragover = (e) => {
             if (e.dataTransfer != null) {
-                e.dataTransfer.dropEffect = store.getters['modals/hasModals'] ? 'none' : 'copy'
+                e.dataTransfer.dropEffect = useModalsStore().hasModals ? 'none' : 'copy'
             }
             e.preventDefault()
         }
@@ -210,7 +215,7 @@ const app = createApp({
         }
 
         document.body.ondrop = (e) => {
-            if (store.getters['modals/hasModals']) {
+            if (useModalsStore().hasModals) {
                 return
             }
             if (e.dataTransfer != null) {
@@ -223,7 +228,7 @@ const app = createApp({
     methods: {
         setTheme(theme) {
             document.documentElement.setAttribute('data-color-mode', theme)
-            this.$store.commit('theme/SET', theme)
+            useThemeStore().setTheme(theme)
         },
         mapStatuses(project) {
             const mapTests = (nugget, statuses) => {
@@ -249,7 +254,7 @@ const app = createApp({
             return statuses
         },
         loadProject(project) {
-            this.$store.commit('filters/RESET')
+            useFiltersStore().reset()
             this.project = !isEmpty(project) ? project : null
             this.refreshApplicationMenu()
             this.loading = false
@@ -330,7 +335,7 @@ const app = createApp({
             }
             this.loading = true
             this.project = null
-            store.commit('context/CLEAR')
+            useContextStore().clear()
             Lode.ipc.send('project-switch', identifier)
         },
         repositoryAdd(directories) {
@@ -418,16 +423,13 @@ const app = createApp({
                 .catch(() => {})
         },
         setting(key) {
-            return store.getters['settings/value'](key)
+            return useSettingsStore().value(key)
         },
         updateSetting(key, value) {
             Lode.ipc.send('settings-update', key, value)
         },
         updateSettings(settings = {}) {
-            store.replaceState({
-                ...store.state,
-                settings,
-            })
+            useSettingsStore().replace(settings)
         },
         refreshApplicationMenu() {
             Lode.ipc.send('menu-refresh')
@@ -451,7 +453,7 @@ const app = createApp({
             })
         },
         onModelRemove(modelId) {
-            store.dispatch('context/onRemove', modelId)
+            useContextStore().onRemove(modelId)
         },
     },
     render() {
@@ -459,11 +461,14 @@ const app = createApp({
     },
 })
 
+// Install Pinia before plugins (plugins use stores lazily)
+app.use(createPinia())
+
 // Register plugins
-app.use(new Alerts(store))
+app.use(new Alerts())
 app.use(new Code())
 app.use(new Input())
-app.use(new Modals(store))
+app.use(new Modals())
 app.use(new Strings())
 app.use(new Durations())
 app.use(new Unproxy())
@@ -474,8 +479,6 @@ app.directive('markdown', Markdown())
 // Register global or recursive components
 app.component('Icon', Icon)
 app.component('Nugget', Nugget)
-
-app.use(store)
 
 app.mount('#app')
 

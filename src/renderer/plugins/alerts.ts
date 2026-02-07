@@ -1,26 +1,23 @@
-import type { App, State } from 'vue'
-import type { Store } from 'vuex'
+import type { App } from 'vue'
+import { useAlertStore } from '../stores/alert'
 
 export default class Alerts {
-    private store: Store<State>
-
-    constructor(store: Store<State>) {
-        this.store = store
-    }
+    private app!: App
 
     install(app: App) {
+        this.app = app
         app.config.globalProperties.$alert = this
     }
 
     show(alert: any) {
-        this.store.dispatch('alert/show', alert)
+        useAlertStore().show(alert, this.app.config.globalProperties.$modal)
     }
 
     hide() {
-        this.store.dispatch('alert/hide')
+        useAlertStore().hide()
     }
 
     clear() {
-        this.store.dispatch('alert/clear')
+        useAlertStore().clear()
     }
 }

@@ -1,7 +1,12 @@
 <script>
 import { sortDisplayName } from '@lib/frameworks/sort'
 import { debounce, findIndex, head, isEmpty } from 'lodash'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useContextStore } from '@/stores/context'
+import { useExpandStore } from '@/stores/expand'
+import { useFiltersStore } from '@/stores/filters'
+import { useLedgerStore } from '@/stores/ledger'
+import { useStatusStore } from '@/stores/status'
 import Filename from '@/components/Filename.vue'
 import Indicator from '@/components/Indicator.vue'
 import Ledger from '@/components/Ledger.vue'
@@ -33,7 +38,7 @@ export default {
             total: 0,
             selected: 0,
             status: this.model.status || 'idle',
-            keyword: this.$store.getters['filters/all'](this.model.id).keyword || '',
+            keyword: useFiltersStore().all(this.model.id).keyword || '',
         }
     },
     computed: {
@@ -70,10 +75,8 @@ export default {
         displaySort() {
             return sortDisplayName(this.sort)
         },
-        ...mapGetters({
-            filters: 'filters/all',
-            getStatus: 'status/nugget',
-        }),
+        ...mapState(useFiltersStore, { filters: 'all' }),
+        ...mapState(useStatusStore, { getStatus: 'nugget' }),
     },
     watch: {
         keyword: debounce(function (keyword) {
@@ -88,8 +91,8 @@ export default {
             .on(`${this.model.id}:selective`, this.onSelectiveEvent)
 
         const { ledger, status } = await Lode.ipc.invoke('framework-get-ledger', this.model.id)
-        this.$store.commit('ledger/SET', ledger)
-        this.$store.commit('status/SET', status)
+        useLedgerStore().set(ledger)
+        useStatusStore().set(status)
 
         this.getSuites()
         this.selected = this.model.selected
@@ -104,8 +107,8 @@ export default {
     methods: {
         async onLedgerEvent(event, ledger, status) {
             this.total = Object.values(ledger).reduce((a, b) => a + b, 0)
-            this.$store.commit('ledger/SET', ledger)
-            this.$store.commit('status/SET', status)
+            useLedgerStore().set(ledger)
+            useStatusStore().set(status)
         },
         getSuites() {
             Lode.ipc.send('framework-suites', this.model.id)
@@ -119,7 +122,7 @@ export default {
             this.$emit('mounted')
             // If we're not filtering, update the suites' mapping key.
             if (!this.statusFilters.length) {
-                this.$store.commit('context/SUITES', suites)
+                useContextStore().setSuites(suites)
             }
         },
         onSelectiveEvent(event, selected) {
@@ -148,7 +151,7 @@ export default {
             }
         },
         onCollapseAll() {
-            this.$store.dispatch('expand/collapseAll')
+            useExpandStore().collapseAll()
             Lode.ipc.send('framework-collapse-all', this.model.id)
         },
         onChildToggle(context, toggle) {
@@ -201,7 +204,7 @@ export default {
         },
         setKeywordFilter(keyword) {
             Lode.ipc.send('framework-filter', this.model.id, 'keyword', keyword)
-            this.$store.commit('filters/SET', {
+            useFiltersStore().set({
                 id: this.model.id,
                 filters: {
                     keyword,
@@ -210,7 +213,7 @@ export default {
         },
         resetFilters() {
             Lode.ipc.send('framework-reset-filters', this.model.id)
-            this.$store.commit('filters/RESET')
+            useFiltersStore().reset()
             this.keyword = ''
         },
     },

@@ -1,5 +1,6 @@
 <script>
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useModalsStore } from '@/stores/modals'
 
 // Load all components from modals directory
 const modalFiles = import.meta.glob('./modals/**/*.vue', { eager: true })
@@ -15,10 +16,7 @@ export default {
         ...Modals,
     },
     computed: {
-        ...mapGetters({
-            hasModals: 'modals/hasModals',
-            modals: 'modals/modals',
-        }),
+        ...mapState(useModalsStore, ['hasModals', 'modals']),
     },
     methods: {
         hide() {

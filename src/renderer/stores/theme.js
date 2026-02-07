@@ -1,3 +1,4 @@
+import { defineStore } from 'pinia'
 import { OneHalfDark, OneHalfLight } from 'xterm-theme'
 
 // xterm.js will process colors loaded as themes, so
@@ -21,19 +22,13 @@ function getColors(theme) {
     }
 }
 
-export default {
-    namespaced: true,
-    state: {
+export const useThemeStore = defineStore('theme', {
+    state: () => ({
         colors: {},
-    },
-    mutations: {
-        SET(state, theme) {
-            state.colors = getColors(theme)
+    }),
+    actions: {
+        setTheme(theme) {
+            this.colors = getColors(theme)
         },
     },
-    getters: {
-        colors: (state) => {
-            return state.colors
-        },
-    },
-}
+})

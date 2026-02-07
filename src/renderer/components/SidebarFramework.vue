@@ -1,5 +1,6 @@
 <script>
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useContextStore } from '@/stores/context'
 import Indicator from '@/components/Indicator.vue'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 
@@ -27,9 +28,7 @@ export default {
         isActive() {
             return this.active === this.model.id
         },
-        ...mapGetters({
-            active: 'context/active',
-        }),
+        ...mapState(useContextStore, ['active']),
     },
     mounted() {
         Lode.ipc

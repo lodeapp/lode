@@ -1,5 +1,6 @@
 <script>
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useContextStore } from '@/stores/context'
 import Indicator from '@/components/Indicator.vue'
 import SidebarFramework from '@/components/SidebarFramework.vue'
 
@@ -30,9 +31,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters({
-            activeFramework: 'context/framework',
-        }),
+        ...mapState(useContextStore, { activeFramework: 'framework' }),
     },
     mounted() {
         Lode.ipc

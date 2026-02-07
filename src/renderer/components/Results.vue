@@ -1,6 +1,8 @@
 <script>
 import { clone, last } from 'lodash'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useContextStore } from '@/stores/context'
+import { useStatusStore } from '@/stores/status'
 import Indicator from '@/components/Indicator.vue'
 import TestResult from '@/components/TestResult.vue'
 
@@ -35,11 +37,8 @@ export default {
         displayName() {
             return this.test.displayName || this.test.name
         },
-        ...mapGetters({
-            activeTest: 'context/test',
-            suitesKey: 'context/suitesKey',
-            getStatus: 'status/nugget',
-        }),
+        ...mapState(useContextStore, { activeTest: 'test', suitesKey: 'suitesKey' }),
+        ...mapState(useStatusStore, { getStatus: 'nugget' }),
     },
     watch: {
         status() {
@@ -64,7 +63,7 @@ export default {
             if (!framework) {
                 // If an error occurs when trying to get a test, assume it's
                 // been removed and force user to select another.
-                this.$store.commit('context/CLEAR_NUGGETS')
+                useContextStore().clearNuggets()
                 this.loading = false
                 return
             }

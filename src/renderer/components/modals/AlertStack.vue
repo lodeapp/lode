@@ -1,6 +1,7 @@
 <script>
 import { get } from 'lodash'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useAlertStore } from '@/stores/alert'
 import Ansi from '@/components/Ansi.vue'
 import Modal from '@/components/modals/mixins/modal'
 
@@ -46,9 +47,7 @@ export default {
         isLast() {
             return this.index === (this.alerts.length - 1)
         },
-        ...mapGetters({
-            alerts: 'alert/alerts',
-        }),
+        ...mapState(useAlertStore, ['alerts']),
     },
     methods: {
         next() {

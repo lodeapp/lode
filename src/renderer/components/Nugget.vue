@@ -1,6 +1,9 @@
 <script>
 import { labels } from '@lib/frameworks/status'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useContextStore } from '@/stores/context'
+import { useExpandStore } from '@/stores/expand'
+import { useStatusStore } from '@/stores/status'
 
 export default {
     name: 'Nugget',
@@ -39,7 +42,7 @@ export default {
             return this.model.id || this.model.file
         },
         show() {
-            return this.$store.getters['expand/expanded'](this.identifier)
+            return useExpandStore().expanded(this.identifier)
         },
         status() {
             return this.getStatus(this.identifier)
@@ -59,11 +62,8 @@ export default {
         isActive() {
             return this.identifier === this.activeTest
         },
-        ...mapGetters({
-            activeTest: 'context/test',
-            inContext: 'context/inContext',
-            getStatus: 'status/nugget',
-        }),
+        ...mapState(useContextStore, { activeTest: 'test', inContext: 'inContext' }),
+        ...mapState(useStatusStore, { getStatus: 'nugget' }),
     },
     watch: {
         status(to, from) {
@@ -144,12 +144,12 @@ export default {
             }
 
             if (this.show) {
-                this.$store.dispatch('expand/collapse', this.identifier)
+                useExpandStore().collapse(this.identifier)
                 this.collapse()
                 return
             }
 
-            this.$store.dispatch('expand/expand', this.identifier)
+            useExpandStore().expand(this.identifier)
             this.expand()
         },
         expand() {
@@ -157,8 +157,9 @@ export default {
         },
         collapse() {
             // Before hiding a nugget, make sure to reset its children's expand state.
-            (this.tests || []).forEach((test) => {
-                this.$store.dispatch('expand/collapse', test.id)
+            const expandStore = useExpandStore()
+            ;(this.tests || []).forEach((test) => {
+                expandStore.collapse(test.id)
             })
             this.$emit('toggle', [this.identifier], false)
         },
@@ -173,7 +174,7 @@ export default {
         },
         activate() {
             this.$el.focus()
-            this.$store.commit('context/CLEAR_NUGGETS')
+            useContextStore().clearNuggets()
             this.$emit('activate', [this.identifier])
         },
         onChildActivation(context) {

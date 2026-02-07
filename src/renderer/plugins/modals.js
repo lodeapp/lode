@@ -1,6 +1,7 @@
+import { useModalsStore } from '../stores/modals'
+
 export default class Modals {
-    constructor(store) {
-        this.store = store
+    constructor() {
         this.modals = []
     }
 
@@ -9,13 +10,13 @@ export default class Modals {
     }
 
     open(name, properties = {}, callback = null) {
-        this.store.dispatch('modals/open', name)
+        useModalsStore().open(name)
         this.modals.push({ properties, callback })
     }
 
     confirm(name, properties = {}) {
         return new Promise((resolve, reject) => {
-            this.store.dispatch('modals/open', name)
+            useModalsStore().open(name)
             this.modals.push({ properties: { ...properties, resolve, reject } })
         })
     }
@@ -34,7 +35,7 @@ export default class Modals {
     }
 
     close() {
-        this.store.dispatch('modals/close')
+        useModalsStore().close()
         const modal = this.modals.pop()
         if (modal.callback) {
             // Set a timeout before triggering callback in case callback is going
@@ -48,7 +49,7 @@ export default class Modals {
     }
 
     clear() {
-        this.store.dispatch('modals/clear')
+        useModalsStore().clear()
         this.modals = []
     }
 

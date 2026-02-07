@@ -1,6 +1,8 @@
 <script>
 import { cloneDeep } from 'lodash'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useFiltersStore } from '@/stores/filters'
+import { useLedgerStore } from '@/stores/ledger'
 
 export default {
     name: 'Ledger',
@@ -41,10 +43,8 @@ export default {
         statusFilters() {
             return this.filters(this.id).status || []
         },
-        ...mapGetters({
-            base: 'ledger/ledger',
-            filters: 'filters/all',
-        }),
+        ...mapState(useLedgerStore, { base: 'ledger' }),
+        ...mapState(useFiltersStore, { filters: 'all' }),
     },
     methods: {
         isActive(status) {
@@ -70,7 +70,7 @@ export default {
         },
         setFilter(filter) {
             Lode.ipc.send('framework-filter', this.id, 'status', filter)
-            this.$store.commit('filters/SET', {
+            useFiltersStore().set({
                 id: this.id,
                 filters: {
                     status: filter,

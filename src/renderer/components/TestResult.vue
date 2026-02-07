@@ -1,6 +1,7 @@
 <script>
 import { get, identity, indexOf, isEmpty, pickBy } from 'lodash'
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions, mapState } from 'pinia'
+import { useTabsStore } from '@/stores/tabs'
 import Ansi from '@/components/Ansi.vue'
 import Console from '@/components/Console.vue'
 import Feedback from '@/components/Feedback.vue'
@@ -94,9 +95,7 @@ export default {
 
             return get(this.results, 'suite-console', false)
         },
-        ...mapGetters({
-            lastActiveTab: 'tabs/lastActive',
-        }),
+        ...mapState(useTabsStore, { lastActiveTab: 'lastActive' }),
     },
     mounted() {
         let index
@@ -138,9 +137,7 @@ export default {
         refreshFramework() {
             Lode.ipc.send('framework-refresh', this.framework.id)
         },
-        ...mapActions({
-            setLastActiveTab: 'tabs/setLastActive',
-        }),
+        ...mapActions(useTabsStore, { setLastActiveTab: 'setLastActive' }),
     },
 }
 </script>

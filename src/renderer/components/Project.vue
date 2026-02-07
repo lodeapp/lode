@@ -1,6 +1,7 @@
 <script>
 import { findIndex } from 'lodash'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useContextStore } from '@/stores/context'
 import Draggable from '@/components/Draggable.vue'
 import Framework from '@/components/Framework.vue'
 import Indicator from '@/components/Indicator.vue'
@@ -50,11 +51,7 @@ export default {
         repositoryMissing() {
             return this.repository && this.repository.status === 'missing'
         },
-        ...mapGetters({
-            repository: 'context/repository',
-            framework: 'context/framework',
-            nuggets: 'context/nuggets',
-        }),
+        ...mapState(useContextStore, ['repository', 'framework', 'nuggets']),
     },
     mounted() {
         Lode.ipc
@@ -91,19 +88,19 @@ export default {
             if (index > -1) {
                 this.repositories[index].status = to
                 if (this.repository && this.repository.id === repository.id) {
-                    this.$store.commit('context/REPOSITORY', this.repositories[index])
+                    useContextStore().setRepository(this.repositories[index])
                 }
             }
         },
         async onFrameworkOptionsUpdated(event, framework) {
             this.frameworkLoading = true
             if (this.framework.id === framework.id) {
-                this.$store.commit('context/FRAMEWORK', framework)
+                useContextStore().setFramework(framework)
             }
         },
         async onFrameworkActive(event, frameworkId, repository) {
             if (!frameworkId) {
-                this.$store.commit('context/CLEAR')
+                useContextStore().clear()
             }
             else if (!this.framework || this.framework.id !== frameworkId) {
                 this.onFrameworkActivation(frameworkId, repository)
@@ -112,10 +109,10 @@ export default {
         async onFrameworkActivation(frameworkId, repository) {
             this.frameworkLoading = true
             this.$root.repositoryExists(repository)
-            this.$store.dispatch('context/activate', { frameworkId, repository })
+            useContextStore().activate({ frameworkId, repository })
         },
         onTestActivation(nuggets) {
-            this.$store.commit('context/SET_NUGGETS', nuggets)
+            useContextStore().setNuggets(nuggets)
         },
         onContextMenu() {
             this.menuActive = true
