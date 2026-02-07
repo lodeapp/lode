@@ -5,7 +5,7 @@ export const useExpandStore = defineStore('expand', {
         items: {},
     }),
     getters: {
-        expanded: (state) => (id) => {
+        expanded: state => (id) => {
             return !!state.items[id]
         },
     },

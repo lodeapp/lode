@@ -1,12 +1,12 @@
-import { defineStore } from 'pinia'
 import { last } from 'lodash'
+import { defineStore } from 'pinia'
 
 export const useModalsStore = defineStore('modals', {
     state: () => ({
         modals: [],
     }),
     getters: {
-        isOpen: (state) => (name) => {
+        isOpen: state => (name) => {
             return last(state.modals) === name
         },
         hasModals: (state) => {

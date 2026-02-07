@@ -1,7 +1,6 @@
 <script>
 import { findIndex } from 'lodash'
 import { mapState } from 'pinia'
-import { useContextStore } from '@/stores/context'
 import Draggable from '@/components/Draggable.vue'
 import Framework from '@/components/Framework.vue'
 import Indicator from '@/components/Indicator.vue'
@@ -11,6 +10,7 @@ import Results from '@/components/Results.vue'
 import Scrollable from '@/components/Scrollable.vue'
 import SidebarRepository from '@/components/SidebarRepository.vue'
 import Split from '@/components/Split.vue'
+import { useContextStore } from '@/stores/context'
 
 export default {
     name: 'Project',

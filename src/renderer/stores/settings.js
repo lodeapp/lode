@@ -1,10 +1,10 @@
-import { defineStore } from 'pinia'
 import { get } from 'lodash'
+import { defineStore } from 'pinia'
 
 export const useSettingsStore = defineStore('settings', {
     state: () => ({}),
     getters: {
-        value: (state) => (key) => {
+        value: state => (key) => {
             if (!key) {
                 return state
             }

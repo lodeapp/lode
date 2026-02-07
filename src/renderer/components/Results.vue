@@ -1,10 +1,10 @@
 <script>
 import { clone, last } from 'lodash'
 import { mapState } from 'pinia'
-import { useContextStore } from '@/stores/context'
-import { useStatusStore } from '@/stores/status'
 import Indicator from '@/components/Indicator.vue'
 import TestResult from '@/components/TestResult.vue'
+import { useContextStore } from '@/stores/context'
+import { useStatusStore } from '@/stores/status'
 
 export default {
     name: 'Results',

@@ -2,15 +2,15 @@
 import { sortDisplayName } from '@lib/frameworks/sort'
 import { debounce, findIndex, head, isEmpty } from 'lodash'
 import { mapState } from 'pinia'
+import Filename from '@/components/Filename.vue'
+import Indicator from '@/components/Indicator.vue'
+import Ledger from '@/components/Ledger.vue'
+import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 import { useContextStore } from '@/stores/context'
 import { useExpandStore } from '@/stores/expand'
 import { useFiltersStore } from '@/stores/filters'
 import { useLedgerStore } from '@/stores/ledger'
 import { useStatusStore } from '@/stores/status'
-import Filename from '@/components/Filename.vue'
-import Indicator from '@/components/Indicator.vue'
-import Ledger from '@/components/Ledger.vue'
-import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
 
 export default {
     name: 'Framework',

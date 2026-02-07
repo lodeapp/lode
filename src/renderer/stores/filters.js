@@ -1,12 +1,12 @@
-import { defineStore } from 'pinia'
 import { get, identity, isArray, isEmpty, pickBy } from 'lodash'
+import { defineStore } from 'pinia'
 
 export const useFiltersStore = defineStore('filters', {
     state: () => ({
         items: {},
     }),
     getters: {
-        all: (state) => (id) => {
+        all: state => (id) => {
             return state.items[id] || {}
         },
     },

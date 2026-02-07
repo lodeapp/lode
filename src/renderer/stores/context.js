@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
-import { clone, last } from 'lodash'
 import BaseStrings from '@lib/helpers/strings'
+import { clone, last } from 'lodash'
+import { defineStore } from 'pinia'
 
 const strings = new BaseStrings()
 
@@ -17,7 +17,7 @@ export const useContextStore = defineStore('context', {
         test: (state) => {
             return last(state.nuggets)
         },
-        inContext: (state) => (id) => {
+        inContext: state => (id) => {
             return state.nuggets.includes(id)
         },
         rootPath: (state) => {
@@ -75,7 +75,8 @@ export const useContextStore = defineStore('context', {
         onRemove(modelId) {
             if (this.repository.id === modelId || this.active === modelId) {
                 this.clear()
-            } else if (this.nuggets.includes(modelId)) {
+            }
+            else if (this.nuggets.includes(modelId)) {
                 this.clearNuggets()
             }
         },

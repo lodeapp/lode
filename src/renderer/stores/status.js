@@ -1,12 +1,12 @@
-import { defineStore } from 'pinia'
 import { get } from 'lodash'
+import { defineStore } from 'pinia'
 
 export const useStatusStore = defineStore('status', {
     state: () => ({
         status: {},
     }),
     getters: {
-        nugget: (state) => (nuggetId) => {
+        nugget: state => (nuggetId) => {
             return get(state.status, nuggetId, 'idle')
         },
     },

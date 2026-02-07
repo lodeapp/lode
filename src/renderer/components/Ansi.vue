@@ -3,8 +3,8 @@ import { SerializeAddon } from '@xterm/addon-serialize'
 import { Terminal } from '@xterm/xterm'
 import { escape } from 'lodash'
 import { mapState } from 'pinia'
-import { useThemeStore } from '@/stores/theme'
 import Icon from '@/components/Icon.vue'
+import { useThemeStore } from '@/stores/theme'
 
 export default {
     name: 'Ansi',

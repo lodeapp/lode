@@ -1,13 +1,13 @@
 <script>
 import { get, identity, indexOf, isEmpty, pickBy } from 'lodash'
 import { mapActions, mapState } from 'pinia'
-import { useTabsStore } from '@/stores/tabs'
 import Ansi from '@/components/Ansi.vue'
 import Console from '@/components/Console.vue'
 import Feedback from '@/components/Feedback.vue'
 import KeyValue from '@/components/KeyValue.vue'
 import Parameters from '@/components/Parameters.vue'
 import TestInformation from '@/components/TestInformation.vue'
+import { useTabsStore } from '@/stores/tabs'
 
 export default {
     name: 'TestResult',
