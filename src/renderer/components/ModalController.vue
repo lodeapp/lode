@@ -1,8 +1,6 @@
 <script>
 import { mapState } from 'pinia'
-import stores from '@/stores'
-
-const { useModalsStore } = stores
+import { useModalsStore } from '@/stores'
 
 // Load all components from modals directory
 const modalFiles = import.meta.glob('./modals/**/*.vue', { eager: true })

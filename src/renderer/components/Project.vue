@@ -10,9 +10,7 @@ import Results from '@/components/Results.vue'
 import Scrollable from '@/components/Scrollable.vue'
 import SidebarRepository from '@/components/SidebarRepository.vue'
 import Split from '@/components/Split.vue'
-import stores from '@/stores'
-
-const { useContextStore } = stores
+import { useContextStore } from '@/stores'
 
 export default {
     name: 'Project',

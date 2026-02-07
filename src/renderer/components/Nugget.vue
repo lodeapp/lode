@@ -1,9 +1,7 @@
 <script>
 import { labels } from '@lib/frameworks/status'
 import { mapState } from 'pinia'
-import stores from '@/stores'
-
-const { useContextStore, useExpandStore, useStatusStore } = stores
+import { useContextStore, useExpandStore, useStatusStore } from '@/stores'
 
 export default {
     name: 'Nugget',

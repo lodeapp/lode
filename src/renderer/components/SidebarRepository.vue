@@ -2,9 +2,7 @@
 import { mapState } from 'pinia'
 import Indicator from '@/components/Indicator.vue'
 import SidebarFramework from '@/components/SidebarFramework.vue'
-import stores from '@/stores'
-
-const { useContextStore } = stores
+import { useContextStore } from '@/stores'
 
 export default {
     name: 'SidebarRepository',

@@ -4,11 +4,13 @@ import { defineStore } from 'pinia'
 export const useSettingsStore = defineStore('settings', {
     state: () => ({}),
     getters: {
-        value: state => (key) => {
-            if (!key) {
-                return state
+        value() {
+            return (key) => {
+                if (!key) {
+                    return this.$state
+                }
+                return get(this.$state, key)
             }
-            return get(state, key)
         },
     },
     actions: {

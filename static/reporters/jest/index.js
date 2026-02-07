@@ -2428,7 +2428,7 @@ var require_ansi_regex = __commonJS({
         onlyFirst: false
       }, options);
       const pattern = [
-        "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
+        "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
         "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))"
       ].join("|");
       return new RegExp(pattern, options.onlyFirst ? void 0 : "g");
@@ -2912,6 +2912,7 @@ var require_end_of_stream = __commonJS({
     var once = require_once();
     var noop = function() {
     };
+    var qnt = global.Bare ? queueMicrotask : process.nextTick.bind(process);
     var isRequest = function(stream) {
       return stream.setHeader && typeof stream.abort === "function";
     };
@@ -2945,7 +2946,7 @@ var require_end_of_stream = __commonJS({
         callback.call(stream, err);
       };
       var onclose = function() {
-        process.nextTick(onclosenexttick);
+        qnt(onclosenexttick);
       };
       var onclosenexttick = function() {
         if (cancelled) return;
@@ -2993,10 +2994,14 @@ var require_pump = __commonJS({
   "node_modules/pump/index.js"(exports2, module2) {
     var once = require_once();
     var eos = require_end_of_stream();
-    var fs = require("fs");
+    var fs;
+    try {
+      fs = require("fs");
+    } catch (e) {
+    }
     var noop = function() {
     };
-    var ancient = /^v?\.0/.test(process.version);
+    var ancient = typeof process === "undefined" ? false : /^v?\.0/.test(process.version);
     var isFn = function(fn) {
       return typeof fn === "function";
     };

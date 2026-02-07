@@ -19,14 +19,12 @@ import Modals from './plugins/modals'
 import Strings from './plugins/strings'
 import Unproxy from './plugins/unproxy'
 
-import stores from './stores'
+import { useContextStore, useFiltersStore, useModalsStore, useSettingsStore, useThemeStore } from './stores'
 
 import '@lib/logger/renderer'
 
 // Styles
 import '../styles/app.scss'
-
-const { useContextStore, useFiltersStore, useModalsStore, useSettingsStore, useThemeStore } = stores
 
 const app = createApp({
     components: {

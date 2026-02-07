@@ -7,9 +7,7 @@ import Feedback from '@/components/Feedback.vue'
 import KeyValue from '@/components/KeyValue.vue'
 import Parameters from '@/components/Parameters.vue'
 import TestInformation from '@/components/TestInformation.vue'
-import stores from '@/stores'
-
-const { useTabsStore } = stores
+import { useTabsStore } from '@/stores'
 
 export default {
     name: 'TestResult',

@@ -6,9 +6,7 @@ import Filename from '@/components/Filename.vue'
 import Indicator from '@/components/Indicator.vue'
 import Ledger from '@/components/Ledger.vue'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
-import stores from '@/stores'
-
-const { useContextStore, useExpandStore, useFiltersStore, useLedgerStore, useStatusStore } = stores
+import { useContextStore, useExpandStore, useFiltersStore, useLedgerStore, useStatusStore } from '@/stores'
 
 export default {
     name: 'Framework',

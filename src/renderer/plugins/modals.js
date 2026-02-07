@@ -1,6 +1,4 @@
-import stores from '../stores'
-
-const { useModalsStore } = stores
+import { useModalsStore } from '../stores'
 
 export default class Modals {
     constructor() {
