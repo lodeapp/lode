@@ -9,7 +9,7 @@ import { ProjectEventEmitter } from '@lib/frameworks/emitter'
 import { FrameworkFactory } from '@lib/frameworks/factory'
 import { parseFrameworkStatus } from '@lib/frameworks/status'
 import { dialog } from 'electron'
-import { Glob } from 'glob'
+import { globSync } from 'glob'
 import { findIndex, omit } from 'lodash'
 import { v4 as uuid } from 'uuid'
 
@@ -214,20 +214,19 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      */
     public async scan(): Promise<Array<FrameworkOptions>> {
         this.scanning = true
-        const glob = new Glob('*', {
+        const files = globSync('*', {
             cwd: this.path,
             dot: true,
-            sync: true,
         })
 
         const frameworks: Array<FrameworkOptions | false> = await Promise.all(Frameworks.map(async (framework) => {
             console.log(framework, await framework.spawnForDirectory({
                 path: this.path,
-                files: glob.found,
+                files,
             }))
             return framework.spawnForDirectory({
                 path: this.path,
-                files: glob.found,
+                files,
             })
         }))
 
