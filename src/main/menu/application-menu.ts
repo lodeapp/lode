@@ -5,14 +5,14 @@ import type { ApplicationWindow } from '@main/application-window'
 import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
 import { Menu as ContextMenu, FrameworkMenu, ProjectMenu } from '@main/menu'
-import { app, ipcMain, Menu, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { ensureDir } from 'fs-extra'
 import { compact } from 'lodash'
 
 type ClickHandler = (
     menuItem: Electron.MenuItem,
-    browserWindow: Electron.BrowserWindow | undefined,
+    browserWindow: Electron.BaseWindow | undefined,
     event: Electron.KeyboardEvent,
 ) => void
 
@@ -179,8 +179,8 @@ class ApplicationMenu {
                 accelerator: (() => {
                     return __DARWIN__ ? 'Alt+Command+I' : 'Ctrl+Shift+I'
                 })(),
-                click(item: any, focusedWindow: Electron.BrowserWindow | undefined) {
-                    if (focusedWindow) {
+                click(item: any, focusedWindow: Electron.BaseWindow | undefined) {
+                    if (focusedWindow instanceof BrowserWindow) {
                         focusedWindow.webContents.toggleDevTools()
                     }
                 },
@@ -202,8 +202,8 @@ class ApplicationMenu {
                 .add({
                     label: '&Reload',
                     accelerator: 'CmdOrCtrl+Shift+0',
-                    click(item: any, focusedWindow: Electron.BrowserWindow | undefined) {
-                        if (focusedWindow) {
+                    click(item: any, focusedWindow: Electron.BaseWindow | undefined) {
+                        if (focusedWindow instanceof BrowserWindow) {
                             focusedWindow.reload()
                         }
                     },
@@ -391,7 +391,7 @@ class ApplicationMenu {
  */
 function emit(name: MenuEvent, properties?: any, callback?: ClickHandler): ClickHandler {
     return (menuItem, window, event) => {
-        if (window) {
+        if (window instanceof BrowserWindow) {
             window.webContents.send('menu-event', { name, properties })
         }
         else {
@@ -426,7 +426,7 @@ function findClosestValue(arr: Array<number>, value: number) {
  */
 function zoom(direction: ZoomDirection): ClickHandler {
     return (menuItem, window) => {
-        if (!window) {
+        if (!(window instanceof BrowserWindow)) {
             return
         }
 

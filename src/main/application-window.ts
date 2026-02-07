@@ -185,8 +185,8 @@ export class ApplicationWindow {
         this.window.reload()
     }
 
-    public onClosed(fn: (event: any) => void) {
-        this.window.on('closed', fn)
+    public onClosed(fn: () => void) {
+        (this.window as Electron.BaseWindow).on('closed', fn)
     }
 
     public setProject(identifier: ProjectIdentifier): void {

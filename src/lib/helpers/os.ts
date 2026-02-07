@@ -1,6 +1,4 @@
 import * as OS from 'node:os'
-import { compare } from 'compare-versions'
-import memoizeOne from 'memoize-one'
 
 function getSystemVersionSafe() {
     if (__DARWIN__) {
@@ -16,16 +14,6 @@ function getSystemVersionSafe() {
     return OS.release()
 }
 
-function systemVersionGreaterThanOrEqualTo(version: string) {
-    const sysver = getSystemVersionSafe()
-    return sysver === undefined ? false : compare(sysver, version, '>=')
-}
-
-function systemVersionLessThan(version: string) {
-    const sysver = getSystemVersionSafe()
-    return sysver === undefined ? false : compare(sysver, version, '<')
-}
-
 /** Get the OS we're currently running on. */
 export function getOS() {
     const version = getSystemVersionSafe()
@@ -39,25 +27,3 @@ export function getOS() {
         return `${OS.type()} ${version}`
     }
 }
-
-/** We're currently running macOS and it is macOS Catalina or earlier. */
-export const isMacOSCatalinaOrEarlier = memoizeOne(
-    () => __DARWIN__ && systemVersionLessThan('10.16'),
-)
-
-/** We're currently running macOS and it is at least Mojave. */
-export const isMacOSMojaveOrLater = memoizeOne(
-    () => __DARWIN__ && systemVersionGreaterThanOrEqualTo('10.13.0'),
-)
-
-/** We're currently running macOS and it is at least Big Sur. */
-export const isMacOSBigSurOrLater = memoizeOne(
-    // We're using 10.16 rather than 11.0 here due to
-    // https://github.com/electron/electron/issues/26419
-    () => __DARWIN__ && systemVersionGreaterThanOrEqualTo('10.16'),
-)
-
-/** We're currently running Windows 10 and it is at least 1809 Preview Build 17666. */
-export const isWindows10And1809Preview17666OrLater = memoizeOne(
-    () => __WIN32__ && systemVersionGreaterThanOrEqualTo('10.0.17666'),
-)
