@@ -1,5 +1,7 @@
 import type { App } from 'vue'
-import { useAlertStore } from '../stores/alert'
+import stores from '../stores'
+
+const { useAlertStore } = stores
 
 export default class Alerts {
     private app!: App

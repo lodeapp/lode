@@ -1,33 +1,32 @@
 import { isArray, isEmpty } from 'lodash'
-
 import { createPinia } from 'pinia'
 import { createApp, h } from 'vue'
+
 // Global / recursive components
 import App from '@/components/App.vue'
-
 import Icon from '@/components/Icon.vue'
-
 import Nugget from '@/components/Nugget.vue'
+
 // Directives
 import Markdown from './directives/markdown'
+
 // Plugins
 import Alerts from './plugins/alerts'
 import Code from './plugins/code'
 import Durations from './plugins/durations'
 import Input from './plugins/input'
 import Modals from './plugins/modals'
-
 import Strings from './plugins/strings'
-
 import Unproxy from './plugins/unproxy'
-import { useContextStore } from './stores/context'
-import { useFiltersStore } from './stores/filters'
-import { useModalsStore } from './stores/modals'
-import { useSettingsStore } from './stores/settings'
-import { useThemeStore } from './stores/theme'
+
+import stores from './stores'
+
 import '@lib/logger/renderer'
+
 // Styles
 import '../styles/app.scss'
+
+const { useContextStore, useFiltersStore, useModalsStore, useSettingsStore, useThemeStore } = stores
 
 const app = createApp({
     components: {

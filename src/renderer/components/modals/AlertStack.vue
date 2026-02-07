@@ -3,7 +3,9 @@ import { get } from 'lodash'
 import { mapState } from 'pinia'
 import Ansi from '@/components/Ansi.vue'
 import Modal from '@/components/modals/mixins/modal'
-import { useAlertStore } from '@/stores/alert'
+import stores from '@/stores'
+
+const { useAlertStore } = stores
 
 export default {
     name: 'AlertStack',

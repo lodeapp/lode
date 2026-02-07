@@ -2,7 +2,9 @@
 import { mapState } from 'pinia'
 import Indicator from '@/components/Indicator.vue'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
-import { useContextStore } from '@/stores/context'
+import stores from '@/stores'
+
+const { useContextStore } = stores
 
 export default {
     name: 'SidebarFramework',

@@ -1,8 +1,9 @@
 <script>
 import { cloneDeep } from 'lodash'
 import { mapState } from 'pinia'
-import { useFiltersStore } from '@/stores/filters'
-import { useLedgerStore } from '@/stores/ledger'
+import stores from '@/stores'
+
+const { useFiltersStore, useLedgerStore } = stores
 
 export default {
     name: 'Ledger',

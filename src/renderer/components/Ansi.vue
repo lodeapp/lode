@@ -4,7 +4,9 @@ import { Terminal } from '@xterm/xterm'
 import { escape } from 'lodash'
 import { mapState } from 'pinia'
 import Icon from '@/components/Icon.vue'
-import { useThemeStore } from '@/stores/theme'
+import stores from '@/stores'
+
+const { useThemeStore } = stores
 
 export default {
     name: 'Ansi',

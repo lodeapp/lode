@@ -3,8 +3,9 @@ import { clone, last } from 'lodash'
 import { mapState } from 'pinia'
 import Indicator from '@/components/Indicator.vue'
 import TestResult from '@/components/TestResult.vue'
-import { useContextStore } from '@/stores/context'
-import { useStatusStore } from '@/stores/status'
+import stores from '@/stores'
+
+const { useContextStore, useStatusStore } = stores
 
 export default {
     name: 'Results',

@@ -1,7 +1,9 @@
 import * as Path from 'node:path'
 import { mapState } from 'pinia'
 import Filename from '@/components/Filename.vue'
-import { useContextStore } from '@/stores/context'
+import stores from '@/stores'
+
+const { useContextStore } = stores
 
 export default {
     components: {
