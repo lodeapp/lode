@@ -509,6 +509,8 @@ export class Project extends ProjectEventEmitter implements IProject {
                 framework: this.repositories[map[id][0]].frameworks[map[id][1]],
             }
         }
+
+        return undefined
     }
 
     /**

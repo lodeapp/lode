@@ -23,6 +23,7 @@
         "@main/*": ["./main/*"],
         "@lib/*": ["./lib/*"]
       },
+      "skipLibCheck": true,
       "allowJs": true,
       "lib": [
         "DOM",

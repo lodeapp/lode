@@ -35,7 +35,7 @@ export default class Durations {
         if (entries.length > 2) {
             delete object.milliseconds
         }
-        else if (object.seconds > 0 && object.milliseconds > 0) {
+        else if (object.seconds && object.seconds > 0 && object.milliseconds && object.milliseconds > 0) {
             object.seconds = Number.parseFloat(new Decimal(object.seconds + (object.milliseconds / 1000)).toDecimalPlaces(3).valueOf())
             delete object.milliseconds
         }

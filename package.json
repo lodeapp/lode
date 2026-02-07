@@ -34,6 +34,7 @@
     "coverage": "vitest run --coverage && open tests/coverage/index.html",
     "test:cypress": "npm run icons && node workflow/cypress.js run",
     "cypress": "npm run icons && node workflow/cypress.js open",
+    "tsc": "tsc --noEmit",
     "lint": "eslint src",
     "lint:styles": "stylelint src",
     "size": "cross-env NODE_ENV=production electron-vite build && echo 'Build complete. Use rollup-plugin-visualizer for analysis.'",
