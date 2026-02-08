@@ -1,7 +1,8 @@
 import {
-    unpacked,
+    getResourceDirectory,
     loc,
-    posix
+    posix,
+    unpacked,
 } from '@lib/helpers/paths'
 
 it('can handle unpacking paths that are not in packed path', () => {
@@ -17,22 +18,22 @@ it('can point paths to unpacked directory', () => {
     expect(unpacked('/app.asar/mcvities/hobnobs/')).toBe(
         __WIN32__
             ? '\\app.asar.unpacked\\mcvities/hobnobs/'
-            : '/app.asar.unpacked/mcvities/hobnobs/'
+            : '/app.asar.unpacked/mcvities/hobnobs/',
     )
     expect(unpacked('/biscuit/app.asar/hobnobs/')).toBe(
         __WIN32__
             ? '/biscuit\\app.asar.unpacked\\hobnobs/'
-            : '/biscuit/app.asar.unpacked/hobnobs/'
+            : '/biscuit/app.asar.unpacked/hobnobs/',
     )
     expect(unpacked('/biscuit/mcvities/app.asar/')).toBe(
         __WIN32__
             ? '/biscuit/mcvities\\app.asar.unpacked\\'
-            : '/biscuit/mcvities/app.asar.unpacked/'
+            : '/biscuit/mcvities/app.asar.unpacked/',
     )
     expect(unpacked('/biscuit/mcvities/app.asar')).toBe(
         __WIN32__
             ? '/biscuit/mcvities\\app.asar.unpacked\\'
-            : '/biscuit/mcvities/app.asar.unpacked/'
+            : '/biscuit/mcvities/app.asar.unpacked/',
     )
 })
 
@@ -41,12 +42,12 @@ it('can standardise separators', () => {
     expect(loc('biscuit/mcvities')).toBe(
         __WIN32__
             ? 'biscuit\\mcvities'
-            : 'biscuit/mcvities'
+            : 'biscuit/mcvities',
     )
     expect(loc('/biscuit/mcvities/hobnobs/')).toBe(
         __WIN32__
             ? '\\biscuit\\mcvities\\hobnobs\\'
-            : '/biscuit/mcvities/hobnobs/'
+            : '/biscuit/mcvities/hobnobs/',
     )
 })
 
@@ -57,11 +58,32 @@ it('can force POSIX separators in non-POSIX platforms', () => {
     expect(posix('biscuit\\mcvities')).toBe(
         __WIN32__
             ? 'biscuit/mcvities'
-            : 'biscuit\\mcvities' // Non-POSIX platforms don't know the separator, so it remains unaltered.
+            : 'biscuit\\mcvities', // Non-POSIX platforms don't know the separator, so it remains unaltered.
     )
     expect(posix('\\biscuit\\mcvities\\hobnobs\\')).toBe(
         __WIN32__
             ? '/biscuit/mcvities/hobnobs/'
-            : '\\biscuit\\mcvities\\hobnobs\\' // See above.
+            : '\\biscuit\\mcvities\\hobnobs\\', // See above.
+    )
+})
+
+it('can get the resource directory in dev mode', () => {
+    // __DEV__ is true in the test environment
+    const result = getResourceDirectory()
+    expect(result).toContain('dist')
+    expect(result).not.toContain('app.asar')
+})
+
+it('handles empty strings for all path functions', () => {
+    expect(unpacked('')).toBe('')
+    expect(loc('')).toBe('')
+    expect(posix('')).toBe('')
+})
+
+it('handles unpacked paths with no leading separator', () => {
+    expect(unpacked('app.asar/foo')).toBe(
+        __WIN32__
+            ? '\\app.asar.unpacked\\foo'
+            : '/app.asar.unpacked/foo',
     )
 })

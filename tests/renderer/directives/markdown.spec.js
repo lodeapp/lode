@@ -6,7 +6,7 @@ import Strings from '@/plugins/strings'
 const strings = new Strings()
 config.global.plugins = [strings]
 config.global.directives = {
-    markdown: Markdown()
+    markdown: Markdown(),
 }
 
 it('generates markdown text', () => {
@@ -34,7 +34,7 @@ it('generates block markdown', () => {
         template: `
 <div v-markdown.block>
 # Top biscuits
-</div>`
+</div>`,
     })
     expect(wrapper.html()).toBe(`<div>
   <h1>Top biscuits</h1>
@@ -44,11 +44,11 @@ it('generates block markdown', () => {
 it('updates if props change', async () => {
     const wrapper = mount({
         template: '<p v-markdown.set="[favourite]">**:0** are my favourite biscuits.</p>',
-        props: ['favourite']
+        props: ['favourite'],
     }, {
         propsData: {
-            favourite: 'Hobnobs'
-        }
+            favourite: 'Hobnobs',
+        },
     })
     expect(wrapper.html()).toBe('<p><strong>Hobnobs</strong> are my favourite biscuits.</p>')
     await wrapper.setProps({ favourite: 'Digestives' })

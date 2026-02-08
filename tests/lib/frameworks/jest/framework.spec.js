@@ -1,8 +1,8 @@
-import * as Fs from 'fs-extra'
 import { Jest } from '@lib/frameworks/jest/framework'
+import * as Fs from 'fs-extra'
 
 vi.mock('fs-extra', () => ({
-    readJson: vi.fn()
+    readJson: vi.fn(),
 }))
 vi.mock('@lib/state')
 vi.mock('electron-store')
@@ -21,12 +21,12 @@ it('does not spawn Jest framework for repository not containing package.json', a
 
 it('does not spawn Jest framework for repository with package.json without scripts', async () => {
     Fs.readJson.mockReturnValue({
-        'biscuits': {}
+        biscuits: {},
     })
     expect(await Jest.spawnForDirectory({ files: ['package.json'], path: 'biscuits' })).toBe(false)
 })
 
-test.each([
+it.each([
     'cross-env NODE_ENV=production webpack --mode production --config webpack.jest.config.js',
     'webpack --mode production --config webpack.jest.config.js',
     'jjest',
@@ -36,44 +36,44 @@ test.each([
     'hest',
     'jest.test',
     'pack:jest',
-    'hey'
+    'hey',
 ])('does not spawn Jest framework for repository with package.json script "%s"', async (script) => {
     Fs.readJson.mockReturnValue({
-        'scripts': {
-            script
-        }
+        scripts: {
+            script,
+        },
     })
     expect(await Jest.spawnForDirectory({ files: ['package.json'], path: 'biscuits' })).toBe(false)
 })
 
-test.each([
+it.each([
     './node_modules/jest/bin/jest.js',
     'C:\\node_modules\\jest\\bin\\jest.js',
     'jest.js',
     'jest',
-    'jest --hey --ho'
+    'jest --hey --ho',
 ])('spawns Jest framework for repository with package.json script "%s"', async (script) => {
     Fs.readJson.mockReturnValue({
-        'scripts': {
-            script
-        }
+        scripts: {
+            script,
+        },
     })
     expect(await Jest.spawnForDirectory({ files: ['package.json'], path: 'biscuits' })).toEqual({
-        'command': 'yarn script',
-        'name': 'Jest',
-        'path': '',
-        'proprietary': {},
-        'runsInRemote': false,
-        'type': 'jest'
+        command: 'yarn script',
+        name: 'Jest',
+        path: '',
+        proprietary: {},
+        runsInRemote: false,
+        type: 'jest',
     })
 })
 
 it('spawns Jest framework from the first script and uses its key', async () => {
     Fs.readJson.mockReturnValue({
-        'scripts': {
+        scripts: {
             one: 'jest',
-            two: 'jest'
-        }
+            two: 'jest',
+        },
     })
     const options = await Jest.spawnForDirectory({ files: ['package.json'], path: 'biscuits' })
     expect(options.command).toBe('yarn one')

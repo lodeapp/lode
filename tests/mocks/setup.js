@@ -2,5 +2,5 @@ globalThis.log = {
     debug: () => {},
     info: () => {},
     warn: () => {},
-    error: () => {}
+    error: () => {},
 }

@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test'
-import { start, startWithProject, nextTick } from '../helpers/app'
-import { ipcEvent, ipcResetMockHistory, setInvokeHandler } from '../helpers/ipc'
+import { expect, test } from '@playwright/test'
+import { nextTick, start, startWithProject } from '../helpers/app'
 import { assertEmitted, assertInvokedOnce } from '../helpers/assertions'
 import { loadFixture } from '../helpers/fixtures'
+import { ipcEvent, ipcResetMockHistory, setInvokeHandler } from '../helpers/ipc'
 
 test.describe('Project management', () => {
     test('can add projects from the welcome screen', async ({ page }) => {
@@ -33,14 +33,14 @@ test.describe('Project management', () => {
         // Since it's the first time this modal is shown, it should have
         // the help section explaining what a project is.
         await expect(page.locator('.modal-help')).toContainText(
-            'Projects allow you to group different repositories and run their tests all at once.'
+            'Projects allow you to group different repositories and run their tests all at once.',
         )
 
         await page.locator('#project-name').fill('Biscuit')
 
         // Before saving, project ready ephemeral listener should not exist.
         const onceListeners = await page.evaluate(() =>
-            (window as any).electron.ipcRenderer.listeners.once
+            (window as any).electron.ipcRenderer.listeners.once,
         )
         expect(onceListeners).toEqual({})
 

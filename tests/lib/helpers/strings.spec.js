@@ -4,7 +4,7 @@ const helper = new Strings()
 
 it('generates random strings', () => {
     const random = helper.random()
-    expect(random).toMatch(new RegExp('[a-z0-9]{15}', 'i'))
+    expect(random).toMatch(/[a-z0-9]{15}/i)
     expect(random !== helper.random()).toBeTruthy()
 })
 
@@ -49,10 +49,10 @@ it('can compose strings with placeholders', () => {
     expect(helper.set('Lorem :0 :1 :2 :3', 'ipsum', 'dolor', 'sit', 'amet')).toBe('Lorem ipsum dolor sit amet')
     expect(helper.set('Lorem :1', 'Missing index', 'ipsum')).toBe('Lorem ipsum')
     expect(helper.set('Lorem :1 :2 :3 :4', {
-        '2': 'dolor',
-        '4': 'amet',
-        '1': 'ipsum',
-        '3': 'sit'
+        2: 'dolor',
+        4: 'amet',
+        1: 'ipsum',
+        3: 'sit',
     })).toBe('Lorem ipsum dolor sit amet')
 })
 
@@ -105,7 +105,7 @@ it('uses advanced text replacement when parsing Markdown', () => {
         .toBe('Leading text – trailing text')
     expect(helper.markdown('"Hobnobs"'))
         .toBe('“Hobnobs”')
-    expect(helper.markdown("'Hobnobs'"))
+    expect(helper.markdown('\'Hobnobs\''))
         .toBe('‘Hobnobs’')
 })
 
@@ -218,4 +218,59 @@ it('can handle strings that have a replacement logic of their own', () => {
         .toBe('1 item named :0 inside :1')
     expect(helper.plural(':n item named :0 inside :1|:n items named :0 inside :1', 2))
         .toBe('2 items named :0 inside :1')
+})
+
+it('random() generates strings of exactly 15 characters', () => {
+    for (let i = 0; i < 10; i++) {
+        expect(helper.random()).toHaveLength(15)
+    }
+})
+
+it('set() leaves unmatched placeholders intact', () => {
+    expect(helper.set('Hello :0 and :1', 'world')).toBe('Hello world and :1')
+})
+
+it('set() replaces named placeholders using an object', () => {
+    expect(helper.set('Hello :name, your code is :code', { name: 'Dev', code: '42' }))
+        .toBe('Hello Dev, your code is 42')
+})
+
+it('set() handles strings with no placeholders', () => {
+    expect(helper.set('No placeholders here')).toBe('No placeholders here')
+})
+
+it('from() produces consistent hashes for the same object', () => {
+    const hash1 = helper.from({ a: 1, b: 2 })
+    const hash2 = helper.from({ a: 1, b: 2 })
+    expect(hash1).toBe(hash2)
+})
+
+it('from() produces different hashes for different objects', () => {
+    expect(helper.from({ a: 1 })).not.toBe(helper.from({ a: 2 }))
+})
+
+it('from() handles arrays', () => {
+    const hash = helper.from([1, 2, 3])
+    expect(typeof hash).toBe('string')
+    expect(hash.length).toBeGreaterThan(0)
+})
+
+it('markdownBlock() respects the breaks parameter', () => {
+    const withBreaks = helper.markdownBlock('Line 1\nLine 2', true)
+    expect(withBreaks).toContain('<br>')
+
+    const withoutBreaks = helper.markdownBlock('Line 1\nLine 2', false)
+    expect(withoutBreaks).not.toContain('<br>')
+})
+
+it('plural() handles zero amount', () => {
+    expect(helper.plural(':n item|:n items', 0)).toBe('0 items')
+})
+
+it('ascii() handles empty strings', () => {
+    expect(helper.ascii('')).toBe('')
+})
+
+it('truncate() returns original string when shorter than limit', () => {
+    expect(helper.truncate('Hi', 10)).toBe('Hi')
 })

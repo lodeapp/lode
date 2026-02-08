@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { start } from '../helpers/app'
 import { ipcEvent } from '../helpers/ipc'
 

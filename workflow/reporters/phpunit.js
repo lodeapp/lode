@@ -1,4 +1,4 @@
-const Path = require('path')
+const Path = require('node:path')
 const Fs = require('fs-extra')
 
 Fs.mkdirpSync(Path.join(__dirname, '../../static/reporters'))

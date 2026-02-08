@@ -20,8 +20,7 @@ export default antfu(
             'src/lib/reporters/**',
             'src/lib/process/debug/**',
             'src/types/**',
-            'babel.config.js',
-            'workflow/**',
+            'tests/playwright/**',
         ],
     },
     {
@@ -74,6 +73,7 @@ export default antfu(
             'ts/no-require-imports': 'off',
             'ts/no-empty-function': 'off',
             'ts/no-inferrable-types': 'off',
+            'curly': ['error', 'all'],
             'style/quote-props': ['error', 'as-needed'],
         },
     },

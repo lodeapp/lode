@@ -1,7 +1,7 @@
-const Path = require('path')
+const Path = require('node:path')
+const chalk = require('chalk')
 const Fs = require('fs-extra')
 const builder = require('../electron-builder.js')
-const chalk = require('chalk')
 
 const releaseNotesPath = Path.join(__dirname, `../${builder.directories.buildResources}/release-notes.md`)
 if (!Fs.existsSync(releaseNotesPath)) {

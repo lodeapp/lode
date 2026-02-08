@@ -1,4 +1,4 @@
-import { spawn } from 'child_process'
+import { spawn } from 'node:child_process'
 import { YarnProcess } from '@lib/process/runners/yarn'
 
 vi.mock('child_process', () => ({
@@ -6,13 +6,13 @@ vi.mock('child_process', () => ({
         on: vi.fn(),
         stdout: {
             setEncoding: vi.fn(),
-            on: vi.fn()
+            on: vi.fn(),
         },
         stderr: {
             setEncoding: vi.fn(),
-            on: vi.fn()
-        }
-    })
+            on: vi.fn(),
+        },
+    }),
 }))
 
 it('owns relevant commands', () => {
@@ -31,63 +31,61 @@ it('owns relevant commands', () => {
 })
 
 it('fails when called with empty command', () => {
-    expect(() => {
-        new YarnProcess({
-            command: ''
-        })
-    }).toThrow('Failed to determine process to run')
+    expect(() => new YarnProcess({
+        command: '',
+    })).toThrow('Failed to determine process to run')
     expect(spawn).not.toHaveBeenCalled()
 })
 
 it('spawns with no arguments', () => {
-    new YarnProcess({
+    const _yarn = new YarnProcess({
         command: 'yarn biscuit',
-        platform: 'darwin' // Force macOS to ensure binary is left intact.
+        platform: 'darwin', // Force macOS to ensure binary is left intact.
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
         'yarn',
         ['biscuit'],
-        expect.any(Object)
+        expect.any(Object),
     )
 })
 
 it('spawns with proper arguments', () => {
-    new YarnProcess({
+    const _yarn = new YarnProcess({
         command: 'yarn biscuit --hobnobs --digestives rich=tea',
-        platform: 'darwin' // Force macOS to ensure binary is left intact.
+        platform: 'darwin', // Force macOS to ensure binary is left intact.
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
         'yarn',
         ['biscuit', '--hobnobs', '--digestives', 'rich=tea'],
         // Ignore last argument, we'll assert relevant bits individually.
-        expect.any(Object)
+        expect.any(Object),
     )
 })
 
 it('amends binary in windows environments, if no extension is passed', () => {
-    new YarnProcess({
+    const _yarn = new YarnProcess({
         command: 'yarn biscuit --hobnobs --digestives rich=tea',
-        platform: 'win32'
+        platform: 'win32',
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
         'yarn.cmd',
         ['biscuit', '--hobnobs', '--digestives', 'rich=tea'],
-        expect.any(Object)
+        expect.any(Object),
     )
 })
 
 it('respects binary in windows environments if extension is passed', () => {
-    new YarnProcess({
+    const _yarn = new YarnProcess({
         command: 'yarn.js biscuit --hobnobs --digestives rich=tea',
-        platform: 'win32'
+        platform: 'win32',
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
         'yarn.js',
         ['biscuit', '--hobnobs', '--digestives', 'rich=tea'],
-        expect.any(Object)
+        expect.any(Object),
     )
 })

@@ -1,4 +1,4 @@
-const Path = require('path')
+const Path = require('node:path')
 const Fs = require('fs-extra')
 
 const distPath = Path.join(__dirname, '../dist')

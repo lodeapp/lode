@@ -35,7 +35,7 @@
     "tsc": "tsc --noEmit",
     "test:e2e": "npm run icons && npx playwright test --config tests/playwright/playwright.config.ts",
     "test:playwright": "npm run icons && npx playwright test --config tests/playwright/playwright.config.ts --ui",
-    "lint": "eslint src",
+    "lint": "eslint src tests workflow",
     "lint:styles": "stylelint src",
     "size": "cross-env NODE_ENV=production electron-vite build && echo 'Build complete. Use rollup-plugin-visualizer for analysis.'",
     "simulate": "npm run build:before && cross-env IS_DEV=true NODE_ENV=development npm run pack:lode && ./node_modules/electron/dist/Electron.app/Contents/MacOS/Electron dist/main.js"
