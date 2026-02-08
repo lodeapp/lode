@@ -16,7 +16,7 @@
     "icons": "node workflow/icons.js",
     "licenses": "node workflow/licenses.js",
     "decipher": "node workflow/decipher.js",
-    "pack:lode": "electron-vite build && cp -r static dist/static",
+    "pack:lode": "electron-vite build && node workflow/copy-static.js",
     "pack:jest": "node workflow/reporters/build-jest.js",
     "pack:phpunit": "node workflow/reporters/phpunit.js",
     "pack:reporters": "npm run pack:jest && npm run pack:phpunit",
