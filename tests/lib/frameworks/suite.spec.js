@@ -1,8 +1,12 @@
+import * as Path from 'node:path'
 import { Suite } from '@lib/frameworks/suite'
 import { ApplicationWindow } from '@main/application-window'
 
 vi.mock('@main/application-window')
 vi.mock('@main/file')
+
+/** Normalize a path string to use OS-specific separators */
+const p = (...segments) => Path.join(...segments)
 
 function createMockFramework(overrides = {}) {
     const nuggetStatuses = {}
