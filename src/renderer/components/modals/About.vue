@@ -6,7 +6,6 @@ export default {
     mixins: [Modal],
     data() {
         return {
-            logo: '/icons/512x512.png',
         }
     },
     computed: {
@@ -42,7 +41,7 @@ export default {
 <template>
     <Modal :dismissable="true" size="sm">
         <div class="about">
-            <img :src="logo">
+            <img src="/icons/512x512.png">
             <h4>Lode</h4>
             <p class="version">
                 <span>{{ $string.set('Version :0 (:1)', version, arch) }}</span>
