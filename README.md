@@ -34,6 +34,19 @@ Alternatively, you can pack and execute the application directly, which is usefu
 npm run simulate
 ```
 
+### Vue DevTools
+
+To inspect Vue components and Pinia stores during development, start the standalone [Vue DevTools](https://devtools.vuejs.org/guide/standalone) server in a separate terminal before launching the app:
+
+```sh
+npm run devtools # Start the Vue DevTools standalone server
+npm run dev      # Then start the app in another terminal
+```
+
+The app automatically detects whether the DevTools server is running on startup. If it is, it connects; if not, it starts normally with no retries. You can check the renderer console for connection status.
+
+### Tests
+
 The Lode codebase has two sets of tests: [Jest](https://jestjs.io/) for the main process and [Playwright](https://playwright.dev/) for the renderer process.
 
 ```sh
