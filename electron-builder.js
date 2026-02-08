@@ -57,7 +57,7 @@ const config = {
         window: {
             x: 400,
             y: 200,
-            width: 488,
+            width: 489,
             height: 356
         }
     },
