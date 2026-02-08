@@ -36,7 +36,7 @@ describe('suite instantiation', () => {
         const suite = new Suite(createMockFramework({ fullPath: '/repo' }), {
             file: '/repo/unit/my-test.js',
         })
-        expect(suite.getDisplayName()).toBe('unit/my-test.js')
+        expect(suite.getDisplayName()).toBe(p('unit', 'my-test.js'))
     })
 })
 
@@ -57,14 +57,14 @@ describe('suite file paths', () => {
         }), {
             file: '/remote/tests/my-test.js',
         })
-        expect(suite.getFilePath()).toBe('/local/repo/my-test.js')
+        expect(suite.getFilePath()).toBe(p('/local/repo', 'my-test.js'))
     })
 
     it('getRelativePath returns path relative to framework fullPath', () => {
         const suite = new Suite(createMockFramework({ fullPath: '/repo' }), {
             file: '/repo/unit/my-test.js',
         })
-        expect(suite.getRelativePath()).toBe('unit/my-test.js')
+        expect(suite.getRelativePath()).toBe(p('unit', 'my-test.js'))
     })
 
     it('getRelativePath for remote framework with path', () => {
@@ -76,7 +76,7 @@ describe('suite file paths', () => {
         }), {
             file: '/remote/tests/unit/my-test.js',
         })
-        expect(suite.getRelativePath()).toBe('unit/my-test.js')
+        expect(suite.getRelativePath()).toBe(p('unit', 'my-test.js'))
     })
 
     it('getRelativePath for remote framework without remote path strips leading slash', () => {
@@ -98,7 +98,7 @@ describe('suite file paths', () => {
         }), {
             file: '/repo/tests/unit/my-test.js',
         })
-        expect(suite.getFilePathRelativeToBase()).toBe('tests/unit/my-test.js')
+        expect(suite.getFilePathRelativeToBase()).toBe(p('tests', 'unit', 'my-test.js'))
     })
 })
 
