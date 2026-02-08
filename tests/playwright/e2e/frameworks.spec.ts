@@ -1,22 +1,22 @@
-import { test, expect } from '@playwright/test'
-import { startWithProject, nextTick } from '../helpers/app'
+import { expect, test } from '@playwright/test'
+import { nextTick, startWithProject } from '../helpers/app'
+import {
+    assertEmitted,
+    assertEmittedOnce,
+    assertInvokeCallArgEq,
+    assertInvokeCallArgs,
+    assertInvokeCallChannel,
+    assertInvokedCount,
+    assertInvokedOnce,
+    assertNormalizedText,
+    assertSendCallArgs,
+} from '../helpers/assertions'
+import { loadFixture } from '../helpers/fixtures'
 import {
     ipcEvent,
     ipcResetMockHistory,
     setInvokeHandler,
 } from '../helpers/ipc'
-import {
-    assertInvokedOnce,
-    assertInvokedCount,
-    assertInvokeCallChannel,
-    assertInvokeCallArgs,
-    assertInvokeCallArgEq,
-    assertEmitted,
-    assertEmittedOnce,
-    assertSendCallArgs,
-    assertNormalizedText,
-} from '../helpers/assertions'
-import { loadFixture } from '../helpers/fixtures'
 
 test.describe('Framework management', () => {
     let suites: Record<string, any[]>
@@ -193,33 +193,19 @@ test.describe('Framework management', () => {
 
         // Expand first nugget
         await nuggets.nth(0).click()
-        await assertEmittedOnce(page,
-            'framework-toggle-child',
-            'phpunit-1',
-            ['/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php'],
-            true
-        )
+        await assertEmittedOnce(page, 'framework-toggle-child', 'phpunit-1', ['/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php'], true)
         await ipcResetMockHistory(page)
 
-        await ipcEvent(page,
-            '/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php:framework-tests',
-            tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php']
+        await ipcEvent(page, '/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php:framework-tests', tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/ConsoleTest.php'],
         )
 
         // Expand second nugget
         await assertNormalizedText(nuggets.nth(1).locator('.filename > .name'), 'DataProviderTest.php')
         await nuggets.nth(1).click()
-        await assertEmittedOnce(page,
-            'framework-toggle-child',
-            'phpunit-1',
-            ['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php'],
-            true
-        )
+        await assertEmittedOnce(page, 'framework-toggle-child', 'phpunit-1', ['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php'], true)
         await ipcResetMockHistory(page)
 
-        await ipcEvent(page,
-            '/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php:framework-tests',
-            tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php']
+        await ipcEvent(page, '/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php:framework-tests', tests['phpunit-1']['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php'],
         )
 
         // Check expanded first nugget's children
@@ -233,7 +219,7 @@ test.describe('Framework management', () => {
         }
         await assertNormalizedText(
             nuggets.nth(0).locator('.nugget-items > .nugget').first().locator('.test-name'),
-            'Console log null'
+            'Console log null',
         )
 
         // Check expanded second nugget's children
@@ -247,18 +233,13 @@ test.describe('Framework management', () => {
         }
         await assertNormalizedText(
             nuggets.nth(1).locator('.nugget-items > .nugget').first().locator('.test-name'),
-            'Data provider success with data set # 0'
+            'Data provider success with data set # 0',
         )
 
         // Collapse second nugget
         const header = nuggets.nth(1).locator('> .header')
         await header.click()
-        await assertEmittedOnce(page,
-            'framework-toggle-child',
-            'phpunit-1',
-            ['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php'],
-            false
-        )
+        await assertEmittedOnce(page, 'framework-toggle-child', 'phpunit-1', ['/lodeapp/lode/hobnobs/tests/Unit/DataProviderTest.php'], false)
         await ipcResetMockHistory(page)
 
         await expect(nuggets.nth(1)).toHaveClass(/is-collapsed/)
@@ -274,14 +255,16 @@ test.describe('Framework management', () => {
         const modifiedLedger = { ...ledger }
         modifiedLedger['jest-1'] = Object.fromEntries(
             Object.entries(modifiedLedger['jest-1']).map(([key, value]) => {
-                if (key === 'idle') return [key, 0]
-                if (key === 'passed') return [key, suites['jest-1'].length]
+                if (key === 'idle')
+                    return [key, 0]
+                if (key === 'passed')
+                    return [key, suites['jest-1'].length]
                 return [key, value]
-            })
+            }),
         )
         const modifiedStatusMap = { ...statusMap }
         modifiedStatusMap['jest-1'] = Object.fromEntries(
-            Object.entries(modifiedStatusMap['jest-1']).map(([key]) => [key, 'passed'])
+            Object.entries(modifiedStatusMap['jest-1']).map(([key]) => [key, 'passed']),
         )
 
         await setInvokeHandler(page, { frameworks, ledger: modifiedLedger, statusMap: modifiedStatusMap }, `
@@ -342,13 +325,9 @@ test.describe('Framework management', () => {
         // Select second nugget
         await nuggets.nth(1).locator('> .header button').click()
 
-        await assertSendCallArgs(page, 0,
-            'framework-select', 'jest-1',
-            ['/lodeapp/lode/hobnobs/__tests__/BadlyNested.spec.js'], true
+        await assertSendCallArgs(page, 0, 'framework-select', 'jest-1', ['/lodeapp/lode/hobnobs/__tests__/BadlyNested.spec.js'], true,
         )
-        await assertSendCallArgs(page, 1,
-            'framework-select', 'jest-1',
-            ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'], true
+        await assertSendCallArgs(page, 1, 'framework-select', 'jest-1', ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'], true,
         )
         await ipcResetMockHistory(page)
 
@@ -384,9 +363,7 @@ test.describe('Framework management', () => {
         // Deselect second nugget
         await nuggets.nth(1).locator('> .header button').click()
         await expect(nuggets).toHaveCount(1)
-        await assertSendCallArgs(page, 1,
-            'framework-select', 'jest-1',
-            ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'], false
+        await assertSendCallArgs(page, 1, 'framework-select', 'jest-1', ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'], false,
         )
         await ipcResetMockHistory(page)
 
@@ -402,9 +379,7 @@ test.describe('Framework management', () => {
         await ipcEvent(page, 'jest-1:selective', 0)
         await ipcEvent(page, 'jest-1:refreshed',
             // Clone the suites array since it's used elsewhere
-            [...suites['jest-1']],
-            suites['jest-1'].length
-        )
+            [...suites['jest-1']], suites['jest-1'].length)
 
         await expect(page.locator('.framework')).not.toHaveClass(/selective/)
         await expect(nuggets).toHaveCount(15)
@@ -431,7 +406,7 @@ test.describe('Framework management', () => {
         await expect(page.locator('.framework > .children > .nugget.status--failed')).toHaveCount(1)
         await assertNormalizedText(
             page.locator('.framework > .children > .nugget.status--failed .filename > .name'),
-            'Console.spec.js'
+            'Console.spec.js',
         )
 
         // Reset the failed status for the next assertion
@@ -518,20 +493,18 @@ test.describe('Framework management', () => {
         await ipcEvent(page, 'jest-1:ledger', updatedLedger, updatedStatusMap)
 
         await nextTick(page)
-        await assertEmittedOnce(page,
-            'framework-select', 'jest-1',
-            ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'], false
+        await assertEmittedOnce(page, 'framework-select', 'jest-1', ['/lodeapp/lode/hobnobs/__tests__/Console.spec.js'], false,
         )
 
         await assertNormalizedText(run, 'Run selected 1')
         await assertNormalizedText(
             page.locator('.filters .progress-breakdown > .Label--selected'),
-            '1 selected'
+            '1 selected',
         )
         await expect(page.locator('.filters .progress-breakdown > .Label--failed')).toHaveClass(/is-active/)
         await assertNormalizedText(
             page.locator('.filters .progress-breakdown > .Label--failed'),
-            '0 failed'
+            '0 failed',
         )
     })
 

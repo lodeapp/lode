@@ -1,5 +1,5 @@
-import { ApplicationWindow } from '@main/application-window'
 import { ProjectEventEmitter } from '@lib/frameworks/emitter'
+import { ApplicationWindow } from '@main/application-window'
 
 vi.mock('@lib/state')
 vi.mock('electron-store')

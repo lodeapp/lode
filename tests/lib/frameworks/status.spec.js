@@ -1,4 +1,4 @@
-import { parseStatus, parseFrameworkStatus } from '@lib/frameworks/status'
+import { parseFrameworkStatus, parseStatus } from '@lib/frameworks/status'
 
 it('can determine empty status', () => {
     expect(parseStatus([])).toBe('empty')
@@ -67,7 +67,7 @@ it('can determine framework loading status', () => {
         'skipped',
         'passed',
         'loading',
-        'refreshing'
+        'refreshing',
     ])).toBe('loading')
 })
 
@@ -81,7 +81,7 @@ it('can determine framework refreshing status', () => {
         'incomplete',
         'skipped',
         'passed',
-        'refreshing'
+        'refreshing',
     ])).toBe('refreshing')
 })
 
@@ -95,6 +95,56 @@ it('can determine error status from missing components', () => {
         'incomplete',
         'skipped',
         'passed',
-        'missing'
+        'missing',
     ])).toBe('error')
+})
+
+it('returns a single status unchanged', () => {
+    expect(parseStatus(['passed'])).toBe('passed')
+    expect(parseStatus(['failed'])).toBe('failed')
+    expect(parseStatus(['idle'])).toBe('idle')
+    expect(parseStatus(['running'])).toBe('running')
+    expect(parseStatus(['queued'])).toBe('queued')
+    expect(parseStatus(['warning'])).toBe('warning')
+    expect(parseStatus(['error'])).toBe('error')
+    expect(parseStatus(['incomplete'])).toBe('incomplete')
+    expect(parseStatus(['skipped'])).toBe('skipped')
+    expect(parseStatus(['partial'])).toBe('partial')
+})
+
+it('returns running when only queued tests exist alongside others', () => {
+    expect(parseStatus(['passed', 'queued'])).toBe('running')
+    expect(parseStatus(['failed', 'queued'])).toBe('running')
+})
+
+it('returns running for mixed running and other statuses', () => {
+    expect(parseStatus(['passed', 'running'])).toBe('running')
+    expect(parseStatus(['idle', 'running'])).toBe('running')
+})
+
+it('returns incomplete for skipped mixed with passed', () => {
+    expect(parseStatus(['passed', 'skipped'])).toBe('incomplete')
+})
+
+it('returns partial for idle mixed with passed', () => {
+    expect(parseStatus(['idle', 'passed'])).toBe('partial')
+})
+
+it('returns partial for idle mixed with incomplete', () => {
+    expect(parseStatus(['idle', 'incomplete'])).toBe('partial')
+})
+
+it('handles duplicate statuses correctly', () => {
+    expect(parseStatus(['passed', 'passed', 'passed'])).toBe('passed')
+    expect(parseStatus(['failed', 'failed'])).toBe('failed')
+})
+
+it('returns a single framework status unchanged', () => {
+    expect(parseFrameworkStatus(['loading'])).toBe('loading')
+    expect(parseFrameworkStatus(['refreshing'])).toBe('refreshing')
+    expect(parseFrameworkStatus(['missing'])).toBe('missing')
+})
+
+it('returns error for missing-only without other framework statuses', () => {
+    expect(parseFrameworkStatus(['idle', 'missing'])).toBe('error')
 })

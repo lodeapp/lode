@@ -2,17 +2,17 @@ const electron = {
     ipcRenderer: {
         listeners: {
             on: {},
-            once: {}
+            once: {},
         },
-        on (event, callback) {
+        on(event, callback) {
             electron.ipcRenderer.listeners.on[event] = callback
         },
-        once (event, callback) {
+        once(event, callback) {
             electron.ipcRenderer.listeners.once[event] = callback
         },
-        send (channel, ...args) {},
-        invoke (channel, ...args) {},
-        removeAllListeners (channel) {},
+        send(channel, ...args) {},
+        invoke(channel, ...args) {},
+        removeAllListeners(channel) {},
 
         /**
          * Mimick a channel event coming from the main process.
@@ -20,9 +20,9 @@ const electron = {
          * @param channel The channel in which the event is being triggered
          * @param args The arguments with which the event is being triggered
          */
-        trigger (channel, ...args) {
+        trigger(channel, ...args) {
             if (typeof electron.ipcRenderer.listeners.on[channel] === 'undefined') {
-                throw Error(`Attempted to trigger unregistered event "${channel}"`)
+                throw new TypeError(`Attempted to trigger unregistered event "${channel}"`)
             }
 
             const event = {}
@@ -31,8 +31,8 @@ const electron = {
                 electron.ipcRenderer.listeners.once[channel](event, ...args)
                 delete electron.ipcRenderer.listeners.once[channel]
             }
-        }
-    }
+        },
+    },
 }
 
 module.exports = electron

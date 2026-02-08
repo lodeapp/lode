@@ -1,8 +1,8 @@
 import { ProcessFactory } from '@lib/process/factory'
+import pool from '@lib/process/pool'
 import { DefaultProcess } from '@lib/process/process'
 import { NpmProcess } from '@lib/process/runners/npm'
 import { YarnProcess } from '@lib/process/runners/yarn'
-import pool from '@lib/process/pool'
 
 vi.mock('@lib/process/pool')
 vi.mock('child_process', () => ({
@@ -10,18 +10,18 @@ vi.mock('child_process', () => ({
         on: vi.fn(),
         stdout: {
             setEncoding: vi.fn(),
-            on: vi.fn()
+            on: vi.fn(),
         },
         stderr: {
             setEncoding: vi.fn(),
-            on: vi.fn()
-        }
-    })
+            on: vi.fn(),
+        },
+    }),
 }))
 
 it('can make new processes', () => {
     const spawned = ProcessFactory.make({
-        command: 'biscuit'
+        command: 'biscuit',
     })
     expect(spawned).toBeInstanceOf(DefaultProcess)
     expect(pool.add).toHaveBeenCalledTimes(1)
@@ -30,7 +30,7 @@ it('can make new processes', () => {
 
 it('can pool new processes with specific ids', () => {
     const spawned = ProcessFactory.make({
-        command: 'biscuit'
+        command: 'biscuit',
     }, 42)
     expect(spawned).toBeInstanceOf(DefaultProcess)
     expect(pool.add).toHaveBeenCalledTimes(1)
@@ -39,13 +39,13 @@ it('can pool new processes with specific ids', () => {
 
 it('can make specific processes by parsing command', () => {
     const npm = ProcessFactory.make({
-        command: 'npm run biscuit'
+        command: 'npm run biscuit',
     })
     expect(npm).toBeInstanceOf(NpmProcess)
     expect(pool.add).toHaveBeenLastCalledWith(npm, undefined)
 
     const yarn = ProcessFactory.make({
-        command: 'yarn biscuit'
+        command: 'yarn biscuit',
     })
     expect(yarn).toBeInstanceOf(YarnProcess)
     expect(pool.add).toHaveBeenLastCalledWith(yarn, undefined)
@@ -56,7 +56,7 @@ it('can make specific processes by parsing command', () => {
 it('can force a specific runner from the options', () => {
     const yarn = ProcessFactory.make({
         command: 'npm run biscuit',
-        forceRunner: 'yarn'
+        forceRunner: 'yarn',
     })
     expect(yarn).toBeInstanceOf(YarnProcess)
     expect(pool.add).toHaveBeenCalledTimes(1)
@@ -66,7 +66,7 @@ it('can force a specific runner from the options', () => {
 it('falls back to default process if forced runner does not exist', () => {
     const spawned = ProcessFactory.make({
         command: 'biscuit',
-        forceRunner: 'cake'
+        forceRunner: 'cake',
     })
     expect(spawned).toBeInstanceOf(DefaultProcess)
     expect(pool.add).toHaveBeenCalledTimes(1)
@@ -79,9 +79,9 @@ it('passes options from factory to process', () => {
         args: ['hobnobs', 'digestives'],
         ssh: false,
         sshOptions: {
-            host: 'mcvities'
+            host: 'mcvities',
         },
-        platform: 'linux'
+        platform: 'linux',
     })
     expect(spawned).toBeInstanceOf(DefaultProcess)
     expect(spawned.command).toBe('biscuit')

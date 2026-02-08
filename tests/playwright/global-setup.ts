@@ -1,5 +1,5 @@
+import * as path from 'node:path'
 import { build } from 'esbuild'
-import * as path from 'path'
 
 export default async function globalSetup() {
     await build({
@@ -14,7 +14,7 @@ export default async function globalSetup() {
         },
         resolveExtensions: ['.ts', '.js'],
         alias: {
-            'electron': path.resolve(__dirname, '../mocks/electron.js'),
+            electron: path.resolve(__dirname, '../mocks/electron.js'),
         },
     })
 }

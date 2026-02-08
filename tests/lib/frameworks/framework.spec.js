@@ -1,7 +1,7 @@
-import flushPromises from 'flush-promises'
-import { ApplicationWindow } from '@main/application-window'
 import { Framework } from '@lib/frameworks/framework'
 import { Suite } from '@lib/frameworks/suite'
+import { ApplicationWindow } from '@main/application-window'
+import flushPromises from 'flush-promises'
 
 vi.mock('@lib/state')
 vi.mock('electron-store')
@@ -23,7 +23,7 @@ const options = {
             tests: [
                 {
                     id: '111',
-                    name: 'tastes sweet'
+                    name: 'tastes sweet',
                 },
                 {
                     id: '222',
@@ -31,15 +31,15 @@ const options = {
                     tests: [
                         {
                             id: '333',
-                            name: 'has many oats'
+                            name: 'has many oats',
                         },
                         {
                             id: '444',
-                            name: 'has jumbo oats'
-                        }
-                    ]
-                }
-            ]
+                            name: 'has jumbo oats',
+                        },
+                    ],
+                },
+            ],
         },
         {
             file: 'isNobbly.js',
@@ -47,14 +47,14 @@ const options = {
             tests: [
                 {
                     id: '555',
-                    name: 'has lumps'
-                }
-            ]
-        }
-    ]
+                    name: 'has lumps',
+                },
+            ],
+        },
+    ],
 }
 
-describe('Framework manipulation', () => {
+describe('framework manipulation', () => {
     it('can instantiate a new generic framework', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
 
@@ -72,7 +72,7 @@ describe('Framework manipulation', () => {
         expect(framework.fullPath).toBe(
             __WIN32__
                 ? '\\mcvities\\hobnobs\\tests'
-                : '/mcvities/hobnobs/tests'
+                : '/mcvities/hobnobs/tests',
         )
         expect(framework.runsInRemote).toBe(false)
         expect(framework.remotePath).toBe('')
@@ -100,9 +100,9 @@ describe('Framework manipulation', () => {
         expect(framework.ready).toBe(true)
         expect(framework.selective).toBe(false)
         expect(framework.selected).toEqual({
-            suites: []
+            suites: [],
         })
-        framework.suites.forEach(suite => {
+        framework.suites.forEach((suite) => {
             expect(suite).toBeInstanceOf(Suite)
         })
         expect(framework.count()).toBe(2)
@@ -113,7 +113,7 @@ describe('Framework manipulation', () => {
         const framework = new Framework(new ApplicationWindow(), {
             ...options,
             runsInRemote: true,
-            remotePath: '/var/www/'
+            remotePath: '/var/www/',
         })
 
         expect(framework.command).toBe('./bake')
@@ -122,7 +122,7 @@ describe('Framework manipulation', () => {
         expect(framework.fullPath).toBe(
             __WIN32__
                 ? '\\mcvities\\hobnobs\\tests'
-                : '/mcvities/hobnobs/tests'
+                : '/mcvities/hobnobs/tests',
         )
         expect(framework.runsInRemote).toBe(true)
         expect(framework.remotePath).toBe('/var/www/')
@@ -130,7 +130,7 @@ describe('Framework manipulation', () => {
         expect(framework.getFullRemotePath()).toBe(
             __WIN32__
                 ? '\\var\\www\\tests'
-                : '/var/www/tests'
+                : '/var/www/tests',
         )
     })
 
@@ -149,7 +149,7 @@ describe('Framework manipulation', () => {
         await flushPromises()
         expect(framework.initialSuiteReady).toBe(2)
         expect(framework.render()).toMatchSnapshot({
-            id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+            id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
         })
     })
 
@@ -158,7 +158,7 @@ describe('Framework manipulation', () => {
         await flushPromises()
         expect(framework.initialSuiteReady).toBe(2)
         expect(framework.persist()).toMatchSnapshot({
-            id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+            id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
         })
     })
 
@@ -176,7 +176,7 @@ describe('Framework manipulation', () => {
             name: 'Digestives',
             runsInRemote: false,
             sshHost: '',
-            repositoryPath: '/mcvities/hobnobs/'
+            repositoryPath: '/mcvities/hobnobs/',
         })
 
         expect(framework.name).toBe('Digestives')
@@ -199,7 +199,7 @@ describe('Framework manipulation', () => {
             command: './eat',
             runsInRemote: false,
             sshHost: '',
-            repositoryPath: '/mcvities/hobnobs/'
+            repositoryPath: '/mcvities/hobnobs/',
         })
 
         expect(framework.emit).toHaveBeenLastCalledWith('change', framework)
@@ -221,7 +221,7 @@ describe('Framework manipulation', () => {
             command: './bake',
             runsInRemote: true,
             sshHost: '',
-            repositoryPath: '/mcvities/hobnobs/'
+            repositoryPath: '/mcvities/hobnobs/',
         })
 
         expect(framework.emit).toHaveBeenLastCalledWith('change', framework)
@@ -243,7 +243,7 @@ describe('Framework manipulation', () => {
             command: './bake',
             runsInRemote: false,
             sshHost: 'mcvities',
-            repositoryPath: '/mcvities/hobnobs/'
+            repositoryPath: '/mcvities/hobnobs/',
         })
 
         expect(framework.emit).toHaveBeenLastCalledWith('change', framework)
@@ -265,7 +265,7 @@ describe('Framework manipulation', () => {
             command: './bake',
             runsInRemote: false,
             sshHost: '',
-            repositoryPath: '/mcvities/digestives/'
+            repositoryPath: '/mcvities/digestives/',
         })
 
         expect(framework.emit).toHaveBeenLastCalledWith('change', framework)
@@ -286,13 +286,13 @@ describe('Framework manipulation', () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
         expect(framework.getStatusMap()).toEqual({
-            '111': 'idle',
-            '222': 'idle',
-            '333': 'idle',
-            '444': 'idle',
-            '555': 'idle',
+            111: 'idle',
+            222: 'idle',
+            333: 'idle',
+            444: 'idle',
+            555: 'idle',
             'isTasty.js': 'idle',
-            'isNobbly.js': 'idle'
+            'isNobbly.js': 'idle',
         })
 
         expect(framework.getNuggetStatus('111')).toBe('idle')
@@ -314,7 +314,7 @@ describe('Framework manipulation', () => {
             partial: 0,
             empty: 0,
             idle: 2,
-            error: 0
+            error: 0,
         })
     })
 
@@ -362,7 +362,7 @@ describe('Framework manipulation', () => {
     })
 })
 
-describe('Framework refreshing', () => {
+describe('framework refreshing', () => {
     it('can refresh framework', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
@@ -382,7 +382,7 @@ describe('Framework refreshing', () => {
         // assemble method is resolved.
         let assemble
         framework.assemble = vi.fn(() => {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 assemble = resolve
             })
         })
@@ -495,22 +495,22 @@ describe('Framework refreshing', () => {
                 partial: 0,
                 empty: 0,
                 idle: 1,
-                error: 0
+                error: 0,
             },
             {
-                '111': 'passed',
-                '222': 'passed',
-                '333': 'passed',
-                '444': 'passed',
-                '555': 'idle',
+                111: 'passed',
+                222: 'passed',
+                333: 'passed',
+                444: 'passed',
+                555: 'idle',
                 'isTasty.js': 'passed',
-                'isNobbly.js': 'idle'
-            }
+                'isNobbly.js': 'idle',
+            },
         )
     })
 })
 
-describe('Framework running', () => {
+describe('framework running', () => {
     it('can run a framework', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
@@ -524,7 +524,7 @@ describe('Framework running', () => {
 
         let assemble
         framework.assemble = vi.fn(() => {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 assemble = resolve
             })
         })
@@ -585,15 +585,15 @@ describe('Framework running', () => {
                 partial: 0,
                 empty: 0,
                 idle: 0,
-                error: 0
+                error: 0,
             },
             {
-                '111': 'passed',
-                '222': 'passed',
-                '333': 'passed',
-                '444': 'passed',
-                'isTasty.js': 'passed'
-            }
+                111: 'passed',
+                222: 'passed',
+                333: 'passed',
+                444: 'passed',
+                'isTasty.js': 'passed',
+            },
         )
     })
 
@@ -651,17 +651,17 @@ describe('Framework running', () => {
                 partial: 0,
                 empty: 0,
                 idle: 2,
-                error: 0
+                error: 0,
             },
             {
-                '111': 'idle',
-                '222': 'idle',
-                '333': 'idle',
-                '444': 'idle',
-                '555': 'idle',
+                111: 'idle',
+                222: 'idle',
+                333: 'idle',
+                444: 'idle',
+                555: 'idle',
                 'isTasty.js': 'idle',
-                'isNobbly.js': 'idle'
-            }
+                'isNobbly.js': 'idle',
+            },
         )
     })
 
@@ -719,17 +719,17 @@ describe('Framework running', () => {
                 partial: 0,
                 empty: 0,
                 idle: 2,
-                error: 0
+                error: 0,
             },
             {
-                '111': 'idle',
-                '222': 'idle',
-                '333': 'idle',
-                '444': 'idle',
-                '555': 'idle',
+                111: 'idle',
+                222: 'idle',
+                333: 'idle',
+                444: 'idle',
+                555: 'idle',
                 'isTasty.js': 'idle',
-                'isNobbly.js': 'idle'
-            }
+                'isNobbly.js': 'idle',
+            },
         )
     })
 
@@ -786,22 +786,22 @@ describe('Framework running', () => {
                 partial: 0,
                 empty: 0,
                 idle: 2,
-                error: 0
+                error: 0,
             },
             {
-                '111': 'idle',
-                '222': 'idle',
-                '333': 'idle',
-                '444': 'idle',
-                '555': 'idle',
+                111: 'idle',
+                222: 'idle',
+                333: 'idle',
+                444: 'idle',
+                555: 'idle',
                 'isTasty.js': 'idle',
-                'isNobbly.js': 'idle'
-            }
+                'isNobbly.js': 'idle',
+            },
         )
     })
 })
 
-describe('Framework selective running', () => {
+describe('framework selective running', () => {
     it('ignores selectively running if nothing is selected', async () => {
         const framework = new Framework(new ApplicationWindow(), options)
         await flushPromises()
@@ -828,7 +828,7 @@ describe('Framework selective running', () => {
 
         let assemble
         framework.assemble = vi.fn(() => {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 assemble = resolve
             })
         })
@@ -857,8 +857,8 @@ describe('Framework selective running', () => {
         expect(framework.status).toBe('running')
         expect(
             Object.entries(framework.getStatusMap())
-                .filter(([id]) => ['isNobbly.js', '555'].indexOf(id) === -1)
-                .every(([id, status]) => status === 'queued')
+                .filter(([id]) => !['isNobbly.js', '555'].includes(id))
+                .every(([id, status]) => status === 'queued'),
         ).toBe(true)
         expect(framework.getNuggetStatus('isNobbly.js')).toBe('idle')
         expect(framework.getNuggetStatus('555')).toBe('idle')
@@ -892,17 +892,17 @@ describe('Framework selective running', () => {
                 partial: 0,
                 empty: 0,
                 idle: 1,
-                error: 0
+                error: 0,
             },
             {
-                '111': 'passed',
-                '222': 'passed',
-                '333': 'passed',
-                '444': 'passed',
-                '555': 'idle',
+                111: 'passed',
+                222: 'passed',
+                333: 'passed',
+                444: 'passed',
+                555: 'idle',
                 'isTasty.js': 'passed',
-                'isNobbly.js': 'idle'
-            }
+                'isNobbly.js': 'idle',
+            },
         )
     })
 
@@ -957,17 +957,17 @@ describe('Framework selective running', () => {
                 partial: 0,
                 empty: 0,
                 idle: 1,
-                error: 1
+                error: 1,
             },
             {
-                '111': 'error',
-                '222': 'error',
-                '333': 'error',
-                '444': 'error',
-                '555': 'idle',
+                111: 'error',
+                222: 'error',
+                333: 'error',
+                444: 'error',
+                555: 'idle',
                 'isTasty.js': 'error',
-                'isNobbly.js': 'idle'
-            }
+                'isNobbly.js': 'idle',
+            },
         )
     })
 
@@ -1018,17 +1018,135 @@ describe('Framework selective running', () => {
                 partial: 0,
                 empty: 0,
                 idle: 2,
-                error: 0
+                error: 0,
             },
             {
-                '111': 'idle',
-                '222': 'idle',
-                '333': 'idle',
-                '444': 'idle',
-                '555': 'idle',
+                111: 'idle',
+                222: 'idle',
+                333: 'idle',
+                444: 'idle',
+                555: 'idle',
                 'isTasty.js': 'idle',
-                'isNobbly.js': 'idle'
-            }
+                'isNobbly.js': 'idle',
+            },
         )
+    })
+})
+
+describe('framework filtering', () => {
+    it('starts with no filters', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        expect(framework.hasFilters()).toBe(false)
+        expect(framework.getFilter('keyword')).toBeNull()
+        expect(framework.getFilter('status')).toBeNull()
+    })
+
+    it('can set and get a keyword filter', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        framework.emitToRenderer = vi.fn()
+        framework.setFilter('keyword', 'tasty')
+        expect(framework.getFilter('keyword')).toBe('tasty')
+        expect(framework.hasFilters()).toBe(true)
+    })
+
+    it('can set and get a status filter', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        framework.emitToRenderer = vi.fn()
+        framework.setFilter('status', ['passed', 'failed'])
+        expect(framework.getFilter('status')).toEqual(['passed', 'failed'])
+        expect(framework.hasFilters()).toBe(true)
+    })
+
+    it('clears status filter when set to empty array', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        framework.emitToRenderer = vi.fn()
+        framework.setFilter('status', ['passed'])
+        expect(framework.hasFilters()).toBe(true)
+        framework.setFilter('status', [])
+        expect(framework.getFilter('status')).toBeNull()
+        expect(framework.hasFilters()).toBe(false)
+    })
+
+    it('resets all filters', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        framework.emitToRenderer = vi.fn()
+        framework.setFilter('keyword', 'foo')
+        framework.setFilter('status', ['passed'])
+        framework.resetFilters()
+        expect(framework.hasFilters()).toBe(false)
+        expect(framework.getFilter('keyword')).toBeNull()
+        expect(framework.getFilter('status')).toBeNull()
+    })
+
+    it('returns all suites when no filters are active', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        expect(framework.getSuites().length).toBe(2)
+    })
+})
+
+describe('framework with no suites', () => {
+    it('can instantiate an empty framework', async () => {
+        const framework = new Framework(new ApplicationWindow(), {
+            ...options,
+            suites: [],
+        })
+        await flushPromises()
+
+        expect(framework.count()).toBe(0)
+        expect(framework.empty()).toBe(true)
+        expect(framework.hasSuites).toBe(false)
+        expect(framework.getAllSuites()).toEqual([])
+        expect(framework.status).toBe('empty')
+    })
+})
+
+describe('framework troubleshooting', () => {
+    it('returns EACCES troubleshooting advice', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        // Access protected method via bracket notation
+        const advice = framework.troubleshoot(new Error('EACCES: permission denied'))
+        expect(advice).toContain('remote machine')
+    })
+
+    it('returns remote advice for empty error when running remotely', async () => {
+        const framework = new Framework(new ApplicationWindow(), {
+            ...options,
+            runsInRemote: true,
+            remotePath: '/var/www/',
+        })
+        await flushPromises()
+
+        const advice = framework.troubleshoot('')
+        expect(advice).toContain('remote machine')
+    })
+
+    it('returns empty string for unrecognised errors', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        const advice = framework.troubleshoot(new Error('Something unexpected'))
+        expect(advice).toBe('')
+    })
+
+    it('handles string errors', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        const advice = framework.troubleshoot('EACCES: permission denied')
+        expect(advice).toContain('remote machine')
     })
 })

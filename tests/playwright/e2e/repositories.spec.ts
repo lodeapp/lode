@@ -1,21 +1,21 @@
-import { test, expect } from '@playwright/test'
-import { startWithProject, nextTick } from '../helpers/app'
+import { expect, test } from '@playwright/test'
+import { nextTick, startWithProject } from '../helpers/app'
 import {
-    ipcEvent,
-    ipcResetMockHistory,
-    getInvokeCall,
-    setInvokeHandler,
-} from '../helpers/ipc'
-import {
-    assertInvokedOnce,
-    assertInvokedCount,
-    assertInvokeCallChannel,
-    assertInvokeCallArgs,
     assertEmitted,
     assertEmittedOnce,
+    assertInvokeCallArgs,
+    assertInvokeCallChannel,
+    assertInvokedCount,
+    assertInvokedOnce,
     assertNormalizedText,
 } from '../helpers/assertions'
 import { loadFixture } from '../helpers/fixtures'
+import {
+    getInvokeCall,
+    ipcEvent,
+    ipcResetMockHistory,
+    setInvokeHandler,
+} from '../helpers/ipc'
 
 test.describe('Repository management', () => {
     let repositories: any[]

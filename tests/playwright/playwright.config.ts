@@ -1,5 +1,5 @@
+import * as path from 'node:path'
 import { defineConfig } from '@playwright/test'
-import * as path from 'path'
 
 export default defineConfig({
     testDir: path.resolve(__dirname, 'e2e'),

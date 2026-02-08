@@ -1,7 +1,7 @@
-import { Page } from '@playwright/test'
-import * as path from 'path'
-import { ipcEvent } from './ipc'
+import type { Page } from '@playwright/test'
+import * as path from 'node:path'
 import { loadFixture } from './fixtures'
+import { ipcEvent } from './ipc'
 
 const INIT_BUNDLE = path.resolve(__dirname, '../.init-bundle.js')
 

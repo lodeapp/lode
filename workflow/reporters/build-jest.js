@@ -1,6 +1,6 @@
 'use strict'
 
-const path = require('path')
+const path = require('node:path')
 const { build } = require('esbuild')
 const { getReplacements } = require('../app-info')
 
@@ -10,7 +10,9 @@ const replacements = getReplacements()
 // esbuild requires all values to be strings; filter out undefined values
 const define = {}
 for (const [key, value] of Object.entries(replacements)) {
-    if (value === undefined) continue
+    if (value === undefined) {
+        continue
+    }
     define[key] = typeof value === 'string' ? value : JSON.stringify(value)
 }
 
@@ -25,7 +27,7 @@ build({
     format: 'cjs',
     outfile: path.resolve(__dirname, '../../static/reporters/jest/index.js'),
     define,
-    minify: process.env.NODE_ENV === 'production'
+    minify: process.env.NODE_ENV === 'production',
 }).then(() => {
     console.log('Jest reporter built successfully')
 }).catch((err) => {

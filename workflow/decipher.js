@@ -1,8 +1,9 @@
+const { Buffer: NodeBuffer } = require('node:buffer')
+const Crypto = require('node:crypto')
 const Fs = require('fs-extra')
-const Crypto = require('crypto')
 
 if (process.argv.length < 3) {
-    throw Error('Missing project.db file path.')
+    throw new Error('Missing project.db file path.')
 }
 
 const encryptionAlgorithm = 'aes-256-cbc'
@@ -14,6 +15,6 @@ let data = Fs.readFileSync(path, null)
 const initializationVector = data.slice(0, 16)
 const password = Crypto.pbkdf2Sync(encryptionKey, initializationVector.toString(), 10000, 32, 'sha512')
 const decipher = Crypto.createDecipheriv(encryptionAlgorithm, password, initializationVector)
-data = Buffer.concat([decipher.update(data.slice(17)), decipher.final()])
+data = NodeBuffer.concat([decipher.update(data.slice(17)), decipher.final()])
 
 console.log(JSON.stringify(JSON.parse(data)))
