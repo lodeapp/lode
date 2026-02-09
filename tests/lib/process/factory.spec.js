@@ -1,7 +1,9 @@
 import { ProcessFactory } from '@lib/process/factory'
 import pool from '@lib/process/pool'
 import { DefaultProcess } from '@lib/process/process'
+import { BunProcess } from '@lib/process/runners/bun'
 import { NpmProcess } from '@lib/process/runners/npm'
+import { PnpmProcess } from '@lib/process/runners/pnpm'
 import { YarnProcess } from '@lib/process/runners/yarn'
 
 vi.mock('@lib/process/pool')
@@ -50,7 +52,19 @@ it('can make specific processes by parsing command', () => {
     expect(yarn).toBeInstanceOf(YarnProcess)
     expect(pool.add).toHaveBeenLastCalledWith(yarn, undefined)
 
-    expect(pool.add).toHaveBeenCalledTimes(2)
+    const pnpm = ProcessFactory.make({
+        command: 'pnpm run biscuit',
+    })
+    expect(pnpm).toBeInstanceOf(PnpmProcess)
+    expect(pool.add).toHaveBeenLastCalledWith(pnpm, undefined)
+
+    const bun = ProcessFactory.make({
+        command: 'bun run biscuit',
+    })
+    expect(bun).toBeInstanceOf(BunProcess)
+    expect(pool.add).toHaveBeenLastCalledWith(bun, undefined)
+
+    expect(pool.add).toHaveBeenCalledTimes(4)
 })
 
 it('can force a specific runner from the options', () => {

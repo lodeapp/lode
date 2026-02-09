@@ -3,18 +3,30 @@ import type { ParsedRepository } from '@lib/frameworks/repository'
 import type { ISuite } from '@lib/frameworks/suite'
 import * as Path from 'node:path'
 import { Framework } from '@lib/frameworks/framework'
+import { buildExecCommand, buildScriptCommand, detectPackageManager } from '@lib/helpers/package-manager'
 import { loc, posix, unpacked } from '@lib/helpers/paths'
 import * as Fs from 'fs-extra'
 import { get } from 'lodash'
+
+const jestConfigFiles = [
+    'jest.config.js',
+    'jest.config.ts',
+    'jest.config.cjs',
+    'jest.config.mjs',
+    'jest.config.json',
+]
 
 export class Jest extends Framework {
     static readonly defaults: FrameworkDefaults = {
         all: {
             name: 'Jest',
             type: 'jest',
-            command: 'yarn test',
+            command: './node_modules/.bin/jest',
             path: '',
             proprietary: {},
+        },
+        win32: {
+            command: 'node_modules\\.bin\\jest.cmd',
         },
     }
 
@@ -25,6 +37,8 @@ export class Jest extends Framework {
      * @param repository The parsed repository to test.
      */
     public static async spawnForDirectory(repository: ParsedRepository): Promise<FrameworkOptions | false> {
+        const manager = detectPackageManager(repository.files)
+
         // Use repository's package.json to determine whether Jest exists or not.
         if (repository.files.includes('package.json')) {
             const pkg = await Fs.readJson(Path.join(repository.path, 'package.json'), { throws: false }) || {}
@@ -36,7 +50,7 @@ export class Jest extends Framework {
                     // and also "./node_modules/jest/bin/jest.js", etc.
                     if (scripts[script].search(/(?<![^/\\\s])jest\b(\.js)?(?!\.)/i) > -1) {
                         return this.hydrate({
-                            command: `yarn ${script}`,
+                            command: buildScriptCommand(manager, script),
                         })
                     }
                 }
@@ -46,12 +60,21 @@ export class Jest extends Framework {
             }
 
             // If no scripts with jest are found, check for Jest configuration
-            // in the root of the package.json as a last recourse. User will
-            // likely need to configure the command manually.
+            // in the root of the package.json.
             if (get(pkg, 'jest')) {
-                return this.hydrate()
+                return this.hydrate({
+                    command: buildExecCommand(manager, 'jest'),
+                })
             }
         }
+
+        // Check for standalone Jest configuration files.
+        if (jestConfigFiles.some(file => repository.files.includes(file))) {
+            return this.hydrate({
+                command: buildExecCommand(manager, 'jest'),
+            })
+        }
+
         return false
     }
 
