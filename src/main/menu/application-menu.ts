@@ -1,9 +1,9 @@
 import type { IFramework } from '@lib/frameworks/framework'
 import type { IProject, ProjectIdentifier } from '@lib/frameworks/project'
 import type { IRepository } from '@lib/frameworks/repository'
-import type { ApplicationWindow } from '@main/application-window'
 import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
+import { ApplicationWindow } from '@main/application-window'
 import { Menu as ContextMenu, FrameworkMenu, ProjectMenu } from '@main/menu'
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
@@ -52,7 +52,8 @@ class ApplicationMenu {
 
         const separator: Electron.MenuItemConstructorOptions = { type: 'separator' }
 
-        const currentProject: ProjectIdentifier | null = state.getCurrentProject()
+        // Derive current project from the focused window, not from global state
+        const currentProject: ProjectIdentifier | null = this.window?.getProject()?.getIdentifier() || null
         const projects: Array<ProjectIdentifier> = state.getAvailableProjects()
 
         const isCheckingForUpdate = this.options.isCheckingForUpdate
@@ -110,19 +111,31 @@ class ApplicationMenu {
                 enabled: projects && projects.length > 1,
                 submenu: projects && projects.length > 1
                     ? projects.map((project) => {
+                            const isCurrentProject = !!currentProject && currentProject.id === project.id
+                            const openInOtherWindow = !isCurrentProject
+                                && !!project.id
+                                && ApplicationWindow.getByProjectId(project.id) !== null
                             return {
-                                label: project.name,
+                                label: openInOtherWindow
+                                    ? `${project.name} (${__DARWIN__ ? 'in another window' : 'in another window'})`
+                                    : project.name,
                                 type: 'checkbox',
-                                checked: !!currentProject && currentProject.id === project.id,
+                                checked: isCurrentProject,
                                 click: emit('project-switch', project.id, (menuItem: Electron.MenuItem) => {
                                 // Don't toggle the item, unless it's the current project,
                                 // as the switch might still be cancelled by the user. If
                                 // switch project is confirmed, menu will be rebuilt anyway.
-                                    menuItem.checked = !!currentProject && currentProject.id === project.id
+                                    menuItem.checked = isCurrentProject
                                 }),
                             }
                         })
                     : undefined,
+            })
+            .separator()
+            .add({
+                label: __DARWIN__ ? 'Close Window' : 'Close window',
+                role: 'close',
+                accelerator: 'CmdOrCtrl+W',
             })
             .addIf(!__DARWIN__, separator)
             .addIf(!__DARWIN__, {
@@ -259,7 +272,6 @@ class ApplicationMenu {
                 submenu: [
                     { role: 'minimize' },
                     { role: 'zoom' },
-                    { role: 'close' },
                     separator,
                     { role: 'front' },
                 ],
@@ -391,11 +403,20 @@ class ApplicationMenu {
  */
 function emit(name: MenuEvent, properties?: any, callback?: ClickHandler): ClickHandler {
     return (menuItem, window, event) => {
+        const newWindow = __DARWIN__ ? event.metaKey : event.ctrlKey
+        const payload = { name, properties, newWindow }
         if (window instanceof BrowserWindow) {
-            window.webContents.send('menu-event', { name, properties })
+            window.webContents.send('menu-event', payload)
         }
         else {
-            ipcMain.emit('menu-event', { name, properties })
+            // Fallback: send to the focused window directly
+            const focusedWindow = ApplicationWindow.getFocusedWindow()
+            if (focusedWindow) {
+                focusedWindow.getWebContents().send('menu-event', payload)
+            }
+            else {
+                ipcMain.emit('menu-event', payload)
+            }
         }
 
         if (callback) {

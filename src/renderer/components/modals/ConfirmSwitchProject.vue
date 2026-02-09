@@ -13,6 +13,9 @@ export default {
         switchProject() {
             this.confirm(this.disableConfirm)
         },
+        openInNewWindow() {
+            this.confirm('new-window')
+        },
     },
 }
 </script>
@@ -37,9 +40,14 @@ export default {
                 <button type="button" class="btn btn-sm autofocus" @click="cancel">
                     Cancel
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" @click="switchProject">
-                    Switch Project
-                </button>
+                <div>
+                    <button type="button" class="btn btn-sm" @click="openInNewWindow">
+                        Open in New Window
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary" @click="switchProject">
+                        Switch Project
+                    </button>
+                </div>
             </div>
         </template>
     </Modal>

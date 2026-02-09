@@ -51,8 +51,6 @@ import { identity, isEmpty, pickBy } from 'lodash'
 import '@lib/crash/reporter'
 import '@lib/logger/main'
 
-let currentWindow: ApplicationWindow | null = null
-
 // Merge environment variables from shell, if needed.
 mergeEnvFromShell()
 
@@ -115,13 +113,48 @@ async function entities(
 app
     .on('ready', () => {
         initializeTheme(state.get('theme'))
-        currentWindow = ApplicationWindow.init(state.getCurrentProject())
-        applicationMenu.build(currentWindow)
+
+        const openProjectIds: string[] = state.getOpenProjects()
+        const currentProjectId = state.getCurrentProject()?.id || null
+        let focusWindow: ApplicationWindow | null = null
+
+        if (openProjectIds.length > 0) {
+            // Session restore: re-open all previously open windows
+            for (const projectId of openProjectIds) {
+                const window = ApplicationWindow.createWindow({ id: projectId })
+                if (projectId === currentProjectId) {
+                    focusWindow = window
+                }
+            }
+        }
+
+        // If no windows were restored, create one with the current project (or blank)
+        if (ApplicationWindow.getAllWindows().length === 0) {
+            focusWindow = ApplicationWindow.createWindow(state.getCurrentProject())
+        }
+
+        const primaryWindow = focusWindow || ApplicationWindow.getAllWindows()[0]
+        applicationMenu.build(primaryWindow)
+
+        if (focusWindow) {
+            focusWindow.getChild().focus()
+        }
 
         if (!__DEV__) {
             // Start auto-updating process.
             // eslint-disable-next-line no-new -- Updater is instantiated for its side effects (auto-update)
             new Updater()
+        }
+    })
+    .on('window-all-closed', () => {
+        if (!__DARWIN__) {
+            app.quit()
+        }
+    })
+    .on('activate', () => {
+        if (ApplicationWindow.getAllWindows().length === 0) {
+            const window = ApplicationWindow.createWindow(state.getCurrentProject())
+            applicationMenu.build(window)
         }
     })
 
@@ -132,40 +165,61 @@ ipcMain
         // marked as being from the "main" process.
         writeLog(level, message)
     })
-    .on('window-set', (event: Electron.IpcMainEvent, args: any[]) => {
-        currentWindow = event as any
+    .on('window-set', (event: any) => {
+        // event is the ApplicationWindow itself (emitted directly, not via IPC)
+        const window = event as ApplicationWindow
+        applicationMenu.build(window)
+        // Update currentProject to the focused window's project
+        const project = window.getProject()
+        if (project) {
+            state.set('currentProject', project.getId())
+        }
     })
     .on('maximize', (event: Electron.IpcMainEvent) => {
-        if (currentWindow) {
-            if (currentWindow.getChild().isMaximized()) {
-                currentWindow.getChild().unmaximize()
-                return
-            }
-            currentWindow.getChild().maximize()
+        const window = ApplicationWindow.getFromWebContents(event.sender)
+        if (window) {
+            const child = window.getChild()
+            child.isMaximized() ? child.unmaximize() : child.maximize()
         }
     })
     .on('minimize', (event: Electron.IpcMainEvent) => {
-        if (currentWindow) {
-            currentWindow.getChild().minimize()
+        const window = ApplicationWindow.getFromWebContents(event.sender)
+        if (window) {
+            window.getChild().minimize()
         }
     })
     .on('close', (event: Electron.IpcMainEvent) => {
-        if (currentWindow) {
-            currentWindow.getChild().close()
+        const window = ApplicationWindow.getFromWebContents(event.sender)
+        if (window) {
+            window.getChild().close()
         }
     })
     .on('menu-refresh', (event: Electron.IpcMainEvent) => {
-        applicationMenu.build(currentWindow)
+        const window = ApplicationWindow.getFromWebContents(event.sender)
+        applicationMenu.build(window)
     })
-    .on('menu-event', (event: Electron.IpcMainEvent, args: any[]) => {
-        const { name, properties } = event as any
-        if (currentWindow) {
-            currentWindow.sendMenuEvent({ name, properties })
+    .on('menu-event', (event: any) => {
+        // This handler is a fallback for when the menu emit() function
+        // can't find a BrowserWindow to send to directly.
+        const { name, properties, newWindow } = event as any
+        const window = ApplicationWindow.getFocusedWindow()
+        if (window) {
+            window.sendMenuEvent({ name, properties, newWindow })
         }
     })
     .on('project-switch', (event: Electron.IpcMainEvent, identifier?: ProjectIdentifier | null) => {
         const window: ApplicationWindow = ApplicationWindow.getFromWebContents(event.sender)!
         const project: IProject | null = window.getProject()
+
+        // If the target project is already open in another window, focus it instead
+        if (identifier?.id) {
+            const existing = ApplicationWindow.getByProjectId(identifier.id)
+            if (existing && existing !== window) {
+                existing.getChild().focus()
+                return
+            }
+        }
+
         try {
             if (identifier && !isEmpty(pickBy(identifier, identity))) {
                 window.setProject(identifier)
@@ -186,6 +240,25 @@ ipcMain
                 }
             }
         }
+    })
+    .on('project-open-in-new-window', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier) => {
+        // If the project is already open in a window, focus that window
+        if (identifier.id) {
+            const existing = ApplicationWindow.getByProjectId(identifier.id)
+            if (existing) {
+                existing.getChild().focus()
+                return
+            }
+        }
+        const newWindow = ApplicationWindow.createWindow(identifier)
+        applicationMenu.build(newWindow)
+    })
+    .on('open-new-blank-window', (event: Electron.IpcMainEvent) => {
+        const newWindow = ApplicationWindow.createWindow(null)
+        // Once the new window's renderer is ready, auto-trigger project creation
+        newWindow.getChild().webContents.once('did-finish-load', () => {
+            newWindow.sendMenuEvent({ name: 'project-add' })
+        })
     })
     .on('project-repositories', (event: Electron.IpcMainEvent, identifier: ProjectIdentifier) => {
         getProject(event).emitRepositoriesToRenderer()
@@ -407,7 +480,7 @@ ipcMain
 
 ipcMain
     .handle('repository-locate', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
-        return (await getRepository(event, repositoryId)).locate(currentWindow!.getChild())
+        return (await getRepository(event, repositoryId)).locate(BrowserWindow.fromWebContents(event.sender)!)
     })
 
 ipcMain

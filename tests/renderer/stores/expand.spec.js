@@ -53,6 +53,28 @@ describe('expand store', () => {
         expect(store.expanded('suite-3')).toBe(false)
     })
 
+    it('collapses only items belonging to a specific framework', () => {
+        const store = useExpandStore()
+        store.expand('fw-1:suite-1')
+        store.expand('fw-1:suite-2')
+        store.expand('fw-2:suite-1')
+        store.expand('fw-2:suite-3')
+        store.collapseAllInFramework('fw-1')
+        expect(store.expanded('fw-1:suite-1')).toBe(false)
+        expect(store.expanded('fw-1:suite-2')).toBe(false)
+        expect(store.expanded('fw-2:suite-1')).toBe(true)
+        expect(store.expanded('fw-2:suite-3')).toBe(true)
+    })
+
+    it('does not collapse items from other frameworks with similar prefixes', () => {
+        const store = useExpandStore()
+        store.expand('fw-1:suite-1')
+        store.expand('fw-10:suite-1')
+        store.collapseAllInFramework('fw-1')
+        expect(store.expanded('fw-1:suite-1')).toBe(false)
+        expect(store.expanded('fw-10:suite-1')).toBe(true)
+    })
+
     it('manages items independently', () => {
         const store = useExpandStore()
         store.expand('suite-1')

@@ -123,7 +123,7 @@ const app = createApp({
                     help,
                 })
             })
-            .on('menu-event', async (event, { name, properties }) => {
+            .on('menu-event', async (event, { name, properties, newWindow }) => {
                 switch (name) {
                     case 'show-about':
                         this.$modal.open('About')
@@ -132,10 +132,15 @@ const app = createApp({
                         this.$modal.open('Preferences')
                         break
                     case 'project-add':
-                        this.projectAdd()
+                        if (newWindow) {
+                            Lode.ipc.send('open-new-blank-window')
+                        }
+                        else {
+                            this.projectAdd()
+                        }
                         break
                     case 'project-switch':
-                        this.projectSwitch(properties)
+                        this.projectSwitch(properties, newWindow)
                         break
                     case 'project-edit':
                         this.projectEdit()
@@ -295,9 +300,15 @@ const app = createApp({
                 })
                 .catch(() => {})
         },
-        projectSwitch(projectId) {
+        projectSwitch(projectId, newWindow = false) {
+            // If modifier key held, open in new window (or focus existing)
+            if (newWindow) {
+                Lode.ipc.send('project-open-in-new-window', { id: projectId })
+                return
+            }
+
             // Clicking on current project shouldn't have any effect.
-            if (projectId === this.project.id) {
+            if (this.project && projectId === this.project.id) {
                 // Windows will uncheck the project regardless of it being
                 // selected already, so refresh the menu to undo it.
                 if (__WIN32__) {
@@ -307,12 +318,16 @@ const app = createApp({
             }
 
             this.$modal.confirmIf(() => {
-                return ['idle', 'empty', 'loading'].includes(this.project.status)
+                return !this.project || ['idle', 'empty', 'loading'].includes(this.project.status)
                     ? false
                     : this.setting('confirm.switchProject')
             }, 'ConfirmSwitchProject')
-                .then((disableConfirm) => {
-                    if (disableConfirm) {
+                .then((result) => {
+                    if (result === 'new-window') {
+                        Lode.ipc.send('project-open-in-new-window', { id: projectId })
+                        return
+                    }
+                    if (result) {
                         this.updateSetting('confirm.switchProject', false)
                     }
                     this.handleProjectSwitch({ id: projectId })

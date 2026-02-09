@@ -5,6 +5,7 @@ import { useContextStore, useExpandStore, useStatusStore } from '@/stores'
 
 export default {
     name: 'Nugget',
+    inject: ['frameworkId'],
     props: {
         model: {
             type: Object,
@@ -39,8 +40,11 @@ export default {
         identifier() {
             return this.model.id || this.model.file
         },
+        expandKey() {
+            return `${this.frameworkId}:${this.identifier}`
+        },
         show() {
-            return useExpandStore().expanded(this.identifier)
+            return useExpandStore().expanded(this.expandKey)
         },
         status() {
             return this.getStatus(this.identifier)
@@ -142,12 +146,12 @@ export default {
             }
 
             if (this.show) {
-                useExpandStore().collapse(this.identifier)
+                useExpandStore().collapse(this.expandKey)
                 this.collapse()
                 return
             }
 
-            useExpandStore().expand(this.identifier)
+            useExpandStore().expand(this.expandKey)
             this.expand()
         },
         expand() {
@@ -157,7 +161,7 @@ export default {
             // Before hiding a nugget, make sure to reset its children's expand state.
             const expandStore = useExpandStore()
             ;(this.tests || []).forEach((test) => {
-                expandStore.collapse(test.id)
+                expandStore.collapse(`${this.frameworkId}:${test.id}`)
             })
             this.$emit('toggle', [this.identifier], false)
         },

@@ -6,11 +6,9 @@ import { state } from '@lib/state'
 import { supportsSystemThemeChanges } from '@lib/themes'
 import { applicationMenu } from '@main/menu'
 import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
-import { get } from 'lodash'
+import { debounce, get } from 'lodash'
 
-let windowStateKeeper: any | null = null
-
-const windows: any = {}
+const windows: { [id: number]: ApplicationWindow } = {}
 
 export class ApplicationWindow {
     protected window: BrowserWindow
@@ -22,27 +20,26 @@ export class ApplicationWindow {
     protected closed = false
     protected project: Project | null = null
 
+    protected static devToolsOpened = false
+
     protected events = 0
+    protected themeHandler: (() => void) | null = null
+    protected debouncedPersistBounds: (() => void)
 
     public constructor(identifier: ProjectIdentifier | null) {
-        if (!windowStateKeeper) {
-            // `electron-window-state` requires Electron's `screen` module, which can
-            // only be required after the app has emitted `ready`. So require it lazily.
-            windowStateKeeper = require('electron-window-state')
-        }
-
-        // Load saved window state, if any
-        const savedWindowState = windowStateKeeper({
-            defaultHeight: this.minHeight,
-            defaultWidth: this.minWidth,
-        })
+        // Load saved bounds for this project, or fall back to the
+        // focused window's bounds (offset so it doesn't stack on top).
+        const savedBounds = identifier?.id
+            ? state.getWindowBounds(identifier.id)
+            : null
+        const fallbackBounds = savedBounds || ApplicationWindow.getFallbackBounds()
 
         // Initial window options
         const windowOptions: Electron.BrowserWindowConstructorOptions = {
-            x: savedWindowState.x,
-            y: savedWindowState.y,
-            width: savedWindowState.width,
-            height: savedWindowState.height,
+            x: fallbackBounds?.x,
+            y: fallbackBounds?.y,
+            width: fallbackBounds?.width || this.minWidth,
+            height: fallbackBounds?.height || this.minHeight,
             minWidth: this.minWidth,
             minHeight: this.minHeight,
             useContentSize: true,
@@ -80,8 +77,12 @@ export class ApplicationWindow {
             ipcMain.emit('window-set', this)
         })
 
-        // Remember window state on change
-        savedWindowState.manage(this.window)
+        // Auto-persist bounds on resize/move (debounced)
+        this.debouncedPersistBounds = debounce(() => {
+            this.persistBounds()
+        }, 500)
+        this.window.on('resize', this.debouncedPersistBounds)
+        this.window.on('move', this.debouncedPersistBounds)
 
         if (identifier) {
             this.setProject(identifier)
@@ -89,15 +90,16 @@ export class ApplicationWindow {
 
         this.load()
 
-        nativeTheme.on('updated', () => {
+        this.themeHandler = () => {
             this.window.webContents.send('theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
-        })
+        }
+        nativeTheme.on('updated', this.themeHandler)
     }
 
-    public static init(identifier: ProjectIdentifier | null): ApplicationWindow {
+    public static createWindow(identifier: ProjectIdentifier | null): ApplicationWindow {
         const window = new this(identifier)
 
-        // Store parent in window manager
+        // Store in window registry
         windows[window.getChild().id] = window
 
         window.onClosed(async () => {
@@ -109,10 +111,21 @@ export class ApplicationWindow {
                 }
                 catch (_) {}
             }
-            app.quit()
+            window.persistBounds()
+            delete windows[window.getChild().id]
+            ApplicationWindow.persistOpenProjects()
         })
 
+        ApplicationWindow.persistOpenProjects()
+
         return window
+    }
+
+    /**
+     * @deprecated Use createWindow() instead for multi-window support.
+     */
+    public static init(identifier: ProjectIdentifier | null): ApplicationWindow {
+        return this.createWindow(identifier)
     }
 
     public static getFromWebContents(webContents: Electron.WebContents): ApplicationWindow | null {
@@ -125,9 +138,62 @@ export class ApplicationWindow {
         return window ? window.getProject() : null
     }
 
+    public static getByProjectId(projectId: string): ApplicationWindow | null {
+        for (const id of Object.keys(windows)) {
+            const window = windows[Number(id)]
+            const project = window.getProject()
+            if (project && project.getId() === projectId) {
+                return window
+            }
+        }
+        return null
+    }
+
+    public static getAllWindows(): ApplicationWindow[] {
+        return Object.values(windows)
+    }
+
+    public static getFocusedWindow(): ApplicationWindow | null {
+        const focused = BrowserWindow.getFocusedWindow()
+        if (focused) {
+            return windows[focused.id] || null
+        }
+        // Fall back to the first available window
+        const all = ApplicationWindow.getAllWindows()
+        return all.length > 0 ? all[0] : null
+    }
+
+    protected static getFallbackBounds(): { x?: number, y?: number, width: number, height: number } | null {
+        // Use the focused (or most recent) window's bounds, offset
+        // slightly so the new window doesn't sit directly on top.
+        const source = ApplicationWindow.getFocusedWindow()
+        if (source && !source.closed && !source.getChild().isDestroyed()) {
+            const bounds = source.getChild().getBounds()
+            return {
+                x: bounds.x + 22,
+                y: bounds.y + 22,
+                width: bounds.width,
+                height: bounds.height,
+            }
+        }
+        return null
+    }
+
+    public static persistOpenProjects(): void {
+        const projectIds: string[] = []
+        for (const window of ApplicationWindow.getAllWindows()) {
+            const project = window.getProject()
+            if (project) {
+                projectIds.push(project.getId())
+            }
+        }
+        state.setOpenProjects(projectIds)
+    }
+
     protected load() {
         this.window.webContents.once('did-finish-load', () => {
-            if (process.env.NODE_ENV === 'development') {
+            if (process.env.NODE_ENV === 'development' && !ApplicationWindow.devToolsOpened) {
+                ApplicationWindow.devToolsOpened = true
                 this.window.webContents.openDevTools()
             }
         })
@@ -151,7 +217,11 @@ export class ApplicationWindow {
         })
 
         this.window.on('close', () => {
-            nativeTheme.removeAllListeners()
+            // Remove only this window's theme listener
+            if (this.themeHandler) {
+                nativeTheme.removeListener('updated', this.themeHandler)
+                this.themeHandler = null
+            }
             // Frameless window doesn't seem to want to close normally in
             // Windows, so we'll destroy it instead.
             if (__WIN32__) {
@@ -203,6 +273,9 @@ export class ApplicationWindow {
                 this.projectReady()
             })
             .on('progress', this.updateProgress.bind(this))
+
+        // Update the open projects list
+        ApplicationWindow.persistOpenProjects()
     }
 
     public onReady(): void {
@@ -276,6 +349,17 @@ export class ApplicationWindow {
         this.project = null
         this.refreshSettings()
         this.send('clear')
+        ApplicationWindow.persistOpenProjects()
+    }
+
+    public persistBounds(): void {
+        if (this.closed || this.window.isDestroyed()) {
+            return
+        }
+        const project = this.getProject()
+        if (project) {
+            state.setWindowBounds(project.getId(), this.window.getBounds())
+        }
     }
 
     public sendMenuEvent(properties: any) {

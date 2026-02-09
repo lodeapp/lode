@@ -26,5 +26,13 @@ export const useExpandStore = defineStore('expand', {
         collapseAll() {
             this.items = {}
         },
+        collapseAllInFramework(frameworkId) {
+            const prefix = `${frameworkId}:`
+            for (const key of Object.keys(this.items)) {
+                if (key.startsWith(prefix)) {
+                    delete this.items[key]
+                }
+            }
+        },
     },
 })

@@ -21,8 +21,10 @@ export class State extends EventEmitter {
         },
         theme: 'system',
         currentProject: null,
+        openProjects: [],
         paneSizes: [16, 44, 40],
         projects: [],
+        windowStates: {},
     }
 
     constructor() {
@@ -107,6 +109,19 @@ export class State extends EventEmitter {
             const index = Math.max(0, (projectIndex - 1))
             const switchTo = typeof projects[index] !== 'undefined' ? projects[index].id : null
             this.store.set('currentProject', switchTo)
+
+            // Clean up window state and open projects list
+            const windowStates = this.store.get('windowStates', {})
+            delete windowStates[projectId]
+            this.store.set('windowStates', windowStates)
+
+            const openProjects: string[] = this.store.get('openProjects', [])
+            const openIndex = openProjects.indexOf(projectId)
+            if (openIndex > -1) {
+                openProjects.splice(openIndex, 1)
+                this.store.set('openProjects', openProjects)
+            }
+
             return switchTo
         }
         return null
@@ -122,6 +137,25 @@ export class State extends EventEmitter {
             }
             this.store.set('projects', projects)
         }
+    }
+
+    public getWindowBounds(projectId: string): { x?: number, y?: number, width?: number, height?: number } | null {
+        const states = this.store.get('windowStates', {})
+        return states[projectId] || null
+    }
+
+    public setWindowBounds(projectId: string, bounds: { x: number, y: number, width: number, height: number }): void {
+        const states = this.store.get('windowStates', {})
+        states[projectId] = bounds
+        this.store.set('windowStates', states)
+    }
+
+    public getOpenProjects(): string[] {
+        return this.store.get('openProjects', [])
+    }
+
+    public setOpenProjects(projectIds: string[]): void {
+        this.store.set('openProjects', projectIds)
     }
 
     public project(identifier: ProjectIdentifier): Project {

@@ -18,6 +18,11 @@ export default {
     mixins: [
         HasFrameworkMenu,
     ],
+    provide() {
+        return {
+            frameworkId: this.model.id,
+        }
+    },
     props: {
         model: {
             type: Object,
@@ -147,7 +152,7 @@ export default {
             }
         },
         onCollapseAll() {
-            useExpandStore().collapseAll()
+            useExpandStore().collapseAllInFramework(this.model.id)
             Lode.ipc.send('framework-collapse-all', this.model.id)
         },
         onChildToggle(context, toggle) {
