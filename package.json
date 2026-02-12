@@ -28,7 +28,7 @@
     "build:before": "npm run clean:all && npm run icons && npm run pack:reporters && npm run licenses",
     "build:after": "npm run clean",
     "build": "npm run build:before && npm run pack:lode && cross-env electron-builder --publish never && npm run build:after",
-    "build:ci": "npm run build:before && npm run pack:lode && electron-builder --dir --publish never --config electron-builder.js",
+    "build:ci": "npm run build:before && npm run pack:lode && electron-builder --dir --publish never",
     "release:before": "node workflow/release-before.js && npm run build:before",
     "release:after": "node workflow/release-after.js && npm run build:after",
     "release": "npm run release:before && npm run pack:lode && cross-env electron-builder --publish always && npm run release:after",
