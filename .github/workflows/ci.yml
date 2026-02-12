@@ -70,7 +70,7 @@ jobs:
             tests/playwright/playwright-report/
 
       - name: Build
-        run: npm run build:before && npm run pack:lode && electron-builder --dir --publish never
+        run: npm run build:before && npm run pack:lode && npx electron-builder --dir --publish never
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
