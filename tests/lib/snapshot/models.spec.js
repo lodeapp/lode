@@ -1,3 +1,4 @@
+import { join } from 'node:path'
 import { SnapshotFramework } from '@lib/snapshot/framework'
 import { SnapshotProject } from '@lib/snapshot/project'
 import { SnapshotRepository } from '@lib/snapshot/repository'
@@ -328,7 +329,7 @@ describe('snapshotFramework', () => {
         expect(fw.getDisplayName()).toBe('Jest')
         expect(fw.type).toBe('jest')
         expect(fw.path).toBe('tests')
-        expect(fw.fullPath).toBe('/repos/my-repo/tests')
+        expect(fw.fullPath).toBe(join('/repos/my-repo', 'tests'))
         expect(fw.runsInRemote).toBe(false)
         expect(fw.remotePath).toBeNull()
         expect(fw.canToggleTests).toBe(false)
@@ -628,7 +629,7 @@ describe('snapshotSuite', () => {
             file: '/var/www/html/tests/Feature/FooTest.php',
             tests: [],
         })
-        expect(suite.getRelativePath()).toBe('Feature/FooTest.php')
+        expect(suite.getRelativePath()).toBe(join('Feature', 'FooTest.php'))
     })
 
     it('uses relative path as display name', () => {
