@@ -72,13 +72,18 @@ jobs:
       - name: Build
         run: npm run build:ci
         env:
+          DEBUG: electron-builder
           CSC_LINK: ${{ runner.os == 'macOS' && secrets.MACOSDEVELOPERCERTIFICATE_BASE64 || '' }}
           CSC_KEY_PASSWORD: ${{ runner.os == 'macOS' && secrets.MACOSDEVELOPERCERTIFICATE_PASSWORD || '' }}
 
       - name: List build output
         if: always()
         shell: bash
-        run: find build -maxdepth 2 -type d 2>/dev/null || echo "build/ not found"
+        run: |
+          echo "=== dist/ ==="
+          ls dist/ 2>/dev/null || echo "dist/ not found"
+          echo "=== build/ ==="
+          find build -maxdepth 2 2>/dev/null || echo "build/ not found"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
