@@ -243,6 +243,7 @@ test.describe('Repository management', () => {
 
         // Now we'll add another repository, this time without auto-scan
         await nextTick(page)
+        await ipcResetMockHistory(page)
         await sidebarAction.dispatchEvent('click')
         await expect(page.locator('.modal-header')).toHaveText('Add repositories to Biscuit')
         await page.locator('form.add-repositories input[type="text"]').fill('rich-tea')
