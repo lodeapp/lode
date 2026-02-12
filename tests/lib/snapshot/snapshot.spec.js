@@ -1,3 +1,5 @@
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { readSnapshot } from '@lib/snapshot/reader'
 import { SNAPSHOT_VERSION } from '@lib/snapshot/types'
@@ -9,7 +11,7 @@ vi.mock('electron-store')
 // --- Roundtrip: write → read ---
 
 it('roundtrips a snapshot through write and read', () => {
-    const tmpPath = '/tmp/lode-test-roundtrip.lode'
+    const tmpPath = join(tmpdir(), 'lode-test-roundtrip.lode')
     const mockProject = {
         getId: () => 'project-id',
         name: 'Test Project',
@@ -71,7 +73,7 @@ it('roundtrips a snapshot through write and read', () => {
 })
 
 it('roundtrips remote framework settings through write and read', () => {
-    const tmpPath = '/tmp/lode-test-remote-roundtrip.lode'
+    const tmpPath = join(tmpdir(), 'lode-test-remote-roundtrip.lode')
     const mockProject = {
         getId: () => 'project-remote',
         name: 'Remote Project',
@@ -124,7 +126,7 @@ it('roundtrips remote framework settings through write and read', () => {
 })
 
 it('preserves metadata overrides in the snapshot', () => {
-    const tmpPath = '/tmp/lode-test-overrides.lode'
+    const tmpPath = join(tmpdir(), 'lode-test-overrides.lode')
     const mockProject = {
         getId: () => 'p-id',
         name: 'P',
@@ -147,7 +149,7 @@ it('preserves metadata overrides in the snapshot', () => {
 
 it('throws on data that is neither valid gzip nor valid JSON', () => {
     const { writeFileSync } = require('node:fs')
-    const tmpPath = '/tmp/lode-test-bad-data.lode'
+    const tmpPath = join(tmpdir(), 'lode-test-bad-data.lode')
     writeFileSync(tmpPath, 'not gzipped data and not json either')
 
     expect(() => readSnapshot(tmpPath))
@@ -156,7 +158,7 @@ it('throws on data that is neither valid gzip nor valid JSON', () => {
 
 it('reads a snapshot from plain uncompressed JSON', () => {
     const { writeFileSync } = require('node:fs')
-    const tmpPath = '/tmp/lode-test-uncompressed.lode'
+    const tmpPath = join(tmpdir(), 'lode-test-uncompressed.lode')
     const snapshotData = {
         version: SNAPSHOT_VERSION,
         metadata: {
@@ -184,7 +186,7 @@ it('reads a snapshot from plain uncompressed JSON', () => {
 
 it('throws on invalid JSON inside gzip', () => {
     const { writeFileSync } = require('node:fs')
-    const tmpPath = '/tmp/lode-test-bad-json.lode'
+    const tmpPath = join(tmpdir(), 'lode-test-bad-json.lode')
     writeFileSync(tmpPath, gzipSync('not valid json {{{'))
 
     expect(() => readSnapshot(tmpPath))
@@ -193,7 +195,7 @@ it('throws on invalid JSON inside gzip', () => {
 
 it('throws on missing version field', () => {
     const { writeFileSync } = require('node:fs')
-    const tmpPath = '/tmp/lode-test-no-version.lode'
+    const tmpPath = join(tmpdir(), 'lode-test-no-version.lode')
     writeFileSync(tmpPath, gzipSync(JSON.stringify({ metadata: {}, project: {} })))
 
     expect(() => readSnapshot(tmpPath))
@@ -202,7 +204,7 @@ it('throws on missing version field', () => {
 
 it('throws on unsupported future version', () => {
     const { writeFileSync } = require('node:fs')
-    const tmpPath = '/tmp/lode-test-future-version.lode'
+    const tmpPath = join(tmpdir(), 'lode-test-future-version.lode')
     writeFileSync(tmpPath, gzipSync(JSON.stringify({
         version: SNAPSHOT_VERSION + 1,
         metadata: {},
@@ -215,7 +217,7 @@ it('throws on unsupported future version', () => {
 
 it('throws on missing metadata or project fields', () => {
     const { writeFileSync } = require('node:fs')
-    const tmpPath = '/tmp/lode-test-missing-fields.lode'
+    const tmpPath = join(tmpdir(), 'lode-test-missing-fields.lode')
     writeFileSync(tmpPath, gzipSync(JSON.stringify({ version: 1 })))
 
     expect(() => readSnapshot(tmpPath))
@@ -230,7 +232,7 @@ it('throws when the file does not exist', () => {
 // --- Comprehensive format validation ---
 
 it('preserves full structure with multiple repos, frameworks, and suites', () => {
-    const tmpPath = '/tmp/lode-test-comprehensive.lode'
+    const tmpPath = join(tmpdir(), 'lode-test-comprehensive.lode')
 
     const suite1 = { file: '/repo/tests/AuthTest.php', relative: 'tests/AuthTest.php', meta: { n: 1 }, hasChildren: true, selected: false, partial: false }
     const suite2 = { file: '/repo/tests/CartTest.php', relative: 'tests/CartTest.php', meta: { n: 2 }, hasChildren: true, selected: false, partial: false }
