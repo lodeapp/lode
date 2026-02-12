@@ -1,0 +1,240 @@
+{
+    "auth-test-1": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:50.000Z",
+            "last": "2026-01-20T14:05:10.000Z",
+            "duration": 45,
+            "assertions": 3
+        },
+        "suite-console": null
+    },
+    "auth-test-2": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:50.000Z",
+            "last": "2026-01-20T14:05:10.000Z",
+            "duration": 32,
+            "assertions": 2
+        },
+        "suite-console": null
+    },
+    "auth-test-3": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:50.000Z",
+            "last": "2026-01-20T14:05:11.000Z",
+            "duration": 78,
+            "assertions": 4
+        },
+        "suite-console": null
+    },
+    "cart-test-1": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:51.000Z",
+            "last": "2026-01-20T14:05:12.000Z",
+            "duration": 55,
+            "assertions": 2
+        },
+        "suite-console": null
+    },
+    "cart-test-2": {
+        "feedback": {
+            "type": "feedback",
+            "content": {
+                "title": "AssertionError",
+                "text": "Expected 42.50 to equal 40.00",
+                "diff": {
+                    "expected": "40.00",
+                    "actual": "42.50"
+                }
+            }
+        },
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:51.000Z",
+            "last": "2026-01-20T14:05:12.000Z",
+            "duration": 120,
+            "assertions": 1
+        },
+        "suite-console": null
+    },
+    "cart-test-3": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:51.000Z",
+            "last": "2026-01-20T14:05:13.000Z",
+            "duration": 40,
+            "assertions": 3
+        },
+        "suite-console": null
+    },
+    "order-test-1": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:52.000Z",
+            "last": "2026-01-20T14:05:14.000Z",
+            "duration": 65,
+            "assertions": 5
+        },
+        "suite-console": null
+    },
+    "order-test-2": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:52.000Z",
+            "last": "2026-01-20T14:05:14.000Z",
+            "duration": 38,
+            "assertions": 2
+        },
+        "suite-console": null
+    },
+    "payment-test-1": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:52.000Z",
+            "last": "2026-01-20T14:05:15.000Z",
+            "duration": 0,
+            "assertions": 0
+        },
+        "suite-console": null
+    },
+    "payment-test-2": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:52.000Z",
+            "last": "2026-01-20T14:05:15.000Z",
+            "duration": 0,
+            "assertions": 0
+        },
+        "suite-console": null
+    },
+    "user-test-1": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:53.000Z",
+            "last": "2026-01-20T14:05:16.000Z",
+            "duration": 52,
+            "assertions": 3
+        },
+        "suite-console": null
+    },
+    "user-test-2": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:53.000Z",
+            "last": "2026-01-20T14:05:16.000Z",
+            "duration": 28,
+            "assertions": 2
+        },
+        "suite-console": null
+    },
+    "user-test-3": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:53.000Z",
+            "last": "2026-01-20T14:05:17.000Z",
+            "duration": 35,
+            "assertions": 1
+        },
+        "suite-console": null
+    },
+    "svc-test-1": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:53.000Z",
+            "last": "2026-01-20T14:05:18.000Z",
+            "duration": 12,
+            "assertions": 2
+        },
+        "suite-console": null
+    },
+    "svc-test-2": {
+        "feedback": null,
+        "console": [
+            {
+                "type": "log",
+                "content": "Resolving dependency: UserRepository",
+                "render": "text",
+                "file": "/projects/backend/tests/Unit/ServiceTest.php",
+                "line": 25
+            }
+        ],
+        "stats": {
+            "first": "2026-01-15T10:29:53.000Z",
+            "last": "2026-01-20T14:05:18.000Z",
+            "duration": 15,
+            "assertions": 3
+        },
+        "suite-console": null
+    },
+    "repo-test-1": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:54.000Z",
+            "last": "2026-01-20T14:05:19.000Z",
+            "duration": 8,
+            "assertions": 2
+        },
+        "suite-console": null
+    },
+    "repo-test-2": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:54.000Z",
+            "last": "2026-01-20T14:05:19.000Z",
+            "duration": 22,
+            "assertions": 4
+        },
+        "suite-console": null
+    },
+    "repo-test-3": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:54.000Z",
+            "last": "2026-01-20T14:05:20.000Z",
+            "duration": 18,
+            "assertions": 3
+        },
+        "suite-console": null
+    },
+    "ctrl-test-1": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:55.000Z",
+            "last": "2026-01-20T14:05:21.000Z",
+            "duration": 30,
+            "assertions": 5
+        },
+        "suite-console": null
+    },
+    "ctrl-test-2": {
+        "feedback": null,
+        "console": null,
+        "stats": {
+            "first": "2026-01-15T10:29:55.000Z",
+            "last": "2026-01-20T14:05:21.000Z",
+            "duration": 25,
+            "assertions": 3
+        },
+        "suite-console": null
+    }
+}

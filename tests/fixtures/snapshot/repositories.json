@@ -1,0 +1,14 @@
+[
+    {
+        "id": "snap-repo-1",
+        "name": "backend",
+        "path": "/projects/backend",
+        "expanded": true
+    },
+    {
+        "id": "snap-repo-2",
+        "name": "frontend",
+        "path": "/projects/frontend",
+        "expanded": false
+    }
+]

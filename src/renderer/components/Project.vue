@@ -10,7 +10,7 @@ import Results from '@/components/Results.vue'
 import Scrollable from '@/components/Scrollable.vue'
 import SidebarRepository from '@/components/SidebarRepository.vue'
 import Split from '@/components/Split.vue'
-import { useContextStore } from '@/stores'
+import { useContextStore, useSnapshotStore } from '@/stores'
 
 export default {
     name: 'Project',
@@ -37,6 +37,7 @@ export default {
             frameworkLoading: true,
             status: this.model.status || 'idle',
             menuActive: false,
+            fileMenuActive: false,
             repositories: [],
             persistContext: {},
         }
@@ -52,6 +53,51 @@ export default {
             return this.repository && this.repository.status === 'missing'
         },
         ...mapState(useContextStore, ['repository', 'framework', 'nuggets']),
+        ...mapState(useSnapshotStore, { isReadOnly: 'isReadOnly' }),
+        snapshotMetadata() {
+            return useSnapshotStore().metadata
+        },
+        snapshotFileName() {
+            return useSnapshotStore().fileName
+        },
+        snapshotFileBaseName() {
+            const name = this.snapshotFileName
+            if (!name) {
+                return ''
+            }
+            const lastDot = name.lastIndexOf('.')
+            return lastDot > 0 ? name.substring(0, lastDot) : name
+        },
+        snapshotFileExtension() {
+            const name = this.snapshotFileName
+            if (!name) {
+                return ''
+            }
+            const lastDot = name.lastIndexOf('.')
+            return lastDot > 0 ? name.substring(lastDot) : ''
+        },
+        snapshotFilePath() {
+            return useSnapshotStore().filePath
+        },
+        snapshotCreatedAtFormatted() {
+            const meta = this.snapshotMetadata
+            if (!meta || !meta.createdAt) {
+                return null
+            }
+            try {
+                const date = new Date(meta.createdAt)
+                if (Number.isNaN(date.getTime())) {
+                    return meta.createdAt
+                }
+                return new Intl.DateTimeFormat('en-US', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                }).format(date)
+            }
+            catch {
+                return meta.createdAt
+            }
+        },
     },
     mounted() {
         Lode.ipc
@@ -120,6 +166,15 @@ export default {
                 this.menuActive = false
             })
         },
+        onFileContextMenu() {
+            if (!this.snapshotFilePath) {
+                return
+            }
+            this.fileMenuActive = true
+            Lode.ipc.invoke('file-context-menu', this.snapshotFilePath).finally(() => {
+                this.fileMenuActive = false
+            })
+        },
     },
 }
 </script>
@@ -134,6 +189,32 @@ export default {
             <Pane class="sidebar">
                 <Draggable />
                 <header>
+                    <template v-if="isReadOnly && snapshotMetadata">
+                        <h5 class="sidebar-header">
+                            File
+                        </h5>
+                        <div
+                            class="sidebar-item snapshot-file"
+                            :class="{ 'is-menu-active': fileMenuActive }"
+                            @contextmenu="onFileContextMenu"
+                        >
+                            <div class="header">
+                                <div class="title">
+                                    <div class="snapshot-file-icon">
+                                        <Icon symbol="file" />
+                                    </div>
+                                    <h4 class="heading">
+                                        <span class="name" :title="snapshotFilePath">
+                                            {{ snapshotFileBaseName }}<span class="extension">{{ snapshotFileExtension }}</span>
+                                        </span>
+                                    </h4>
+                                </div>
+                                <div v-if="snapshotCreatedAtFormatted" class="snapshot-file-meta">
+                                    <span class="meta-value">{{ snapshotCreatedAtFormatted }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                     <h5 class="sidebar-header">
                         Project
                     </h5>
@@ -143,7 +224,7 @@ export default {
                             `status--${status}`,
                             menuActive ? 'is-menu-active' : '',
                         ]"
-                        @contextmenu="onContextMenu"
+                        @contextmenu="!isReadOnly && onContextMenu()"
                     >
                         <div class="header">
                             <div class="title">
@@ -158,7 +239,7 @@ export default {
                     </div>
                     <h5 v-if="repositories.length" class="sidebar-header">
                         <span>Repositories</span>
-                        <button type="button" class="sidebar-action" @click="$root.repositoryAdd">
+                        <button v-if="!isReadOnly" type="button" class="sidebar-action" @click="$root.repositoryAdd">
                             <Icon symbol="plus-circle" />
                         </button>
                     </h5>
@@ -168,6 +249,7 @@ export default {
                         v-for="repository in repositories"
                         :key="repository.id"
                         :model="repository"
+                        :snapshot-branch="isReadOnly && snapshotMetadata ? snapshotMetadata.gitBranch : null"
                         @status="onRepositoryStatus"
                         @framework-activate="onFrameworkActivation"
                     />
@@ -177,20 +259,30 @@ export default {
                 <Draggable />
                 <template v-if="!repositories.length">
                     <div class="cta">
-                        <h2>{{ $string.set('Add repositories to :0', model.name) }}</h2>
-                        <p>Lode can have multiple repositories and frameworks inside a project.</p>
-                        <button class="btn btn-primary" @click="$root.repositoryAdd">
-                            Add repositories
-                        </button>
+                        <template v-if="isReadOnly">
+                            <h2>No repositories in this results file</h2>
+                        </template>
+                        <template v-else>
+                            <h2>{{ $string.set('Add repositories to :0', model.name) }}</h2>
+                            <p>Lode can have multiple repositories and frameworks inside a project.</p>
+                            <button class="btn btn-primary" @click="$root.repositoryAdd">
+                                Add repositories
+                            </button>
+                        </template>
                     </div>
                 </template>
                 <template v-else-if="!framework">
                     <div class="cta">
-                        <h2>Scan for frameworks inside your repositories</h2>
-                        <p>Lode can scan the project's repositories for testing frameworks. If none are found, your frameworks may not be supported, yet.</p>
-                        <button class="btn btn-primary" @click="$root.scanEmptyRepositories">
-                            Scan for frameworks
-                        </button>
+                        <template v-if="isReadOnly">
+                            <h2>No frameworks in this results file</h2>
+                        </template>
+                        <template v-else>
+                            <h2>Scan for frameworks inside your repositories</h2>
+                            <p>Lode can scan the project's repositories for testing frameworks. If none are found, your frameworks may not be supported, yet.</p>
+                            <button class="btn btn-primary" @click="$root.scanEmptyRepositories">
+                                Scan for frameworks
+                            </button>
+                        </template>
                     </div>
                 </template>
                 <template v-else-if="repositoryMissing && repository">

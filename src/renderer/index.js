@@ -19,7 +19,7 @@ import Modals from './plugins/modals'
 import Strings from './plugins/strings'
 import Unproxy from './plugins/unproxy'
 
-import { useContextStore, useFiltersStore, useModalsStore, useSettingsStore, useThemeStore } from './stores'
+import { useContextStore, useFiltersStore, useModalsStore, useSettingsStore, useSnapshotStore, useThemeStore } from './stores'
 
 import '@lib/logger/renderer'
 
@@ -70,6 +70,13 @@ const app = createApp({
                 this.supportsThemes = properties.supportsThemes
 
                 this.ready = true
+
+                if (properties.snapshotMode) {
+                    useSnapshotStore().activate(
+                        properties.snapshotMetadata,
+                        properties.snapshotFilePath,
+                    )
+                }
 
                 if (this.translated) {
                     setTimeout(() => {
@@ -157,6 +164,9 @@ const app = createApp({
                     case 'repository-scan':
                         this.repositoryScan(properties)
                         break
+                    case 'repository-rename':
+                        this.repositoryRename(properties)
+                        break
                     case 'repository-remove':
                         this.repositoryRemove(properties)
                         break
@@ -201,6 +211,12 @@ const app = createApp({
                     case 'feedback':
                         window.location.href = 'mailto:support@lode.run'
                         break
+                    case 'snapshot-open':
+                        this.snapshotOpen(newWindow)
+                        break
+                    case 'snapshot-reveal':
+                        Lode.ipc.send('snapshot-reveal-file')
+                        break
                 }
             })
     },
@@ -221,8 +237,14 @@ const app = createApp({
                 return
             }
             if (e.dataTransfer != null) {
-                const files = e.dataTransfer.files
-                this.repositoryAdd(Array.from(files).map(({ path }) => path))
+                const paths = Array.from(e.dataTransfer.files).map(({ path }) => path)
+                const snapshotFile = paths.find(p => p.endsWith('.lode'))
+                if (snapshotFile) {
+                    this.snapshotOpen(false, snapshotFile)
+                }
+                else {
+                    this.repositoryAdd(paths)
+                }
             }
             e.preventDefault()
         }
@@ -400,6 +422,13 @@ const app = createApp({
                 framework,
             })
         },
+        repositoryRename(repository) {
+            this.$modal.confirm('RenameRepository', { repository })
+                .then((name) => {
+                    Lode.ipc.send('repository-rename', repository.id, name)
+                })
+                .catch(() => {})
+        },
         repositoryRemove(repository) {
             this.$modal.confirm('RemoveRepository', { repository })
                 .then(() => {
@@ -463,6 +492,37 @@ const app = createApp({
             window.setImmediate(() => {
                 throw new Error('Boomtown!')
             })
+        },
+        async snapshotOpen(newWindow = false, filePath = null) {
+            if (!filePath) {
+                const paths = await Lode.ipc.invoke('snapshot-open-dialog')
+                if (!paths || paths.length === 0) {
+                    return
+                }
+                filePath = paths[0]
+            }
+
+            if (newWindow) {
+                Lode.ipc.send('snapshot-open-in-new-window', filePath)
+                return
+            }
+
+            // If there's an active project with running tests, confirm first
+            if (this.project && !['idle', 'empty', 'loading'].includes(this.project.status)) {
+                this.$modal.confirm('ConfirmOpenSnapshot')
+                    .then((result) => {
+                        if (result === 'new-window') {
+                            Lode.ipc.send('snapshot-open-in-new-window', filePath)
+                            return
+                        }
+                        this.handleProjectSwitch()
+                        Lode.ipc.send('snapshot-load', filePath)
+                    })
+                    .catch(() => {})
+                return
+            }
+
+            Lode.ipc.send('snapshot-load', filePath)
         },
         onModelRemove(modelId) {
             useContextStore().onRemove(modelId)

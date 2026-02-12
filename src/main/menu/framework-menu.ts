@@ -7,6 +7,7 @@ export class FrameworkMenu extends Menu {
         repository: IRepository | null,
         framework: IFramework | null,
         webContents: Electron.WebContents,
+        readOnly = false,
     ) {
         super(webContents)
 
@@ -21,7 +22,7 @@ export class FrameworkMenu extends Menu {
                     framework!.refresh()
                 },
                 accelerator: 'CmdOrCtrl+Shift+R',
-                enabled: !!framework,
+                enabled: !!framework && !readOnly,
             })
             .add({
                 label: __DARWIN__ ? 'Run Framework' : 'Run framework',
@@ -29,7 +30,7 @@ export class FrameworkMenu extends Menu {
                     framework!.start()
                 },
                 accelerator: 'CmdOrCtrl+R',
-                enabled: !!framework,
+                enabled: !!framework && !readOnly,
             })
             .add({
                 label: __DARWIN__ ? 'Stop Framework' : 'Stop framework',
@@ -37,7 +38,7 @@ export class FrameworkMenu extends Menu {
                     framework!.stop()
                 },
                 accelerator: 'CmdOrCtrl+Esc',
-                enabled: !!framework,
+                enabled: !!framework && !readOnly,
             })
             .separator()
             .add({
@@ -57,7 +58,7 @@ export class FrameworkMenu extends Menu {
                         framework: framework!.render(),
                     })
                 },
-                enabled: !!repository && !!framework,
+                enabled: !!repository && !!framework && !readOnly,
             })
             .separator()
             .add({
@@ -66,7 +67,7 @@ export class FrameworkMenu extends Menu {
                     this.emit('framework-remove', framework!.render())
                 },
                 accelerator: 'CmdOrCtrl+Backspace',
-                enabled: !!framework,
+                enabled: !!framework && !readOnly,
             })
     }
 }

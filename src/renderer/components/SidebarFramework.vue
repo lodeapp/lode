@@ -2,7 +2,7 @@
 import { mapState } from 'pinia'
 import Indicator from '@/components/Indicator.vue'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
-import { useContextStore } from '@/stores'
+import { useContextStore, useSnapshotStore } from '@/stores'
 
 export default {
     name: 'SidebarFramework',
@@ -29,6 +29,7 @@ export default {
             return this.active === this.model.id
         },
         ...mapState(useContextStore, ['active']),
+        ...mapState(useSnapshotStore, { isReadOnly: 'isReadOnly' }),
     },
     mounted() {
         Lode.ipc
@@ -72,7 +73,7 @@ export default {
         <div
             class="header"
             @mousedown="activate"
-            @contextmenu="onContextMenu"
+            @contextmenu="!isReadOnly && onContextMenu()"
         >
             <div class="title">
                 <Indicator :status="status" />

@@ -1,7 +1,10 @@
-import type { ProjectIdentifier, ProjectOptions } from '@lib/frameworks/project'
+import type { IProject, ProjectIdentifier, ProjectOptions } from '@lib/frameworks/project'
+import type { SnapshotMetadata } from '@lib/snapshot/types'
 import * as Path from 'node:path'
 import { Project } from '@lib/frameworks/project'
 import { getResourceDirectory } from '@lib/helpers/paths'
+import { SnapshotProject } from '@lib/snapshot/project'
+import { readSnapshot } from '@lib/snapshot/reader'
 import { state } from '@lib/state'
 import { supportsSystemThemeChanges } from '@lib/themes'
 import { applicationMenu } from '@main/menu'
@@ -19,6 +22,9 @@ export class ApplicationWindow {
     protected ready = false
     protected closed = false
     protected project: Project | null = null
+    protected snapshotProject: SnapshotProject | null = null
+    protected snapshotMetadata: SnapshotMetadata | null = null
+    protected snapshotFilePath: string | null = null
 
     protected static devToolsOpened = false
 
@@ -111,9 +117,15 @@ export class ApplicationWindow {
                 }
                 catch (_) {}
             }
-            window.persistBounds()
             delete windows[window.getChild().id]
-            ApplicationWindow.persistOpenProjects()
+            // Only update persisted open-projects if other live (non-snapshot)
+            // windows remain. When only snapshot windows (or no windows) are
+            // left, preserve the previously-saved list so session restore can
+            // reopen the project on next launch.
+            const remaining = Object.values(windows)
+            if (remaining.length > 0 && remaining.some(w => !w.isSnapshotMode())) {
+                ApplicationWindow.persistOpenProjects()
+            }
         })
 
         ApplicationWindow.persistOpenProjects()
@@ -133,7 +145,7 @@ export class ApplicationWindow {
         return child ? windows[child.id] : null
     }
 
-    public static getProjectFromWebContents(webContents: Electron.WebContents): Project | null {
+    public static getProjectFromWebContents(webContents: Electron.WebContents): IProject | null {
         const window = this.getFromWebContents(webContents)
         return window ? window.getProject() : null
     }
@@ -182,6 +194,10 @@ export class ApplicationWindow {
     public static persistOpenProjects(): void {
         const projectIds: string[] = []
         for (const window of ApplicationWindow.getAllWindows()) {
+            // Skip snapshot windows — they shouldn't be restored as live projects
+            if (window.isSnapshotMode()) {
+                continue
+            }
             const project = window.getProject()
             if (project) {
                 projectIds.push(project.getId())
@@ -199,7 +215,8 @@ export class ApplicationWindow {
         })
 
         this.window.webContents.on('did-finish-load', () => {
-            this.onReady()
+            // Send renderer init payload before onReady() so the renderer
+            // can activate snapshot mode before receiving project data.
             this.window.webContents.send('did-finish-load', {
                 theme: nativeTheme.shouldUseDarkColors ? 'dark' : 'light',
                 supportsThemes: supportsSystemThemeChanges(),
@@ -212,11 +229,19 @@ export class ApplicationWindow {
                 version: app.getVersion(),
                 arch: process.arch,
                 nodeVersion: process.versions.node,
+                snapshotMode: this.isSnapshotMode(),
+                snapshotMetadata: this.snapshotMetadata,
+                snapshotFilePath: this.snapshotFilePath,
             })
             this.window.webContents.setVisualZoomLevelLimits(1, 1)
+            this.onReady()
         })
 
         this.window.on('close', () => {
+            // Persist bounds now, while the window is still valid
+            // (the 'closed' event fires too late — this.closed is already true).
+            this.persistBounds()
+
             // Remove only this window's theme listener
             if (this.themeHandler) {
                 nativeTheme.removeListener('updated', this.themeHandler)
@@ -281,6 +306,10 @@ export class ApplicationWindow {
     public onReady(): void {
         this.ready = true
         this.refreshSettings()
+        if (this.isSnapshotMode()) {
+            this.snapshotReady()
+            return
+        }
         // If project and window are ready, send to renderer, otherwise wait for
         // `this.setProject` ready listener to trigger it. This means we can have
         // have the project ready in the main process and reload the renderer.
@@ -301,8 +330,45 @@ export class ApplicationWindow {
         return this.window.webContents
     }
 
-    public getProject(): Project | null {
-        return this.project
+    public getProject(): IProject | null {
+        return this.snapshotProject || this.project
+    }
+
+    public isSnapshotMode(): boolean {
+        return this.snapshotProject !== null
+    }
+
+    public getSnapshotMetadata(): SnapshotMetadata | null {
+        return this.snapshotMetadata
+    }
+
+    public getSnapshotFilePath(): string | null {
+        return this.snapshotFilePath
+    }
+
+    public setSnapshot(filePath: string): void {
+        const data = readSnapshot(filePath)
+        this.snapshotProject = new SnapshotProject(this, data)
+        this.snapshotMetadata = data.metadata
+        this.snapshotFilePath = filePath
+
+        // Restore saved window bounds for this snapshot file
+        const savedBounds = state.getWindowBounds(filePath)
+        if (savedBounds) {
+            this.window.setBounds(savedBounds)
+        }
+
+        // Clear any live project
+        this.project = null
+
+        // Update window title
+        const fileName = Path.basename(filePath)
+        this.window.setTitle(`${fileName} (Read Only)`)
+
+        if (this.ready) {
+            // Reload so the renderer re-initializes in snapshot mode
+            this.window.reload()
+        }
     }
 
     public getProjectOptions(): ProjectOptions {
@@ -316,13 +382,22 @@ export class ApplicationWindow {
         this.refreshSettings()
     }
 
+    protected snapshotReady(): void {
+        const project = this.snapshotProject!
+        this.window.webContents.send('project-ready', project.render())
+        project.emitAllToRenderer()
+        this.refreshActiveFramework()
+        this.refreshSettings()
+    }
+
     public onProjectLoadingFailure(id: string): void {
         this.window.webContents.send('project-loading-failed', id)
     }
 
     public refreshActiveFramework(): void {
-        if (this.project) {
-            const { framework, repository } = this.project.getActive()
+        const project = this.getProject()
+        if (project) {
+            const { framework, repository } = project.getActive()
             this.send('framework-active', [
                 framework ? framework.getId() : null,
                 repository ? repository.render() : null,
@@ -342,6 +417,9 @@ export class ApplicationWindow {
     }
 
     public isBusy(): boolean {
+        if (this.isSnapshotMode()) {
+            return false
+        }
         return !!this.project && this.project.isBusy()
     }
 
@@ -356,9 +434,9 @@ export class ApplicationWindow {
         if (this.closed || this.window.isDestroyed()) {
             return
         }
-        const project = this.getProject()
-        if (project) {
-            state.setWindowBounds(project.getId(), this.window.getBounds())
+        const key = this.snapshotFilePath || this.getProject()?.getId()
+        if (key) {
+            state.setWindowBounds(key, this.window.getBounds())
         }
     }
 

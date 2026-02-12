@@ -1,0 +1,14 @@
+{
+    "snap-jest-1": {
+        "/projects/backend/__tests__/Auth.spec.js": "passed",
+        "/projects/backend/__tests__/Cart.spec.js": "failed",
+        "/projects/backend/__tests__/Order.spec.js": "passed",
+        "/projects/backend/__tests__/Payment.spec.js": "skipped",
+        "/projects/backend/__tests__/User.spec.js": "passed"
+    },
+    "snap-phpunit-1": {
+        "/projects/backend/tests/Unit/ServiceTest.php": "passed",
+        "/projects/backend/tests/Unit/RepositoryTest.php": "passed",
+        "/projects/backend/tests/Unit/ControllerTest.php": "passed"
+    }
+}

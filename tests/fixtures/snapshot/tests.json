@@ -1,0 +1,319 @@
+{
+    "/projects/backend/__tests__/Auth.spec.js": [
+        {
+            "id": "auth-test-1",
+            "name": "should authenticate valid user",
+            "displayName": "should authenticate valid user",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:50.000Z",
+                "last": "2026-01-20T14:05:10.000Z",
+                "duration": 45,
+                "assertions": 3
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "auth-test-2",
+            "name": "should reject invalid credentials",
+            "displayName": "should reject invalid credentials",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:50.000Z",
+                "last": "2026-01-20T14:05:10.000Z",
+                "duration": 32,
+                "assertions": 2
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "auth-test-3",
+            "name": "should handle token refresh",
+            "displayName": "should handle token refresh",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:50.000Z",
+                "last": "2026-01-20T14:05:11.000Z",
+                "duration": 78,
+                "assertions": 4
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        }
+    ],
+    "/projects/backend/__tests__/Cart.spec.js": [
+        {
+            "id": "cart-test-1",
+            "name": "should add item to cart",
+            "displayName": "should add item to cart",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:51.000Z",
+                "last": "2026-01-20T14:05:12.000Z",
+                "duration": 55,
+                "assertions": 2
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "cart-test-2",
+            "name": "should calculate total with discount",
+            "displayName": "should calculate total with discount",
+            "status": "failed",
+            "stats": {
+                "first": "2026-01-15T10:29:51.000Z",
+                "last": "2026-01-20T14:05:12.000Z",
+                "duration": 120,
+                "assertions": 1
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false,
+            "feedback": "Expected 42.50 to equal 40.00"
+        },
+        {
+            "id": "cart-test-3",
+            "name": "should remove item from cart",
+            "displayName": "should remove item from cart",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:51.000Z",
+                "last": "2026-01-20T14:05:13.000Z",
+                "duration": 40,
+                "assertions": 3
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        }
+    ],
+    "/projects/backend/__tests__/Order.spec.js": [
+        {
+            "id": "order-test-1",
+            "name": "should create order",
+            "displayName": "should create order",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:52.000Z",
+                "last": "2026-01-20T14:05:14.000Z",
+                "duration": 65,
+                "assertions": 5
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "order-test-2",
+            "name": "should cancel order",
+            "displayName": "should cancel order",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:52.000Z",
+                "last": "2026-01-20T14:05:14.000Z",
+                "duration": 38,
+                "assertions": 2
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        }
+    ],
+    "/projects/backend/__tests__/Payment.spec.js": [
+        {
+            "id": "payment-test-1",
+            "name": "should process payment",
+            "displayName": "should process payment",
+            "status": "skipped",
+            "stats": {
+                "first": "2026-01-15T10:29:52.000Z",
+                "last": "2026-01-20T14:05:15.000Z",
+                "duration": 0,
+                "assertions": 0
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "payment-test-2",
+            "name": "should refund payment",
+            "displayName": "should refund payment",
+            "status": "skipped",
+            "stats": {
+                "first": "2026-01-15T10:29:52.000Z",
+                "last": "2026-01-20T14:05:15.000Z",
+                "duration": 0,
+                "assertions": 0
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        }
+    ],
+    "/projects/backend/__tests__/User.spec.js": [
+        {
+            "id": "user-test-1",
+            "name": "should create user",
+            "displayName": "should create user",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:53.000Z",
+                "last": "2026-01-20T14:05:16.000Z",
+                "duration": 52,
+                "assertions": 3
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "user-test-2",
+            "name": "should update user profile",
+            "displayName": "should update user profile",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:53.000Z",
+                "last": "2026-01-20T14:05:16.000Z",
+                "duration": 28,
+                "assertions": 2
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "user-test-3",
+            "name": "should delete user",
+            "displayName": "should delete user",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:53.000Z",
+                "last": "2026-01-20T14:05:17.000Z",
+                "duration": 35,
+                "assertions": 1
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        }
+    ],
+    "/projects/backend/tests/Unit/ServiceTest.php": [
+        {
+            "id": "svc-test-1",
+            "name": "testServiceCreation",
+            "displayName": "Service creation",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:53.000Z",
+                "last": "2026-01-20T14:05:18.000Z",
+                "duration": 12,
+                "assertions": 2
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "svc-test-2",
+            "name": "testServiceDependencyInjection",
+            "displayName": "Service dependency injection",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:53.000Z",
+                "last": "2026-01-20T14:05:18.000Z",
+                "duration": 15,
+                "assertions": 3
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        }
+    ],
+    "/projects/backend/tests/Unit/RepositoryTest.php": [
+        {
+            "id": "repo-test-1",
+            "name": "testFindById",
+            "displayName": "Find by id",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:54.000Z",
+                "last": "2026-01-20T14:05:19.000Z",
+                "duration": 8,
+                "assertions": 2
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "repo-test-2",
+            "name": "testFindAll",
+            "displayName": "Find all",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:54.000Z",
+                "last": "2026-01-20T14:05:19.000Z",
+                "duration": 22,
+                "assertions": 4
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "repo-test-3",
+            "name": "testPersist",
+            "displayName": "Persist",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:54.000Z",
+                "last": "2026-01-20T14:05:20.000Z",
+                "duration": 18,
+                "assertions": 3
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        }
+    ],
+    "/projects/backend/tests/Unit/ControllerTest.php": [
+        {
+            "id": "ctrl-test-1",
+            "name": "testIndexAction",
+            "displayName": "Index action",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:55.000Z",
+                "last": "2026-01-20T14:05:21.000Z",
+                "duration": 30,
+                "assertions": 5
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        },
+        {
+            "id": "ctrl-test-2",
+            "name": "testShowAction",
+            "displayName": "Show action",
+            "status": "passed",
+            "stats": {
+                "first": "2026-01-15T10:29:55.000Z",
+                "last": "2026-01-20T14:05:21.000Z",
+                "duration": 25,
+                "assertions": 3
+            },
+            "hasChildren": false,
+            "selected": false,
+            "partial": false
+        }
+    ]
+}

@@ -121,6 +121,7 @@ export default defineConfig({
                 '@lib': resolve('src/lib'),
                 '@main': resolve('src/main'),
                 'path': 'path-browserify',
+                'node:path': 'path-browserify',
                 // Patch Primer CSS images not being included in the package.
                 '/images/spinners/octocat-spinner-16px.gif': resolve('src/styles/images/error.png'),
                 '/images/modules/ajax/success.png': resolve('src/styles/images/error@2x.png'),

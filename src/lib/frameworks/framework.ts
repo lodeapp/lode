@@ -1221,6 +1221,8 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
             const result: ISuiteResult = this.hydrateSuiteResult(partial)
             this.makeSuite(result).then((suite: ISuite) => {
                 suite.debrief(result, this.shouldCleanup(suite)).then(() => {
+                    result.relative = suite.getRelativePath()
+                    this.emit('suite-debriefed', result)
                     resolve()
                 })
             })

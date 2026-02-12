@@ -180,6 +180,66 @@
     .sidebar-item--framework {
         padding-left: var(--spacing-double);
     }
+
+    .snapshot-file {
+        > .header > .title {
+            display: flex;
+
+            > .heading {
+                display: flex;
+                flex-grow: 1;
+                padding: 0 var(--spacing-half);
+            }
+        }
+
+        .snapshot-file-icon {
+            color: var(--color-sidebar-fg-secondary);
+            flex-shrink: 0;
+            height: 18px;
+            margin: 5px 3px 0;
+            text-align: center;
+            width: 18px;
+        }
+
+        .extension {
+            color: var(--color-sidebar-fg-secondary);
+        }
+
+        .snapshot-file-meta {
+            display: flex;
+            gap: var(--spacing-third);
+            padding: 0 0 var(--spacing-third) calc(var(--spacing-half) + 19px + var(--spacing-half));
+            font-size: var(--font-size-sm);
+            color: var(--color-sidebar-fg-secondary);
+        }
+    }
+
+    .snapshot-branch {
+        color: var(--color-sidebar-fg-secondary);
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 0 var(--spacing-third) var(--spacing);
+        margin: -5px 0 5px calc(var(--spacing-half) + 24px);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        > i {
+            flex-shrink: 0;
+
+            > svg {
+                width: 12px;
+                height: 12px;
+            }
+        }
+
+        > span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
 }
 
 body {

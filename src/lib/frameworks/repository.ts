@@ -41,6 +41,8 @@ export interface IRepository extends ProjectEventEmitter {
     scanning: boolean
 
     getId: () => string
+    getName: () => string
+    setName: (name: string) => void
     getDisplayName: () => string
     start: () => void
     refresh: () => void
@@ -220,10 +222,6 @@ export class Repository extends ProjectEventEmitter implements IRepository {
         })
 
         const frameworks: Array<FrameworkOptions | false> = await Promise.all(Frameworks.map(async (framework) => {
-            console.log(framework, await framework.spawnForDirectory({
-                path: this.path,
-                files,
-            }))
             return framework.spawnForDirectory({
                 path: this.path,
                 files,
@@ -245,6 +243,21 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      */
     public getId(): string {
         return this.id
+    }
+
+    /**
+     * Get this repository's name.
+     */
+    public getName(): string {
+        return this.name
+    }
+
+    /**
+     * Set this repository's name.
+     */
+    public setName(name: string): void {
+        this.name = name || Path.basename(this.path) || 'untitled'
+        this.save()
     }
 
     /**

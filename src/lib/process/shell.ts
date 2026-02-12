@@ -9,8 +9,8 @@ const BlacklistedNames = new Set(['LOCAL_GIT_DIRECTORY'])
 /**
  * Merge environment variables from shell into the current process, if needed.
  */
-export function mergeEnvFromShell(): void {
-    if (!needsEnv(process)) {
+export function mergeEnvFromShell(force = false): void {
+    if (!force && !needsEnv(process)) {
         return
     }
 

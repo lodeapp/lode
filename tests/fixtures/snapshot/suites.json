@@ -1,0 +1,82 @@
+{
+    "snap-jest-1": [
+        {
+            "file": "/projects/backend/__tests__/Auth.spec.js",
+            "meta": {},
+            "hasChildren": true,
+            "selected": false,
+            "partial": false,
+            "relative": "__tests__/Auth.spec.js"
+        },
+        {
+            "file": "/projects/backend/__tests__/Cart.spec.js",
+            "meta": {},
+            "hasChildren": true,
+            "selected": false,
+            "partial": false,
+            "relative": "__tests__/Cart.spec.js"
+        },
+        {
+            "file": "/projects/backend/__tests__/Order.spec.js",
+            "meta": {},
+            "hasChildren": true,
+            "selected": false,
+            "partial": false,
+            "relative": "__tests__/Order.spec.js"
+        },
+        {
+            "file": "/projects/backend/__tests__/Payment.spec.js",
+            "meta": {},
+            "hasChildren": true,
+            "selected": false,
+            "partial": false,
+            "relative": "__tests__/Payment.spec.js"
+        },
+        {
+            "file": "/projects/backend/__tests__/User.spec.js",
+            "meta": {},
+            "hasChildren": true,
+            "selected": false,
+            "partial": false,
+            "relative": "__tests__/User.spec.js"
+        }
+    ],
+    "snap-phpunit-1": [
+        {
+            "file": "/projects/backend/tests/Unit/ServiceTest.php",
+            "meta": {
+                "n": 1,
+                "class": "Tests\\Unit\\ServiceTest",
+                "groups": ["default"]
+            },
+            "hasChildren": true,
+            "selected": false,
+            "partial": false,
+            "relative": "tests/Unit/ServiceTest.php"
+        },
+        {
+            "file": "/projects/backend/tests/Unit/RepositoryTest.php",
+            "meta": {
+                "n": 2,
+                "class": "Tests\\Unit\\RepositoryTest",
+                "groups": ["default"]
+            },
+            "hasChildren": true,
+            "selected": false,
+            "partial": false,
+            "relative": "tests/Unit/RepositoryTest.php"
+        },
+        {
+            "file": "/projects/backend/tests/Unit/ControllerTest.php",
+            "meta": {
+                "n": 3,
+                "class": "Tests\\Unit\\ControllerTest",
+                "groups": ["default"]
+            },
+            "hasChildren": true,
+            "selected": false,
+            "partial": false,
+            "relative": "tests/Unit/ControllerTest.php"
+        }
+    ]
+}

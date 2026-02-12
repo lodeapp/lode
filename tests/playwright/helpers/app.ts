@@ -42,6 +42,21 @@ export async function startWithProject(page: Page, options: StartOptions = {}): 
 }
 
 /**
+ * Start the app in snapshot (read-only) mode and load a project.
+ */
+export async function startWithSnapshot(page: Page, options: StartOptions = {}): Promise<void> {
+    await start(page, {
+        ...options,
+        snapshotMode: true,
+        snapshotMetadata: loadFixture('snapshot/metadata.json'),
+        snapshotFilePath: '/path/to/results.lode',
+    })
+    const project = loadFixture('snapshot/project.json')
+    await ipcEvent(page, 'project-ready', project)
+    await page.waitForTimeout(1)
+}
+
+/**
  * Wait for Vue reactivity to settle.
  */
 export async function nextTick(page: Page): Promise<void> {

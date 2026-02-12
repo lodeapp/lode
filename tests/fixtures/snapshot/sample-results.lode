@@ -1,0 +1,443 @@
+{
+    "version": 1,
+    "metadata": {
+        "createdAt": "2026-01-20T14:10:00.000Z",
+        "lodeVersion": "1.2.3",
+        "projectName": "Snapshot Test Project",
+        "projectId": "snap-project-1",
+        "gitBranch": "main",
+        "gitCommit": "abc1234",
+        "totalDuration": 45200
+    },
+    "project": {
+        "id": "snap-project-1",
+        "name": "Snapshot Test Project",
+        "repositories": [
+            {
+                "id": "snap-repo-1",
+                "name": "backend",
+                "path": "/projects/backend",
+                "frameworks": [
+                    {
+                        "id": "snap-jest-1",
+                        "name": "Jest",
+                        "type": "jest",
+                        "command": "npx jest",
+                        "path": "",
+                        "suites": [
+                            {
+                                "file": "/projects/backend/__tests__/Auth.spec.js",
+                                "meta": {},
+                                "status": "passed",
+                                "testsLoaded": true,
+                                "tests": [
+                                    {
+                                        "id": "auth-test-1",
+                                        "name": "should authenticate valid user",
+                                        "displayName": "should authenticate valid user",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:50.000Z",
+                                            "last": "2026-01-20T14:05:10.000Z",
+                                            "duration": 45,
+                                            "assertions": 3
+                                        }
+                                    },
+                                    {
+                                        "id": "auth-test-2",
+                                        "name": "should reject invalid credentials",
+                                        "displayName": "should reject invalid credentials",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:50.000Z",
+                                            "last": "2026-01-20T14:05:10.000Z",
+                                            "duration": 32,
+                                            "assertions": 2
+                                        }
+                                    },
+                                    {
+                                        "id": "auth-test-3",
+                                        "name": "should handle token refresh",
+                                        "displayName": "should handle token refresh",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:50.000Z",
+                                            "last": "2026-01-20T14:05:11.000Z",
+                                            "duration": 78,
+                                            "assertions": 4
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "file": "/projects/backend/__tests__/Cart.spec.js",
+                                "meta": {},
+                                "status": "failed",
+                                "testsLoaded": true,
+                                "tests": [
+                                    {
+                                        "id": "cart-test-1",
+                                        "name": "should add item to cart",
+                                        "displayName": "should add item to cart",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:51.000Z",
+                                            "last": "2026-01-20T14:05:12.000Z",
+                                            "duration": 55,
+                                            "assertions": 2
+                                        }
+                                    },
+                                    {
+                                        "id": "cart-test-2",
+                                        "name": "should calculate total with discount",
+                                        "displayName": "should calculate total with discount",
+                                        "status": "failed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:51.000Z",
+                                            "last": "2026-01-20T14:05:12.000Z",
+                                            "duration": 120,
+                                            "assertions": 1
+                                        },
+                                        "feedback": {
+                                            "type": "feedback",
+                                            "content": {
+                                                "title": "AssertionError",
+                                                "text": "Expected 42.50 to equal 40.00",
+                                                "diff": {
+                                                    "expected": "40.00",
+                                                    "actual": "42.50"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "id": "cart-test-3",
+                                        "name": "should remove item from cart",
+                                        "displayName": "should remove item from cart",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:51.000Z",
+                                            "last": "2026-01-20T14:05:13.000Z",
+                                            "duration": 40,
+                                            "assertions": 3
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "file": "/projects/backend/__tests__/Order.spec.js",
+                                "meta": {},
+                                "status": "passed",
+                                "testsLoaded": true,
+                                "tests": [
+                                    {
+                                        "id": "order-test-1",
+                                        "name": "should create order",
+                                        "displayName": "should create order",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:52.000Z",
+                                            "last": "2026-01-20T14:05:14.000Z",
+                                            "duration": 65,
+                                            "assertions": 5
+                                        }
+                                    },
+                                    {
+                                        "id": "order-test-2",
+                                        "name": "should cancel order",
+                                        "displayName": "should cancel order",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:52.000Z",
+                                            "last": "2026-01-20T14:05:14.000Z",
+                                            "duration": 38,
+                                            "assertions": 2
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "file": "/projects/backend/__tests__/Payment.spec.js",
+                                "meta": {},
+                                "status": "skipped",
+                                "testsLoaded": true,
+                                "tests": [
+                                    {
+                                        "id": "payment-test-1",
+                                        "name": "should process payment",
+                                        "displayName": "should process payment",
+                                        "status": "skipped",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:52.000Z",
+                                            "last": "2026-01-20T14:05:15.000Z",
+                                            "duration": 0,
+                                            "assertions": 0
+                                        }
+                                    },
+                                    {
+                                        "id": "payment-test-2",
+                                        "name": "should refund payment",
+                                        "displayName": "should refund payment",
+                                        "status": "skipped",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:52.000Z",
+                                            "last": "2026-01-20T14:05:15.000Z",
+                                            "duration": 0,
+                                            "assertions": 0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "file": "/projects/backend/__tests__/User.spec.js",
+                                "meta": {},
+                                "status": "passed",
+                                "testsLoaded": true,
+                                "tests": [
+                                    {
+                                        "id": "user-test-1",
+                                        "name": "should create user",
+                                        "displayName": "should create user",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:53.000Z",
+                                            "last": "2026-01-20T14:05:16.000Z",
+                                            "duration": 52,
+                                            "assertions": 3
+                                        }
+                                    },
+                                    {
+                                        "id": "user-test-2",
+                                        "name": "should update user profile",
+                                        "displayName": "should update user profile",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:53.000Z",
+                                            "last": "2026-01-20T14:05:16.000Z",
+                                            "duration": 28,
+                                            "assertions": 2
+                                        }
+                                    },
+                                    {
+                                        "id": "user-test-3",
+                                        "name": "should delete user",
+                                        "displayName": "should delete user",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:53.000Z",
+                                            "last": "2026-01-20T14:05:17.000Z",
+                                            "duration": 35,
+                                            "assertions": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "ledger": {
+                            "queued": 0,
+                            "running": 0,
+                            "passed": 3,
+                            "failed": 1,
+                            "incomplete": 0,
+                            "skipped": 1,
+                            "warning": 0,
+                            "partial": 0,
+                            "empty": 0,
+                            "idle": 0,
+                            "error": 0
+                        },
+                        "statuses": {
+                            "/projects/backend/__tests__/Auth.spec.js": "passed",
+                            "auth-test-1": "passed",
+                            "auth-test-2": "passed",
+                            "auth-test-3": "passed",
+                            "/projects/backend/__tests__/Cart.spec.js": "failed",
+                            "cart-test-1": "passed",
+                            "cart-test-2": "failed",
+                            "cart-test-3": "passed",
+                            "/projects/backend/__tests__/Order.spec.js": "passed",
+                            "order-test-1": "passed",
+                            "order-test-2": "passed",
+                            "/projects/backend/__tests__/Payment.spec.js": "skipped",
+                            "payment-test-1": "skipped",
+                            "payment-test-2": "skipped",
+                            "/projects/backend/__tests__/User.spec.js": "passed",
+                            "user-test-1": "passed",
+                            "user-test-2": "passed",
+                            "user-test-3": "passed"
+                        },
+                        "proprietary": {},
+                        "canToggleTests": false
+                    },
+                    {
+                        "id": "snap-phpunit-1",
+                        "name": "PHPUnit",
+                        "type": "phpunit",
+                        "command": "vendor/bin/phpunit",
+                        "path": "",
+                        "suites": [
+                            {
+                                "file": "/projects/backend/tests/Unit/ServiceTest.php",
+                                "meta": {
+                                    "n": 1,
+                                    "class": "Tests\\Unit\\ServiceTest",
+                                    "groups": ["default"]
+                                },
+                                "status": "passed",
+                                "testsLoaded": true,
+                                "tests": [
+                                    {
+                                        "id": "svc-test-1",
+                                        "name": "testServiceCreation",
+                                        "displayName": "Service creation",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:53.000Z",
+                                            "last": "2026-01-20T14:05:18.000Z",
+                                            "duration": 12,
+                                            "assertions": 2
+                                        }
+                                    },
+                                    {
+                                        "id": "svc-test-2",
+                                        "name": "testServiceDependencyInjection",
+                                        "displayName": "Service dependency injection",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:53.000Z",
+                                            "last": "2026-01-20T14:05:18.000Z",
+                                            "duration": 15,
+                                            "assertions": 3
+                                        },
+                                        "console": [
+                                            {
+                                                "type": "log",
+                                                "content": "Resolving dependency: UserRepository",
+                                                "render": "text",
+                                                "file": "/projects/backend/tests/Unit/ServiceTest.php",
+                                                "line": 25
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "file": "/projects/backend/tests/Unit/RepositoryTest.php",
+                                "meta": {
+                                    "n": 2,
+                                    "class": "Tests\\Unit\\RepositoryTest",
+                                    "groups": ["default"]
+                                },
+                                "status": "passed",
+                                "testsLoaded": true,
+                                "tests": [
+                                    {
+                                        "id": "repo-test-1",
+                                        "name": "testFindById",
+                                        "displayName": "Find by id",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:54.000Z",
+                                            "last": "2026-01-20T14:05:19.000Z",
+                                            "duration": 8,
+                                            "assertions": 2
+                                        }
+                                    },
+                                    {
+                                        "id": "repo-test-2",
+                                        "name": "testFindAll",
+                                        "displayName": "Find all",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:54.000Z",
+                                            "last": "2026-01-20T14:05:19.000Z",
+                                            "duration": 22,
+                                            "assertions": 4
+                                        }
+                                    },
+                                    {
+                                        "id": "repo-test-3",
+                                        "name": "testPersist",
+                                        "displayName": "Persist",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:54.000Z",
+                                            "last": "2026-01-20T14:05:20.000Z",
+                                            "duration": 18,
+                                            "assertions": 3
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "file": "/projects/backend/tests/Unit/ControllerTest.php",
+                                "meta": {
+                                    "n": 3,
+                                    "class": "Tests\\Unit\\ControllerTest",
+                                    "groups": ["default"]
+                                },
+                                "status": "passed",
+                                "testsLoaded": true,
+                                "tests": [
+                                    {
+                                        "id": "ctrl-test-1",
+                                        "name": "testIndexAction",
+                                        "displayName": "Index action",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:55.000Z",
+                                            "last": "2026-01-20T14:05:21.000Z",
+                                            "duration": 30,
+                                            "assertions": 5
+                                        }
+                                    },
+                                    {
+                                        "id": "ctrl-test-2",
+                                        "name": "testShowAction",
+                                        "displayName": "Show action",
+                                        "status": "passed",
+                                        "stats": {
+                                            "first": "2026-01-15T10:29:55.000Z",
+                                            "last": "2026-01-20T14:05:21.000Z",
+                                            "duration": 25,
+                                            "assertions": 3
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "ledger": {
+                            "queued": 0,
+                            "running": 0,
+                            "passed": 3,
+                            "failed": 0,
+                            "incomplete": 0,
+                            "skipped": 0,
+                            "warning": 0,
+                            "partial": 0,
+                            "empty": 0,
+                            "idle": 0,
+                            "error": 0
+                        },
+                        "statuses": {
+                            "/projects/backend/tests/Unit/ServiceTest.php": "passed",
+                            "svc-test-1": "passed",
+                            "svc-test-2": "passed",
+                            "/projects/backend/tests/Unit/RepositoryTest.php": "passed",
+                            "repo-test-1": "passed",
+                            "repo-test-2": "passed",
+                            "repo-test-3": "passed",
+                            "/projects/backend/tests/Unit/ControllerTest.php": "passed",
+                            "ctrl-test-1": "passed",
+                            "ctrl-test-2": "passed"
+                        },
+                        "proprietary": {
+                            "xmlConfigPath": "phpunit.xml"
+                        },
+                        "canToggleTests": true
+                    }
+                ]
+            }
+        ]
+    }
+}

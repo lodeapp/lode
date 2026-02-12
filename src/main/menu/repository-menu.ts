@@ -50,6 +50,13 @@ export class RepositoryMenu extends Menu {
                 })
                 .separator()
                 .add({
+                    id: 'rename',
+                    label: __DARWIN__ ? 'Rename…' : 'Rename…',
+                    click: () => {
+                        this.emit('repository-rename', this.repository.render())
+                    },
+                })
+                .add({
                     id: 'copy',
                     label: __DARWIN__
                         ? 'Copy Repository Path'

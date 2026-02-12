@@ -13,6 +13,15 @@ const config = {
         'dist/static/reporters/**/**',
         'dist/preload.js'
     ],
+    fileAssociations: [
+        {
+            ext: 'lode',
+            name: 'Lode Results File',
+            description: 'Lode test results snapshot',
+            mimeType: 'application/x-lode',
+            role: 'Viewer',
+        }
+    ],
     extends: null,
     mac: {
         category: 'public.app-category.developer-tools',

@@ -1,0 +1,44 @@
+{
+    "snap-repo-1": [
+        {
+            "id": "snap-jest-1",
+            "name": "Jest",
+            "type": "jest",
+            "command": "npx jest",
+            "path": "",
+            "runsInRemote": false,
+            "remotePath": "",
+            "sshHost": "",
+            "sshUser": null,
+            "sshPort": null,
+            "sshIdentity": null,
+            "active": false,
+            "status": "idle",
+            "proprietary": {},
+            "sort": "name",
+            "selected": 0,
+            "canToggleTests": false
+        },
+        {
+            "id": "snap-phpunit-1",
+            "name": "PHPUnit",
+            "type": "phpunit",
+            "command": "vendor/bin/phpunit",
+            "path": "",
+            "runsInRemote": false,
+            "remotePath": "",
+            "sshHost": "",
+            "sshUser": null,
+            "sshPort": null,
+            "sshIdentity": null,
+            "active": false,
+            "status": "idle",
+            "proprietary": {
+                "xmlConfigPath": "phpunit.xml"
+            },
+            "sort": "running-order",
+            "selected": 0,
+            "canToggleTests": true
+        }
+    ]
+}

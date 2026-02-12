@@ -6,7 +6,7 @@ import Filename from '@/components/Filename.vue'
 import Indicator from '@/components/Indicator.vue'
 import Ledger from '@/components/Ledger.vue'
 import HasFrameworkMenu from '@/components/mixins/HasFrameworkMenu'
-import { useContextStore, useExpandStore, useFiltersStore, useLedgerStore, useStatusStore } from '@/stores'
+import { useContextStore, useExpandStore, useFiltersStore, useLedgerStore, useSnapshotStore, useStatusStore } from '@/stores'
 
 export default {
     name: 'Framework',
@@ -78,6 +78,7 @@ export default {
         },
         ...mapState(useFiltersStore, { filters: 'all' }),
         ...mapState(useStatusStore, { getStatus: 'nugget' }),
+        ...mapState(useSnapshotStore, { isReadOnly: 'isReadOnly' }),
     },
     watch: {
         keyword: debounce(function (keyword) {
@@ -238,7 +239,7 @@ export default {
                             {{ model.name }}
                         </span>
                     </h3>
-                    <div class="actions">
+                    <div v-if="!isReadOnly" class="actions">
                         <button
                             type="button"
                             class="btn-link more-actions"
@@ -300,7 +301,12 @@ export default {
                             Refreshing...
                         </template>
                         <template v-if="!queued && !refreshing">
-                            No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
+                            <template v-if="isReadOnly">
+                                No tests loaded.
+                            </template>
+                            <template v-else>
+                                No tests loaded. <a href="#" @click.prevent="refresh">Refresh</a>.
+                            </template>
                         </template>
                     </template>
                 </div>
@@ -340,7 +346,7 @@ export default {
                     class="suite"
                     :model="suite"
                     :running="running"
-                    :selectable="true"
+                    :selectable="!isReadOnly"
                     @toggle="onChildToggle"
                     @select="onChildSelect"
                     @status="onChildStatus"

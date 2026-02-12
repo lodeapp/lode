@@ -5,6 +5,7 @@ import { getLogDirectoryPath } from '@lib/logger'
 import { state } from '@lib/state'
 import { ApplicationWindow } from '@main/application-window'
 import { Menu as ContextMenu, FrameworkMenu, ProjectMenu } from '@main/menu'
+import { installWithDialog, isInstalled } from '@main/shell-integration'
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { ensureDir } from 'fs-extra'
@@ -31,6 +32,7 @@ class ApplicationMenu {
         project: IProject | null
         repository: IRepository | null
         framework: IFramework | null
+        isSnapshotMode: boolean
         isCheckingForUpdate: boolean
         isDownloadingUpdate: boolean
         hasDownloadedUpdate: boolean
@@ -38,6 +40,7 @@ class ApplicationMenu {
         project: null,
         repository: null,
         framework: null,
+        isSnapshotMode: false,
         isCheckingForUpdate: false,
         isDownloadingUpdate: false,
         hasDownloadedUpdate: false,
@@ -55,6 +58,8 @@ class ApplicationMenu {
         // Derive current project from the focused window, not from global state
         const currentProject: ProjectIdentifier | null = this.window?.getProject()?.getIdentifier() || null
         const projects: Array<ProjectIdentifier> = state.getAvailableProjects()
+
+        const isSnapshotMode = this.options.isSnapshotMode
 
         const isCheckingForUpdate = this.options.isCheckingForUpdate
         const isDownloadingUpdate = this.options.isDownloadingUpdate
@@ -84,6 +89,16 @@ class ApplicationMenu {
                     label: 'Preferences…',
                     accelerator: 'CmdOrCtrl+,',
                     click: emit('show-preferences'),
+                })
+                .separator()
+                .add({
+                    label: isInstalled()
+                        ? 'Command Line Tool Installed'
+                        : 'Install Command Line Tool…',
+                    enabled: !isInstalled(),
+                    click: () => {
+                        installWithDialog()
+                    },
                 })
                 .separator()
                 .add({
@@ -130,6 +145,20 @@ class ApplicationMenu {
                             }
                         })
                     : undefined,
+            })
+            .separator()
+            .add({
+                label: __DARWIN__ ? 'Open File…' : 'Open file…',
+                accelerator: 'CmdOrCtrl+O',
+                click: emit('snapshot-open'),
+            })
+            .addIf(isSnapshotMode, {
+                label: __DARWIN__
+                    ? 'Reveal File in Finder'
+                    : __WIN32__
+                        ? 'Reveal file in Explorer'
+                        : 'Reveal file in File Manager',
+                click: emit('snapshot-reveal'),
             })
             .separator()
             .add({
@@ -200,7 +229,7 @@ class ApplicationMenu {
             }))
 
         this.addSection('&Project', new ProjectMenu(
-            this.options.project,
+            isSnapshotMode ? null : this.options.project,
             this.window!.getWebContents(),
         ))
 
@@ -208,6 +237,7 @@ class ApplicationMenu {
             this.options.repository,
             this.options.framework,
             this.window!.getWebContents(),
+            isSnapshotMode,
         ))
 
         if (__DEV__) {
@@ -363,6 +393,7 @@ class ApplicationMenu {
             ...this.options,
             ...project ? project.getActive() : {},
             project,
+            isSnapshotMode: window ? window.isSnapshotMode() : false,
         })
     }
 

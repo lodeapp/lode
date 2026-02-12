@@ -2,7 +2,7 @@
 import { mapState } from 'pinia'
 import Indicator from '@/components/Indicator.vue'
 import SidebarFramework from '@/components/SidebarFramework.vue'
-import { useContextStore } from '@/stores'
+import { useContextStore, useSnapshotStore } from '@/stores'
 
 export default {
     name: 'SidebarRepository',
@@ -14,6 +14,10 @@ export default {
         model: {
             type: Object,
             required: true,
+        },
+        snapshotBranch: {
+            type: String,
+            default: null,
         },
     },
     emits: [
@@ -32,6 +36,7 @@ export default {
     },
     computed: {
         ...mapState(useContextStore, { activeFramework: 'framework' }),
+        ...mapState(useSnapshotStore, { isReadOnly: 'isReadOnly' }),
     },
     mounted() {
         Lode.ipc
@@ -96,7 +101,7 @@ export default {
             frameworks.length ? '' : 'is-empty',
         ]"
     >
-        <div class="header" @contextmenu="onContextMenu" @click="toggle">
+        <div class="header" @contextmenu="!isReadOnly && onContextMenu()" @click="toggle">
             <div class="title">
                 <Indicator :status="status" />
                 <h4 class="heading">
@@ -106,6 +111,10 @@ export default {
                     </span>
                 </h4>
             </div>
+        </div>
+        <div v-if="snapshotBranch && show" class="snapshot-branch">
+            <Icon symbol="git-branch" />
+            <span>{{ snapshotBranch }}</span>
         </div>
         <div v-if="show">
             <SidebarFramework

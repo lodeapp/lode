@@ -33,15 +33,21 @@ import {
 } from '@lib/frameworks/validator'
 import { log as writeLog } from '@lib/logger'
 import { mergeEnvFromShell } from '@lib/process/shell'
+import { SNAPSHOT_EXTENSION } from '@lib/snapshot/types'
 import { state } from '@lib/state'
 import { initializeTheme } from '@lib/themes'
 import { ApplicationWindow } from '@main/application-window'
+import { parseCliArgs, printHelp } from '@main/cli'
+import { listProjects, removeProject, runHeadless } from '@main/headless'
+import { runInit } from '@main/init'
 import {
     applicationMenu,
     FileMenu,
     FrameworkMenu,
     ProjectMenu,
     RepositoryMenu,
+    SnapshotSuiteMenu,
+    SnapshotTestMenu,
     SuiteMenu,
     TestMenu,
 } from '@main/menu'
@@ -54,6 +60,70 @@ import '@lib/logger/main'
 // Merge environment variables from shell, if needed.
 mergeEnvFromShell()
 
+// Queue for snapshot files opened before app is ready (macOS open-file event)
+let pendingSnapshotFile: string | null = null
+
+// Parse CLI arguments early so non-GUI modes can skip GUI setup
+let cliCommand
+try {
+    cliCommand = parseCliArgs()
+}
+catch (error) {
+    // CLI parsing failed - show help and exit
+    process.stderr.write(`Error: ${error instanceof Error ? error.message : String(error)}\n\n`)
+    printHelp()
+    process.exit(1)
+}
+
+// Non-GUI modes don't need a renderer, so disable GPU and suppress
+// log noise (info/debug) so only stderr errors and our own stdout remain.
+if (cliCommand.command !== 'gui' && cliCommand.command !== 'open') {
+    app.disableHardwareAcceleration()
+    const noop = () => {}
+    ;(globalThis as any).log = {
+        error: (globalThis as any).log.error,
+        warn: noop,
+        info: noop,
+        debug: noop,
+    } as ILogger
+}
+
+// Single instance lock: in GUI mode, ensure only one instance runs.
+// If another instance is already running, forward our args to it and quit.
+// Non-GUI modes skip this to allow concurrent CI runs.
+if (cliCommand.command === 'gui') {
+    const gotLock = app.requestSingleInstanceLock()
+    if (!gotLock) {
+        app.quit()
+    }
+    else {
+        app.on('second-instance', (_event: Electron.Event, argv: string[]) => {
+            // Parse the second instance's args to check for an open command
+            try {
+                const secondArgs = parseCliArgs(argv)
+                if (secondArgs.command === 'open') {
+                    const window = ApplicationWindow.createWindow(null)
+                    window.setSnapshot(secondArgs.file)
+                    applicationMenu.build(window)
+                    return
+                }
+            }
+            catch {
+                // If parsing fails, just focus the primary window
+            }
+            // Otherwise, focus the primary window
+            const focused = ApplicationWindow.getFocusedWindow()
+            if (focused) {
+                const child = focused.getChild()
+                if (child.isMinimized()) {
+                    child.restore()
+                }
+                child.focus()
+            }
+        })
+    }
+}
+
 // Set `__static` path to static files in production
 if (!__DEV__) {
     (globalThis as any).__static = Path.join(__dirname, '/static').replace(/\\/g, '\\\\')
@@ -61,6 +131,11 @@ if (!__DEV__) {
 
 function getProject(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent): IProject {
     return ApplicationWindow.getProjectFromWebContents(event.sender)!
+}
+
+function isSnapshotWindow(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent): boolean {
+    const window = ApplicationWindow.getFromWebContents(event.sender)
+    return window ? window.isSnapshotMode() : false
 }
 
 async function getRepository(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, repositoryId: string): Promise<IRepository> {
@@ -111,8 +186,72 @@ async function entities(
 }
 
 app
-    .on('ready', () => {
+    .on('ready', async () => {
+        // Handle non-GUI commands first
+        switch (cliCommand.command) {
+            case 'help': {
+                printHelp()
+                app.exit(0)
+                return
+            }
+            case 'list': {
+                try {
+                    const code = await listProjects()
+                    app.exit(code)
+                }
+                catch (error) {
+                    process.stderr.write(`Error: ${(error as Error).message}\n`)
+                    app.exit(2)
+                }
+                return
+            }
+            case 'remove': {
+                try {
+                    const code = removeProject(cliCommand.project)
+                    app.exit(code)
+                }
+                catch (error) {
+                    process.stderr.write(`Error: ${(error as Error).message}\n`)
+                    app.exit(2)
+                }
+                return
+            }
+            case 'create': {
+                try {
+                    const code = await runInit(cliCommand)
+                    app.exit(code)
+                }
+                catch (error) {
+                    process.stderr.write(`Error: ${(error as Error).message}\n`)
+                    app.exit(2)
+                }
+                return
+            }
+            case 'run': {
+                try {
+                    const code = await runHeadless(cliCommand)
+                    app.exit(code)
+                }
+                catch (error) {
+                    process.stderr.write(`Error: ${(error as Error).message}\n`)
+                    app.exit(2)
+                }
+                return
+            }
+            default:
+                break
+        }
+
+        // GUI modes: 'gui' and 'open'
         initializeTheme(state.get('theme'))
+
+        // CLI open: open a snapshot file in a new window
+        if (cliCommand.command === 'open') {
+            const window = ApplicationWindow.createWindow(null)
+            window.setSnapshot(cliCommand.file)
+            applicationMenu.build(window)
+            return
+        }
 
         const openProjectIds: string[] = state.getOpenProjects()
         const currentProjectId = state.getCurrentProject()?.id || null
@@ -128,9 +267,13 @@ app
             }
         }
 
-        // If no windows were restored, create one with the current project (or blank)
+        // If no windows were restored, open the current project, or the
+        // first available one, or a blank window as a last resort.
         if (ApplicationWindow.getAllWindows().length === 0) {
-            focusWindow = ApplicationWindow.createWindow(state.getCurrentProject())
+            const fallback = state.getCurrentProject()
+                || state.getAvailableProjects()[0]
+                || null
+            focusWindow = ApplicationWindow.createWindow(fallback)
         }
 
         const primaryWindow = focusWindow || ApplicationWindow.getAllWindows()[0]
@@ -140,10 +283,45 @@ app
             focusWindow.getChild().focus()
         }
 
+        // If a snapshot file was queued before the app was ready (macOS open-file), open it
+        if (pendingSnapshotFile) {
+            const snapshotWindow = ApplicationWindow.createWindow(null)
+            snapshotWindow.setSnapshot(pendingSnapshotFile)
+            applicationMenu.build(snapshotWindow)
+            pendingSnapshotFile = null
+        }
+
         if (!__DEV__) {
             // Start auto-updating process.
             // eslint-disable-next-line no-new -- Updater is instantiated for its side effects (auto-update)
             new Updater()
+        }
+    })
+    .on('open-file', (event: Electron.Event, filePath: string) => {
+        event.preventDefault()
+        if (!filePath.endsWith(SNAPSHOT_EXTENSION)) {
+            return
+        }
+        if (!app.isReady()) {
+            pendingSnapshotFile = filePath
+            return
+        }
+        const window = ApplicationWindow.createWindow(null)
+        window.setSnapshot(filePath)
+        applicationMenu.build(window)
+    })
+    .on('before-quit', () => {
+        // Persist bounds for all windows (including snapshot) before quit,
+        // while windows are still valid and not yet closed.
+        const allWindows = ApplicationWindow.getAllWindows()
+        for (const window of allWindows) {
+            window.persistBounds()
+        }
+        // Only update the open-projects list if live (non-snapshot) windows
+        // exist. Otherwise preserve the previously-saved list so session
+        // restore works on next launch (e.g. quit from a read-only window).
+        if (allWindows.some(w => !w.isSnapshotMode())) {
+            ApplicationWindow.persistOpenProjects()
         }
     })
     .on('window-all-closed', () => {
@@ -269,10 +447,22 @@ ipcMain
         applicationMenu.setOptions(project.getActive())
     })
     .on('repository-remove', (event: Electron.IpcMainEvent, repositoryId: string) => {
+        if (isSnapshotWindow(event)) {
+            return
+        }
         const project: IProject = getProject(event)
         project.removeRepository(repositoryId)
         project.emitRepositoriesToRenderer()
         ApplicationWindow.getFromWebContents(event.sender)!.refreshActiveFramework()
+    })
+    .on('repository-rename', async (event: Electron.IpcMainEvent, repositoryId: string, name: string) => {
+        if (isSnapshotWindow(event)) {
+            return
+        }
+        const repository = await getRepository(event, repositoryId)
+        repository.setName(name)
+        const project: IProject = getProject(event)
+        project.emitRepositoriesToRenderer()
     })
     .on('repository-toggle', async (event: Electron.IpcMainEvent, repositoryId: string, toggle: boolean) => {
         const repository = await getRepository(event, repositoryId)
@@ -283,6 +473,9 @@ ipcMain
         repository.collapse()
     })
     .on('framework-add', async (event: Electron.IpcMainEvent, repositoryId: string, options: FrameworkOptions) => {
+        if (isSnapshotWindow(event)) {
+            return
+        }
         const repository: IRepository = await getRepository(event, repositoryId)
         repository.addFramework(options).then((framework) => {
             framework.refresh()
@@ -291,6 +484,9 @@ ipcMain
         ApplicationWindow.getFromWebContents(event.sender)!.refreshActiveFramework()
     })
     .on('framework-remove', async (event: Electron.IpcMainEvent, frameworkId: string) => {
+        if (isSnapshotWindow(event)) {
+            return
+        }
         entities(event, frameworkId).then(({ repository, framework }) => {
             repository.removeFramework(framework.getId())
             repository.emitFrameworksToRenderer()
@@ -298,6 +494,9 @@ ipcMain
         })
     })
     .on('framework-update', (event: Electron.IpcMainEvent, frameworkId: string, options: FrameworkOptions) => {
+        if (isSnapshotWindow(event)) {
+            return
+        }
         entities(event, frameworkId).then(async ({ repository, framework }) => {
             await framework.updateOptions({
                 ...options,
@@ -309,16 +508,25 @@ ipcMain
         })
     })
     .on('framework-refresh', (event: Electron.IpcMainEvent, frameworkId: string) => {
+        if (isSnapshotWindow(event)) {
+            return
+        }
         entities(event, frameworkId).then(({ framework }) => {
             framework.refresh()
         })
     })
     .on('framework-start', (event: Electron.IpcMainEvent, frameworkId: string) => {
+        if (isSnapshotWindow(event)) {
+            return
+        }
         entities(event, frameworkId).then(({ framework }) => {
             framework.start()
         })
     })
     .on('framework-stop', (event: Electron.IpcMainEvent, frameworkId: string) => {
+        if (isSnapshotWindow(event)) {
+            return
+        }
         entities(event, frameworkId).then(({ framework }) => {
             framework.stop()
         })
@@ -357,20 +565,31 @@ ipcMain
         })
     })
     .on('framework-select', async (event: Electron.IpcMainEvent, frameworkId: string, identifiers: Array<string>, toggle: boolean) => {
+        if (isSnapshotWindow(event)) {
+            return
+        }
         entities(event, frameworkId, identifiers).then(({ nugget }) => {
             nugget!.toggleSelected(toggle, true)
         })
     })
     .on('nugget-context-menu', async (event: Electron.IpcMainEvent, frameworkId: string, identifiers: Array<string>) => {
+        const snapshot = isSnapshotWindow(event)
         entities(event, frameworkId, identifiers).then(({ nuggets }) => {
             if (nuggets) {
                 if (nuggets.length === 1) {
-                    new SuiteMenu((nuggets.pop() as ISuite), event.sender)
-                        .open()
+                    const suite = nuggets.pop() as ISuite
+                    ;(snapshot
+                        ? new SnapshotSuiteMenu(suite, event.sender)
+                        : new SuiteMenu(suite, event.sender)
+                    ).open()
                 }
                 else {
-                    new TestMenu((nuggets.shift() as ISuite), (nuggets.pop() as ITest), event.sender)
-                        .open()
+                    const suite = nuggets.shift() as ISuite
+                    const test = nuggets.pop() as ITest
+                    ;(snapshot
+                        ? new SnapshotTestMenu(suite, test, event.sender)
+                        : new TestMenu(suite, test, event.sender)
+                    ).open()
                 }
             }
         })
@@ -420,6 +639,9 @@ ipcMain
 
 ipcMain
     .handle('project-update', async (event: Electron.IpcMainInvokeEvent, options: ProjectOptions) => {
+        if (isSnapshotWindow(event)) {
+            return null
+        }
         const project: IProject | null = ApplicationWindow.getProjectFromWebContents(event.sender)
         if (project) {
             project.updateOptions(options)
@@ -453,6 +675,9 @@ ipcMain
 
 ipcMain
     .handle('repository-add', async (event: Electron.IpcMainInvokeEvent, paths: Array<string>) => {
+        if (isSnapshotWindow(event)) {
+            return []
+        }
         const project: IProject = getProject(event)
         const repositories = await Promise.all(paths.map((path) => {
             return project.addRepository({ path })
@@ -652,5 +877,43 @@ ipcMain
         return {
             object: state.get(),
             string: JSON.stringify(state.get()),
+        }
+    })
+
+ipcMain
+    .handle('snapshot-open-dialog', async (event: Electron.IpcMainInvokeEvent) => {
+        return (await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+            properties: ['openFile'],
+            filters: [
+                { name: 'Lode Results', extensions: [SNAPSHOT_EXTENSION.replace('.', '')] },
+            ],
+        })).filePaths
+    })
+
+ipcMain
+    .on('snapshot-load', (event: Electron.IpcMainEvent, filePath: string) => {
+        const window = ApplicationWindow.getFromWebContents(event.sender)
+        if (!window) {
+            return
+        }
+        window.setSnapshot(filePath)
+    })
+
+ipcMain
+    .on('snapshot-open-in-new-window', (event: Electron.IpcMainEvent, filePath: string) => {
+        const window = ApplicationWindow.createWindow(null)
+        window.setSnapshot(filePath)
+        applicationMenu.build(window)
+    })
+
+ipcMain
+    .on('snapshot-reveal-file', (event: Electron.IpcMainEvent) => {
+        const window = ApplicationWindow.getFromWebContents(event.sender)
+        if (!window) {
+            return
+        }
+        const filePath = window.getSnapshotFilePath()
+        if (filePath) {
+            shell.showItemInFolder(filePath)
         }
     })
