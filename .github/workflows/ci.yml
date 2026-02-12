@@ -70,13 +70,17 @@ jobs:
             tests/playwright/playwright-report/
 
       - name: Build
-        run: npm run build
+        run: npm run build:before && npm run pack:lode && electron-builder --dir --publish never
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}
-          path: build
+          path: |
+            build/mac-arm64
+            build/mac
+            build/win-unpacked
+            build/linux-unpacked
 
   release:
     name: Release for ${{ matrix.os }}
