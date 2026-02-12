@@ -249,7 +249,7 @@ export default {
                         v-for="repository in repositories"
                         :key="repository.id"
                         :model="repository"
-                        :snapshot-branch="isReadOnly && snapshotMetadata ? snapshotMetadata.gitBranch : null"
+                        :branch="isReadOnly && snapshotMetadata ? snapshotMetadata.gitBranch : null"
                         @status="onRepositoryStatus"
                         @framework-activate="onFrameworkActivation"
                     />

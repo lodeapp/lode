@@ -2,6 +2,7 @@ import type { FrameworkOptions, IFramework } from '@lib/frameworks/framework'
 import type { ProgressLedger } from '@lib/frameworks/progress'
 import type { FrameworkStatus } from '@lib/frameworks/status'
 import type { ApplicationWindow } from '@main/application-window'
+import { execFile } from 'node:child_process'
 import * as Fs from 'node:fs'
 import * as Path from 'node:path'
 import { Frameworks } from '@lib/frameworks'
@@ -64,6 +65,7 @@ export interface IRepository extends ProjectEventEmitter {
     removeFramework: (id: string) => void
     getFrameworkById: (id: string) => IFramework | undefined
     getPath: () => string
+    getBranch: () => Promise<string | null>
     exists: () => Promise<boolean>
     locate: (window: Electron.BrowserWindow) => Promise<void>
     getProgressLedger: () => ProgressLedger
@@ -459,6 +461,25 @@ export class Repository extends ProjectEventEmitter implements IRepository {
      */
     public getPath(): string {
         return this.path
+    }
+
+    /**
+     * Get the current git branch of this repository.
+     */
+    public getBranch(): Promise<string | null> {
+        return new Promise((resolve) => {
+            execFile('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+                cwd: this.path,
+                timeout: 5000,
+            }, (error, stdout) => {
+                if (error) {
+                    log.info(`Could not get git branch for ${this.path}: ${error.message}`)
+                    resolve(null)
+                    return
+                }
+                resolve(stdout.trim() || null)
+            })
+        })
     }
 
     /**

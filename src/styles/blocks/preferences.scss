@@ -5,5 +5,10 @@
                 width: 180px;
             }
         }
+
+        .checkbox-list > select {
+            width: 100%;
+            margin-bottom: var(--spacing-half);
+        }
     }
 }

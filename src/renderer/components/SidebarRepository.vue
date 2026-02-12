@@ -2,7 +2,7 @@
 import { mapState } from 'pinia'
 import Indicator from '@/components/Indicator.vue'
 import SidebarFramework from '@/components/SidebarFramework.vue'
-import { useContextStore, useSnapshotStore } from '@/stores'
+import { useContextStore, useSettingsStore, useSnapshotStore } from '@/stores'
 
 export default {
     name: 'SidebarRepository',
@@ -15,7 +15,7 @@ export default {
             type: Object,
             required: true,
         },
-        snapshotBranch: {
+        branch: {
             type: String,
             default: null,
         },
@@ -32,25 +32,39 @@ export default {
             status: this.model.status || 'idle',
             show: this.model.expanded,
             menuActive: false,
+            liveBranch: null,
         }
     },
     computed: {
         ...mapState(useContextStore, { activeFramework: 'framework' }),
         ...mapState(useSnapshotStore, { isReadOnly: 'isReadOnly' }),
+        showBranches() {
+            return useSettingsStore().value('showBranches') !== false
+        },
+        displayBranch() {
+            if (!this.showBranches) {
+                return null
+            }
+            return this.branch || this.liveBranch
+        },
     },
     mounted() {
         Lode.ipc
             .on(`${this.model.id}:status:sidebar`, this.statusListener)
             .on(`${this.model.id}:frameworks`, this.updateFrameworks)
+            .on('focus', this.onFocus)
 
         if (this.show) {
             this.getFrameworks()
         }
+
+        this.fetchBranch()
     },
     beforeUnmount() {
         Lode.ipc
             .removeAllListeners(`${this.model.id}:status:sidebar`)
             .removeAllListeners(`${this.model.id}:frameworks`)
+            .removeListener('focus', this.onFocus)
     },
     methods: {
         async getFrameworks() {
@@ -87,6 +101,21 @@ export default {
         onFrameworkRemove(frameworkId) {
             this.$emit('frameworkRemove', frameworkId)
         },
+        async fetchBranch() {
+            if (this.isReadOnly || !this.showBranches) {
+                return
+            }
+            try {
+                this.liveBranch = await Lode.ipc.invoke('repository-branch', this.model.id)
+            }
+            catch (error) {
+                log.info('Failed to fetch branch:', error)
+                this.liveBranch = null
+            }
+        },
+        onFocus() {
+            this.fetchBranch()
+        },
     },
 }
 </script>
@@ -112,9 +141,9 @@ export default {
                 </h4>
             </div>
         </div>
-        <div v-if="snapshotBranch && show" class="snapshot-branch">
+        <div v-if="displayBranch && show" class="branch">
             <Icon symbol="git-branch" />
-            <span>{{ snapshotBranch }}</span>
+            <span>{{ displayBranch }}</span>
         </div>
         <div v-if="show">
             <SidebarFramework

@@ -58,6 +58,7 @@ export enum AllowedIpcInvocationMap {
     'project-remove',
     'project-update',
     'repository-add',
+    'repository-branch',
     'repository-context-menu',
     'repository-exists',
     'repository-frameworks',
@@ -79,6 +80,7 @@ export class Ipc {
     public invoke: any
     public on: (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) => this
     public once: (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) => this
+    public removeListener: (channel: string, listener: (...args: any[]) => void) => this
     public removeAllListeners: (channel: string) => this
 
     constructor() {
@@ -86,6 +88,7 @@ export class Ipc {
         this.invoke = this.handleInvoke.bind(this)
         this.on = this.handleOn.bind(this)
         this.once = this.handleOnce.bind(this)
+        this.removeListener = this.handleRemoveListener.bind(this)
         this.removeAllListeners = this.handleRemoveAllListeners.bind(this)
     }
 
@@ -112,6 +115,11 @@ export class Ipc {
 
     handleOnce(channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): this {
         ipcRenderer.once(channel, listener)
+        return this
+    }
+
+    handleRemoveListener(channel: string, listener: (...args: any[]) => void): this {
+        ipcRenderer.removeListener(channel, listener)
         return this
     }
 

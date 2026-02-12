@@ -19,6 +19,7 @@ export class State extends EventEmitter {
             switchProject: true,
             runningUnderTranslation: true,
         },
+        showBranches: true,
         theme: 'system',
         currentProject: null,
         openProjects: [],

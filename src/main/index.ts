@@ -714,6 +714,11 @@ ipcMain
     })
 
 ipcMain
+    .handle('repository-branch', async (event: Electron.IpcMainInvokeEvent, repositoryId: string) => {
+        return (await getRepository(event, repositoryId)).getBranch()
+    })
+
+ipcMain
     .handle('repository-context-menu', async (event: Electron.IpcMainInvokeEvent, repositoryId: string): Promise<void> => {
         const repository: IRepository = await getRepository(event, repositoryId)
         return new Promise((resolve) => {

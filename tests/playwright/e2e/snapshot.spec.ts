@@ -116,7 +116,7 @@ test.describe('Snapshot / results file', () => {
             await expect(fileItem.locator('.snapshot-file-meta')).toBeVisible()
 
             // Git branch shown under the repository
-            const branch = page.locator('.snapshot-branch')
+            const branch = page.locator('.branch')
             await expect(branch).toBeVisible()
             await expect(branch).toContainText('main')
         })

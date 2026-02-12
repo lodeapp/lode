@@ -87,6 +87,7 @@ export class SnapshotRepository extends ProjectEventEmitter implements IReposito
         return this.frameworks.find(framework => framework.getId() === id)
     }
 
+    public async getBranch(): Promise<string | null> { return null }
     public async exists(): Promise<boolean> { return true }
     public async locate(_window: Electron.BrowserWindow): Promise<void> {}
 

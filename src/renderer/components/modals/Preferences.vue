@@ -29,6 +29,14 @@ export default {
                 this.$root.updateSetting('confirm.runningUnderTranslation', value)
             },
         },
+        showBranches: {
+            get() {
+                return this.$root.setting('showBranches')
+            },
+            set(value) {
+                this.$root.updateSetting('showBranches', value)
+            },
+        },
         theme: {
             get() {
                 return this.$root.setting('theme')
@@ -74,10 +82,10 @@ export default {
                         </label>
                     </dd>
                 </dl>
-                <dl v-if="$root.supportsThemes">
-                    <dt><label for="select-theme">Appearance</label></dt>
-                    <dd>
-                        <select id="select-theme" v-model="theme" class="form-control form-select input-sm">
+                <dl>
+                    <dt><label for="select-theme">Appearance:</label></dt>
+                    <dd class="checkbox-list">
+                        <select v-if="$root.supportsThemes" id="select-theme" v-model="theme" class="form-control form-select input-sm">
                             <option value="light">
                                 Light
                             </option>
@@ -88,6 +96,10 @@ export default {
                                 System
                             </option>
                         </select>
+                        <label>
+                            <input v-model="showBranches" type="checkbox" checked="checked">
+                            Show repository git branches in sidebar
+                        </label>
                     </dd>
                 </dl>
             </div>
