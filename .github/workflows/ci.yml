@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20.x]
+        node-version: [24.x]
         os: [macOS-latest, windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
@@ -70,7 +70,10 @@ jobs:
             tests/playwright/playwright-report/
 
       - name: Build
-        run: npm run build:before && npm run pack:lode && npx electron-builder --dir --publish never
+        run: npm run build:ci
+        env:
+          CSC_LINK: ${{ runner.os == 'macOS' && secrets.MACOSDEVELOPERCERTIFICATE_BASE64 || '' }}
+          CSC_KEY_PASSWORD: ${{ runner.os == 'macOS' && secrets.MACOSDEVELOPERCERTIFICATE_PASSWORD || '' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -89,7 +92,7 @@ jobs:
     needs: test
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [24.x]
         os: [macOS-latest, windows-latest, ubuntu-latest]
 
     steps:
