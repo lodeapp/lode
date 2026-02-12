@@ -75,6 +75,11 @@ jobs:
           CSC_LINK: ${{ runner.os == 'macOS' && secrets.MACOSDEVELOPERCERTIFICATE_BASE64 || '' }}
           CSC_KEY_PASSWORD: ${{ runner.os == 'macOS' && secrets.MACOSDEVELOPERCERTIFICATE_PASSWORD || '' }}
 
+      - name: List build output
+        if: always()
+        shell: bash
+        run: find build -maxdepth 2 -type d 2>/dev/null || echo "build/ not found"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
