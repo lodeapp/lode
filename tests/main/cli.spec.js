@@ -85,7 +85,6 @@ it('parses run with a positional project', () => {
         frameworks: [],
         output: null,
         compact: false,
-        compressed: true,
     })
 })
 
@@ -109,7 +108,6 @@ it('parses run with all flags', () => {
         frameworks: ['Jest'],
         output: './output.lode',
         compact: false,
-        compressed: true,
     })
 })
 
@@ -183,7 +181,6 @@ it('parses run with --compact flag', () => {
         frameworks: [],
         output: null,
         compact: true,
-        compressed: true,
     })
 })
 
@@ -210,22 +207,9 @@ it('parses --compact alongside other flags', () => {
     expect(cmd).toHaveProperty('output', './out.lode')
 })
 
-it('parses run with --output-expanded flag', () => {
-    const cmd = parseCliArgs(['electron', 'main.js', 'run', 'P', '--output-expanded'])
-    expect(cmd).toEqual({
-        command: 'run',
-        project: 'P',
-        repos: [],
-        frameworks: [],
-        output: null,
-        compact: false,
-        compressed: false,
-    })
-})
-
-it('defaults compressed to true when not specified', () => {
-    const cmd = parseCliArgs(['electron', 'main.js', 'run', 'P'])
-    expect(cmd).toHaveProperty('compressed', true)
+it('rejects the removed --output-expanded flag', () => {
+    expect(() => parseCliArgs(['electron', 'main.js', 'run', 'P', '--output-expanded']))
+        .toThrow('Unknown flag: --output-expanded')
 })
 
 // --- parseCliArgs: create ---
@@ -282,6 +266,14 @@ it('parses positional .lode file as open shorthand', () => {
     expect(cmd).toEqual({
         command: 'open',
         file: '/path/to/results.lode',
+    })
+})
+
+it('parses positional .json file as open shorthand', () => {
+    const cmd = parseCliArgs(['electron', 'main.js', '/path/to/results.json'])
+    expect(cmd).toEqual({
+        command: 'open',
+        file: '/path/to/results.json',
     })
 })
 

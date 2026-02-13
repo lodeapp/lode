@@ -8,6 +8,7 @@ import type { RunCommand } from '@main/cli'
 import * as Path from 'node:path'
 import { Project } from '@lib/frameworks/project'
 import { mergeEnvFromShell } from '@lib/process/shell'
+import { SNAPSHOT_EXTENSION } from '@lib/snapshot/types'
 import { writeSnapshot } from '@lib/snapshot/writer'
 import { state } from '@lib/state'
 import { isUuid } from '@main/cli'
@@ -214,6 +215,20 @@ export function defaultOutputPath(projectName: string): string {
     const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
     const safeName = projectName.replace(/[^\w-]/g, '-').toLowerCase()
     return Path.resolve(`./${safeName}-${timestamp}.lode`)
+}
+
+/**
+ * Ensure the output path has the correct extension: `.json` paths are
+ * kept as-is (and imply uncompressed output), everything else gets `.lode`.
+ */
+export function resolveOutputPath(outputPath: string): string {
+    if (outputPath.endsWith(SNAPSHOT_EXTENSION)) {
+        return outputPath
+    }
+    if (outputPath.endsWith('.json')) {
+        return outputPath
+    }
+    return outputPath + SNAPSHOT_EXTENSION
 }
 
 /**
@@ -426,7 +441,8 @@ export async function runHeadless(args: RunCommand): Promise<number> {
     if (args.output !== null) {
         const outputPath = args.output === true
             ? defaultOutputPath(projectInfo.name!)
-            : args.output
+            : resolveOutputPath(args.output)
+        const compressed = !outputPath.endsWith('.json')
         const overrides: Record<string, string[]> = {}
         if (args.repos.length > 0) {
             overrides.repositoryTargets = args.repos
@@ -434,7 +450,7 @@ export async function runHeadless(args: RunCommand): Promise<number> {
         if (args.frameworks.length > 0) {
             overrides.frameworkTargets = args.frameworks
         }
-        writeSnapshot(project, outputPath, app.getVersion(), overrides, args.compressed)
+        writeSnapshot(project, outputPath, app.getVersion(), overrides, compressed)
         process.stdout.write(`Output: ${outputPath}\n`)
     }
 

@@ -14,13 +14,22 @@ export function mergeEnvFromShell(force = false): void {
         return
     }
 
-    const env = shellEnv.sync(getUserShell())
-    for (const key in env) {
-        if (BlacklistedNames.has(key)) {
-            continue
-        }
+    try {
+        const env = shellEnv.sync(getUserShell())
+        for (const key in env) {
+            if (BlacklistedNames.has(key)) {
+                continue
+            }
 
-        process.env[key] = env[key]
+            process.env[key] = env[key]
+        }
+    }
+    catch (error) {
+        // shell-env throws when the user's shell can't be spawned (e.g.
+        // misconfigured shell, sandbox restrictions). Log and continue —
+        // the login-shell wrapping in DefaultProcess will still attempt to
+        // resolve binaries at spawn time.
+        log.warn('Failed to merge shell environment', error as Error)
     }
 }
 
@@ -37,7 +46,7 @@ function needsEnv(process: NodeJS.Process): boolean {
 /**
  * Get the user-defined shell, if any.
  */
-function getUserShell() {
+export function getUserShell() {
     if (process.env.SHELL) {
         return process.env.SHELL
     }

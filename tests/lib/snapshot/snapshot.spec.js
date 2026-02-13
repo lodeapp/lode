@@ -153,7 +153,7 @@ it('throws on data that is neither valid gzip nor valid JSON', () => {
     writeFileSync(tmpPath, 'not gzipped data and not json either')
 
     expect(() => readSnapshot(tmpPath))
-        .toThrow('not a valid gzip archive or JSON file')
+        .toThrow('not a valid Lode or JSON file')
 })
 
 it('reads a snapshot from plain uncompressed JSON', () => {
@@ -436,4 +436,100 @@ it('preserves full structure with multiple repos, frameworks, and suites', () =>
         '/app/__tests__/App.spec.js': 'passed',
         '/app/__tests__/Utils.spec.js': 'skipped',
     })
+})
+
+// --- Nested test roundtrip ---
+
+it('preserves deeply nested test structures through write and read', () => {
+    const tmpPath = join(tmpdir(), 'lode-test-nested.lode')
+
+    const nestedSuite = {
+        file: '/app/tests/nested.test.js',
+        testsLoaded: true,
+        tests: [
+            {
+                id: 'describe-1',
+                name: 'top describe',
+                status: 'passed',
+                tests: [
+                    {
+                        id: 'describe-2',
+                        name: 'inner describe',
+                        status: 'passed',
+                        tests: [
+                            {
+                                id: 'test-leaf',
+                                name: 'deepest test',
+                                status: 'passed',
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    }
+
+    const mockProject = {
+        getId: () => 'nested-proj',
+        name: 'Nested',
+        repositories: [
+            {
+                getId: () => 'repo-1',
+                getDisplayName: () => 'app',
+                getPath: () => '/nonexistent',
+                frameworks: [
+                    {
+                        getId: () => 'fw-1',
+                        getDisplayName: () => 'Jest',
+                        type: 'jest',
+                        path: '/nonexistent',
+                        runsInRemote: false,
+                        remotePath: null,
+                        canToggleTests: true,
+                        render: () => ({ command: 'jest', proprietary: {} }),
+                        getSuites: () => [
+                            {
+                                getId: () => '/app/tests/nested.test.js',
+                                persist: () => nestedSuite,
+                            },
+                        ],
+                        getLedger: () => ({
+                            passed: 1,
+                            failed: 0,
+                            error: 0,
+                            skipped: 0,
+                            incomplete: 0,
+                            warning: 0,
+                            queued: 0,
+                            running: 0,
+                            partial: 0,
+                            empty: 0,
+                            idle: 0,
+                        }),
+                        getStatusMap: () => ({
+                            '/app/tests/nested.test.js': 'passed',
+                        }),
+                    },
+                ],
+            },
+        ],
+    }
+
+    writeSnapshot(mockProject, tmpPath, '1.0.0')
+    const data = readSnapshot(tmpPath)
+
+    const suite = data.project.repositories[0].frameworks[0].suites[0]
+    expect(suite.tests).toHaveLength(1)
+
+    const level1 = suite.tests[0]
+    expect(level1.name).toBe('top describe')
+    expect(level1.tests).toHaveLength(1)
+
+    const level2 = level1.tests[0]
+    expect(level2.name).toBe('inner describe')
+    expect(level2.tests).toHaveLength(1)
+
+    const level3 = level2.tests[0]
+    expect(level3.name).toBe('deepest test')
+    expect(level3.status).toBe('passed')
 })

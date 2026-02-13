@@ -216,6 +216,69 @@ describe('test render and persist', () => {
         expect(persisted.status).toBe('passed')
     })
 
+    it('persist preserves deeply nested test children', () => {
+        const test = new Test(createMockFramework(), {
+            id: 'describe-1',
+            name: 'top',
+            status: 'passed',
+            tests: [
+                {
+                    id: 'describe-2',
+                    name: 'middle',
+                    status: 'passed',
+                    tests: [
+                        {
+                            id: 'test-leaf',
+                            name: 'deepest',
+                            status: 'passed',
+                        },
+                    ],
+                },
+            ],
+        })
+        const persisted = test.persist(false)
+        expect(persisted.tests).toHaveLength(1)
+        expect(persisted.tests[0].name).toBe('middle')
+        expect(persisted.tests[0].tests).toHaveLength(1)
+        expect(persisted.tests[0].tests[0].name).toBe('deepest')
+        expect(persisted.tests[0].tests[0].status).toBe('passed')
+    })
+
+    it('persist preserves nesting after debrief cycle', async () => {
+        const test = new Test(createMockFramework(), {
+            id: 'describe-1',
+            name: 'top',
+            status: 'idle',
+        })
+        // Simulate a debrief with nested results (as headless mode would)
+        await test.debrief({
+            id: 'describe-1',
+            name: 'top',
+            status: 'passed',
+            tests: [
+                {
+                    id: 'describe-2',
+                    name: 'middle',
+                    status: 'passed',
+                    tests: [
+                        {
+                            id: 'test-leaf',
+                            name: 'deepest',
+                            status: 'passed',
+                        },
+                    ],
+                },
+            ],
+        }, false)
+
+        const persisted = test.persist(false)
+        expect(persisted.tests).toHaveLength(1)
+        expect(persisted.tests[0].name).toBe('middle')
+        expect(persisted.tests[0].tests).toHaveLength(1)
+        expect(persisted.tests[0].tests[0].name).toBe('deepest')
+        expect(persisted.tests[0].tests[0].status).toBe('passed')
+    })
+
     it('defaults removes displayName when same as name', () => {
         const test = new Test(createMockFramework(), {
             id: 'test-1',

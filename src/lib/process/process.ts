@@ -7,9 +7,11 @@ import { EventEmitter } from 'node:events'
 import * as Path from 'node:path'
 import { ProcessError } from '@lib/process/errors'
 import { BufferedSearch } from '@lib/process/search'
+import { getUserShell } from '@lib/process/shell'
 import { SSH } from '@lib/process/ssh'
 import * as Fs from 'fs-extra'
 import { compact, flattenDeep, get } from 'lodash'
+import shellEscape from 'shell-escape'
 import stripAnsi from 'strip-ansi'
 import kill from 'tree-kill'
 
@@ -126,7 +128,16 @@ export class DefaultProcess extends EventEmitter implements IProcess {
         log.debug(['Spawning child process', JSON.stringify({ spawn: this.binary, args: this.args, path: this.path })].join(' '))
         log.info(`Executing command: ${this.binary} ${this.args.join(' ')}`)
 
-        const spawnedProcess = spawn(this.binary, this.args, {
+        // On Unix, wrap local (non-SSH) commands in the user's login shell
+        // so that PATH includes binaries from version managers (nvm, volta,
+        // asdf, etc.) even when the app is launched from the macOS Dock.
+        const useLoginShell = !options.ssh && this.platform !== 'win32'
+        const spawnBinary = useLoginShell ? getUserShell() : this.binary
+        const spawnArgs = useLoginShell
+            ? ['-lc', shellEscape([this.binary, ...this.args])]
+            : this.args
+
+        const spawnedProcess = spawn(spawnBinary, spawnArgs, {
             cwd: this.path,
             detached: false,
             shell: options.ssh,

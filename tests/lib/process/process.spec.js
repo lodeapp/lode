@@ -31,8 +31,8 @@ it('spawns processes', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'biscuit',
-        ['--hobnobs', '--digestives', 'rich=tea'],
+        expect.any(String),
+        ['-lc', 'biscuit --hobnobs --digestives \'rich=tea\''],
         // Ignore last argument, we'll assert relevant bits individually.
         expect.any(Object),
     )
@@ -639,8 +639,8 @@ describe('process spawning and lifecycle', () => {
     it('splits command into binary and arguments', () => {
         createProcess({ command: 'npx jest --coverage' })
         expect(spawn).toHaveBeenLastCalledWith(
-            'npx',
-            expect.arrayContaining(['jest', '--coverage']),
+            expect.any(String),
+            ['-lc', 'npx jest --coverage'],
             expect.any(Object),
         )
     })
@@ -648,8 +648,17 @@ describe('process spawning and lifecycle', () => {
     it('merges command args with process options args', () => {
         createProcess({ command: 'npx jest', args: ['--verbose'] })
         expect(spawn).toHaveBeenLastCalledWith(
+            expect.any(String),
+            ['-lc', 'npx jest --verbose'],
+            expect.any(Object),
+        )
+    })
+
+    it('skips login shell wrapping on Windows', () => {
+        createProcess({ command: 'npx jest --coverage', platform: 'win32' })
+        expect(spawn).toHaveBeenLastCalledWith(
             'npx',
-            expect.arrayContaining(['jest', '--verbose']),
+            ['jest', '--coverage'],
             expect.any(Object),
         )
     })

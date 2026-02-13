@@ -1,5 +1,5 @@
 import type { IProject, ProjectIdentifier, ProjectOptions } from '@lib/frameworks/project'
-import type { SnapshotMetadata } from '@lib/snapshot/types'
+import type { SnapshotFile, SnapshotMetadata } from '@lib/snapshot/types'
 import * as Path from 'node:path'
 import { Project } from '@lib/frameworks/project'
 import { getResourceDirectory } from '@lib/helpers/paths'
@@ -8,7 +8,7 @@ import { readSnapshot } from '@lib/snapshot/reader'
 import { state } from '@lib/state'
 import { supportsSystemThemeChanges } from '@lib/themes'
 import { applicationMenu } from '@main/menu'
-import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
 import { debounce, get } from 'lodash'
 
 const windows: { [id: number]: ApplicationWindow } = {}
@@ -285,6 +285,11 @@ export class ApplicationWindow {
     }
 
     public setProject(identifier: ProjectIdentifier): void {
+        // Clear any active snapshot before switching to a live project
+        this.snapshotProject = null
+        this.snapshotMetadata = null
+        this.snapshotFilePath = null
+
         // Instantiate new project from identifier. If it does not yet exist
         // in the store, it'll be created.
         this.project = new Project(this, identifier)
@@ -347,7 +352,21 @@ export class ApplicationWindow {
     }
 
     public setSnapshot(filePath: string): void {
-        const data = readSnapshot(filePath)
+        let data: SnapshotFile
+        try {
+            data = readSnapshot(filePath)
+        }
+        catch (error: any) {
+            const message = error.message || 'Unable to open snapshot file.'
+            if (this.ready) {
+                this.window.webContents.send('error', message, `File: \`${filePath}\``)
+            }
+            else {
+                dialog.showErrorBox('Unable to open file', `${message}\n\n${filePath}`)
+            }
+            return
+        }
+
         this.snapshotProject = new SnapshotProject(this, data)
         this.snapshotMetadata = data.metadata
         this.snapshotFilePath = filePath
@@ -425,6 +444,9 @@ export class ApplicationWindow {
 
     public clear(): void {
         this.project = null
+        this.snapshotProject = null
+        this.snapshotMetadata = null
+        this.snapshotFilePath = null
         this.refreshSettings()
         this.send('clear')
         ApplicationWindow.persistOpenProjects()

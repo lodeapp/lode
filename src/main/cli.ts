@@ -12,7 +12,6 @@ export interface RunCommand {
     frameworks: string[]
     output: string | true | null
     compact: boolean
-    compressed: boolean
 }
 
 export interface CreateCommand {
@@ -71,14 +70,12 @@ function parseFlags(raw: string[]): {
     frameworks: string[]
     output: string | true | null
     compact: boolean
-    compressed: boolean
 } {
     const result = {
         repos: [] as string[],
         frameworks: [] as string[],
         output: null as string | true | null,
         compact: false,
-        compressed: true,
     }
 
     for (let i = 0; i < raw.length; i++) {
@@ -100,9 +97,6 @@ function parseFlags(raw: string[]): {
                 break
             case '--compact':
                 result.compact = true
-                break
-            case '--output-expanded':
-                result.compressed = false
                 break
             default:
                 throw new Error(`Unknown flag: ${arg}`)
@@ -137,7 +131,7 @@ Run options:
   --framework <[repository:]name-or-id>     Target specific framework (repeatable)
   --compact                                 Compact output (single character per test)
   --output [path]                           Write a results file (default: ./<name>-<timestamp>.lode)
-  --output-expanded                         Write uncompressed JSON output file
+                                            Use .json extension for uncompressed JSON output
 `)
 }
 
@@ -206,7 +200,6 @@ export function parseCliArgs(argv: string[] = process.argv): CliCommand {
                 frameworks: runFlags.frameworks,
                 output: runFlags.output,
                 compact: runFlags.compact,
-                compressed: runFlags.compressed,
             }
         }
 
@@ -223,7 +216,7 @@ export function parseCliArgs(argv: string[] = process.argv): CliCommand {
 
         default: {
             // Convenience shorthand: `lode /path/to/file.lode`
-            if (subcommand.endsWith(SNAPSHOT_EXTENSION) && !subcommand.startsWith('--')) {
+            if ((subcommand.endsWith(SNAPSHOT_EXTENSION) || subcommand.endsWith('.json')) && !subcommand.startsWith('--')) {
                 return {
                     command: 'open',
                     file: subcommand,

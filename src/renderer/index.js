@@ -238,7 +238,7 @@ const app = createApp({
             }
             if (e.dataTransfer != null) {
                 const paths = Array.from(e.dataTransfer.files).map(({ path }) => path)
-                const snapshotFile = paths.find(p => p.endsWith('.lode'))
+                const snapshotFile = paths.find(p => p.endsWith('.lode') || p.endsWith('.json'))
                 if (snapshotFile) {
                     this.snapshotOpen(false, snapshotFile)
                 }
@@ -369,6 +369,7 @@ const app = createApp({
             }
             this.loading = true
             this.project = null
+            useSnapshotStore().deactivate()
             useContextStore().clear()
             Lode.ipc.send('project-switch', identifier)
         },

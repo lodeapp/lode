@@ -43,8 +43,8 @@ it('spawns run with no extra arguments', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'pnpm',
-        ['run', 'biscuit'],
+        expect.any(String),
+        ['-lc', 'pnpm run biscuit'],
         expect.any(Object),
     )
 })
@@ -56,8 +56,8 @@ it('spawns run with proper arguments', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'pnpm',
-        ['run', 'biscuit', '--', '--hobnobs', '--digestives', 'rich=tea'],
+        expect.any(String),
+        ['-lc', 'pnpm run biscuit -- --hobnobs --digestives \'rich=tea\''],
         expect.any(Object),
     )
 })
@@ -69,8 +69,8 @@ it('spawns exec with no extra arguments', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'pnpm',
-        ['exec', 'jest'],
+        expect.any(String),
+        ['-lc', 'pnpm exec jest'],
         expect.any(Object),
     )
 })
@@ -82,8 +82,8 @@ it('spawns exec with proper arguments', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'pnpm',
-        ['exec', 'jest', '--', '--coverage', '--verbose'],
+        expect.any(String),
+        ['-lc', 'pnpm exec jest -- --coverage --verbose'],
         expect.any(Object),
     )
 })

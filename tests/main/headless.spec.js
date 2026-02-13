@@ -6,6 +6,7 @@ import {
     formatSuiteCompact,
     formatSuiteNormal,
     formatSummary,
+    resolveOutputPath,
     resolveTargets,
 } from '@main/headless'
 
@@ -272,6 +273,24 @@ it('sanitizes special characters in project name', () => {
     expect(result).toMatch(/h-llo---world--20260101-000000\.lode$/)
 
     vi.useRealTimers()
+})
+
+// --- resolveOutputPath ---
+
+it('appends .lode when path has no extension', () => {
+    expect(resolveOutputPath('results')).toBe('results.lode')
+})
+
+it('keeps .lode when path already ends with .lode', () => {
+    expect(resolveOutputPath('results.lode')).toBe('results.lode')
+})
+
+it('keeps .json as-is', () => {
+    expect(resolveOutputPath('results.json')).toBe('results.json')
+})
+
+it('appends .lode to arbitrary extensions', () => {
+    expect(resolveOutputPath('path/to/output.txt')).toBe('path/to/output.txt.lode')
 })
 
 // --- flattenTests ---

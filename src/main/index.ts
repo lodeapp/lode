@@ -301,7 +301,7 @@ app
     })
     .on('open-file', (event: Electron.Event, filePath: string) => {
         event.preventDefault()
-        if (!filePath.endsWith(SNAPSHOT_EXTENSION)) {
+        if (!filePath.endsWith(SNAPSHOT_EXTENSION) && !filePath.endsWith('.json')) {
             return
         }
         if (!app.isReady()) {
@@ -892,7 +892,7 @@ ipcMain
         return (await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
             properties: ['openFile'],
             filters: [
-                { name: 'Lode Results', extensions: [SNAPSHOT_EXTENSION.replace('.', '')] },
+                { name: 'Lode Results', extensions: [SNAPSHOT_EXTENSION.replace('.', ''), 'json'] },
             ],
         })).filePaths
     })

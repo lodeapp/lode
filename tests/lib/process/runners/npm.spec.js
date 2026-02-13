@@ -43,8 +43,8 @@ it('spawns with no arguments', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'npm',
-        ['run', 'biscuit'],
+        expect.any(String),
+        ['-lc', 'npm run biscuit'],
         expect.any(Object),
     )
 })
@@ -56,8 +56,8 @@ it('spawns with proper arguments', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'npm',
-        ['run', 'biscuit', '--', '--hobnobs', '--digestives', 'rich=tea'],
+        expect.any(String),
+        ['-lc', 'npm run biscuit -- --hobnobs --digestives \'rich=tea\''],
         // Ignore last argument, we'll assert relevant bits individually.
         expect.any(Object),
     )

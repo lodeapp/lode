@@ -43,8 +43,8 @@ it('spawns run with no extra arguments', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'bun',
-        ['run', 'biscuit'],
+        expect.any(String),
+        ['-lc', 'bun run biscuit'],
         expect.any(Object),
     )
 })
@@ -56,8 +56,8 @@ it('spawns run with proper arguments', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'bun',
-        ['run', 'biscuit', '--hobnobs', '--digestives', 'rich=tea'],
+        expect.any(String),
+        ['-lc', 'bun run biscuit --hobnobs --digestives \'rich=tea\''],
         expect.any(Object),
     )
 })
@@ -69,8 +69,8 @@ it('spawns bunx with no extra arguments', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'bunx',
-        ['jest'],
+        expect.any(String),
+        ['-lc', 'bunx jest'],
         expect.any(Object),
     )
 })
@@ -82,8 +82,8 @@ it('spawns bunx with proper arguments', () => {
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
-        'bunx',
-        ['jest', '--coverage', '--verbose'],
+        expect.any(String),
+        ['-lc', 'bunx jest --coverage --verbose'],
         expect.any(Object),
     )
 })

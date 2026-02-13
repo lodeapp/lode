@@ -37,7 +37,7 @@ export function readSnapshot(filePath: string): SnapshotFile {
         throw new Error(
             decompressed
                 ? 'Snapshot file contains invalid JSON.'
-                : 'Snapshot file is not a valid gzip archive or JSON file.',
+                : 'Snapshot file is not a valid Lode or JSON file.',
         )
     }
 
