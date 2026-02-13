@@ -11,6 +11,7 @@ src/lib/reporters/phpunit/bootstrap
 support/icons
 coverage
 tests/playwright/.init-bundle.js
+test-results
 tests/playwright/test-results
 tests/playwright/playwright-report
 .claude/settings.local.json

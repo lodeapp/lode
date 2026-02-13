@@ -70,17 +70,17 @@ jobs:
             tests/playwright/playwright-report/
 
       - name: Build
-        run: npm run build:ci
+        run: npm run build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}
           path: |
-            build/mac-arm64
-            build/mac
-            build/win-unpacked
-            build/linux-unpacked
+            build/
+            !build/*-mac.zip
+            !build/*-mac.zip.blockmap
+            !build/mac-arm64/
 
   release:
     name: Release for ${{ matrix.os }}
