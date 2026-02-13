@@ -4,6 +4,10 @@ vi.mock('@lib/snapshot/types', () => ({
     SNAPSHOT_EXTENSION: '.lode',
 }))
 
+vi.mock('electron', () => ({
+    app: { isPackaged: false },
+}))
+
 // --- isUuid ---
 
 it('recognizes valid v4 UUIDs', () => {
@@ -35,9 +39,14 @@ it('parses help command', () => {
 
 // --- parseCliArgs: list ---
 
-it('parses list command', () => {
+it('parses list command without filter', () => {
     const cmd = parseCliArgs(['electron', 'main.js', 'list'])
-    expect(cmd).toEqual({ command: 'list' })
+    expect(cmd).toEqual({ command: 'list', filter: null })
+})
+
+it('parses list with a filter argument', () => {
+    const cmd = parseCliArgs(['electron', 'main.js', 'list', 'Test'])
+    expect(cmd).toEqual({ command: 'list', filter: 'Test' })
 })
 
 // --- parseCliArgs: remove ---
@@ -154,9 +163,15 @@ it('throws when --framework is missing a value', () => {
         .toThrow('--framework requires a value')
 })
 
-it('throws when --output is missing a value', () => {
-    expect(() => parseCliArgs(['electron', 'main.js', 'run', 'P', '--output']))
-        .toThrow('--output requires a value')
+it('parses --output without a value as true', () => {
+    const cmd = parseCliArgs(['electron', 'main.js', 'run', 'P', '--output'])
+    expect(cmd).toHaveProperty('output', true)
+})
+
+it('parses --output before another flag as true', () => {
+    const cmd = parseCliArgs(['electron', 'main.js', 'run', 'P', '--output', '--compact'])
+    expect(cmd).toHaveProperty('output', true)
+    expect(cmd).toHaveProperty('compact', true)
 })
 
 it('parses run with --compact flag', () => {

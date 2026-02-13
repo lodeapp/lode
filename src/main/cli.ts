@@ -1,4 +1,5 @@
 import { SNAPSHOT_EXTENSION } from '@lib/snapshot/types'
+import { app } from 'electron'
 
 export interface GuiCommand {
     command: 'gui'
@@ -9,7 +10,7 @@ export interface RunCommand {
     project: string
     repos: string[]
     frameworks: string[]
-    output: string | null
+    output: string | true | null
     compact: boolean
     compressed: boolean
 }
@@ -31,6 +32,7 @@ export interface HelpCommand {
 
 export interface ListCommand {
     command: 'list'
+    filter: string | null
 }
 
 export interface RemoveCommand {
@@ -67,14 +69,14 @@ function consumeValue(raw: string[], index: number, flag: string): string {
 function parseFlags(raw: string[]): {
     repos: string[]
     frameworks: string[]
-    output: string | null
+    output: string | true | null
     compact: boolean
     compressed: boolean
 } {
     const result = {
         repos: [] as string[],
         frameworks: [] as string[],
-        output: null as string | null,
+        output: null as string | true | null,
         compact: false,
         compressed: true,
     }
@@ -89,7 +91,12 @@ function parseFlags(raw: string[]): {
                 result.frameworks.push(consumeValue(raw, ++i, '--framework'))
                 break
             case '--output':
-                result.output = consumeValue(raw, ++i, '--output')
+                if (i + 1 < raw.length && !raw[i + 1].startsWith('--')) {
+                    result.output = raw[++i]
+                }
+                else {
+                    result.output = true
+                }
                 break
             case '--compact':
                 result.compact = true
@@ -113,7 +120,7 @@ export function printHelp(): void {
 
 Usage:
   lode                                      Open the application
-  lode list                                 List all projects with repositories and frameworks
+  lode list [filter]                        List projects (filter by name prefix)
   lode create [name] --repository <path>    Create a new project
   lode remove <project>                     Remove a project
   lode run <project> [options]              Run tests in headless mode
@@ -129,7 +136,7 @@ Run options:
   --repository <name-or-id>                 Target specific repository (repeatable)
   --framework <[repository:]name-or-id>     Target specific framework (repeatable)
   --compact                                 Compact output (single character per test)
-  --output <path>                           Output file path (default: ./<name>-<timestamp>.lode)
+  --output [path]                           Write a results file (default: ./<name>-<timestamp>.lode)
   --output-expanded                         Write uncompressed JSON output file
 `)
 }
@@ -138,8 +145,9 @@ Run options:
  * Parse process.argv into a structured CLI command.
  */
 export function parseCliArgs(argv: string[] = process.argv): CliCommand {
-    // Skip electron binary and main script path
-    const raw = argv.slice(2)
+    // In dev mode argv = [electron, script, ...args] (skip 2).
+    // In a packaged app argv = [binary, ...args] (skip 1).
+    const raw = argv.slice(app.isPackaged ? 1 : 2)
 
     if (raw.length === 0) {
         return { command: 'gui' }
@@ -153,7 +161,8 @@ export function parseCliArgs(argv: string[] = process.argv): CliCommand {
         }
 
         case 'list': {
-            return { command: 'list' }
+            const filter = raw[1] && !raw[1].startsWith('--') ? raw[1] : null
+            return { command: 'list', filter }
         }
 
         case 'remove': {

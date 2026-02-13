@@ -31,7 +31,7 @@ export function mergeEnvFromShell(force = false): void {
  * @param process The process to inspect.
  */
 function needsEnv(process: NodeJS.Process): boolean {
-    return __DARWIN__ && !process.env.PWD
+    return __DARWIN__ && !process.env.TERM
 }
 
 /**

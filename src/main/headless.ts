@@ -308,8 +308,9 @@ export function formatSuiteCompact(suiteResult: ISuiteResult): string {
  * Returns the process exit code: 0 = all pass, 1 = failures, 2 = errors.
  */
 export async function runHeadless(args: RunCommand): Promise<number> {
-    // Ensure the user's full shell environment (PATH, etc.) is available,
-    // even when launched from a context where PWD is already set.
+    // Ensure the user's full shell environment (PATH, etc.) is available.
+    // Even from a terminal, the inherited env may lack paths that only
+    // exist after shell initialisation (e.g. nvm, volta, asdf).
     mergeEnvFromShell(true)
 
     const projectInfo = findProject(args.project)
@@ -421,17 +422,21 @@ export async function runHeadless(args: RunCommand): Promise<number> {
     }
     process.stdout.write(`Summary: ${formatSummary(totals, true)}\n`)
 
-    // Write snapshot
-    const outputPath = args.output || defaultOutputPath(projectInfo.name!)
-    const overrides: Record<string, string[]> = {}
-    if (args.repos.length > 0) {
-        overrides.repositoryTargets = args.repos
+    // Write snapshot only when --output is given
+    if (args.output !== null) {
+        const outputPath = args.output === true
+            ? defaultOutputPath(projectInfo.name!)
+            : args.output
+        const overrides: Record<string, string[]> = {}
+        if (args.repos.length > 0) {
+            overrides.repositoryTargets = args.repos
+        }
+        if (args.frameworks.length > 0) {
+            overrides.frameworkTargets = args.frameworks
+        }
+        writeSnapshot(project, outputPath, app.getVersion(), overrides, args.compressed)
+        process.stdout.write(`Output: ${outputPath}\n`)
     }
-    if (args.frameworks.length > 0) {
-        overrides.frameworkTargets = args.frameworks
-    }
-    writeSnapshot(project, outputPath, app.getVersion(), overrides, args.compressed)
-    process.stdout.write(`Output: ${outputPath}\n`)
 
     if (totals.error > 0) {
         return 2
@@ -454,19 +459,34 @@ export function removeProject(nameOrId: string): number {
 }
 
 /**
- * List all available projects with their repositories and frameworks.
+ * List available projects with their repositories and frameworks.
+ * When a filter is given, only projects whose name starts with the filter
+ * (case-insensitive) are shown.
  * Returns 0 on success.
  */
-export async function listProjects(): Promise<number> {
-    const projects = state.getAvailableProjects()
+export async function listProjects(filter: string | null = null): Promise<number> {
+    let projects = state.getAvailableProjects()
+
+    if (filter) {
+        const lower = filter.toLowerCase()
+        projects = projects.filter(p => p.name?.toLowerCase().startsWith(lower))
+    }
 
     if (projects.length === 0) {
-        process.stdout.write('No projects found.\n')
-        process.stdout.write('Create one with: lode create --repository <path>\n')
+        if (filter) {
+            process.stdout.write(`No projects matching "${filter}".\n`)
+        }
+        else {
+            process.stdout.write('No projects found.\n')
+            process.stdout.write('Create one with: lode create --repository <path>\n')
+        }
         return 0
     }
 
-    process.stdout.write(`Lode v${app.getVersion()} — Projects\n\n`)
+    const heading = filter
+        ? `Lode v${app.getVersion()} — Projects (${filter}*)`
+        : `Lode v${app.getVersion()} — Projects`
+    process.stdout.write(`${heading}\n\n`)
 
     for (let i = 0; i < projects.length; i++) {
         const projectInfo = projects[i]

@@ -57,7 +57,9 @@ import { identity, isEmpty, pickBy } from 'lodash'
 import '@lib/crash/reporter'
 import '@lib/logger/main'
 
-// Merge environment variables from shell, if needed.
+// Merge environment variables from the user's shell into the Electron
+// process. GUI apps on macOS don't inherit the full shell environment,
+// so without this, spawned processes can't find binaries like yarn/npm.
 mergeEnvFromShell()
 
 // Queue for snapshot files opened before app is ready (macOS open-file event)
@@ -196,7 +198,7 @@ app
             }
             case 'list': {
                 try {
-                    const code = await listProjects()
+                    const code = await listProjects(cliCommand.filter)
                     app.exit(code)
                 }
                 catch (error) {
