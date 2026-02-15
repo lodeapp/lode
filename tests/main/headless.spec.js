@@ -399,6 +399,36 @@ it('renders suite header and test lines with icons', () => {
     expect(plain).toContain('\u00D7 handles negatives')
 })
 
+it('preserves describe hierarchy with indentation in normal mode', () => {
+    const suite = makeSuiteResult('nested.js', [
+        makeTest('describe block', 'passed', [
+            makeTest('leaf test', 'passed'),
+            makeTest('failing test', 'failed'),
+        ]),
+    ])
+    const output = formatSuiteNormal(suite)
+    const plain = stripAnsi(output)
+    // Group header at indent 1 (2 spaces), leaves at indent 2 (4 spaces)
+    expect(plain).toContain('  describe block\n')
+    expect(plain).toContain('    \u2713 leaf test\n')
+    expect(plain).toContain('    \u00D7 failing test\n')
+})
+
+it('handles deeply nested describe groups', () => {
+    const suite = makeSuiteResult('deep.js', [
+        makeTest('L1', 'passed', [
+            makeTest('L2', 'passed', [
+                makeTest('leaf', 'passed'),
+            ]),
+        ]),
+    ])
+    const output = formatSuiteNormal(suite)
+    const plain = stripAnsi(output)
+    expect(plain).toContain('  L1\n')
+    expect(plain).toContain('    L2\n')
+    expect(plain).toContain('      \u2713 leaf\n')
+})
+
 it('uses displayName when available', () => {
     const test = makeTest('internal_name', 'passed')
     test.displayName = 'Friendly Name'

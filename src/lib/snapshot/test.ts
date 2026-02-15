@@ -33,7 +33,11 @@ export class SnapshotTest extends SnapshotNugget implements ITest {
     }
 
     public render(_status?: Status | false): ITestResult {
-        return this.result
+        const { tests: _nested, ...rest } = this.result
+        return {
+            ...rest,
+            hasChildren: this.hasChildren(),
+        }
     }
 
     public persist(_status?: Status | false): ITestResult {

@@ -28,6 +28,7 @@ it('spawns processes', () => {
         path: 'pantry',
         command: 'biscuit --hobnobs --digestives rich=tea',
         ssh: false,
+        platform: 'darwin', // Pin platform so login-shell wrapping is consistent on Windows CI.
     })
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(spawn).toHaveBeenCalledWith(
@@ -637,7 +638,7 @@ describe('process spawning and lifecycle', () => {
     })
 
     it('splits command into binary and arguments', () => {
-        createProcess({ command: 'npx jest --coverage' })
+        createProcess({ command: 'npx jest --coverage', platform: 'darwin' })
         expect(spawn).toHaveBeenLastCalledWith(
             expect.any(String),
             ['-lc', 'npx jest --coverage'],
@@ -646,7 +647,7 @@ describe('process spawning and lifecycle', () => {
     })
 
     it('merges command args with process options args', () => {
-        createProcess({ command: 'npx jest', args: ['--verbose'] })
+        createProcess({ command: 'npx jest', args: ['--verbose'], platform: 'darwin' })
         expect(spawn).toHaveBeenLastCalledWith(
             expect.any(String),
             ['-lc', 'npx jest --verbose'],

@@ -736,7 +736,7 @@ describe('snapshotTest', () => {
 
     it('renders and persists the result', () => {
         const test = makeTest()
-        expect(test.render()).toEqual(test.getResult())
+        expect(test.render()).toEqual({ ...test.getResult(), hasChildren: false })
         expect(test.persist()).toEqual(test.getResult())
     })
 

@@ -278,11 +278,36 @@ function symbolForStatus(status: Status): string {
 }
 
 /**
+ * Recursively format tests with indentation for describe hierarchy.
+ * Groups (tests with children) are printed as gray labels; leaf tests
+ * get a status icon.
+ */
+function formatTestsHierarchical(tests: ITestResult[], indent: number): string[] {
+    const lines: string[] = []
+    for (const test of tests) {
+        const padding = '  '.repeat(indent)
+        if (test.tests && test.tests.length > 0) {
+            const name = test.displayName || test.name
+            lines.push(`${padding}${ANSI.gray}${name}${ANSI.reset}`)
+            lines.push(...formatTestsHierarchical(test.tests, indent + 1))
+        }
+        else {
+            const color = colorForStatus(test.status)
+            const icon = iconForStatus(test.status)
+            const name = test.displayName || test.name
+            lines.push(`${padding}${color}${icon}${ANSI.reset} ${name}`)
+        }
+    }
+    return lines
+}
+
+/**
  * Format a suite result for normal (verbose) output.
- * Prints the suite file path as a header, then each test on its own line.
+ * Prints the suite file path as a header, then each test on its own line
+ * with describe hierarchy preserved via indentation.
  */
 export function formatSuiteNormal(suiteResult: ISuiteResult): string {
-    const tests = flattenTests(suiteResult.tests || [])
+    const tests = suiteResult.tests || []
     if (tests.length === 0) {
         return ''
     }
@@ -290,13 +315,7 @@ export function formatSuiteNormal(suiteResult: ISuiteResult): string {
     const lines: string[] = []
     const suitePath = suiteResult.relative || suiteResult.file
     lines.push(`${ANSI.gray}${suitePath}${ANSI.reset}`)
-
-    for (const test of tests) {
-        const color = colorForStatus(test.status)
-        const icon = iconForStatus(test.status)
-        const name = test.displayName || test.name
-        lines.push(`  ${color}${icon}${ANSI.reset} ${name}`)
-    }
+    lines.push(...formatTestsHierarchical(tests, 1))
 
     return `${lines.join('\n')}\n`
 }
@@ -384,12 +403,9 @@ export async function runHeadless(args: RunCommand): Promise<number> {
                     lastSuiteFile = suitePath
                     process.stdout.write(`${ANSI.gray}${suitePath}${ANSI.reset}\n`)
                 }
-                const tests = flattenTests(suiteResult.tests || [])
-                for (const test of tests) {
-                    const color = colorForStatus(test.status)
-                    const icon = iconForStatus(test.status)
-                    const name = test.displayName || test.name
-                    process.stdout.write(`  ${color}${icon}${ANSI.reset} ${name}\n`)
+                const testLines = formatTestsHierarchical(suiteResult.tests || [], 1)
+                for (const line of testLines) {
+                    process.stdout.write(`${line}\n`)
                 }
             }
         })
