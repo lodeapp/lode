@@ -1,15 +1,12 @@
-import BaseStrings from '@lib/helpers/strings'
 import { clone, last } from 'lodash'
 import { defineStore } from 'pinia'
-
-const strings = new BaseStrings()
 
 export const useContextStore = defineStore('context', {
     state: () => ({
         active: null, // Active framework id, so switching can feel more responsive
         repository: null,
         framework: null,
-        suitesKey: null,
+        suitesKey: 0,
         nuggets: [],
         persist: {},
     }),
@@ -43,8 +40,8 @@ export const useContextStore = defineStore('context', {
         setFramework(framework) {
             this.framework = clone(framework)
         },
-        setSuites(suites) {
-            this.suitesKey = strings.from(suites.map(suite => suite.file))
+        setSuites() {
+            this.suitesKey++
         },
         persistNuggets() {
             this.persist[this.active] = this.nuggets

@@ -120,6 +120,15 @@ describe('context store', () => {
             expect(store.framework).not.toBe(fw)
         })
 
+        it('increments suitesKey on each setSuites call', () => {
+            const store = useContextStore()
+            expect(store.suitesKey).toBe(0)
+            store.setSuites()
+            expect(store.suitesKey).toBe(1)
+            store.setSuites()
+            expect(store.suitesKey).toBe(2)
+        })
+
         it('sets nuggets', () => {
             const store = useContextStore()
             store.setNuggets(['n1', 'n2'])

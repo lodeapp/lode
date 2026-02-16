@@ -1031,6 +1031,56 @@ describe('framework selective running', () => {
             },
         )
     })
+
+    it('cleans orphaned status entries after selective run removes tests', async () => {
+        const framework = new Framework(new ApplicationWindow(), options)
+        await flushPromises()
+
+        const suite = framework.getSuiteById('isTasty.js')
+        await suite.toggleSelected()
+
+        framework.start()
+
+        framework.assemble = vi.fn()
+        framework.disassemble = vi.fn()
+        framework.emit = vi.fn()
+        framework.emitToRenderer = vi.fn()
+        framework.runSelectiveArgs = vi.fn(() => ['hobnobs'])
+        framework.report = vi.fn(() => {
+            // Simulate a debrief where tests 333, 444 were removed from the
+            // backend: only 111 and 222 have results. Debrief updates 222's
+            // result to no longer include children, and afterDebrief cleans
+            // the test objects via cleanTestsByStatus('queued').
+            framework.setNuggetStatus('isTasty.js', 'passed', 'queued', true)
+            framework.setNuggetStatus('111', 'passed', 'queued', false)
+            framework.setNuggetStatus('222', 'passed', 'queued', false)
+
+            // Simulate afterDebrief cleanup: remove test objects AND update
+            // the result for test 222 (debrief replaces the result via build).
+            const test222 = suite.findTest('222')
+            test222.tests = []
+            test222.result = { id: '222', name: 'tastes oaty', status: 'passed' }
+
+            return Promise.resolve()
+        })
+
+        // Trigger queued run
+        Object.values(framework.queue)[0]()
+        await flushPromises()
+
+        // Orphaned status entries for removed tests (333, 444) must be
+        // cleaned up so they don't linger with 'queued' status.
+        const statusMap = framework.getStatusMap()
+        expect(statusMap).not.toHaveProperty('333')
+        expect(statusMap).not.toHaveProperty('444')
+
+        // Remaining tests should have correct statuses
+        expect(framework.getNuggetStatus('isTasty.js')).toBe('passed')
+        expect(framework.getNuggetStatus('111')).toBe('passed')
+        expect(framework.getNuggetStatus('222')).toBe('passed')
+        expect(framework.getNuggetStatus('isNobbly.js')).toBe('idle')
+        expect(framework.getNuggetStatus('555')).toBe('idle')
+    })
 })
 
 describe('framework filtering', () => {

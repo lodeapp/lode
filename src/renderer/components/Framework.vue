@@ -122,10 +122,7 @@ export default {
             this.suites = suites
             this.total = total
             this.$emit('mounted')
-            // If we're not filtering, update the suites' mapping key.
-            if (!this.statusFilters.length) {
-                useContextStore().setSuites(suites)
-            }
+            useContextStore().setSuites()
         },
         onSelectiveEvent(event, selected) {
             this.selected = selected

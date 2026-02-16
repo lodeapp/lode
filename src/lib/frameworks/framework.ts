@@ -793,23 +793,37 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
                     }
                 })
             })
+
+            // Clean up orphaned status entries for tests that were removed
+            // during the selective run (e.g. tests cleaned by afterDebrief
+            // whose status entries linger). Without this, re-added tests
+            // with the same IDs would inherit the stale 'queued' status.
+            const nuggets = new Set<string>()
+            this.suites.forEach((suite) => {
+                suite.getNuggetIds(false).forEach(id => nuggets.add(id))
+            })
+            Object.keys(this.statuses)
+                .filter(id => !nuggets.has(id))
+                .forEach((id) => {
+                    delete this.statuses[id]
+                })
         }
         else {
             // Suites which remain queued after a run are stale
             // and should be removed.
-            let nuggets: Array<string> = []
+            const nuggets = new Set<string>()
             this.suites = this.suites.filter((suite: ISuite) => {
                 if (suite.getStatus() === 'queued') {
                     this.onSuiteRemove(suite)
                     return false
                 }
-                nuggets = nuggets.concat(suite.getNuggetIds(false))
+                suite.getNuggetIds(false).forEach(id => nuggets.add(id))
                 return true
             })
 
             // Reset status when removing nuggets
             Object.keys(this.statuses)
-                .filter(id => !nuggets.includes(id))
+                .filter(id => !nuggets.has(id))
                 .forEach((id) => {
                     delete this.statuses[id]
                 })
@@ -826,19 +840,19 @@ export abstract class Framework extends ProjectEventEmitter implements IFramewor
      * Clean currently loaded suites that are not marked as "fresh".
      */
     protected cleanStaleSuites(): void {
-        let nuggets: Array<string> = []
+        const nuggets = new Set<string>()
         this.suites = this.suites.filter((suite: ISuite) => {
             if (!suite.isFresh()) {
                 this.onSuiteRemove(suite)
                 return false
             }
-            nuggets = nuggets.concat(suite.getNuggetIds(false))
+            suite.getNuggetIds(false).forEach(id => nuggets.add(id))
             return true
         })
 
         // Reset status when removing nuggets
         Object.keys(this.statuses)
-            .filter(id => !nuggets.includes(id))
+            .filter(id => !nuggets.has(id))
             .forEach((id) => {
                 delete this.statuses[id]
             })

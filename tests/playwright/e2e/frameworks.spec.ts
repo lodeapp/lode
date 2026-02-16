@@ -572,6 +572,142 @@ test.describe('Framework management', () => {
         await ipcResetMockHistory(page)
     })
 
+    // Helper: set up a framework with an expanded suite and a clickable test.
+    // Returns locators and test data for assertions.
+    async function setupWithActivatedTest(page: any) {
+        const testChildren = [
+            { id: 'test-abc', name: 'should work', displayName: 'Should work', status: 'idle', hasChildren: false, selected: false, partial: false },
+        ]
+
+        const testGetResponse = {
+            framework: { id: 'jest-1', name: 'Jest' },
+            nuggets: [
+                { file: '/lodeapp/lode/hobnobs/__tests__/BadlyNested.spec.js', relative: '__tests__/BadlyNested.spec.js', name: 'BadlyNested.spec.js' },
+                { id: 'test-abc', name: 'should work', displayName: 'Should work' },
+            ],
+            results: {},
+        }
+
+        await setInvokeHandler(page, { frameworks, ledger, statusMap, testGetResponse, testRemoved: false }, `
+            const f = window.__fixtures__
+            switch (method) {
+                case 'repository-frameworks': return f.frameworks
+                case 'repository-exists': return true
+                case 'framework-get':
+                    return Promise.resolve(f.frameworks.find(fw => fw.id === args[0]))
+                case 'framework-get-ledger':
+                    return { ledger: f.ledger[args[0]], status: f.statusMap[args[0]] }
+                case 'test-get':
+                    return f.testRemoved ? {} : f.testGetResponse
+            }
+            return Promise.resolve()
+        `)
+
+        await ipcEvent(page, '42:repositories', repositories)
+        await ipcEvent(page, 'framework-active', 'jest-1', repositories[0])
+        await nextTick(page)
+        await ipcEvent(page, 'jest-1:refreshed', suites['jest-1'], suites['jest-1'].length)
+        await ipcResetMockHistory(page)
+
+        // Expand first suite
+        const suitesLocator = page.locator('.framework > .children > .nugget')
+        await suitesLocator.nth(0).click()
+        await ipcEvent(
+            page,
+            '/lodeapp/lode/hobnobs/__tests__/BadlyNested.spec.js:framework-tests',
+            testChildren,
+        )
+        await nextTick(page)
+
+        // Click on the test child to activate it
+        const testNugget = suitesLocator.nth(0).locator('.nugget-items > .nugget').first()
+        await testNugget.click()
+        await nextTick(page)
+
+        // Verify Results shows the test
+        const results = page.locator('#results .results')
+        await expect(results).not.toHaveClass(/blankslate/)
+        await expect(results.locator('.heading')).toContainText('Should work')
+
+        return { results, suitesLocator, testChildren }
+    }
+
+    test('clears test selection when suite is removed during refresh', async ({ page }) => {
+        await startWithProject(page)
+        await nextTick(page)
+
+        const { results } = await setupWithActivatedTest(page)
+
+        // Mark the test as removed so test-get returns {}
+        await page.evaluate(() => { (window as any).__fixtures__.testRemoved = true })
+
+        // Simulate refresh with the first suite removed
+        const reducedSuites = suites['jest-1'].slice(1)
+        await ipcEvent(page, 'jest-1:refreshed', reducedSuites, reducedSuites.length)
+        await nextTick(page)
+
+        // Selection should be cleared
+        await expect(results).toHaveClass(/blankslate/)
+        await expect(results).toContainText('No test selected')
+    })
+
+    test('clears test selection after refresh with active status filters', async ({ page }) => {
+        await startWithProject(page)
+        await nextTick(page)
+
+        const { results } = await setupWithActivatedTest(page)
+
+        // Set all suites to "passed" status so the filter label appears
+        const passedLedger = { ...ledger['jest-1'] }
+        const passedStatusMap = { ...statusMap['jest-1'] }
+        passedLedger.idle = 0
+        passedLedger.passed = suites['jest-1'].length
+        for (const key of Object.keys(passedStatusMap)) {
+            passedStatusMap[key] = 'passed'
+        }
+        await ipcEvent(page, 'jest-1:ledger', passedLedger, passedStatusMap)
+        await nextTick(page)
+
+        // Activate the "passed" status filter
+        const passedLabel = page.locator('.filters .progress-breakdown > .Label--passed')
+        await passedLabel.click()
+        await expect(passedLabel).toHaveClass(/is-active/)
+        await ipcResetMockHistory(page)
+
+        // Mark the test as removed so test-get returns {}
+        await page.evaluate(() => { (window as any).__fixtures__.testRemoved = true })
+
+        // Simulate refresh with the first suite removed (filtered results)
+        const reducedSuites = suites['jest-1'].slice(1)
+        await ipcEvent(page, 'jest-1:refreshed', reducedSuites, reducedSuites.length)
+        await nextTick(page)
+
+        // Selection should be cleared even though status filters are active
+        await expect(results).toHaveClass(/blankslate/)
+        await expect(results).toContainText('No test selected')
+    })
+
+    test('clears test selection when test is removed from existing suite', async ({ page }) => {
+        await startWithProject(page)
+        await nextTick(page)
+
+        const { results } = await setupWithActivatedTest(page)
+
+        // Mark the test as removed so test-get returns {}
+        await page.evaluate(() => { (window as any).__fixtures__.testRemoved = true })
+
+        // Simulate refresh with the SAME suites (suite file still exists,
+        // but the test within it was removed)
+        await ipcEvent(page, 'jest-1:refreshed',
+            [...suites['jest-1']], suites['jest-1'].length)
+        await nextTick(page)
+
+        // Selection should be cleared because suitesKey increments on every
+        // refresh, triggering re-validation even when suite files don't change
+        await expect(results).toHaveClass(/blankslate/)
+        await expect(results).toContainText('No test selected')
+    })
+
     test('can focus on framework filter from application menu', async ({ page }) => {
         await startWithProject(page)
 
