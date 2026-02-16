@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { join } from 'node:path'
 import { shallowMount } from '@vue/test-utils'
 import { createPinia, defineStore, setActivePinia } from 'pinia'
 import HasFile from '@/components/mixins/HasFile'
@@ -68,7 +69,7 @@ describe('hasFile mixin', () => {
             store.framework = { runsInRemote: false }
             const wrapper = shallowMount(TestComponent)
 
-            expect(wrapper.vm.relativePath('/home/user/project/tests/Foo.php')).toBe('tests/Foo.php')
+            expect(wrapper.vm.relativePath('/home/user/project/tests/Foo.php')).toBe(join('tests', 'Foo.php'))
         })
 
         it('computes relative path for remote frameworks', () => {
@@ -77,7 +78,7 @@ describe('hasFile mixin', () => {
             store.framework = { runsInRemote: true, remotePath: '/var/www/html' }
             const wrapper = shallowMount(TestComponent)
 
-            expect(wrapper.vm.relativePath('/var/www/html/tests/Foo.php')).toBe('tests/Foo.php')
+            expect(wrapper.vm.relativePath('/var/www/html/tests/Foo.php')).toBe(join('tests', 'Foo.php'))
         })
 
         it('does not call process.cwd when rootPath is not absolute', () => {
