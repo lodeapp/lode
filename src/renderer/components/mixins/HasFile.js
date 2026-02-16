@@ -17,7 +17,7 @@ export default {
     },
     methods: {
         relativePath(path) {
-            if (!this.rootPath || !path.startsWith('/')) {
+            if (!this.rootPath || !path || !path.startsWith('/') || !this.rootPath.startsWith('/')) {
                 return path
             }
 
