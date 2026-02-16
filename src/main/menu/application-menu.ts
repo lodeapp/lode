@@ -121,8 +121,9 @@ class ApplicationMenu {
                 accelerator: 'CmdOrCtrl+N',
                 click: emit('project-add'),
             })
+            .separator()
             .add({
-                label: __DARWIN__ ? 'Switch Project' : 'Switch project',
+                label: __DARWIN__ ? 'Open Project' : 'Open project',
                 enabled: projects && projects.length > 1,
                 submenu: projects && projects.length > 1
                     ? projects.map((project) => {
@@ -146,7 +147,6 @@ class ApplicationMenu {
                         })
                     : undefined,
             })
-            .separator()
             .add({
                 label: __DARWIN__ ? 'Open File…' : 'Open file…',
                 accelerator: 'CmdOrCtrl+O',
