@@ -9,6 +9,13 @@
     "snap-phpunit-1": {
         "/projects/backend/tests/Unit/ServiceTest.php": "passed",
         "/projects/backend/tests/Unit/RepositoryTest.php": "passed",
-        "/projects/backend/tests/Unit/ControllerTest.php": "passed"
+        "/projects/backend/tests/Unit/ControllerTest.php": "passed",
+        "svc-test-1": "passed",
+        "svc-test-2": "passed",
+        "repo-test-1": "passed",
+        "repo-test-2": "passed",
+        "repo-test-3": "passed",
+        "ctrl-test-1": "passed",
+        "ctrl-test-2": "passed"
     }
 }

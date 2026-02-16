@@ -1,7 +1,6 @@
 <script>
 import { SerializeAddon } from '@xterm/addon-serialize'
 import { Terminal } from '@xterm/xterm'
-import { escape } from 'lodash'
 import { mapState } from 'pinia'
 import Icon from '@/components/Icon.vue'
 import { useThemeStore } from '@/stores'
@@ -45,7 +44,6 @@ export default {
 
             const terminal = new Terminal({
                 theme: this.colors,
-                allowProposedApi: true,
                 convertEol: true,
                 rows: this.rows,
                 cols: this.cols,
@@ -56,7 +54,7 @@ export default {
             setTimeout(() => {
                 const serializeAddon = new SerializeAddon()
                 terminal.loadAddon(serializeAddon)
-                terminal.write(escape(this.content), () => {
+                terminal.write(this.content, () => {
                     this.html = serializeAddon.serializeAsHTML({
                         includeGlobalBackground: true,
                     })
