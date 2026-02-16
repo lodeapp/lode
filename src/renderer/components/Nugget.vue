@@ -19,6 +19,10 @@ export default {
             type: Boolean,
             default: false,
         },
+        recursive: {
+            type: Boolean,
+            default: false,
+        },
     },
     emits: [
         'activate',
@@ -34,6 +38,7 @@ export default {
             partial: this.model.partial,
             selected: this.model.selected || false,
             hasChildren: this.model.hasChildren,
+            recursiveExpand: this.recursive,
         }
     },
     computed: {
@@ -80,6 +85,10 @@ export default {
             .on(`${this.identifier}:selected`, this.onSelectedEvent)
 
         if (this.show) {
+            this.expand()
+        }
+        else if (this.recursiveExpand && this.hasChildren) {
+            useExpandStore().expand(this.expandKey)
             this.expand()
         }
     },
@@ -146,11 +155,13 @@ export default {
             }
 
             if (this.show) {
+                this.recursiveExpand = false
                 useExpandStore().collapse(this.expandKey)
                 this.collapse()
                 return
             }
 
+            this.recursiveExpand = this.$input.hasAltKey(event)
             useExpandStore().expand(this.expandKey)
             this.expand()
         },
@@ -273,6 +284,7 @@ export default {
                 :model="test"
                 :running="running"
                 :selectable="canToggleTests"
+                :recursive="recursiveExpand"
                 @toggle="onChildToggle"
                 @select="onChildSelect"
                 @activate="onChildActivation"
