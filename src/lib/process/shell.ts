@@ -1,4 +1,4 @@
-import * as defaultShell from 'default-shell'
+import defaultShell from 'default-shell'
 import * as shellEnv from 'shell-env'
 
 /**
