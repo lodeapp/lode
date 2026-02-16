@@ -135,14 +135,7 @@ class ApplicationMenu {
                                 label: openInOtherWindow
                                     ? `${project.name} (${__DARWIN__ ? 'in another window' : 'in another window'})`
                                     : project.name,
-                                type: 'checkbox',
-                                checked: isCurrentProject,
-                                click: emit('project-switch', project.id, (menuItem: Electron.MenuItem) => {
-                                // Don't toggle the item, unless it's the current project,
-                                // as the switch might still be cancelled by the user. If
-                                // switch project is confirmed, menu will be rebuilt anyway.
-                                    menuItem.checked = isCurrentProject
-                                }),
+                                click: emit('project-switch', project.id),
                             }
                         })
                     : undefined,

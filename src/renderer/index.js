@@ -322,7 +322,7 @@ const app = createApp({
                 })
                 .catch(() => {})
         },
-        projectSwitch(projectId, newWindow = false) {
+        async projectSwitch(projectId, newWindow = false) {
             // If modifier key held, open in new window (or focus existing)
             if (newWindow) {
                 Lode.ipc.send('project-open-in-new-window', { id: projectId })
@@ -331,12 +331,14 @@ const app = createApp({
 
             // Clicking on current project shouldn't have any effect.
             if (this.project && projectId === this.project.id) {
-                // Windows will uncheck the project regardless of it being
-                // selected already, so refresh the menu to undo it.
-                if (__WIN32__) {
-                    this.refreshApplicationMenu()
-                }
                 return false
+            }
+
+            // If the project is already open in another window, just focus
+            // that window without disturbing the current window's state.
+            if (await Lode.ipc.invoke('project-is-open-elsewhere', projectId)) {
+                Lode.ipc.send('project-open-in-new-window', { id: projectId })
+                return
             }
 
             this.$modal.confirmIf(() => {
@@ -354,13 +356,7 @@ const app = createApp({
                     }
                     this.handleProjectSwitch({ id: projectId })
                 })
-                .catch(() => {
-                    // Windows will check the project regardless of
-                    // confirmation, so refresh the menu to undo it.
-                    if (__WIN32__) {
-                        this.refreshApplicationMenu()
-                    }
-                })
+                .catch(() => {})
         },
         handleProjectSwitch(identifier) {
             // Before switching, remove project listeners

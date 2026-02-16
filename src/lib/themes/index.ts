@@ -13,7 +13,5 @@ export function supportsSystemThemeChanges(): boolean {
 }
 
 export function initializeTheme(theme: ThemeName): void {
-    if (theme !== 'system') {
-        nativeTheme.themeSource = theme
-    }
+    nativeTheme.themeSource = theme
 }

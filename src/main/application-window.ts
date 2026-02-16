@@ -78,9 +78,14 @@ export class ApplicationWindow {
 
         this.window = new BrowserWindow(windowOptions)
 
-        // Remember "parent" window when using devtools.
+        // Remember "parent" window when using devtools so that menu
+        // events are routed to the correct ApplicationWindow. We only
+        // update the reference — we must NOT rebuild the menu here
+        // because the DevTools BrowserWindow is the macOS key window at
+        // this point and its dark NSAppearance would cause
+        // Menu.setApplicationMenu() to render the menu bar in dark mode.
         this.window.webContents.on('devtools-focused', () => {
-            ipcMain.emit('window-set', this)
+            applicationMenu.setWindow(this)
         })
 
         // Auto-persist bounds on resize/move (debounced)
@@ -97,7 +102,9 @@ export class ApplicationWindow {
         this.load()
 
         this.themeHandler = () => {
-            this.window.webContents.send('theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
+            const isDark = nativeTheme.shouldUseDarkColors
+            this.window.setBackgroundColor(isDark ? '#161B22' : '#EAEEF2')
+            this.window.webContents.send('theme-updated', isDark ? 'dark' : 'light')
         }
         nativeTheme.on('updated', this.themeHandler)
     }
@@ -105,19 +112,20 @@ export class ApplicationWindow {
     public static createWindow(identifier: ProjectIdentifier | null): ApplicationWindow {
         const window = new this(identifier)
 
-        // Store in window registry
-        windows[window.getChild().id] = window
+        // Capture id now; the BrowserWindow may be destroyed by the time
+        // the closed handler runs.
+        const windowId = window.getChild().id
+        windows[windowId] = window
 
         window.onClosed(async () => {
             window.closed = true
-            if (window.isBusy()) {
-                log.info('Window is busy. Attempting teardown of pending processes.')
-                try {
-                    await window.getProject()!.stop()
-                }
-                catch (_) {}
-            }
-            delete windows[window.getChild().id]
+
+            // Remove from registry immediately (synchronously) so that
+            // getAllWindows() never returns a destroyed window. This prevents
+            // the macOS `activate` handler from seeing a zombie entry and
+            // skipping window creation.
+            delete windows[windowId]
+
             // Only update persisted open-projects if other live (non-snapshot)
             // windows remain. When only snapshot windows (or no windows) are
             // left, preserve the previously-saved list so session restore can
@@ -125,6 +133,15 @@ export class ApplicationWindow {
             const remaining = Object.values(windows)
             if (remaining.length > 0 && remaining.some(w => !w.isSnapshotMode())) {
                 ApplicationWindow.persistOpenProjects()
+            }
+
+            // Async teardown happens after the registry is already clean.
+            if (window.isBusy()) {
+                log.info('Window is busy. Attempting teardown of pending processes.')
+                try {
+                    await window.getProject()!.stop()
+                }
+                catch (_) {}
             }
         })
 

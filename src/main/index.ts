@@ -338,6 +338,8 @@ app
         }
     })
 
+let pendingMenuRebuild: ReturnType<typeof setTimeout> | null = null
+
 ipcMain
     .on('log', (event: Electron.IpcMainEvent, level: LogLevel, message: string) => {
         // Write renderer messages to log, if they meet the level threshold.
@@ -348,11 +350,28 @@ ipcMain
     .on('window-set', (event: any) => {
         // event is the ApplicationWindow itself (emitted directly, not via IPC)
         const window = event as ApplicationWindow
-        applicationMenu.build(window)
+
         // Update currentProject to the focused window's project
         const project = window.getProject()
         if (project) {
             state.set('currentProject', project.getId())
+        }
+
+        // On macOS, defer the menu rebuild so the focus transition settles
+        // before Menu.setApplicationMenu() re-renders the menu bar. Without
+        // this, macOS may use a stale key window's NSAppearance (e.g. from a
+        // DevTools window) and render the menu bar with the wrong theme.
+        if (__DARWIN__) {
+            if (pendingMenuRebuild) {
+                clearTimeout(pendingMenuRebuild)
+            }
+            pendingMenuRebuild = setTimeout(() => {
+                pendingMenuRebuild = null
+                applicationMenu.build(window)
+            }, 80)
+        }
+        else {
+            applicationMenu.build(window)
         }
     })
     .on('maximize', (event: Electron.IpcMainEvent) => {
@@ -378,13 +397,62 @@ ipcMain
         const window = ApplicationWindow.getFromWebContents(event.sender)
         applicationMenu.build(window)
     })
-    .on('menu-event', (event: any) => {
+    .on('menu-event', async (event: any) => {
         // This handler is a fallback for when the menu emit() function
         // can't find a BrowserWindow to send to directly.
         const { name, properties, newWindow } = event as any
         const window = ApplicationWindow.getFocusedWindow()
         if (window) {
             window.sendMenuEvent({ name, properties, newWindow })
+            return
+        }
+
+        // No window exists (macOS dock-only state). Handle events that
+        // make sense without a renderer window by creating one.
+        switch (name) {
+            case 'project-switch': {
+                const existing = properties ? ApplicationWindow.getByProjectId(properties) : null
+                if (existing) {
+                    existing.getChild().focus()
+                    break
+                }
+                const win = ApplicationWindow.createWindow(properties ? { id: properties } : state.getCurrentProject())
+                applicationMenu.build(win)
+                break
+            }
+            case 'project-add': {
+                const win = ApplicationWindow.createWindow(state.getCurrentProject())
+                applicationMenu.build(win)
+                win.getChild().webContents.once('did-finish-load', () => {
+                    win.sendMenuEvent({ name: 'project-add' })
+                })
+                break
+            }
+            case 'snapshot-open': {
+                const { filePaths } = await dialog.showOpenDialog({
+                    properties: ['openFile'],
+                    filters: [
+                        { name: 'Lode Results', extensions: [SNAPSHOT_EXTENSION.replace('.', ''), 'json'] },
+                    ],
+                })
+                if (filePaths && filePaths.length > 0) {
+                    const win = ApplicationWindow.createWindow(null)
+                    win.setSnapshot(filePaths[0])
+                    applicationMenu.build(win)
+                }
+                break
+            }
+            case 'show-about':
+            case 'show-preferences': {
+                const win = ApplicationWindow.createWindow(state.getCurrentProject())
+                applicationMenu.build(win)
+                win.getChild().webContents.once('did-finish-load', () => {
+                    win.sendMenuEvent({ name })
+                })
+                break
+            }
+            default:
+                break
         }
     })
     .on('project-switch', (event: Electron.IpcMainEvent, identifier?: ProjectIdentifier | null) => {
@@ -632,6 +700,13 @@ ipcMain
     })
     .on('open-external-link', async (event: Electron.IpcMainEvent, link: string) => {
         shell.openExternal(link)
+    })
+
+ipcMain
+    .handle('project-is-open-elsewhere', (event: Electron.IpcMainInvokeEvent, projectId: string) => {
+        const senderWindow = ApplicationWindow.getFromWebContents(event.sender)
+        const existing = ApplicationWindow.getByProjectId(projectId)
+        return existing !== null && existing !== senderWindow
     })
 
 ipcMain

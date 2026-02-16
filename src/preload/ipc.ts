@@ -55,6 +55,7 @@ export enum AllowedIpcInvocationMap {
     'project-add-repositories-menu',
     'project-context-menu',
     'project-empty-repositories',
+    'project-is-open-elsewhere',
     'project-remove',
     'project-update',
     'repository-add',
