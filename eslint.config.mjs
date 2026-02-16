@@ -73,7 +73,7 @@ export default antfu(
             'ts/no-require-imports': 'off',
             'ts/no-empty-function': 'off',
             'ts/no-inferrable-types': 'off',
-            'curly': ['error', 'all'],
+            curly: ['error', 'all'],
             'style/quote-props': ['error', 'as-needed'],
         },
     },
