@@ -2,7 +2,7 @@
     h4,
     .message {
         user-select: text;
-        word-break: break-word;
+        overflow-wrap: break-word;
     }
 
     .message {

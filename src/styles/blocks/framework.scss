@@ -20,7 +20,7 @@
                     padding-right: var(--spacing);
                     position: relative;
                     top: 2px;
-                    word-break: break-word;
+                    overflow-wrap: break-word;
                 }
             }
         }
@@ -131,10 +131,8 @@
     > .children {
         background-color: var(--secondary-background-color);
         flex: 1;
-        flex-grow: 1;
         min-height: 0;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: hidden auto;
 
         > div:last-of-type {
             &.is-collapsed {

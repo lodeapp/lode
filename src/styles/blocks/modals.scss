@@ -8,22 +8,18 @@
     overflow: hidden;
 
     .modal {
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: hidden auto;
     }
 }
 
 .modal {
     align-items: center;
-    bottom: 0;
     display: flex;
+    inset: 0;
     justify-content: center;
-    left: 0;
     outline: 0;
     overflow: hidden;
     position: fixed;
-    right: 0;
-    top: 0;
     z-index: 1001;
 
     .modal-dialog {
@@ -271,12 +267,9 @@
 
 .modal-backdrop {
     background-color: black;
-    bottom: 0;
-    left: 0;
+    inset: 0;
     opacity: .4;
     position: fixed;
-    right: 0;
-    top: 0;
     transition: opacity .3s ease;
     z-index: 1002;
 }

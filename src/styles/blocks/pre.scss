@@ -6,7 +6,7 @@ pre {
     padding: var(--spacing);
     user-select: text;
     white-space: pre-wrap;
-    word-break: break-word;
+    overflow-wrap: break-word;
 
     &:empty {
         display: none;

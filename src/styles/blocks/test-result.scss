@@ -2,7 +2,6 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    flex-grow: 1;
     min-height: 0;
 
     .tabs {
@@ -40,8 +39,7 @@
 
     .test-result-breakdown {
         flex: 1;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: hidden auto;
         padding: 15px;
         position: relative;
 

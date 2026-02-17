@@ -415,6 +415,7 @@
 @include win32-context {
     --titlebar-height: 28px;
 
+    // stylelint-disable-next-line nesting-selector-no-missing-scoping-root
     &.titlebar-hidden {
         // stylelint-disable-next-line length-zero-no-unit
         --titlebar-height: 0px;
