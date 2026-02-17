@@ -3,15 +3,15 @@ const config = {
     appId: 'com.recontra.lode',
     directories: {
         buildResources: 'support',
-        output: 'build'
+        output: 'build',
     },
     files: [
-        'dist/**/*'
+        'dist/**/*',
     ],
     asar: true,
     asarUnpack: [
         'dist/static/reporters/**/**',
-        'dist/preload.js'
+        'dist/preload.js',
     ],
     fileAssociations: [
         {
@@ -20,7 +20,7 @@ const config = {
             description: 'Lode test results snapshot',
             mimeType: 'application/x-lode',
             role: 'Viewer',
-        }
+        },
     ],
     extends: null,
     mac: {
@@ -36,17 +36,17 @@ const config = {
                 target: 'zip',
                 arch: [
                     'x64',
-                    'arm64'
-                ]
+                    'arm64',
+                ],
             },
             {
                 target: 'dmg',
                 arch: [
                     'x64',
-                    'arm64'
-                ]
-            }
-        ]
+                    'arm64',
+                ],
+            },
+        ],
     },
     dmg: {
         background: './support/assets/dmg-bg.tiff',
@@ -55,20 +55,20 @@ const config = {
                 x: 400,
                 y: 150,
                 type: 'link',
-                path: '/Applications'
+                path: '/Applications',
             },
             {
                 x: 130,
                 y: 150,
-                type: 'file'
-            }
+                type: 'file',
+            },
         ],
         window: {
             x: 400,
             y: 200,
-            width: 484,
-            height: 356
-        }
+            width: 508,
+            height: 356,
+        },
     },
     win: {
         icon: 'build/icons/512x512.png',
@@ -76,24 +76,24 @@ const config = {
             {
                 target: 'nsis',
                 arch: [
-                    'x64'
-                ]
+                    'x64',
+                ],
             },
-            'zip'
-        ]
+            'zip',
+        ],
     },
     linux: {
         category: 'Development',
         icon: 'build/icons',
         target: [
-            'deb'
-        ]
+            'deb',
+        ],
     },
     publish: [
         {
-            provider: 'github'
-        }
-    ]
+            provider: 'github',
+        },
+    ],
 }
 
 module.exports = config
