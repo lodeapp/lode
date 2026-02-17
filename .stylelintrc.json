@@ -4,7 +4,12 @@
     "stylelint-config-html/html",
     "stylelint-config-html/vue"
   ],
+  "plugins": [
+    "@stylistic/stylelint-plugin"
+  ],
   "rules": {
+    "@stylistic/indentation": 4,
+    "@stylistic/number-leading-zero": "never",
     "max-nesting-depth": [7, { "severity": "warning"}],
     "no-descending-specificity": null,
     "scss/comment-no-empty": null,
