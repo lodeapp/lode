@@ -106,7 +106,7 @@
     "@vue/test-utils": "^2.0.0-rc.6",
     "chalk": "^2.4.2",
     "cross-env": "^7.0.3",
-    "electron": "^40.0.0",
+    "electron": "^40.8.5",
     "electron-builder": "^26.0.12",
     "electron-vite": "^5.0.0",
     "eslint": "^9.39.2",
