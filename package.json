@@ -64,7 +64,7 @@
     "highlight.js": "^10.4.1",
     "is-unc-path": "^1.0.0",
     "latinize": "^0.4.1",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "markdown-it": "^12.0.6",
     "memoize-one": "^6.0.0",
     "overlayscrollbars": "^1.7.1",
